@@ -1,6 +1,6 @@
-![ReactNativeFlash](./src/assets/images/rn.jpg)
+(./src/assets/images/rn.jpg)
 
-# React Native Flash ⚡ Boilerplate
+# React Native Boilerplate
 
 A fully-featured, modern React Native boilerplate with TypeScript support, navigation structure, multi-language capabilities, theme switching, and more!
 
@@ -65,62 +65,6 @@ src/
 - Xcode (for iOS development)
 - CocoaPods (for iOS dependencies)
 - Ruby (for iOS development)
-
-### Quick Start
-
-**Step 1: Clone the repository**
-```bash
-git clone https://github.com/phosimurg/rn-flash-boilerplate.git
-cd rn_boilerplate
-```
-
-**Step 2: Setup and rename your project** ⚡
-```bash
-yarn setup --project-name "YourAppName" --bundle-name com.yourcompany.yourappname
-```
-
-That's it! 🎉 This single command will:
-- ✅ Rename your project from "rn_boilerplate" to "YourAppName"
-- ✅ Update all bundle identifiers and configurations
-- ✅ Install all dependencies
-- ✅ Link font assets automatically
-- ✅ Configure iOS pods
-- ✅ Set up everything for immediate development
-
-**Step 3: Run your app**
-```bash
-# For iOS
-yarn ios
-
-# For Android
-yarn android
-```
-
-### Alternative Installation Methods
-
-If you prefer to set up manually or rename later:
-
-**Option 1: Setup without renaming first**
-```bash
-yarn setup
-```
-
-**Option 2: Manual installation**
-```bash
-# Install dependencies
-yarn install
-
-# Link font assets
-npx react-native-asset
-
-# Install iOS dependencies
-cd ios && bundle install && bundle exec pod install && cd ..
-```
-
-**Then rename manually when ready:**
-```bash
-npx react-native-rename "YourAppName" -b com.yourcompany.yourappname
-```
 
 ### Development Commands
 
