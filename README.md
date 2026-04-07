@@ -1,4 +1,4 @@
-(./src/assets/images/rn.jpg)
+![ReactNative](./src/assets/images/rn.jpg)
 
 # React Native Boilerplate
 
