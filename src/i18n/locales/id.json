@@ -1,0 +1,10 @@
+{
+  "hello": "Halo!",
+  "home": {
+    "welcome": "Selamat datang di BonBon ⚡ Boilerplate!",
+    "changeTheme": "Ubah Tema"
+  },
+  "routes": {
+    "home": "Home"
+  }
+}

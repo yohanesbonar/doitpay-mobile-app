@@ -2,7 +2,7 @@ import i18next from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import * as RNLocalize from 'react-native-localize';
 import en from './locales/en.json';
-import tr from './locales/tr.json';
+import id from './locales/id.json';
 import { createMMKV } from 'react-native-mmkv';
 
 const storage = createMMKV();
@@ -11,7 +11,7 @@ const LANGUAGE_KEY = 'app_language';
 export const initI18next = () => {
     const savedLanguage = storage.getString(LANGUAGE_KEY);
     const deviceLanguage = RNLocalize.getLocales()[0]?.languageCode;
-    const initialLanguage = savedLanguage || (deviceLanguage in {tr: true, en: true} ? deviceLanguage : 'en');
+    const initialLanguage = savedLanguage || (deviceLanguage in {id: true, en: true} ? deviceLanguage : 'en');
 
     i18next
         .use(initReactI18next)
@@ -20,7 +20,7 @@ export const initI18next = () => {
             lng: initialLanguage,
             resources: {
                 en: { translation: en },
-                tr: { translation: tr },
+                id: { translation: id },
             },
             interpolation: {
                 escapeValue: false,

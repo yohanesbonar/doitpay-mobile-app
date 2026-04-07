@@ -1,7 +1,7 @@
 {
   "hello": "Hello!",
   "home": {
-    "welcome": "Welcome to RN Flash ⚡ Boilerplate!",
+    "welcome": "Welcome to BonBon ⚡ Boilerplate!",
     "changeTheme": "Change Theme"
   },
   "routes": {

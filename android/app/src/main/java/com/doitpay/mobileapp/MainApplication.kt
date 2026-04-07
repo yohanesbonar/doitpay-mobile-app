@@ -1,4 +1,4 @@
-package com.rn_boilerplate
+package com.doitpay
 
 import android.app.Application
 import com.facebook.react.PackageList

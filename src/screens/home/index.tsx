@@ -25,7 +25,7 @@ const HomeScreen = () => {
           <Button
             title={i18n.language}
             onPress={() =>
-              i18n.changeLanguage(i18n.language === 'en' ? 'tr' : 'en')
+              i18n.changeLanguage(i18n.language === 'en' ? 'id' : 'en')
             }
           />
           <SizedBox width={metrics.scale(20)} />
