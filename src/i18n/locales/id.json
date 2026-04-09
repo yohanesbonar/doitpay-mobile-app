@@ -4,6 +4,9 @@
     "welcome": "Selamat datang di BonBon ⚡ Boilerplate!",
     "changeTheme": "Ubah Tema"
   },
+  "onboarding": {
+    "title": "halo selamat datang"
+  },
   "routes": {
     "home": "Home"
   }

@@ -4,6 +4,9 @@
     "welcome": "Welcome to BonBon ⚡ Boilerplate!",
     "changeTheme": "Change Theme"
   },
+  "onboarding": {
+    "title": "Hello and Welcome"
+  },
   "routes": {
     "home": "Home"
   }

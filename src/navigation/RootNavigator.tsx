@@ -4,6 +4,7 @@ import {NavigationContainer, DefaultTheme, DarkTheme} from '@react-navigation/na
 import {useTheme} from '../theme/ThemeProvider';
 import AppNavigator from './AppNavigator';
 import {StatusBar} from 'react-native';
+import { OnboardingScreen } from '../screens/onboarding';
 
 const Stack = createNativeStackNavigator();
 
@@ -19,7 +20,7 @@ export default function RootNavigator() {
                 barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
             />
             <Stack.Navigator screenOptions={{headerShown: false}}>
-              <Stack.Screen name="MainApp" component={AppNavigator}/>
+              <Stack.Screen name="MainApp" component={OnboardingScreen}/>
             </Stack.Navigator>
         </NavigationContainer>
     );

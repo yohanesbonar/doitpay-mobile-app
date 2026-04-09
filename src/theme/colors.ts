@@ -22,6 +22,8 @@ const lightColors = {
     loadingBackground: 'rgba(0,0,0,0.80)',
     warning: '#FFA500',
     textSecondary: '#6C757D',
+    headerBackground: '#FAFAFA',
+    pageBackground: '#FAFAFA',
 };
 
 const darkColors = {
@@ -48,6 +50,8 @@ const darkColors = {
     loadingBackground: 'rgba(0,0,0,0.9)',
     warning: '#FFA500',
     textSecondary: '#6C757D',
+    headerBackground: '#FAFAFA',
+    pageBackground: '#FAFAFA',
 };
 
 export const colors = {

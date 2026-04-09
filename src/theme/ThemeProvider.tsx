@@ -25,7 +25,8 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     if (!storage.getString(THEME_KEY)) {
-      setTheme(systemColorScheme || 'light');
+      // setTheme(systemColorScheme || 'light');
+      setTheme("light");
     }
   }, [systemColorScheme]);
 
