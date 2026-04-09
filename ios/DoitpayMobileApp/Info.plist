@@ -65,6 +65,24 @@
 		<string>Manrope-Medium.ttf</string>
 		<string>Manrope-Regular.ttf</string>
 		<string>Manrope-SemiBold.ttf</string>
+		<string>Switzer-Black.otf</string>
+		<string>Switzer-BlackItalic.otf</string>
+		<string>Switzer-Bold.otf</string>
+		<string>Switzer-BoldItalic.otf</string>
+		<string>Switzer-Extrabold.otf</string>
+		<string>Switzer-ExtraboldItalic.otf</string>
+		<string>Switzer-Extralight.otf</string>
+		<string>Switzer-ExtralightItalic.otf</string>
+		<string>Switzer-Italic.otf</string>
+		<string>Switzer-Light.otf</string>
+		<string>Switzer-LightItalic.otf</string>
+		<string>Switzer-Medium.otf</string>
+		<string>Switzer-MediumItalic.otf</string>
+		<string>Switzer-Regular.otf</string>
+		<string>Switzer-Semibold.otf</string>
+		<string>Switzer-SemiboldItalic.otf</string>
+		<string>Switzer-Thin.otf</string>
+		<string>Switzer-ThinItalic.otf</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>

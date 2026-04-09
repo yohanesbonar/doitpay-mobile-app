@@ -6,12 +6,16 @@ import i18next from 'i18next';
 import {ThemeProvider} from './src/theme/ThemeProvider.tsx';
 import RootNavigator from './src/navigation/RootNavigator.tsx';
 
+import { GluestackUIProvider } from '@/src/components/ui/gluestack-ui-provider';
+import '@/global.css';
+
 // Start i18n
 initI18next();
 
 const App = () => {
   return (
-    <GestureHandlerRootView style={{flex: 1}}>
+    <GluestackUIProvider mode="dark">
+      <GestureHandlerRootView style={{flex: 1}}>
       <I18nextProvider i18n={i18next}>
         <SafeAreaProvider>
           <ThemeProvider>
@@ -20,6 +24,8 @@ const App = () => {
         </SafeAreaProvider>
       </I18nextProvider>
     </GestureHandlerRootView>
+    </GluestackUIProvider>
+  
   );
 };
 
