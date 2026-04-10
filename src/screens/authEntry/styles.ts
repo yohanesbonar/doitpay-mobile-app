@@ -11,7 +11,7 @@ export const createStyles = (colors: any) => {
       fontWeight: '600',
       color: colors.textPrimary,
       marginTop: 32,
-      fontFamily: 'Switzer-Medium',
+      fontFamily: 'Switzer-Semibold',
     },
     descStep: {
       fontSize: 16,

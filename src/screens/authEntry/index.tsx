@@ -14,7 +14,7 @@ import HeaderToolbar from '../../components/molecules/HeaderToolbar/index.tsx';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
 import FlowIndicator from '../../components/molecules/FlowIndicator/index.tsx';
-import { Formik, FormikProps, useFormikContext } from 'formik';
+import { Formik, FormikProps } from 'formik';
 import * as Yup from 'yup';
 import Button from '@/src/components/atoms/Button/index.tsx';
 import {
@@ -47,7 +47,7 @@ export const AuthEntry = () => {
   const [isErrorPIN, setIsErrorPIN] = useState(false);
   const inputRef = useRef<TextInput>(null);
   const PIN_LENGTH = 6;
-  const [enableButtonNext, setEnableButtonNext] = useState(false);
+  const enableButtonNextRef = useRef(false);
 
   const handlePressPIN = () => {
     inputRef.current?.focus();
@@ -310,9 +310,9 @@ export const AuthEntry = () => {
   useEffect(() => {
     if (currentStep == 1) {
       if (!formikRef.current?.isValid || !formikRef.current?.dirty) {
-        setEnableButtonNext(false);
+        enableButtonNextRef.current = false;
       } else {
-        setEnableButtonNext(true);
+        enableButtonNextRef.current = true;
       }
     }
   }, [formikRef.current?.isValid, formikRef.current?.dirty, currentStep]);
@@ -347,11 +347,13 @@ export const AuthEntry = () => {
               onPress={() => onPressNext()}
               title={t(currentStep == 1 ? 'authEntry.sendOTPNumber' : 'authEntry.verification')}
               style={{
-                backgroundColor: !enableButtonNext ? colors.disableButton : colors.buttonBlue,
+                backgroundColor: !enableButtonNextRef.current
+                  ? colors.disableButton
+                  : colors.buttonBlue,
               }}
               color={colors.buttonBlue}
               textColor="white"
-              disable={!enableButtonNext}
+              disable={!enableButtonNextRef.current}
             />
           )}
         </View>
