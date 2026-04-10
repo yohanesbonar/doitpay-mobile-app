@@ -27,6 +27,7 @@ export const createStyles = (colors: any) => {
             fontSize: 18,
             color: colors.text,
             fontFamily: 'Switzer-Medium',
+            alignSelf: 'center',
         },
         titleLeft: {
             alignSelf: 'flex-start',

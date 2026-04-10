@@ -7,11 +7,13 @@ import { useTranslation } from 'react-i18next';
 import { IconBankOnboarding } from '@/src/assets/images/index.ts';
 import Button from '@/src/components/atoms/Button/index.tsx';
 import Toast from 'react-native-toast-message';
+import { useNavigation } from '@react-navigation/native';
 
-export const OnboardingScreen = () => {
+export const Onboarding = () => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const { t } = useTranslation();
+  const navigation = useNavigation();
 
   const showToastGmail = () => {
     console.log('Gmail Login Pressed');
@@ -31,7 +33,7 @@ export const OnboardingScreen = () => {
       <View style={{ position: 'absolute', bottom: 32, left: 16, right: 16 }}>
         <Button
           type="regular"
-          onPress={() => console.log('Get Started Pressed')}
+          onPress={() => navigation.navigate('AuthEntry')}
           title={t('onboarding.getStarted')}
           style={{
             backgroundColor: colors.buttonBlue,

@@ -13,5 +13,18 @@
   },
   "routes": {
     "home": "Home"
+  }, 
+  "authEntry": {
+    "phoneNumber": "Nomor Handphone", 
+    "verification": "Verifikasi",
+    "pin": "Pin", 
+    "enterPhoneNumber": "Masukkan nomor \nhandphone kamu",
+    "descEnterPhoneNumber": "Kode verifikasi akan dikirim via SMS", 
+    "descTerms1": "Dengan melanjutkan, kamu menyetujui",
+    "descTerms2": "Syarat & Ketentuan", 
+    "descTerms3": "serta",
+    "descTerms4": "Kebijakan Privasi",
+    "descTerms5": "Doitpay.",
+    "next": "Lanjut"
   }
 }
