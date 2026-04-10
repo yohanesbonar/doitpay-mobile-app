@@ -5,7 +5,11 @@
     "changeTheme": "Ubah Tema"
   },
   "onboarding": {
-    "title": "halo selamat datang"
+    "freeTransfer": "Transfer Gratis", 
+    "description": "Kirim uang ke 100+ bank se-Indonesia. \nGratis hinga Rp 5,000,000 per hari.", 
+    "getStarted": "Mulai Sekarang", 
+    "openWithGmail": "Masuk dengan Gmail", 
+    "accountQuestion": "Sudah punya akun? Masuk"
   },
   "routes": {
     "home": "Home"

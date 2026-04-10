@@ -5,9 +5,7 @@
       "jest"
     ],
     "paths": {
-      "@/*": [
-        "./*"
-      ],
+      "@/*": ["src/*"],
       "tailwind.config": [
         "./tailwind.config.js"
       ]

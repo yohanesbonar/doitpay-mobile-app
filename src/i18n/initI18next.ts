@@ -11,7 +11,8 @@ const LANGUAGE_KEY = 'app_language';
 export const initI18next = () => {
     const savedLanguage = storage.getString(LANGUAGE_KEY);
     const deviceLanguage = RNLocalize.getLocales()[0]?.languageCode;
-    const initialLanguage = savedLanguage || (deviceLanguage in {id: true, en: true} ? deviceLanguage : 'en');
+    // const initialLanguage = savedLanguage || (deviceLanguage in {id: true, en: true} ? deviceLanguage : 'en');
+    const initialLanguage = "id";
 
     i18next
         .use(initReactI18next)

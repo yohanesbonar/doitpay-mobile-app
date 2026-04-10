@@ -24,6 +24,8 @@ const lightColors = {
     textSecondary: '#6C757D',
     headerBackground: '#FAFAFA',
     pageBackground: '#FAFAFA',
+    buttonBlue: "#3981FF", 
+    buttonWhite: "#FFFFFF",
 };
 
 const darkColors = {
@@ -52,6 +54,7 @@ const darkColors = {
     textSecondary: '#6C757D',
     headerBackground: '#FAFAFA',
     pageBackground: '#FAFAFA',
+    buttonWhite: "#FFFFFF",
 };
 
 export const colors = {
