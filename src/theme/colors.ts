@@ -26,6 +26,8 @@ const lightColors = {
     pageBackground: '#FAFAFA',
     buttonBlue: "#3981FF", 
     buttonWhite: "#FFFFFF",
+    disableButton: "#D4D4D4",
+    disableText: "#737373"
 };
 
 const darkColors = {

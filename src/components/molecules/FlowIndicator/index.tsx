@@ -4,9 +4,10 @@ import { createStyles } from './styles';
 interface FlowIndicatorProps {
   totalSteps: number;
   currentStep: number;
+  barStep?: number;
 }
 
-const FlowIndicator = ({ totalSteps, currentStep }: FlowIndicatorProps) => {
+const FlowIndicator = ({ totalSteps, currentStep, barStep }: FlowIndicatorProps) => {
   const indicators = [];
   const styles = createStyles({});
 

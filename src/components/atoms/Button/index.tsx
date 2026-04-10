@@ -12,6 +12,7 @@ interface ButtonProps {
   textColor: 'white' | 'black';
   borderColor?: string;
   sourceIcon?: string;
+  disable?: boolean;
 }
 
 const Button = ({
@@ -24,6 +25,7 @@ const Button = ({
   textColor,
   borderColor,
   sourceIcon,
+  disable,
 }: ButtonProps) => {
   const { colors } = useTheme();
   switch (type) {
@@ -69,10 +71,11 @@ const Button = ({
     case 'regular':
       return (
         <TouchableOpacity
-          onPress={onPress}
+          onPress={!disable ? onPress : null}
+          disabled={disable}
           style={[
             {
-              backgroundColor: color ?? colors.white,
+              backgroundColor: disable ? colors.disableButton : color ? color : colors.white,
               padding: 10,
               borderRadius: 30,
             },
@@ -81,7 +84,11 @@ const Button = ({
           <Text
             style={[
               {
-                color: textColor === 'white' ? colors.white : colors.black,
+                color: disable
+                  ? colors.disableText
+                  : textColor === 'white'
+                    ? colors.white
+                    : colors.black,
                 textAlign: 'center',
                 fontFamily: 'Switzer',
                 paddingVertical: 6,

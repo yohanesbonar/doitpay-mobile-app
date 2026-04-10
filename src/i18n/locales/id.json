@@ -25,6 +25,26 @@
     "descTerms3": "serta",
     "descTerms4": "Kebijakan Privasi",
     "descTerms5": "Doitpay.",
-    "next": "Lanjut"
+    "sendOTPNumber": "Kirim Kode OTP",
+    "enterOTPNumber": "Masukkan kode OTP",
+    "descEnterOTPNumber": "Kode 6 digit telah dikirim ke +62823712312",
+    "descTermsOTP1": "Tidak menerima ? ",
+    "descTermsOTP2": "KKirim ulang (30s)",
+    "createPIN": "Buat PIN 6 Digit",
+    "descCreatePIN": "PIN untuk konfirmasi setiap transfer",
+    "phoneNumberLabel": "Phone Number", 
+    "confirmationPIN": "Konfirmasi PIN",
+    "descConfirmationPIN": "Masukkan ulang PIN",
+    "identityVerification": "Verifikasi Identitas",
+    "descIdentityVerification": "Verifikasi KTP untuk membuka limit transfer penuh",
+    "descIdentityVerification2": "Rp 25,000,000/hari",
+    "verifyNow": "Verifikasi Sekarang",
+    "idCardSelfie": "Foto KTP + selfie (3 menit)",
+    "maybeLater": "Nanti saja",
+    "limitDaily": "Limit terbatas RP 1,000,000/hari",
+    "thingsToPrepare": "Yang perlu disiapkan",
+    "originalIDCard": "KTP asli bukan fotokopi atau foto KTP",
+    "lightRoom": "Ruangan dengan cahaya yang cukup",
+    "clearFace": "Wajah terlihat jelas, tanpa masker atau kacamata hitam"
   }
 }
