@@ -4,8 +4,10 @@ import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/
 import { useTheme } from '../theme/ThemeProvider';
 import AppNavigator from './AppNavigator';
 import { StatusBar } from 'react-native';
-import { Onboarding } from '../screens/onboarding';
+import { Onboarding } from '../screens/onboardingLanding';
 import { AuthEntry } from '../screens/authEntry';
+import { BankList } from '../screens/bankList';
+import AddBankRecipient from '../screens/addBankAccount';
 
 const Stack = createNativeStackNavigator();
 
@@ -23,6 +25,8 @@ export default function RootNavigator() {
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="MainApp" component={Onboarding} />
         <Stack.Screen name="AuthEntry" component={AuthEntry} />
+        <Stack.Screen name="BankList" component={BankList} />
+        <Stack.Screen name="AddBankRecipient" component={AddBankRecipient} />
       </Stack.Navigator>
     </NavigationContainer>
   );

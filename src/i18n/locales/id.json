@@ -46,5 +46,27 @@
     "originalIDCard": "KTP asli bukan fotokopi atau foto KTP",
     "lightRoom": "Ruangan dengan cahaya yang cukup",
     "clearFace": "Wajah terlihat jelas, tanpa masker atau kacamata hitam"
+  },
+  "bankList": {
+    "rekening": "Rekening", 
+    "next": "Lewati", 
+    "populerBank": "Bank Populer",
+    "allBank": "Semua Bank", 
+    "nameBankAccount": "Nama, bank atau nomor rekening"
+  },
+  "addBankAccount": {
+    "rekening": "Rekening", 
+    "continue": "Lanjutkan", 
+    "checkAccount": "Cek no rekening",
+    "skip": "Lewati"
+  },
+  "successBottomSheet": {
+    "readyToTransfer": "Siap untuk transfer kapan saja",
+    "successAddAccount": "Rekening berhasil ditambahkan",
+    "continueToHomepage": "Lanjut ke Homepage"
+  }, 
+  "bankAccountForm": {
+    "accountNumber": "Nomor Rekening",
+    "8DigitAccountNumber": "8 Digit no rekening"
   }
 }

@@ -120,6 +120,7 @@ export const AuthEntry = () => {
                   onChangeText={handleChange('phoneNumber')}
                   onBlur={handleBlur('phoneNumber')}
                   value={values.phoneNumber}
+                  autoFocus
                 />
               </View>
 
@@ -152,6 +153,7 @@ export const AuthEntry = () => {
           rootStyle={styles.codeFieldRoot}
           keyboardType="number-pad"
           textContentType="oneTimeCode"
+          autoFocus={true}
           renderCell={({ index, symbol, isFocused }) => {
             const isFilled = symbol ? true : false;
 
@@ -258,7 +260,7 @@ export const AuthEntry = () => {
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.cardVerif}>
+        <TouchableOpacity style={styles.cardVerif} onPress={() => navigation.navigate('BankList')}>
           <View style={[styles.iconBoxVerif, styles.yellowIconBoxVerif]}>
             <AlertCircle color="#EAB308" size={24} />
           </View>
@@ -321,11 +323,21 @@ export const AuthEntry = () => {
     setCurrentStep((prev) => Math.min(prev + 1, 10));
   };
 
+  const title = t(
+    currentStep == 1
+      ? 'authEntry.phoneNumber'
+      : currentStep == 2 || currentStep == 5
+        ? 'authEntry.verification'
+        : currentStep == 3 || currentStep == 4
+          ? 'authEntry.pin'
+          : '-',
+  );
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View style={{ flex: 1, backgroundColor: colors.pageBackground }}>
         <HeaderToolbar
-          title={t('authEntry.phoneNumber')}
+          title={title}
           withBackButton={true}
           onPressBack={() =>
             currentStep > 1 ? setCurrentStep((prev) => Math.max(prev - 1, 1)) : navigation.goBack()

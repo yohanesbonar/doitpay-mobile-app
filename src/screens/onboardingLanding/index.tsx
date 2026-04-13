@@ -4,8 +4,8 @@ import { Text, Image, View } from 'react-native';
 import { useTheme } from '../../theme/ThemeProvider.tsx';
 import { createStyles } from './styles.ts';
 import { useTranslation } from 'react-i18next';
-import { IconBankOnboarding } from '@/src/assets/images/index.ts';
-import Button from '@/src/components/atoms/Button/index.tsx';
+import { IconBankOnboarding } from '../../assets/images/index.ts';
+import Button from '../../components/atoms/Button/index.tsx';
 import Toast from 'react-native-toast-message';
 import { useNavigation } from '@react-navigation/native';
 
