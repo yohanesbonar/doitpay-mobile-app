@@ -9,7 +9,6 @@ export const createStyles = (colors: any) => {
     },
     titleStep: {
       fontSize: 24,
-      fontWeight: '600',
       color: colors.textPrimary,
       marginTop: 32,
       fontFamily: 'Switzer-Semibold',
@@ -177,7 +176,7 @@ export const createStyles = (colors: any) => {
       fontSize: 14,
     },
     boldText: {
-      fontWeight: 'bold',
+      fontFamily: 'Switzer-Bold'
     },
     cardVerif: {
       marginTop: 16,
@@ -248,11 +247,12 @@ export const createStyles = (colors: any) => {
     },
     dropdown: {
       width: 100, 
-      height: 50,
+      // height: 50,
+      paddingVertical: 16,
       borderWidth: 1,
       borderColor: '#E0E0E0',
       borderRadius: 12,
-      paddingHorizontal: 8,
+      paddingHorizontal: 10,
     },
     dropdownContainer: {
       borderRadius: 12,

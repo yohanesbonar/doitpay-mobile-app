@@ -28,6 +28,82 @@
     {
       "path": "src/assets/fonts/Manrope-SemiBold.ttf",
       "sha1": "e423e112f4832916b05308934c10aa84fd14c607"
+    },
+    {
+      "path": "src/assets/fonts/Switzer-Black.otf",
+      "sha1": "cadf4c1cd8be1410524165534e85f1d292b1e5a5"
+    },
+    {
+      "path": "src/assets/fonts/Switzer-BlackItalic.otf",
+      "sha1": "19e7aafc5d95d7e317ace67dead22e22a600063a"
+    },
+    {
+      "path": "src/assets/fonts/Switzer-Bold.otf",
+      "sha1": "1ba1a677ea140e785856aae36e692d49a07015e8"
+    },
+    {
+      "path": "src/assets/fonts/Switzer-BoldItalic.otf",
+      "sha1": "16b69f7d5beeb73cf53adf4ec14c3593f4124191"
+    },
+    {
+      "path": "src/assets/fonts/Switzer-Extrabold.otf",
+      "sha1": "b6a432c62795f7b246a4f7f5bad67ad83115dff3"
+    },
+    {
+      "path": "src/assets/fonts/Switzer-ExtraboldItalic.otf",
+      "sha1": "639ee659b296437d4b2b8141594edcc34d26315c"
+    },
+    {
+      "path": "src/assets/fonts/Switzer-Extralight.otf",
+      "sha1": "db1b005fe3da718be0aad7c69aac87c5fcac19c0"
+    },
+    {
+      "path": "src/assets/fonts/Switzer-ExtralightItalic.otf",
+      "sha1": "4be88844ee260ffe47d039532091ebc91c014dc2"
+    },
+    {
+      "path": "src/assets/fonts/Switzer-Italic.otf",
+      "sha1": "b444b1a5a42e6adb9306169f996edd5fdd296bca"
+    },
+    {
+      "path": "src/assets/fonts/Switzer-Light.otf",
+      "sha1": "80b7b68e463191eb0790eb018e9db48fdd282d91"
+    },
+    {
+      "path": "src/assets/fonts/Switzer-LightItalic.otf",
+      "sha1": "64ab93e9865e3585c1dd00689a4d63acac5e35e1"
+    },
+    {
+      "path": "src/assets/fonts/Switzer-Medium.otf",
+      "sha1": "a2c60e07f88b8ce7dc90f57ea7671e54610d8954"
+    },
+    {
+      "path": "src/assets/fonts/Switzer-MediumItalic.otf",
+      "sha1": "004c11fb9e6f04f47c70a025e37771abdd2041f0"
+    },
+    {
+      "path": "src/assets/fonts/Switzer-Regular.otf",
+      "sha1": "f0a7eb123220f32bb95d3d2325c8bdcb734aba32"
+    },
+    {
+      "path": "src/assets/fonts/Switzer-Semibold.otf",
+      "sha1": "cc42238161dd051e819262cad9037fb80e01904e"
+    },
+    {
+      "path": "src/assets/fonts/Switzer-SemiboldItalic.otf",
+      "sha1": "810fb4b0cfbbdcc4bb245692ec07dcf89f72ddc5"
+    },
+    {
+      "path": "src/assets/fonts/Switzer-Thin.otf",
+      "sha1": "3c86ecee3581643737400e216f7c942fecbdefad"
+    },
+    {
+      "path": "src/assets/fonts/Switzer-ThinItalic.otf",
+      "sha1": "c67768eeb1ae40bdb913fa1da197e40aade725e3"
+    },
+    {
+      "path": "src/assets/images/icon.png",
+      "sha1": "29f97f6c2a72d94f0af6fe50d474d68447128d0b"
     }
   ]
 }

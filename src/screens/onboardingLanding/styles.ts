@@ -18,7 +18,6 @@ export const createStyles = (colors: any) => {
     freeTransferText: {
       fontSize: 30,
       fontFamily: 'Switzer-Semibold',
-      fontWeight: '600',
       color: colors.textBlack,
       textAlign: 'center',
     },

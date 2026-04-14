@@ -27,7 +27,6 @@ export const createStyles = (colors: any) => {
     stepText: {
       marginLeft: 12,
       fontSize: 18,
-      fontWeight: 'bold',
       color: '#000',
       fontFamily: "Switzer-Medium",
     },

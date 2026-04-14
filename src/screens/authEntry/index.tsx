@@ -121,7 +121,6 @@ export const AuthEntry = () => {
                   data={countryData}
                   search
                   searchPlaceholder="Search"
-                  inputSearchStyle={styles.inputSearchStyle}
                   labelField="value"
                   valueField="value"
                   value={values.countryCode}
@@ -130,7 +129,7 @@ export const AuthEntry = () => {
                     <View>
                       <Image
                         source={require('../../assets/images/ic-indonesia-flag.png')}
-                        style={{ marginRight: 6 }}
+                        style={{ marginRight: 5 }}
                       />
                     </View>
                   )}

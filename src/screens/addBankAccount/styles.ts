@@ -62,10 +62,9 @@ export const createStyles = (colors: any) => {
     },
     recipientName: {
       fontSize: 16,
-      fontWeight: '500',
       color: '#000',
       marginBottom: 4,
-      fontFamily: "Switzer-Regular"
+      fontFamily: "Switzer-Semibold"
     },
     bankDetails: {
       fontSize: 14,
@@ -109,10 +108,9 @@ export const createStyles = (colors: any) => {
     },
     successTitle: {
       fontSize: 22,
-      fontWeight: '600',
       color: '#000',
       marginBottom: 8,
-      fontFamily: "Switzer-Regular"
+      fontFamily: "Switzer-Semibold"
     },
     successSubtitle: {
       fontSize: 16,

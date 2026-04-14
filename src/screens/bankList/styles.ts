@@ -21,10 +21,9 @@ export const createStyles = (colors: any) => {
     searchInput: { flex: 1, fontSize: 14 },
     sectionTitle: {
       fontSize: 18,
-      fontWeight: 'bold',
       marginHorizontal: 16,
       marginBottom: 15,
-      fontFamily: "Switzer-Regular"
+      fontFamily: "Switzer-Semibold"
     },
     gridContainer: {
       flexDirection: 'row',

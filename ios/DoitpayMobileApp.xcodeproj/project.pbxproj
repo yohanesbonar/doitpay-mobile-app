@@ -19,6 +19,25 @@
 		8B421B7C80944A9E9ADA1549 /* Manrope-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6770B2290AED41EDB3719194 /* Manrope-Regular.ttf */; };
 		9DDFC629AB194518959BD29E /* Manrope-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2E241531F66E49758ABCB4C9 /* Manrope-Bold.ttf */; };
 		A72D846266A945718007307E /* Manrope-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9EAF7788D3074E61B5B79A63 /* Manrope-SemiBold.ttf */; };
+		BB9753713E414D059CE928B6 /* Switzer-Thin.otf in Resources */ = {isa = PBXBuildFile; fileRef = CFE665627AAA4371B14A4D96 /* Switzer-Thin.otf */; };
+		3C306429F79B4199812FCEAA /* Switzer-Italic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 845C1A132A9D440D9DBDDEBE /* Switzer-Italic.otf */; };
+		6E3419C4DB134DC4BFE867B3 /* Switzer-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = ABF442A1632B4D968CD685AD /* Switzer-Bold.otf */; };
+		CCCC3F90FECE4B13883E301C /* Switzer-Black.otf in Resources */ = {isa = PBXBuildFile; fileRef = 377764EA372B428596A3B307 /* Switzer-Black.otf */; };
+		813C00CCC83A439CB4DFA3C2 /* Switzer-ExtralightItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = C003D891FFF8402E9CC90182 /* Switzer-ExtralightItalic.otf */; };
+		C2D8D689334547CBB49009E0 /* Switzer-Light.otf in Resources */ = {isa = PBXBuildFile; fileRef = 1B3481711A234E17BF97C3C7 /* Switzer-Light.otf */; };
+		B03829CF6CEF4109BD241C53 /* Switzer-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 09839CC67FDD48969A1E57FB /* Switzer-Regular.otf */; };
+		AB32CB8253714351A015A753 /* Switzer-SemiboldItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 8315B983C85E4C2FA5B5E410 /* Switzer-SemiboldItalic.otf */; };
+		71B080FD58A940B3B906A033 /* Switzer-ExtraboldItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 29EF75B9312A4B488EE3315B /* Switzer-ExtraboldItalic.otf */; };
+		B2A8A719696D477D933A6E9B /* Switzer-LightItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 2D9CCB9FD27141A8ADC0616F /* Switzer-LightItalic.otf */; };
+		BD08C361AF70482BB36CE876 /* Switzer-BoldItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 86C563C7240343F7BB334120 /* Switzer-BoldItalic.otf */; };
+		2467BE83E2F04EADB232C6A8 /* Switzer-Extralight.otf in Resources */ = {isa = PBXBuildFile; fileRef = 89D2CD391182412B9B27C5D8 /* Switzer-Extralight.otf */; };
+		F2DD262C22464B2E941575D3 /* Switzer-Semibold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 81C3BBCE1DF74B5EBD9419B6 /* Switzer-Semibold.otf */; };
+		031D52A2D602418794789865 /* Switzer-Extrabold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 8F7141A226A144889980A9A2 /* Switzer-Extrabold.otf */; };
+		260FDB6125704B4393B5E88C /* Switzer-ThinItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 0A6F8C6F15CD4908B499603C /* Switzer-ThinItalic.otf */; };
+		FAF91BBC1FA34ABF9BA162A2 /* Switzer-MediumItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 618DD59567204DFCBEF0574F /* Switzer-MediumItalic.otf */; };
+		364795681800428594F8ED1E /* Switzer-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = 59E6AC80EA2E4D4DBDC78C30 /* Switzer-Medium.otf */; };
+		42B39F429395426686721B9B /* Switzer-BlackItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 474854100EEC4B82BAD9E93C /* Switzer-BlackItalic.otf */; };
+		80023C6C5FBA4D2E9F905945 /* icon.png in Resources */ = {isa = PBXBuildFile; fileRef = A801CEFED2274E40A1E5AA1D /* icon.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -39,6 +58,25 @@
 		BEBA0B5FDBA24410A5F736B0 /* Manrope-ExtraBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-ExtraBold.ttf"; path = "../src/assets/fonts/Manrope-ExtraBold.ttf"; sourceTree = "<group>"; };
 		CA6F243868EF4CF6BF9DC1A7 /* Manrope-ExtraLight.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-ExtraLight.ttf"; path = "../src/assets/fonts/Manrope-ExtraLight.ttf"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		CFE665627AAA4371B14A4D96 /* Switzer-Thin.otf */ = {isa = PBXFileReference; name = "Switzer-Thin.otf"; path = "../src/assets/fonts/Switzer-Thin.otf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		845C1A132A9D440D9DBDDEBE /* Switzer-Italic.otf */ = {isa = PBXFileReference; name = "Switzer-Italic.otf"; path = "../src/assets/fonts/Switzer-Italic.otf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		ABF442A1632B4D968CD685AD /* Switzer-Bold.otf */ = {isa = PBXFileReference; name = "Switzer-Bold.otf"; path = "../src/assets/fonts/Switzer-Bold.otf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		377764EA372B428596A3B307 /* Switzer-Black.otf */ = {isa = PBXFileReference; name = "Switzer-Black.otf"; path = "../src/assets/fonts/Switzer-Black.otf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		C003D891FFF8402E9CC90182 /* Switzer-ExtralightItalic.otf */ = {isa = PBXFileReference; name = "Switzer-ExtralightItalic.otf"; path = "../src/assets/fonts/Switzer-ExtralightItalic.otf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		1B3481711A234E17BF97C3C7 /* Switzer-Light.otf */ = {isa = PBXFileReference; name = "Switzer-Light.otf"; path = "../src/assets/fonts/Switzer-Light.otf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		09839CC67FDD48969A1E57FB /* Switzer-Regular.otf */ = {isa = PBXFileReference; name = "Switzer-Regular.otf"; path = "../src/assets/fonts/Switzer-Regular.otf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		8315B983C85E4C2FA5B5E410 /* Switzer-SemiboldItalic.otf */ = {isa = PBXFileReference; name = "Switzer-SemiboldItalic.otf"; path = "../src/assets/fonts/Switzer-SemiboldItalic.otf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		29EF75B9312A4B488EE3315B /* Switzer-ExtraboldItalic.otf */ = {isa = PBXFileReference; name = "Switzer-ExtraboldItalic.otf"; path = "../src/assets/fonts/Switzer-ExtraboldItalic.otf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		2D9CCB9FD27141A8ADC0616F /* Switzer-LightItalic.otf */ = {isa = PBXFileReference; name = "Switzer-LightItalic.otf"; path = "../src/assets/fonts/Switzer-LightItalic.otf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		86C563C7240343F7BB334120 /* Switzer-BoldItalic.otf */ = {isa = PBXFileReference; name = "Switzer-BoldItalic.otf"; path = "../src/assets/fonts/Switzer-BoldItalic.otf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		89D2CD391182412B9B27C5D8 /* Switzer-Extralight.otf */ = {isa = PBXFileReference; name = "Switzer-Extralight.otf"; path = "../src/assets/fonts/Switzer-Extralight.otf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		81C3BBCE1DF74B5EBD9419B6 /* Switzer-Semibold.otf */ = {isa = PBXFileReference; name = "Switzer-Semibold.otf"; path = "../src/assets/fonts/Switzer-Semibold.otf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		8F7141A226A144889980A9A2 /* Switzer-Extrabold.otf */ = {isa = PBXFileReference; name = "Switzer-Extrabold.otf"; path = "../src/assets/fonts/Switzer-Extrabold.otf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		0A6F8C6F15CD4908B499603C /* Switzer-ThinItalic.otf */ = {isa = PBXFileReference; name = "Switzer-ThinItalic.otf"; path = "../src/assets/fonts/Switzer-ThinItalic.otf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		618DD59567204DFCBEF0574F /* Switzer-MediumItalic.otf */ = {isa = PBXFileReference; name = "Switzer-MediumItalic.otf"; path = "../src/assets/fonts/Switzer-MediumItalic.otf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		59E6AC80EA2E4D4DBDC78C30 /* Switzer-Medium.otf */ = {isa = PBXFileReference; name = "Switzer-Medium.otf"; path = "../src/assets/fonts/Switzer-Medium.otf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		474854100EEC4B82BAD9E93C /* Switzer-BlackItalic.otf */ = {isa = PBXFileReference; name = "Switzer-BlackItalic.otf"; path = "../src/assets/fonts/Switzer-BlackItalic.otf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		A801CEFED2274E40A1E5AA1D /* icon.png */ = {isa = PBXFileReference; name = "icon.png"; path = "../src/assets/images/icon.png"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,6 +101,25 @@
 				2F91F1C78E844E25A1864844 /* Manrope-Medium.ttf */,
 				6770B2290AED41EDB3719194 /* Manrope-Regular.ttf */,
 				9EAF7788D3074E61B5B79A63 /* Manrope-SemiBold.ttf */,
+				CFE665627AAA4371B14A4D96 /* Switzer-Thin.otf */,
+				845C1A132A9D440D9DBDDEBE /* Switzer-Italic.otf */,
+				ABF442A1632B4D968CD685AD /* Switzer-Bold.otf */,
+				377764EA372B428596A3B307 /* Switzer-Black.otf */,
+				C003D891FFF8402E9CC90182 /* Switzer-ExtralightItalic.otf */,
+				1B3481711A234E17BF97C3C7 /* Switzer-Light.otf */,
+				09839CC67FDD48969A1E57FB /* Switzer-Regular.otf */,
+				8315B983C85E4C2FA5B5E410 /* Switzer-SemiboldItalic.otf */,
+				29EF75B9312A4B488EE3315B /* Switzer-ExtraboldItalic.otf */,
+				2D9CCB9FD27141A8ADC0616F /* Switzer-LightItalic.otf */,
+				86C563C7240343F7BB334120 /* Switzer-BoldItalic.otf */,
+				89D2CD391182412B9B27C5D8 /* Switzer-Extralight.otf */,
+				81C3BBCE1DF74B5EBD9419B6 /* Switzer-Semibold.otf */,
+				8F7141A226A144889980A9A2 /* Switzer-Extrabold.otf */,
+				0A6F8C6F15CD4908B499603C /* Switzer-ThinItalic.otf */,
+				618DD59567204DFCBEF0574F /* Switzer-MediumItalic.otf */,
+				59E6AC80EA2E4D4DBDC78C30 /* Switzer-Medium.otf */,
+				474854100EEC4B82BAD9E93C /* Switzer-BlackItalic.otf */,
+				A801CEFED2274E40A1E5AA1D /* icon.png */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -197,6 +254,25 @@
 				5BBA258643DD4D379F4B092C /* Manrope-Medium.ttf in Resources */,
 				8B421B7C80944A9E9ADA1549 /* Manrope-Regular.ttf in Resources */,
 				A72D846266A945718007307E /* Manrope-SemiBold.ttf in Resources */,
+				BB9753713E414D059CE928B6 /* Switzer-Thin.otf in Resources */,
+				3C306429F79B4199812FCEAA /* Switzer-Italic.otf in Resources */,
+				6E3419C4DB134DC4BFE867B3 /* Switzer-Bold.otf in Resources */,
+				CCCC3F90FECE4B13883E301C /* Switzer-Black.otf in Resources */,
+				813C00CCC83A439CB4DFA3C2 /* Switzer-ExtralightItalic.otf in Resources */,
+				C2D8D689334547CBB49009E0 /* Switzer-Light.otf in Resources */,
+				B03829CF6CEF4109BD241C53 /* Switzer-Regular.otf in Resources */,
+				AB32CB8253714351A015A753 /* Switzer-SemiboldItalic.otf in Resources */,
+				71B080FD58A940B3B906A033 /* Switzer-ExtraboldItalic.otf in Resources */,
+				B2A8A719696D477D933A6E9B /* Switzer-LightItalic.otf in Resources */,
+				BD08C361AF70482BB36CE876 /* Switzer-BoldItalic.otf in Resources */,
+				2467BE83E2F04EADB232C6A8 /* Switzer-Extralight.otf in Resources */,
+				F2DD262C22464B2E941575D3 /* Switzer-Semibold.otf in Resources */,
+				031D52A2D602418794789865 /* Switzer-Extrabold.otf in Resources */,
+				260FDB6125704B4393B5E88C /* Switzer-ThinItalic.otf in Resources */,
+				FAF91BBC1FA34ABF9BA162A2 /* Switzer-MediumItalic.otf in Resources */,
+				364795681800428594F8ED1E /* Switzer-Medium.otf in Resources */,
+				42B39F429395426686721B9B /* Switzer-BlackItalic.otf in Resources */,
+				80023C6C5FBA4D2E9F905945 /* icon.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

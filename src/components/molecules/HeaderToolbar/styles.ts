@@ -34,7 +34,6 @@ export const createStyles = (colors: any) => {
             fontSize: 18,
             color: colors.text,
             fontFamily: 'Switzer-Medium',
-            fontWeight: "500"
         },
         backButton: {
             width: 32,
