@@ -26,6 +26,7 @@ import {
 } from 'react-native-confirmation-code-field';
 import { CreditCard, Sun, User, AlertCircle } from 'lucide-react-native';
 import { Dropdown } from 'react-native-element-dropdown';
+import _ from 'lodash';
 
 export const AuthEntry = () => {
   const { colors } = useTheme();
@@ -38,6 +39,7 @@ export const AuthEntry = () => {
   const CELL_COUNT_OTP = 6;
   const [valueOTP, setValueOTP] = useState('');
   const [timerOTP, setTimerOTP] = useState(30);
+  const [phoneNumbData, setPhoneNumData] = useState({ phoneNumber: '', countryCode: '' });
   const ref = useBlurOnFulfill({ value: valueOTP, cellCount: CELL_COUNT_OTP });
   const [props, getCellOnLayoutHandler] = useClearByFocusCell({
     value: valueOTP,
@@ -168,11 +170,28 @@ export const AuthEntry = () => {
     );
   };
 
+  useEffect(() => {
+    if (formikRef?.current) {
+      const { phoneNumber, countryCode } = formikRef?.current?.values;
+      if (!_.isEmpty(phoneNumber)) {
+        let data = {
+          phoneNumber: phoneNumber,
+          countryCode: countryCode,
+        };
+        setPhoneNumData(data);
+      }
+    }
+  }, [formikRef?.current?.values]);
+
   const inputOTPNumber = () => {
     return (
       <View style={{ flex: 1, marginHorizontal: 16 }}>
         <Text style={styles.titleStep}>{t('authEntry.enterOTPNumber')}</Text>
-        <Text style={styles.descStep}>{t('authEntry.descEnterOTPNumber')}</Text>
+        <Text style={styles.descStep}>
+          {t('authEntry.descEnterOTPNumber') +
+            phoneNumbData?.countryCode +
+            phoneNumbData?.phoneNumber}
+        </Text>
         <CodeField
           {...props}
           ref={ref}

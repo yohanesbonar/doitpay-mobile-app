@@ -33,6 +33,7 @@ export const createStyles = (colors: any) => {
     formWrapper: {
       width: '100%',
       paddingVertical: 10,
+      marginTop: 16
     },
     label: {
       fontSize: 16,
