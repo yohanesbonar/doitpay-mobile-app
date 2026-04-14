@@ -12,8 +12,6 @@ export const createStyles = (colors: any) => {
     },
     bankOnboardingContainer: {
       paddingTop: 120,
-    //   flex: 1, 
-    //   backgroundColor: "yellow"
     },
     freeTransferText: {
       fontSize: 30,

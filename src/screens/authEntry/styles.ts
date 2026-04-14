@@ -211,9 +211,9 @@ export const createStyles = (colors: any) => {
     },
     cardTitleVerif: {
       fontSize: 18,
-      fontWeight: 'bold',
       color: '#000',
       marginBottom: 4,
+      fontFamily: 'Switzer-Medium'
     },
     cardSubtitleVerif: {
       fontSize: 14,
@@ -247,7 +247,6 @@ export const createStyles = (colors: any) => {
     },
     dropdown: {
       width: 100, 
-      // height: 50,
       paddingVertical: 16,
       borderWidth: 1,
       borderColor: '#E0E0E0',
