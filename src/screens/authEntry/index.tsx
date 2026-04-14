@@ -7,6 +7,7 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
   Pressable,
+  Image,
 } from 'react-native';
 import { useTheme } from '../../theme/ThemeProvider.tsx';
 import { createStyles } from './styles.ts';
@@ -24,6 +25,7 @@ import {
   useClearByFocusCell,
 } from 'react-native-confirmation-code-field';
 import { CreditCard, Sun, User, AlertCircle } from 'lucide-react-native';
+import { Dropdown } from 'react-native-element-dropdown';
 
 export const AuthEntry = () => {
   const { colors } = useTheme();
@@ -91,6 +93,14 @@ export const AuthEntry = () => {
   const formikRef = useRef<FormikProps<any>>(null);
 
   const inputPhoneNumber = () => {
+    const countryData = [
+      {
+        label: 'Indonesia (+62)',
+        value: '+62',
+        flag: require('../../assets/images/ic-indonesia-flag.png'),
+      },
+    ];
+
     return (
       <View style={{ flex: 1, marginHorizontal: 16 }}>
         <Text style={styles.titleStep}>{t('authEntry.enterPhoneNumber')}</Text>
@@ -100,19 +110,37 @@ export const AuthEntry = () => {
           initialValues={{ phoneNumber: '', countryCode: '+62' }}
           validationSchema={PhoneSchema}
           onSubmit={(values) => console.log('Form Data:', values)}>
-          {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
+          {({ handleChange, handleBlur, setFieldValue, handleSubmit, values, errors, touched }) => (
             <View style={styles.formWrapper}>
               <Text style={styles.label}>{t('authEntry.phoneNumberLabel')}</Text>
 
               <View style={styles.inputGroup}>
-                <TouchableOpacity style={styles.countryPicker} activeOpacity={0.7}>
-                  <View style={styles.flagContainer}>
-                    <View style={styles.flagRed} />
-                    <View style={styles.flagWhite} />
-                  </View>
-                  <Text style={styles.countryCode}>{values.countryCode}</Text>
-                  <Text style={styles.chevron}>⌄</Text>
-                </TouchableOpacity>
+                <Dropdown
+                  style={styles.dropdown}
+                  containerStyle={styles.dropdownContainer}
+                  data={countryData}
+                  search
+                  searchPlaceholder="Search"
+                  inputSearchStyle={styles.inputSearchStyle}
+                  labelField="value"
+                  valueField="value"
+                  value={values.countryCode}
+                  onChange={(item) => setFieldValue('countryCode', item.value)}
+                  renderLeftIcon={() => (
+                    <View>
+                      <Image
+                        source={require('../../assets/images/ic-indonesia-flag.png')}
+                        style={{ marginRight: 6 }}
+                      />
+                    </View>
+                  )}
+                  renderItem={(item) => (
+                    <View style={styles.item}>
+                      <Image source={item.flag} />
+                      <Text style={styles.itemText}>{item.label}</Text>
+                    </View>
+                  )}
+                />
 
                 <TextInput
                   style={[styles.input, errors.phoneNumber && styles.inputError]}

@@ -38,6 +38,7 @@
     "react-native": "0.83.0",
     "react-native-asset": "^2.2.14",
     "react-native-confirmation-code-field": "^9.0.0",
+    "react-native-element-dropdown": "^2.12.4",
     "react-native-gesture-handler": "^2.25.0",
     "react-native-localize": "^3.4.1",
     "react-native-mmkv": "4.1.1",

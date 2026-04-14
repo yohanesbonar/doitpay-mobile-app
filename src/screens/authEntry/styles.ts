@@ -1,4 +1,5 @@
-import { StyleSheet } from 'react-native';
+import { Dimensions, StyleSheet } from 'react-native';
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 export const createStyles = (colors: any) => {
   return StyleSheet.create({
@@ -244,6 +245,39 @@ export const createStyles = (colors: any) => {
       color: '#333',
       flex: 1,
       lineHeight: 20,
+    },
+    dropdown: {
+      width: 100, 
+      height: 50,
+      borderWidth: 1,
+      borderColor: '#E0E0E0',
+      borderRadius: 12,
+      paddingHorizontal: 8,
+    },
+    dropdownContainer: {
+      borderRadius: 12,
+      marginTop: 8,
+      elevation: 4, 
+      shadowColor: '#000', 
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      width: screenWidth - 32,
+    },
+    item: {
+      padding: 15,
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    itemText: {
+      fontSize: 14,
+      marginLeft: 10,
+    },
+    flagPlaceholder: {
+      width: 24,
+      height: 16,
+      backgroundColor: 'red', 
+      borderRadius: 2,
+      marginRight: 5
     },
   });
 };
