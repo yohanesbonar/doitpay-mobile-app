@@ -12,7 +12,7 @@ export const toastConfig = {
       contentContainerStyle={{ paddingHorizontal: 15 }}
       text1Style={{
         fontSize: 15,
-        fontWeight: '400',
+        fontFamily: 'Switzer-Regular',
       }}
     />
   ),

@@ -36,7 +36,7 @@ export const createStyles = (colors: any) => {
     },
     label: {
       fontSize: 16,
-      fontWeight: '600',
+      fontFamily: 'Switzer-Medium',
       marginBottom: 8,
       color: '#000',
     },
@@ -65,7 +65,7 @@ export const createStyles = (colors: any) => {
     flagWhite: { flex: 1, backgroundColor: '#FFFFFF' },
     countryCode: {
       fontSize: 16,
-      fontWeight: '500',
+      fontFamily: 'Switzer-Medium',
       color: '#000',
     },
     chevron: {
@@ -117,7 +117,7 @@ export const createStyles = (colors: any) => {
       color: '#000',
     },
     filledCellText: {
-      fontWeight: 'bold',
+      fontFamily: 'Switzer-Semibold',
       color: '#000',
     },
     resendContainer: {
@@ -131,7 +131,7 @@ export const createStyles = (colors: any) => {
     resendLink: {
       fontSize: 14,
       color: '#4A80F0',
-      fontWeight: 'bold',
+      fontFamily: 'Switzer-Semibold',
     },
     resendDisabled: {
       color: '#4A80F0',
@@ -163,7 +163,7 @@ export const createStyles = (colors: any) => {
       bottom: 0,
     },
     boldText: {
-      fontWeight: 'bold',
+      fontFamily: 'Switzer-Semibold',
     },
     dotError: {
       borderColor: '#FF3B30', // Merah
@@ -228,7 +228,7 @@ export const createStyles = (colors: any) => {
     },
     infoTitleVerif: {
       fontSize: 18,
-      fontWeight: 'bold',
+      fontFamily: 'Switzer-Medium',
       marginBottom: 20,
     },
     infoRowVerif: {

@@ -62,7 +62,7 @@ export const createStyles = (colors: any) => {
       marginRight: 15,
     },
     logoList: { width: 30, height: 30 },
-    listText: { fontSize: 16, fontWeight: '400', fontFamily: "Switzer-Regular" },
+    listText: { fontSize: 16, fontFamily: "Switzer-Regular" },
     footer: {
       position: 'absolute',
       bottom: 0,
@@ -80,6 +80,6 @@ export const createStyles = (colors: any) => {
       justifyContent: 'center',
       alignItems: 'center',
     },
-    skipText: { fontSize: 16, fontWeight: '600', color: '#000' },
+    skipText: { fontSize: 16, color: '#000', fontFamily: 'Switzer-Medium' },
   });
 };

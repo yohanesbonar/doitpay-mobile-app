@@ -22,7 +22,6 @@ export const createStyles = (colors: any) => {
     descriptionText: {
       fontSize: 14,
       fontFamily: 'Switzer',
-      fontWeight: '400',
       color: colors.textBlack,
       textAlign: 'center',
       marginTop: 8,

@@ -15,7 +15,7 @@ export const createStyles = (colors: any) => {
     },
     label: {
       fontSize: 14,
-      fontWeight: '600',
+      fontFamily: 'Switzer-Medium',
       color: '#000',
       marginBottom: 8,
     },
@@ -90,10 +90,6 @@ export const createStyles = (colors: any) => {
       backgroundColor: '#FFF',
       borderWidth: 1,
       borderColor: '#E0E0E0',
-    },
-    buttonText: {
-      fontSize: 16,
-      fontWeight: '600',
     },
     modalOverlay: {
       flex: 1,
