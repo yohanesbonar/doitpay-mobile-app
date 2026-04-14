@@ -72,6 +72,8 @@ export const AuthEntry = () => {
       setPin('');
     } else if (currentStep == 4) {
       setConfirmationPin('');
+    } else if (currentStep == 2) {
+      setValueOTP('');
     }
   }, [currentStep]);
 
@@ -316,10 +318,19 @@ export const AuthEntry = () => {
       } else {
         enableButtonNextRef.current = true;
       }
+    } else if (currentStep == 2) {
+      if (valueOTP.length == 6) {
+        enableButtonNextRef.current = true;
+      } else {
+        enableButtonNextRef.current = false;
+      }
     }
-  }, [formikRef.current?.isValid, formikRef.current?.dirty, currentStep]);
+  }, [formikRef.current?.isValid, formikRef.current?.dirty, currentStep, valueOTP]);
 
   const onPressNext = () => {
+    if (currentStep == 1 || currentStep == 2) {
+      enableButtonNextRef.current = false;
+    }
     setCurrentStep((prev) => Math.min(prev + 1, 10));
   };
 
@@ -339,9 +350,11 @@ export const AuthEntry = () => {
         <HeaderToolbar
           title={title}
           withBackButton={true}
-          onPressBack={() =>
-            currentStep > 1 ? setCurrentStep((prev) => Math.max(prev - 1, 1)) : navigation.goBack()
-          }
+          onPressBack={() => {
+            if (currentStep > 1) {
+              setCurrentStep((prev) => Math.max(prev - 1, 1));
+            } else navigation.goBack();
+          }}
           withCloseButton={true}
           onPressRightButton={() => navigation.goBack()}
           titlePosition="center"
@@ -359,9 +372,9 @@ export const AuthEntry = () => {
               onPress={() => onPressNext()}
               title={t(currentStep == 1 ? 'authEntry.sendOTPNumber' : 'authEntry.verification')}
               style={{
-                backgroundColor: !enableButtonNextRef.current
-                  ? colors.disableButton
-                  : colors.buttonBlue,
+                backgroundColor: enableButtonNextRef.current
+                  ? colors.buttonBlue
+                  : colors.disableButton,
               }}
               color={colors.buttonBlue}
               textColor="white"
