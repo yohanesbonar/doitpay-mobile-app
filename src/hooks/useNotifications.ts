@@ -1,55 +1,54 @@
 import { useEffect } from 'react';
-import { Platform, PermissionsAndroid } from 'react-native';
+import { PermissionsAndroid, Platform } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
-import Toast from 'react-native-toast-message';
+import { useGetFcmToken } from './useGetFcmToken';
+import { useNotificationListener } from './useNotificationListener';
+import { handleNotificationNavigation } from '../utils/ToastConfig/Notification/NotificationHandler';
 
 export const useNotifications = () => {
+  const token = useGetFcmToken();
+  useNotificationListener();
+
   const requestPermission = async () => {
-    if (Platform.OS === 'android' && Platform.Version >= 33) {
-      // Direct permission request for Android 13+
-      await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
-    }
+    try {
+      if (Platform.OS === 'android' && Platform.Version >= 33) {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+        );
+        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+          console.log('User reject permission Android');
+          return;
+        }
+      }
 
-    const authStatus = await messaging().requestPermission();
-    const enabled =
-      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+      const authStatus = await messaging().requestPermission();
+      const enabled =
+        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
-    if (enabled) {
-      const token = await messaging().getToken();
-      console.log('FCM Token:', token);
-      // Send this token to your server via an API call here
+      if (enabled) {
+        console.log('Permission status:', authStatus);
+      }
+    } catch (error) {
+      console.error('Permission Error:', error);
     }
   };
 
   useEffect(() => {
     requestPermission();
 
-    // Foreground message handler
-    const unsubscribe = messaging().onMessage(async (remoteMessage) => {
-      console.log('A new FCM message arrived!', remoteMessage);
-      // You can trigger your Toast here!
-      Toast.show({
-        type: 'success', // atau type sesuai config kamu
-        text1: remoteMessage.notification?.title || 'Notification',
-        text2: remoteMessage.notification?.body || '',
-      });
-    });
-
-    // Handle background click (when app is opened from a quit state)
     messaging()
       .getInitialNotification()
       .then((remoteMessage) => {
         if (remoteMessage) {
-          console.log('Notification caused app to open from quit state:', remoteMessage);
+          console.log('App opened from quit state:', remoteMessage.notification);
+          const timer = setTimeout(() => {
+            handleNotificationNavigation(remoteMessage);
+          }, 500);
+          return () => clearTimeout(timer);
         }
       });
-
-    messaging().onNotificationOpenedApp((remoteMessage) => {
-      console.log('App opened from background state:', remoteMessage.data);
-      // Logic navigasi ke screen tertentu (misal: ke History)
-    });
-
-    return unsubscribe;
   }, []);
+
+  return { token };
 };

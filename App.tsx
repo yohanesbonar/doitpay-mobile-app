@@ -4,6 +4,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { I18nextProvider } from 'react-i18next';
 import i18next from 'i18next';
 import Toast from 'react-native-toast-message';
+import messaging from '@react-native-firebase/messaging';
 
 import { initI18next } from './src/i18n/initI18next.ts';
 import { ThemeProvider } from './src/theme/ThemeProvider.tsx';
@@ -16,6 +17,11 @@ import '@/global.css';
 
 // Start i18n
 initI18next();
+
+// Handle background messages
+messaging().setBackgroundMessageHandler(async (remoteMessage) => {
+  // console.log('Message handled in the background!', remoteMessage);
+});
 
 const App = () => {
   // Initialize FCM Listeners

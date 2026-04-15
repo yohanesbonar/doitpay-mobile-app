@@ -8,6 +8,7 @@ import { Onboarding } from '../screens/onboardingLanding';
 import { AuthEntry } from '../screens/authEntry';
 import { BankList } from '../screens/bankList';
 import AddBankRecipient from '../screens/addBankAccount';
+import { navigationRef } from './navigationRef';
 
 const Stack = createNativeStackNavigator();
 
@@ -17,7 +18,7 @@ export default function RootNavigator() {
   const navigationTheme = theme === 'light' ? DefaultTheme : DarkTheme;
 
   return (
-    <NavigationContainer theme={navigationTheme}>
+    <NavigationContainer theme={navigationTheme} ref={navigationRef}>
       <StatusBar
         backgroundColor={colors.background}
         barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
