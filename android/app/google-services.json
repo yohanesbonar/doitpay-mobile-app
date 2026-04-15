@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "302181848541",
+    "project_id": "natural-potion-488509-v6",
+    "storage_bucket": "natural-potion-488509-v6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:302181848541:android:e3980c6c0c215e4a3fd234",
+        "android_client_info": {
+          "package_name": "com.doitpay"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB7wDYziC6yI8mjMUBtxqRfjC1pMj41vsY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:302181848541:android:b4526f42b89bbfc43fd234",
+        "android_client_info": {
+          "package_name": "doitpay.mobi"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB7wDYziC6yI8mjMUBtxqRfjC1pMj41vsY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

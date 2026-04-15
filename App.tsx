@@ -1,20 +1,26 @@
+import React from 'react'; // React 19 doesn't strictly need this, but good for TS
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { initI18next } from './src/i18n/initI18next.ts';
 import { I18nextProvider } from 'react-i18next';
 import i18next from 'i18next';
-import { ThemeProvider } from './src/theme/ThemeProvider.tsx';
-import RootNavigator from './src/navigation/RootNavigator.tsx';
 import Toast from 'react-native-toast-message';
 
+import { initI18next } from './src/i18n/initI18next.ts';
+import { ThemeProvider } from './src/theme/ThemeProvider.tsx';
+import RootNavigator from './src/navigation/RootNavigator.tsx';
 import { GluestackUIProvider } from '@/src/components/ui/gluestack-ui-provider';
-import '@/global.css';
 import { toastConfig } from './src/utils/ToastConfig/index.tsx';
+import { useNotifications } from './src/hooks/useNotifications'; // Import your hook
+
+import '@/global.css';
 
 // Start i18n
 initI18next();
 
 const App = () => {
+  // Initialize FCM Listeners
+  useNotifications();
+
   return (
     // <GluestackUIProvider mode="dark">
     //   <GestureHandlerRootView style={{flex: 1}}>
