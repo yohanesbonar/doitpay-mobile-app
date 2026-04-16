@@ -30,6 +30,7 @@ import _ from 'lodash';
 import { useRequestOtp } from '../../hooks/useAuthMutation.ts';
 import InputPhoneNumber from './components/InputPhoneNumber';
 import InputOTPNumber from './components/InputOTPNumber';
+import Toast from 'react-native-toast-message';
 
 export const AuthEntry = ({ route }) => {
   const { isLoginState } = route.params;
@@ -312,6 +313,10 @@ export const AuthEntry = ({ route }) => {
           },
           onError: (err) => {
             console.error('Gagal kirim OTP', err);
+            Toast.show({
+              type: 'error',
+              text1: err.message,
+            });
           },
         },
       );

@@ -25,11 +25,11 @@ export const toastConfig = {
       {...props}
       style={{ marginTop: 40, backgroundColor: '#e63946' }}
       text1Style={{
-        fontSize: 17,
+        fontSize: 14,
         color: 'white',
       }}
       text2Style={{
-        fontSize: 15,
+        fontSize: 12,
       }}
     />
   ),
