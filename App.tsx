@@ -1,4 +1,4 @@
-import React from 'react'; // React 19 doesn't strictly need this, but good for TS
+import React, { useEffect } from 'react'; // React 19 doesn't strictly need this, but good for TS
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { I18nextProvider } from 'react-i18next';
@@ -14,6 +14,8 @@ import { toastConfig } from './src/utils/ToastConfig/index.tsx';
 import { useNotifications } from './src/hooks/useNotifications'; // Import your hook
 
 import '@/global.css';
+import { useGetFcmToken } from './src/hooks/useGetFcmToken.ts';
+import { useNotificationListener } from './src/hooks/useNotificationListener.ts';
 
 // Start i18n
 initI18next();
@@ -24,8 +26,9 @@ messaging().setBackgroundMessageHandler(async (remoteMessage) => {
 });
 
 const App = () => {
-  // Initialize FCM Listeners
   useNotifications();
+  useGetFcmToken();
+  useNotificationListener();
 
   return (
     // <GluestackUIProvider mode="dark">

@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import messaging from '@react-native-firebase/messaging';
 import Toast from 'react-native-toast-message';
 import { navigate } from '../navigation/navigationRef'; // Import fungsi navigate kita
-import { handleNotificationNavigation } from '../utils/ToastConfig/Notification/NotificationHandler';
+import { handleNotificationNavigation } from '../utils/Notification/notificationHandler';
 
 export const useNotificationListener = () => {
   useEffect(() => {

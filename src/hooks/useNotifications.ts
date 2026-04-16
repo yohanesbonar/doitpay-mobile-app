@@ -3,11 +3,9 @@ import { PermissionsAndroid, Platform } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
 import { useGetFcmToken } from './useGetFcmToken';
 import { useNotificationListener } from './useNotificationListener';
-import { handleNotificationNavigation } from '../utils/ToastConfig/Notification/NotificationHandler';
+import { handleNotificationNavigation } from '../utils/Notification/notificationHandler';
 
 export const useNotifications = () => {
-  const token = useGetFcmToken();
-  useNotificationListener();
 
   const requestPermission = async () => {
     try {
@@ -49,6 +47,4 @@ export const useNotifications = () => {
         }
       });
   }, []);
-
-  return { token };
 };

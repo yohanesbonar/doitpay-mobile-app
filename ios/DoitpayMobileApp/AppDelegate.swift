@@ -2,7 +2,6 @@ import UIKit
 import React
 import React_RCTAppDelegate
 import Firebase // 1. Ensure Firebase is imported
-import FirebaseMessaging // 2. Add this for token mapping
 import ReactAppDependencyProvider
 
 @main
@@ -60,5 +59,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 }
 
 class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {
-  // ... (Your existing bundleURL logic stays the same)
+  override func bundleURL() -> URL? {
+    #if DEBUG
+      return RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: "index")
+    #else
+      return Bundle.main.url(forResource: "main", withExtension: "jsbundle")
+    #endif
+  }
+  
+  override func fabricEnabled() -> Bool {
+    return true 
+  }
 }
