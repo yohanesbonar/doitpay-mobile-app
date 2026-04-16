@@ -7,7 +7,6 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
   Pressable,
-  Image,
 } from 'react-native';
 import { useTheme } from '../../theme/ThemeProvider.tsx';
 import { createStyles } from './styles.ts';
@@ -18,14 +17,8 @@ import FlowIndicator from '../../components/molecules/FlowIndicator/index.tsx';
 import { Formik, FormikProps } from 'formik';
 import * as Yup from 'yup';
 import Button from '../../components/atoms/Button/index.tsx';
-import {
-  CodeField,
-  Cursor,
-  useBlurOnFulfill,
-  useClearByFocusCell,
-} from 'react-native-confirmation-code-field';
+import { useBlurOnFulfill, useClearByFocusCell } from 'react-native-confirmation-code-field';
 import { CreditCard, Sun, User, AlertCircle } from 'lucide-react-native';
-import { Dropdown } from 'react-native-element-dropdown';
 import _ from 'lodash';
 import { useRequestOtp } from '../../hooks/useAuthMutation.ts';
 import InputPhoneNumber from './components/InputPhoneNumber';
@@ -312,7 +305,7 @@ export const AuthEntry = ({ route }) => {
             setCurrentStep(2);
           },
           onError: (err) => {
-            console.error('Gagal kirim OTP', err);
+            console.error('error OTP request', err);
             Toast.show({
               type: 'error',
               text1: err.message,
