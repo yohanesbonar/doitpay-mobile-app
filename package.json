@@ -4,8 +4,10 @@
   "private": true,
   "scripts": {
     "setup": "node setup.js",
-    "android": "react-native run-android --terminal powershell",
-    "ios": "react-native run-ios --simulator=\"iPhone 17 Pro\" --terminal powershell",
+    "android-staging": "export ENVFILE=.env.staging && npx react-native run-android --mode stagingdebug",
+    "android-production": "export ENVFILE=.env.production && npx react-native run-android --mode productiondebug",
+    "ios-staging": "export ENVFILE=.env.staging && npx react-native run-ios --scheme Staging --simulator=\"iPhone 17 Pro\"",
+    "ios-production": "export ENVFILE=.env.production && npx react-native run-ios --scheme Production --simulator=\"iPhone 17 Pro\"",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",

@@ -32,6 +32,7 @@
 		AB32CB8253714351A015A753 /* Switzer-SemiboldItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 8315B983C85E4C2FA5B5E410 /* Switzer-SemiboldItalic.otf */; };
 		B03829CF6CEF4109BD241C53 /* Switzer-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 09839CC67FDD48969A1E57FB /* Switzer-Regular.otf */; };
 		B2A8A719696D477D933A6E9B /* Switzer-LightItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 2D9CCB9FD27141A8ADC0616F /* Switzer-LightItalic.otf */; };
+		B653DFD52F90C2BB0002E2E2 /* Config.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = B653DFD42F90C2BB0002E2E2 /* Config.xcconfig */; };
 		B69229CE2F8F484500E1FF31 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B69229CD2F8F484500E1FF31 /* GoogleService-Info.plist */; };
 		B69229D32F8F503D00E1FF31 /* libFirebaseMessaging.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B69229D12F8F503D00E1FF31 /* libFirebaseMessaging.a */; };
 		BB9753713E414D059CE928B6 /* Switzer-Thin.otf in Resources */ = {isa = PBXBuildFile; fileRef = CFE665627AAA4371B14A4D96 /* Switzer-Thin.otf */; };
@@ -44,6 +45,7 @@
 
 /* Begin PBXFileReference section */
 		033DE8D94F6A4AD5A497533C /* Manrope-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Light.ttf"; path = "../src/assets/fonts/Manrope-Light.ttf"; sourceTree = "<group>"; };
+		0940CBA54963FEBD153EF8E4 /* Pods-DoitpayMobileApp.staging.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DoitpayMobileApp.staging.debug.xcconfig"; path = "Target Support Files/Pods-DoitpayMobileApp/Pods-DoitpayMobileApp.staging.debug.xcconfig"; sourceTree = "<group>"; };
 		09839CC67FDD48969A1E57FB /* Switzer-Regular.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Switzer-Regular.otf"; path = "../src/assets/fonts/Switzer-Regular.otf"; sourceTree = "<group>"; };
 		0A6F8C6F15CD4908B499603C /* Switzer-ThinItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Switzer-ThinItalic.otf"; path = "../src/assets/fonts/Switzer-ThinItalic.otf"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* DoitpayMobileApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DoitpayMobileApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -67,12 +69,14 @@
 		8315B983C85E4C2FA5B5E410 /* Switzer-SemiboldItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Switzer-SemiboldItalic.otf"; path = "../src/assets/fonts/Switzer-SemiboldItalic.otf"; sourceTree = "<group>"; };
 		845C1A132A9D440D9DBDDEBE /* Switzer-Italic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Switzer-Italic.otf"; path = "../src/assets/fonts/Switzer-Italic.otf"; sourceTree = "<group>"; };
 		86C563C7240343F7BB334120 /* Switzer-BoldItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Switzer-BoldItalic.otf"; path = "../src/assets/fonts/Switzer-BoldItalic.otf"; sourceTree = "<group>"; };
+		878FD6E845F0AD6073C0871E /* Pods-DoitpayMobileApp.staging.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DoitpayMobileApp.staging.release.xcconfig"; path = "Target Support Files/Pods-DoitpayMobileApp/Pods-DoitpayMobileApp.staging.release.xcconfig"; sourceTree = "<group>"; };
 		89D2CD391182412B9B27C5D8 /* Switzer-Extralight.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Switzer-Extralight.otf"; path = "../src/assets/fonts/Switzer-Extralight.otf"; sourceTree = "<group>"; };
 		8F7141A226A144889980A9A2 /* Switzer-Extrabold.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Switzer-Extrabold.otf"; path = "../src/assets/fonts/Switzer-Extrabold.otf"; sourceTree = "<group>"; };
 		90134EB9456DCD8784F7A37F /* Pods-DoitpayMobileApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DoitpayMobileApp.debug.xcconfig"; path = "Target Support Files/Pods-DoitpayMobileApp/Pods-DoitpayMobileApp.debug.xcconfig"; sourceTree = "<group>"; };
 		9EAF7788D3074E61B5B79A63 /* Manrope-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-SemiBold.ttf"; path = "../src/assets/fonts/Manrope-SemiBold.ttf"; sourceTree = "<group>"; };
 		A801CEFED2274E40A1E5AA1D /* icon.png */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = icon.png; path = ../src/assets/images/icon.png; sourceTree = "<group>"; };
 		ABF442A1632B4D968CD685AD /* Switzer-Bold.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Switzer-Bold.otf"; path = "../src/assets/fonts/Switzer-Bold.otf"; sourceTree = "<group>"; };
+		B653DFD42F90C2BB0002E2E2 /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 		B69229CD2F8F484500E1FF31 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		B69229CF2F8F4BA200E1FF31 /* DoitpayMobileApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = DoitpayMobileApp.entitlements; path = DoitpayMobileApp/DoitpayMobileApp.entitlements; sourceTree = "<group>"; };
 		B69229D02F8F503D00E1FF31 /* FirebaseMessaging_Privacy.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = FirebaseMessaging_Privacy.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -82,6 +86,7 @@
 		CA6F243868EF4CF6BF9DC1A7 /* Manrope-ExtraLight.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-ExtraLight.ttf"; path = "../src/assets/fonts/Manrope-ExtraLight.ttf"; sourceTree = "<group>"; };
 		CFE665627AAA4371B14A4D96 /* Switzer-Thin.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Switzer-Thin.otf"; path = "../src/assets/fonts/Switzer-Thin.otf"; sourceTree = "<group>"; };
 		E0B2EC4005D4D1B0B1F8B212 /* libPods-DoitpayMobileApp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DoitpayMobileApp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		E113A2CA45C599BAEA5E57D7 /* Pods-DoitpayMobileApp.production.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DoitpayMobileApp.production.debug.xcconfig"; path = "Target Support Files/Pods-DoitpayMobileApp/Pods-DoitpayMobileApp.production.debug.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -165,6 +170,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
+				B653DFD42F90C2BB0002E2E2 /* Config.xcconfig */,
 				B69229CD2F8F484500E1FF31 /* GoogleService-Info.plist */,
 				13B07FAE1A68108700A75B9A /* DoitpayMobileApp */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
@@ -191,6 +197,9 @@
 			children = (
 				90134EB9456DCD8784F7A37F /* Pods-DoitpayMobileApp.debug.xcconfig */,
 				1CF75DB3A566A07DA7BD946C /* Pods-DoitpayMobileApp.release.xcconfig */,
+				E113A2CA45C599BAEA5E57D7 /* Pods-DoitpayMobileApp.production.debug.xcconfig */,
+				0940CBA54963FEBD153EF8E4 /* Pods-DoitpayMobileApp.staging.debug.xcconfig */,
+				878FD6E845F0AD6073C0871E /* Pods-DoitpayMobileApp.staging.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -259,6 +268,7 @@
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				357C6D7C804BB38A02DC17ED /* PrivacyInfo.xcprivacy in Resources */,
+				B653DFD52F90C2BB0002E2E2 /* Config.xcconfig in Resources */,
 				9DDFC629AB194518959BD29E /* Manrope-Bold.ttf in Resources */,
 				169D6DD8BFC744BC83286C99 /* Manrope-ExtraBold.ttf in Resources */,
 				7D46071778A14EFDA12098E4 /* Manrope-ExtraLight.ttf in Resources */,
@@ -455,6 +465,7 @@
 		};
 		83CBBA201A601CBA00E9B192 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = B653DFD42F90C2BB0002E2E2 /* Config.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
@@ -550,6 +561,7 @@
 		};
 		83CBBA211A601CBA00E9B192 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = B653DFD42F90C2BB0002E2E2 /* Config.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;

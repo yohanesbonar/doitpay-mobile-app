@@ -19,6 +19,7 @@ target 'DoitpayMobileApp' do
   pod 'FirebaseCoreInternal', :modular_headers => true
   pod 'FirebaseCore', :modular_headers => true
   pod 'Firebase', :modular_headers => true
+  pod 'react-native-config', :path => '../node_modules/react-native-config'
 
   config = use_native_modules!
 

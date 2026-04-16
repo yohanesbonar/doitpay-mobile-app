@@ -1,0 +1,11 @@
+//
+//  Config.xcconfig
+//  DoitpayMobileApp
+//
+//  Created by Yohanes  Bonar on 16/04/26.
+//
+
+// Configuration settings file format documentation can be found at:
+// https://developer.apple.com/documentation/xcode/adding-a-build-configuration-file-to-your-project
+
+#include? "tmp.xcconfig"
