@@ -1,16 +1,15 @@
 module.exports = {
   presets: [
     '@react-native/babel-preset',
-    // 'module:metro-react-native-babel-preset', 
     'nativewind/babel'
   ],
   plugins: [
     [
       'module-resolver',
       {
-        root: ['./'],
+        root: ['./src'], 
         alias: {
-          '@': './',
+          '@': './src', 
           'tailwind.config': './tailwind.config.js',
         },
       },

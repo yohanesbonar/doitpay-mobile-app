@@ -17,7 +17,7 @@ import { useNavigation } from '@react-navigation/native';
 import FlowIndicator from '../../components/molecules/FlowIndicator/index.tsx';
 import { Formik, FormikProps } from 'formik';
 import * as Yup from 'yup';
-import Button from '@/src/components/atoms/Button/index.tsx';
+import Button from '../../components/atoms/Button/index.tsx';
 import {
   CodeField,
   Cursor,

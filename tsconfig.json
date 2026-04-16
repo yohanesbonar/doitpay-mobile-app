@@ -1,23 +1,24 @@
 {
   "extends": "@react-native/typescript-config",
   "compilerOptions": {
+    "baseUrl": ".", 
     "types": [
       "jest"
     ],
     "paths": {
       "@/*": ["src/*"],
-      "tailwind.config": [
-        "./tailwind.config.js"
-      ]
+      "tailwind.config": ["./tailwind.config.js"]
     }
   },
   "include": [
+    "src/**/*.ts", // Fokuskan include ke src agar indexing lebih cepat
+    "src/**/*.tsx",
     "**/*.ts",
     "**/*.tsx",
     "nativewind-env.d.ts"
   ],
   "exclude": [
-    "**/node_modules",
-    "**/Pods"
+    "node_modules",
+    "ios/Pods"
   ]
 }

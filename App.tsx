@@ -13,7 +13,7 @@ import { GluestackUIProvider } from '@/src/components/ui/gluestack-ui-provider';
 import { toastConfig } from './src/utils/ToastConfig/index.tsx';
 import { useNotifications } from './src/hooks/useNotifications'; // Import your hook
 
-import '@/global.css';
+import './global.css';
 import { useGetFcmToken } from './src/hooks/useGetFcmToken.ts';
 import { useNotificationListener } from './src/hooks/useNotificationListener.ts';
 
