@@ -1,22 +1,20 @@
-import {Text, View} from 'react-native';
+import { Text, View } from 'react-native';
 import React from 'react';
-import {useTheme} from '../../theme/ThemeProvider.tsx';
-import {createStyles} from './styles.ts';
-import {useTranslation} from 'react-i18next';
+import { useTheme } from '../../theme/ThemeProvider.tsx';
+import { createStyles } from './styles.ts';
+import { useTranslation } from 'react-i18next';
 import Button from '../../components/Button/Button.tsx';
 import SizedBox from '../../components/SizedBox';
 import metrics from '../../theme/metrics.ts';
 
-const HomeScreen = () => {
-  const {colors, toggleTheme, theme} = useTheme();
+export const Home = () => {
+  const { colors, toggleTheme, theme } = useTheme();
   const styles = createStyles(colors);
-  const {t, i18n} = useTranslation();
+  const { t, i18n } = useTranslation();
 
   return (
     <>
       <View style={styles.container}>
-        <Text style={styles.title}>⚡</Text>
-        <SizedBox />
         <Text style={styles.title}>{t('hello')}</Text>
         <SizedBox />
         <Text style={styles.text}>{t('home.welcome')}</Text>
@@ -24,9 +22,7 @@ const HomeScreen = () => {
         <View style={styles.buttonContainer}>
           <Button
             title={i18n.language}
-            onPress={() =>
-              i18n.changeLanguage(i18n.language === 'en' ? 'id' : 'en')
-            }
+            onPress={() => i18n.changeLanguage(i18n.language === 'en' ? 'id' : 'en')}
           />
           <SizedBox width={metrics.scale(20)} />
           <Button
@@ -41,5 +37,3 @@ const HomeScreen = () => {
     </>
   );
 };
-
-export default HomeScreen;

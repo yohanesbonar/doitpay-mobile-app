@@ -9,6 +9,7 @@ import { AuthEntry } from '../screens/authEntry';
 import { BankList } from '../screens/bankList';
 import AddBankRecipient from '../screens/addBankAccount';
 import { navigationRef } from './navigationRef';
+import { Home } from '../screens/home';
 
 const Stack = createNativeStackNavigator();
 
@@ -28,6 +29,7 @@ export default function RootNavigator() {
         <Stack.Screen name="AuthEntry" component={AuthEntry} />
         <Stack.Screen name="BankList" component={BankList} />
         <Stack.Screen name="AddBankRecipient" component={AddBankRecipient} />
+        <Stack.Screen name="Home" component={Home} />
       </Stack.Navigator>
     </NavigationContainer>
   );

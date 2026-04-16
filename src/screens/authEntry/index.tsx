@@ -28,7 +28,8 @@ import { CreditCard, Sun, User, AlertCircle } from 'lucide-react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import _ from 'lodash';
 
-export const AuthEntry = () => {
+export const AuthEntry = ({ route }) => {
+  const { isLoginState } = route.params;
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const { t } = useTranslation();
@@ -234,10 +235,22 @@ export const AuthEntry = () => {
     return (
       <View style={{ flex: 1, marginHorizontal: 16 }}>
         <Text style={styles.titleStep}>
-          {t(step === 3 ? 'authEntry.createPIN' : 'authEntry.confirmationPIN')}
+          {t(
+            step === 4 && isLoginState
+              ? 'authEntry.inputPIN'
+              : step === 3
+                ? 'authEntry.createPIN'
+                : 'authEntry.confirmationPIN',
+          )}
         </Text>
         <Text style={styles.descStep}>
-          {t(step === 3 ? 'authEntry.descCreatePIN' : 'authEntry.descConfirmationPIN')}
+          {t(
+            step === 4 && isLoginState
+              ? 'authEntry.descInputPIN'
+              : step === 3
+                ? 'authEntry.descCreatePIN'
+                : 'authEntry.descConfirmationPIN',
+          )}
         </Text>
         <Pressable style={styles.dotsContainer} onPress={handlePressPIN}>
           {renderDotsPIN(step === 3 ? pin : confirmationPin, isErrorPIN)}
@@ -269,13 +282,18 @@ export const AuthEntry = () => {
                   setCurrentStep(4);
                 }, 250);
               } else {
-                if (text === pin) {
-                  setTimeout(() => {
-                    setCurrentStep((prev) => Math.min(prev + 1, 10));
-                  }, 250);
+                if (!isLoginState) {
+                  if (text === pin) {
+                    setTimeout(() => {
+                      setCurrentStep((prev) => Math.min(prev + 1, 10));
+                    }, 250);
+                  } else {
+                    setIsErrorPIN(true);
+                    setConfirmationPin('');
+                  }
                 } else {
-                  setIsErrorPIN(true);
-                  setConfirmationPin('');
+                  // if pin is true
+                  navigation.navigate('Home', { isLoginState: isLoginState });
                 }
               }
             }
@@ -374,10 +392,23 @@ export const AuthEntry = () => {
   }, [formikRef.current?.isValid, formikRef.current?.dirty, currentStep, valueOTP]);
 
   const onPressNext = () => {
+    if (currentStep == 5) {
+      navigation.navigate('Home', { isLoginState });
+    }
     if (currentStep == 1 || currentStep == 2) {
       enableButtonNextRef.current = false;
     }
-    setCurrentStep((prev) => Math.min(prev + 1, 10));
+    if (!isLoginState) {
+      console.log('bonlog 1');
+      setCurrentStep((prev) => Math.min(prev + 1, 10));
+    } else {
+      console.log('bonlog 1');
+      if (currentStep == 2) {
+        setCurrentStep((prev) => Math.min(prev + 2, 10));
+      } else {
+        setCurrentStep((prev) => Math.min(prev + 1, 10));
+      }
+    }
   };
 
   const title = t(
@@ -398,18 +429,31 @@ export const AuthEntry = () => {
           withBackButton={true}
           onPressBack={() => {
             if (currentStep > 1) {
-              setCurrentStep((prev) => Math.max(prev - 1, 1));
+              if (!isLoginState) {
+                setCurrentStep((prev) => Math.max(prev - 1, 1));
+              } else {
+                if (currentStep == 4) {
+                  setCurrentStep((prev) => Math.max(prev - 2, 1));
+                } else {
+                  setCurrentStep((prev) => Math.max(prev - 1, 1));
+                }
+              }
             } else navigation.goBack();
           }}
           withCloseButton={true}
           onPressRightButton={() => navigation.goBack()}
           titlePosition="center"
         />
-        <FlowIndicator
-          totalSteps={totalSteps}
-          currentStep={Math.ceil(currentStep / 2)}
-          barStep={currentStep}
-        />
+        {!isLoginState ? (
+          <FlowIndicator
+            totalSteps={totalSteps}
+            currentStep={Math.ceil(currentStep / 2)}
+            barStep={currentStep}
+          />
+        ) : (
+          <View style={{ marginBottom: -22 }} />
+        )}
+
         {detailStep()}
         <View style={{ position: 'absolute', bottom: 32, left: 16, right: 16 }}>
           {currentStep == 3 || currentStep == 4 || currentStep == 5 ? null : (

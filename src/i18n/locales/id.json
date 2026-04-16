@@ -1,7 +1,7 @@
 {
   "hello": "Halo!",
   "home": {
-    "welcome": "Selamat datang di BonBon ⚡ Boilerplate!",
+    "welcome": "Selamat datang di Doitpay!",
     "changeTheme": "Ubah Tema"
   },
   "onboarding": {
@@ -35,6 +35,8 @@
     "phoneNumberLabel": "Phone Number", 
     "confirmationPIN": "Konfirmasi PIN",
     "descConfirmationPIN": "Masukkan ulang PIN",
+    "inputPIN": "Masukkan PIN",
+    "descInputPIN": "6 digit PIN",
     "identityVerification": "Verifikasi Identitas",
     "descIdentityVerification": "Verifikasi KTP untuk membuka limit transfer \npenuh",
     "descIdentityVerification2": "Rp 25,000,000/hari",

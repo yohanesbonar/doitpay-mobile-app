@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 import React from 'react';
-import { Text, Image, View } from 'react-native';
+import { Text, Image, View, TouchableOpacity } from 'react-native';
 import { useTheme } from '../../theme/ThemeProvider.tsx';
 import { createStyles } from './styles.ts';
 import { useTranslation } from 'react-i18next';
@@ -33,7 +33,7 @@ export const Onboarding = () => {
       <View style={{ position: 'absolute', bottom: 32, left: 16, right: 16 }}>
         <Button
           type="regular"
-          onPress={() => navigation.navigate('AuthEntry')}
+          onPress={() => navigation.navigate('AuthEntry', { isLoginState: false })}
           title={t('onboarding.getStarted')}
           style={{
             backgroundColor: colors.buttonBlue,
@@ -51,7 +51,9 @@ export const Onboarding = () => {
           borderColor={colors.lightPrimary}
           sourceIcon={require('../../assets/images/ic-gmail.png')}
         />
-        <Text style={styles.accountQuestionText}>{t('onboarding.accountQuestion')}</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('AuthEntry', { isLoginState: true })}>
+          <Text style={styles.accountQuestionText}>{t('onboarding.accountQuestion')}</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
