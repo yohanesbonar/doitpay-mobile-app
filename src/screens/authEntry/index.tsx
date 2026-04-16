@@ -27,6 +27,9 @@ import {
 import { CreditCard, Sun, User, AlertCircle } from 'lucide-react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import _ from 'lodash';
+import { useRequestOtp } from '../../hooks/useAuthMutation.ts';
+import InputPhoneNumber from './components/InputPhoneNumber';
+import InputOTPNumber from './components/InputOTPNumber';
 
 export const AuthEntry = ({ route }) => {
   const { isLoginState } = route.params;
@@ -53,6 +56,8 @@ export const AuthEntry = ({ route }) => {
   const inputRef = useRef<TextInput>(null);
   const PIN_LENGTH = 6;
   const enableButtonNextRef = useRef(false);
+
+  const { mutate, isPending } = useRequestOtp();
 
   const handlePressPIN = () => {
     inputRef.current?.focus();
@@ -95,82 +100,6 @@ export const AuthEntry = ({ route }) => {
 
   const formikRef = useRef<FormikProps<any>>(null);
 
-  const inputPhoneNumber = () => {
-    const countryData = [
-      {
-        label: 'Indonesia (+62)',
-        value: '+62',
-        flag: require('../../assets/images/ic-indonesia-flag.png'),
-      },
-    ];
-
-    return (
-      <View style={{ flex: 1, marginHorizontal: 16 }}>
-        <Text style={styles.titleStep}>{t('authEntry.enterPhoneNumber')}</Text>
-        <Text style={styles.descStep}>{t('authEntry.descEnterPhoneNumber')}</Text>
-        <Formik
-          innerRef={formikRef}
-          initialValues={{ phoneNumber: '', countryCode: '+62' }}
-          validationSchema={PhoneSchema}
-          onSubmit={(values) => console.log('Form Data:', values)}>
-          {({ handleChange, handleBlur, setFieldValue, handleSubmit, values, errors, touched }) => (
-            <View style={styles.formWrapper}>
-              <Text style={styles.label}>{t('authEntry.phoneNumberLabel')}</Text>
-
-              <View style={styles.inputGroup}>
-                <Dropdown
-                  style={styles.dropdown}
-                  containerStyle={styles.dropdownContainer}
-                  data={countryData}
-                  search
-                  searchPlaceholder="Search"
-                  labelField="value"
-                  valueField="value"
-                  value={values.countryCode}
-                  onChange={(item) => setFieldValue('countryCode', item.value)}
-                  renderLeftIcon={() => (
-                    <View>
-                      <Image
-                        source={require('../../assets/images/ic-indonesia-flag.png')}
-                        style={{ marginRight: 5 }}
-                      />
-                    </View>
-                  )}
-                  renderItem={(item) => (
-                    <View style={styles.item}>
-                      <Image source={item.flag} />
-                      <Text style={styles.itemText}>{item.label}</Text>
-                    </View>
-                  )}
-                />
-
-                <TextInput
-                  style={[styles.input, errors.phoneNumber && styles.inputError]}
-                  placeholder="Value"
-                  placeholderTextColor="#A9A9A9"
-                  keyboardType="phone-pad"
-                  onChangeText={handleChange('phoneNumber')}
-                  onBlur={handleBlur('phoneNumber')}
-                  value={values.phoneNumber}
-                  autoFocus
-                />
-              </View>
-
-              {errors.phoneNumber && <Text style={styles.errorText}>{errors.phoneNumber}</Text>}
-            </View>
-          )}
-        </Formik>
-        <View style={styles.termsContainer}>
-          <Text style={styles.termsText}>
-            {t('authEntry.descTerms1')} <Text style={styles.link}>{t('authEntry.descTerms2')}</Text>{' '}
-            {t('authEntry.descTerms3')} <Text style={styles.link}>{t('authEntry.descTerms4')}</Text>{' '}
-            {t('authEntry.descTerms5')}
-          </Text>
-        </View>
-      </View>
-    );
-  };
-
   useEffect(() => {
     if (formikRef?.current) {
       const { phoneNumber, countryCode } = formikRef?.current?.values;
@@ -183,53 +112,6 @@ export const AuthEntry = ({ route }) => {
       }
     }
   }, [formikRef?.current?.values]);
-
-  const inputOTPNumber = () => {
-    return (
-      <View style={{ flex: 1, marginHorizontal: 16 }}>
-        <Text style={styles.titleStep}>{t('authEntry.enterOTPNumber')}</Text>
-        <Text style={styles.descStep}>
-          {t('authEntry.descEnterOTPNumber') +
-            phoneNumbData?.countryCode +
-            phoneNumbData?.phoneNumber}
-        </Text>
-        <CodeField
-          {...props}
-          ref={ref}
-          value={valueOTP}
-          onChangeText={setValueOTP}
-          cellCount={CELL_COUNT_OTP}
-          rootStyle={styles.codeFieldRoot}
-          keyboardType="number-pad"
-          textContentType="oneTimeCode"
-          autoFocus={true}
-          renderCell={({ index, symbol, isFocused }) => {
-            const isFilled = symbol ? true : false;
-
-            return (
-              <View
-                key={index}
-                style={[styles.cell, isFocused && styles.focusCell, isFilled && styles.filledCell]}
-                onLayout={getCellOnLayoutHandler(index)}>
-                <Text style={[styles.cellText, isFilled && styles.filledCellText]}>
-                  {symbol || (isFocused ? <Cursor /> : null)}
-                </Text>
-              </View>
-            );
-          }}
-        />
-
-        <View style={styles.resendContainer}>
-          <Text style={styles.resendText}>Tidak menerima ? </Text>
-          <TouchableOpacity disabled={timerOTP > 0}>
-            <Text style={[styles.resendLink, timerOTP > 0 && styles.resendDisabled]}>
-              Kirim ulang ({timerOTP}s)
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  };
 
   const createAndConfirmPIN = (step: number) => {
     return (
@@ -361,9 +243,30 @@ export const AuthEntry = ({ route }) => {
   const detailStep = () => {
     switch (currentStep) {
       case 1:
-        return inputPhoneNumber();
+        return (
+          <Formik
+            innerRef={formikRef}
+            initialValues={{ phoneNumber: '', countryCode: '+62' }}
+            validationSchema={PhoneSchema}
+            onSubmit={(values) => console.log('Form Data:', values)}>
+            {(formikProps) => <InputPhoneNumber styles={styles} formik={formikProps} />}
+          </Formik>
+        );
       case 2:
-        return inputOTPNumber();
+        return (
+          <InputOTPNumber
+            styles={styles}
+            valueOTP={valueOTP}
+            setValueOTP={setValueOTP}
+            timerOTP={timerOTP}
+            phoneNumbData={phoneNumbData}
+            CELL_COUNT_OTP={CELL_COUNT_OTP}
+            otpFieldProps={props} // ini dari useClearByFocusCell
+            getCellOnLayoutHandler={getCellOnLayoutHandler}
+            // onResendOtp={handleSendOtp} // Fungsi mutasi API Anda
+            isPending={isPending}
+          />
+        );
       case 3:
         return createAndConfirmPIN(currentStep);
       case 4:
@@ -392,6 +295,29 @@ export const AuthEntry = ({ route }) => {
   }, [formikRef.current?.isValid, formikRef.current?.dirty, currentStep, valueOTP]);
 
   const onPressNext = () => {
+    if (currentStep === 1) {
+      const { phoneNumber, countryCode } = formikRef.current?.values;
+
+      const formattedPhone = (countryCode + phoneNumber).replace('+', '');
+
+      mutate(
+        {
+          phoneNumber: formattedPhone,
+          method: 'SMS',
+        },
+        {
+          onSuccess: (res) => {
+            setTimerOTP(res.data.resendAfterSeconds || 30);
+            setCurrentStep(2);
+          },
+          onError: (err) => {
+            console.error('Gagal kirim OTP', err);
+          },
+        },
+      );
+      return;
+    }
+
     if (currentStep == 5) {
       navigation.navigate('Home', { isLoginState });
     }
