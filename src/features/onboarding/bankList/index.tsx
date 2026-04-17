@@ -1,5 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { View, Text, FlatList, TouchableOpacity, TextInput, Image } from 'react-native';
 import { createStyles } from './styles';
 import { useTranslation } from 'react-i18next';
@@ -9,11 +8,17 @@ import { useTheme } from '../../../theme/ThemeProvider.tsx';
 import { Formik } from 'formik';
 import { Search } from 'lucide-react-native';
 
-export const BankList = () => {
+// Definisikan Props
+interface BankListViewProps {
+  onPressBack: () => void;
+  onSelectBank: (id: string) => void;
+  onPressNext: (values: any) => void;
+}
+
+export const BankListView = ({ onPressBack, onSelectBank, onPressNext }: BankListViewProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const { t } = useTranslation();
-  const navigation = useNavigation();
 
   const POPULAR_BANKS = [
     { id: '1', name: 'blu', logo: require('../../../assets/images/ic-BCA.png') },
@@ -74,11 +79,9 @@ export const BankList = () => {
       <HeaderToolbar
         title={t('bankList.rekening')}
         withBackButton={true}
-        onPressBack={() => navigation.goBack()}
+        onPressBack={onPressBack} // Menggunakan props
       />
-      <Formik
-        initialValues={{ selectedBank: '', searchQuery: '' }}
-        onSubmit={(values) => console.log('Selected Bank:', values.selectedBank)}>
+      <Formik initialValues={{ selectedBank: '', searchQuery: '' }} onSubmit={onPressNext}>
         {({ values, setFieldValue, handleSubmit }) => (
           <View style={{ flex: 1 }}>
             <View style={styles.searchContainer}>
@@ -93,7 +96,7 @@ export const BankList = () => {
 
             <FlatList
               data={ALL_BANKS}
-              keyExtractor={(item, index) => index}
+              keyExtractor={(item, index) => index.toString()}
               ListHeaderComponent={
                 <View>
                   <Text style={[styles.sectionTitle, { marginTop: 10 }]}>
@@ -107,24 +110,24 @@ export const BankList = () => {
                           styles.gridBox,
                           values.selectedBank === bank.id && styles.selectedBox,
                         ]}
-                        onPress={() =>
-                          setFieldValue('selectedBank', bank.id) +
-                          setTimeout(() => {
-                            navigation.navigate('AddBankRecipient');
-                          }, 50)
-                        }>
+                        onPress={() => {
+                          setFieldValue('selectedBank', bank.id);
+                          onSelectBank(bank.id); // Panggil fungsi navigasi dari props
+                        }}>
                         <Image source={bank.logo} style={styles.logoGrid} resizeMode="contain" />
                       </TouchableOpacity>
                     ))}
                   </View>
-
                   <Text style={styles.sectionTitle}>{t('bankList.allBank')}</Text>
                 </View>
               }
               renderItem={({ item }) => (
                 <TouchableOpacity
                   style={styles.listItem}
-                  onPress={() => setFieldValue('selectedBank', item.name)}>
+                  onPress={() => {
+                    setFieldValue('selectedBank', item.id);
+                    onSelectBank(item.id);
+                  }}>
                   <View style={styles.listLogoContainer}>
                     <Image source={item.logo} style={styles.logoList} resizeMode="contain" />
                   </View>
@@ -137,12 +140,9 @@ export const BankList = () => {
             <View style={styles.footer}>
               <Button
                 type="regular"
-                onPress={() => console.log()}
+                onPress={handleSubmit}
                 title={t('bankList.next')}
-                style={{
-                  borderWidth: 1,
-                  borderColor: '#D4D4D4',
-                }}
+                style={{ borderWidth: 1, borderColor: '#D4D4D4' }}
                 color={colors.white}
                 textColor="black"
               />

@@ -6,8 +6,8 @@ import AppNavigator from './AppNavigator';
 import { StatusBar } from 'react-native';
 import Onboarding from '../screens/onboarding/onboardingLanding';
 import { AuthEntry } from '../features/onboarding/authEntry';
-import { BankList } from '../features/onboarding/bankList';
-import AddBankRecipient from '../features/onboarding/addBankAccount';
+import BankList from '../screens/onboarding/bankList';
+import AddBankRecipient from '../screens/onboarding/addBankAccount';
 import { navigationRef } from './navigationRef';
 import { Home } from '../features/home';
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TouchableOpacity, Text } from 'react-native';
+import { View } from 'react-native';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import BankAccountForm from './BankAccountForm';
@@ -9,19 +9,25 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../theme/ThemeProvider.tsx';
 import { createStyles } from './styles';
 import Button from '../../../components/atoms/Button/index.tsx';
-import { useNavigation } from '@react-navigation/native';
+
+interface AddBankRecipientViewProps {
+  onPressBack: () => void;
+  onNavigateHome: () => void;
+}
 
 const BankAccountSchema = Yup.object().shape({
   accountNumber: Yup.string().min(8, 'Minimal 8 digit').required('Wajib diisi'),
 });
 
-const AddBankRecipient = () => {
+export const AddBankRecipientView = ({
+  onPressBack,
+  onNavigateHome,
+}: AddBankRecipientViewProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const [showResult, setShowResult] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const { t } = useTranslation();
-  const navigation = useNavigation();
 
   const mockSearchData = [
     { id: '1', ownerName: 'Prabu Suwito', bankName: 'BCA', accountNumber: '12312412031' },
@@ -32,14 +38,17 @@ const AddBankRecipient = () => {
       <HeaderToolbar
         title={t('addBankAccount.rekening')}
         withBackButton={true}
-        onPressBack={() => navigation.goBack()}
+        onPressBack={onPressBack}
       />
       <Formik
         initialValues={{ accountNumber: '' }}
         validationSchema={BankAccountSchema}
         onSubmit={() => {
-          if (!showResult) setShowResult(true);
-          else setShowModal(true);
+          if (!showResult) {
+            setShowResult(true);
+          } else {
+            setShowModal(true);
+          }
         }}>
         {(formikProps) => (
           <View style={{ flex: 1 }}>
@@ -56,10 +65,7 @@ const AddBankRecipient = () => {
                       ? t('addBankAccount.checkAccount')
                       : t('addBankAccount.skip')
                 }
-                style={{
-                  borderWidth: 1,
-                  borderColor: '#D4D4D4',
-                }}
+                style={{ borderWidth: 1, borderColor: '#D4D4D4' }}
                 textStyle={{
                   color:
                     showResult || formikProps.values.accountNumber ? colors.white : colors.black,
@@ -73,7 +79,7 @@ const AddBankRecipient = () => {
               onClose={() => setShowModal(false)}
               onContinue={() => {
                 setShowModal(false);
-                // Navigate to Homepage
+                onNavigateHome(); // Panggil fungsi navigasi dari props
               }}
             />
           </View>
@@ -82,5 +88,3 @@ const AddBankRecipient = () => {
     </View>
   );
 };
-
-export default AddBankRecipient;
