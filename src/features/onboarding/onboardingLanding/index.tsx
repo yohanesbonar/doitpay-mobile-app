@@ -7,16 +7,18 @@ import { useTranslation } from 'react-i18next';
 import { IconBankOnboarding } from '../../../assets/images/index.ts';
 import Button from '../../../components/atoms/Button/index.tsx';
 import Toast from 'react-native-toast-message';
-import { useNavigation } from '@react-navigation/native';
 
-export const Onboarding = () => {
+interface OnboardingViewProps {
+  onGetStarted: () => void;
+  onLoginRedirect: () => void;
+}
+
+export const OnboardingView = ({ onGetStarted, onLoginRedirect }: OnboardingViewProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const { t } = useTranslation();
-  const navigation = useNavigation();
 
   const showToastGmail = () => {
-    console.log('Gmail Login Pressed');
     Toast.show({
       type: 'error',
       text1: 'This feature is coming soon!',
@@ -33,17 +35,15 @@ export const Onboarding = () => {
       <View style={{ position: 'absolute', bottom: 32, left: 16, right: 16 }}>
         <Button
           type="regular"
-          onPress={() => navigation.navigate('AuthEntry', { isLoginState: false })}
+          onPress={onGetStarted}
           title={t('onboarding.getStarted')}
-          style={{
-            backgroundColor: colors.buttonBlue,
-          }}
+          style={{ backgroundColor: colors.buttonBlue }}
           color={colors.buttonBlue}
           textColor="white"
         />
         <Button
           type="withIcon"
-          onPress={() => showToastGmail()}
+          onPress={showToastGmail}
           title={t('onboarding.openWithGmail')}
           style={{ marginTop: 16 }}
           color={colors.buttonWhite}
@@ -51,7 +51,7 @@ export const Onboarding = () => {
           borderColor={colors.lightPrimary}
           sourceIcon={require('../../../assets/images/ic-gmail.png')}
         />
-        <TouchableOpacity onPress={() => navigation.navigate('AuthEntry', { isLoginState: true })}>
+        <TouchableOpacity onPress={onLoginRedirect}>
           <Text style={styles.accountQuestionText}>{t('onboarding.accountQuestion')}</Text>
         </TouchableOpacity>
       </View>

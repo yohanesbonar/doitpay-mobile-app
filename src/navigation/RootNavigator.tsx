@@ -4,7 +4,7 @@ import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/
 import { useTheme } from '../theme/ThemeProvider';
 import AppNavigator from './AppNavigator';
 import { StatusBar } from 'react-native';
-import { Onboarding } from '../features/onboarding/onboardingLanding';
+import Onboarding from '../screens/onboarding/onboardingLanding';
 import { AuthEntry } from '../features/onboarding/authEntry';
 import { BankList } from '../features/onboarding/bankList';
 import AddBankRecipient from '../features/onboarding/addBankAccount';
