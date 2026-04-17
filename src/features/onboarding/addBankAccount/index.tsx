@@ -4,11 +4,11 @@ import { Formik } from 'formik';
 import * as Yup from 'yup';
 import BankAccountForm from './BankAccountForm';
 import SuccessBottomSheet from './SuccessBottomSheet';
-import HeaderToolbar from '../../components/molecules/HeaderToolbar';
+import HeaderToolbar from '../../../components/molecules/HeaderToolbar';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from '../../theme/ThemeProvider.tsx';
+import { useTheme } from '../../../theme/ThemeProvider.tsx';
 import { createStyles } from './styles';
-import Button from '../../components/atoms/Button/index.tsx';
+import Button from '../../../components/atoms/Button/index.tsx';
 import { useNavigation } from '@react-navigation/native';
 
 const BankAccountSchema = Yup.object().shape({

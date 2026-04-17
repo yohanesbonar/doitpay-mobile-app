@@ -4,6 +4,7 @@ import { getDeviceFingerprint } from '../utils/Device/Device.ts';
 
 const apiClient = axios.create({
   baseURL: Config.API_URL,
+  timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
   },

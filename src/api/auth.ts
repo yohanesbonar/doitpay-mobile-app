@@ -1,9 +1,9 @@
 import apiClient from './client';
 
-export type OtpRequestPayload = {
+export interface OtpRequestPayload {
   phoneNumber: string;
-  method: string;
-};
+  method: 'SMS' | 'WHATSAPP';
+}
 
 export type OtpResponse = {
   status: string;
@@ -13,7 +13,11 @@ export type OtpResponse = {
   };
 };
 
-export const requestOtp = async (payload: OtpRequestPayload): Promise<OtpResponse> => {
-  const { data } = await apiClient.post<OtpResponse>('/v1/onboarding/otp/request', payload);
-  return data;
+export const authApi = {
+  requestOtp: async (payload: OtpRequestPayload): Promise<OtpResponse> => {
+    const { data } = await apiClient.post<OtpResponse>('/v1/onboarding/otp/request', payload);
+    return data;
+  },
+  // Contoh penambahan fungsi lain nanti:
+  // login: (credentials) => apiClient.post('/login', credentials),
 };

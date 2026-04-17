@@ -16,7 +16,7 @@ const InputPhoneNumber: React.FC<InputPhoneNumberProps> = ({ styles, formik }) =
     {
       label: 'Indonesia (+62)',
       value: '+62',
-      flag: require('../../../assets/images/ic-indonesia-flag.png'),
+      flag: require('../../../../assets/images/ic-indonesia-flag.png'),
     },
   ];
 
@@ -44,7 +44,7 @@ const InputPhoneNumber: React.FC<InputPhoneNumberProps> = ({ styles, formik }) =
             renderLeftIcon={() => (
               <View>
                 <Image
-                  source={require('../../../assets/images/ic-indonesia-flag.png')}
+                  source={require('../../../../assets/images/ic-indonesia-flag.png')}
                   style={{ marginRight: 5 }}
                 />
               </View>

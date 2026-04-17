@@ -1,11 +1,11 @@
 /* eslint-disable react-native/no-inline-styles */
 import React from 'react';
 import { Text, Image, View, TouchableOpacity } from 'react-native';
-import { useTheme } from '../../theme/ThemeProvider.tsx';
+import { useTheme } from '../../../theme/ThemeProvider.tsx';
 import { createStyles } from './styles.ts';
 import { useTranslation } from 'react-i18next';
-import { IconBankOnboarding } from '../../assets/images/index.ts';
-import Button from '../../components/atoms/Button/index.tsx';
+import { IconBankOnboarding } from '../../../assets/images/index.ts';
+import Button from '../../../components/atoms/Button/index.tsx';
 import Toast from 'react-native-toast-message';
 import { useNavigation } from '@react-navigation/native';
 
@@ -49,7 +49,7 @@ export const Onboarding = () => {
           color={colors.buttonWhite}
           textColor="black"
           borderColor={colors.lightPrimary}
-          sourceIcon={require('../../assets/images/ic-gmail.png')}
+          sourceIcon={require('../../../assets/images/ic-gmail.png')}
         />
         <TouchableOpacity onPress={() => navigation.navigate('AuthEntry', { isLoginState: true })}>
           <Text style={styles.accountQuestionText}>{t('onboarding.accountQuestion')}</Text>

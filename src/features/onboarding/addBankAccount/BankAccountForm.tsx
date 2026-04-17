@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TextInput, Image, FlatList } from 'react-native';
-import { useTheme } from '../../theme/ThemeProvider.tsx';
+import { useTheme } from '../../../theme/ThemeProvider.tsx';
 import { createStyles } from './styles.ts';
 import { useTranslation } from 'react-i18next';
 
@@ -31,7 +31,7 @@ const BankAccountForm = ({
     <View style={styles.cardRecipientBankAccount}>
       <View style={styles.bankLogoContainer}>
         <Image
-          source={require('../../assets/images/ic-BCA.png')}
+          source={require('../../../assets/images/ic-BCA.png')}
           style={styles.logo}
           resizeMode="contain"
         />

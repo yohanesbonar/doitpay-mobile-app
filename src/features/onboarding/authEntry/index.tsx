@@ -8,21 +8,21 @@ import {
   TouchableWithoutFeedback,
   Pressable,
 } from 'react-native';
-import { useTheme } from '../../theme/ThemeProvider.tsx';
+import { useTheme } from '../../../theme/ThemeProvider.tsx';
 import { createStyles } from './styles.ts';
-import HeaderToolbar from '../../components/molecules/HeaderToolbar/index.tsx';
+import HeaderToolbar from '../../../components/molecules/HeaderToolbar/index.tsx';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
-import FlowIndicator from '../../components/molecules/FlowIndicator/index.tsx';
+import FlowIndicator from '../../../components/molecules/FlowIndicator/index.tsx';
 import { Formik, FormikProps } from 'formik';
 import * as Yup from 'yup';
-import Button from '../../components/atoms/Button/index.tsx';
+import Button from '../../../components/atoms/Button/index.tsx';
 import { useBlurOnFulfill, useClearByFocusCell } from 'react-native-confirmation-code-field';
 import { CreditCard, Sun, User, AlertCircle } from 'lucide-react-native';
 import _ from 'lodash';
-import { useRequestOtp } from '../../hooks/useAuthMutation.ts';
-import InputPhoneNumber from './components/InputPhoneNumber';
-import InputOTPNumber from './components/InputOTPNumber';
+import { useRequestOtp } from '../../../hooks/useAuthMutation.ts';
+import InputPhoneNumber from './components/InputPhoneNumber.tsx';
+import InputOTPNumber from './components/InputOTPNumber.tsx';
 import Toast from 'react-native-toast-message';
 
 export const AuthEntry = ({ route }) => {

@@ -8,9 +8,9 @@ import {
   Keyboard,
   Image,
 } from 'react-native';
-import { useTheme } from '../../theme/ThemeProvider.tsx';
+import { useTheme } from '../../../theme/ThemeProvider.tsx';
 import { createStyles } from './styles';
-import Button from '../../components/atoms/Button/index.tsx';
+import Button from '../../../components/atoms/Button/index.tsx';
 import { useTranslation } from 'react-i18next';
 
 interface SuccessBottomSheetProps {
@@ -36,7 +36,7 @@ const SuccessBottomSheet = ({ isVisible, onClose, onContinue }: SuccessBottomShe
               <View style={[styles.cardRecipient, { borderColor: '#E0E0E0' }]}>
                 <View style={styles.bankLogoContainer}>
                   <Image
-                    source={require('../../assets/images/ic-BCA.png')}
+                    source={require('../../../assets/images/ic-BCA.png')}
                     style={styles.logo}
                     resizeMode="contain"
                   />

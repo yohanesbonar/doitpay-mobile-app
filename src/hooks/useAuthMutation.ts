@@ -1,9 +1,9 @@
 import { useMutation } from '@tanstack/react-query';
-import { requestOtp, OtpRequestPayload, OtpResponse } from '../api/auth';
+import { authApi, OtpRequestPayload, OtpResponse } from '../api/auth';
 
 export const useRequestOtp = () => {
   return useMutation<OtpResponse, Error, OtpRequestPayload>({
-    mutationFn: requestOtp,
+    mutationFn: (payload) => authApi.requestOtp(payload), 
     onSuccess: (data) => {
       console.log('OTP sent data.message:', data.message);
       console.log('OTP sent data', data);

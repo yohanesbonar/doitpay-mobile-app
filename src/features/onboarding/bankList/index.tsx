@@ -3,9 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, TextInput, Image } from 'react-native';
 import { createStyles } from './styles';
 import { useTranslation } from 'react-i18next';
-import HeaderToolbar from '../../components/molecules/HeaderToolbar';
-import Button from '../../components/atoms/Button/index.tsx';
-import { useTheme } from '../../theme/ThemeProvider.tsx';
+import HeaderToolbar from '../../../components/molecules/HeaderToolbar';
+import Button from '../../../components/atoms/Button/index.tsx';
+import { useTheme } from '../../../theme/ThemeProvider.tsx';
 import { Formik } from 'formik';
 import { Search } from 'lucide-react-native';
 
@@ -16,37 +16,57 @@ export const BankList = () => {
   const navigation = useNavigation();
 
   const POPULAR_BANKS = [
-    { id: '1', name: 'blu', logo: require('../..//assets/images/ic-BCA.png') },
-    { id: '2', name: 'BCA', logo: require('../..//assets/images/ic-BCA.png') },
-    { id: '3', name: 'BRI', logo: require('../..//assets/images/ic-BCA.png') },
-    { id: '4', name: 'BNI', logo: require('../..//assets/images/ic-BCA.png') },
-    { id: '5', name: 'blu', logo: require('../..//assets/images/ic-BCA.png') },
-    { id: '6', name: 'BCA', logo: require('../..//assets/images/ic-BCA.png') },
-    { id: '7', name: 'BRI', logo: require('../..//assets/images/ic-BCA.png') },
-    { id: '8', name: 'BNI', logo: require('../..//assets/images/ic-BCA.png') },
+    { id: '1', name: 'blu', logo: require('../../../assets/images/ic-BCA.png') },
+    { id: '2', name: 'BCA', logo: require('../../../assets/images/ic-BCA.png') },
+    { id: '3', name: 'BRI', logo: require('../../../assets/images/ic-BCA.png') },
+    { id: '4', name: 'BNI', logo: require('../../../assets/images/ic-BCA.png') },
+    { id: '5', name: 'blu', logo: require('../../../assets/images/ic-BCA.png') },
+    { id: '6', name: 'BCA', logo: require('../../../assets/images/ic-BCA.png') },
+    { id: '7', name: 'BRI', logo: require('../../../assets/images/ic-BCA.png') },
+    { id: '8', name: 'BNI', logo: require('../../../assets/images/ic-BCA.png') },
   ];
 
   const ALL_BANKS = [
-    { id: 'bca', name: 'Bank Central Asia', logo: require('../..//assets/images/ic-BCA.png') },
-    { id: 'blu', name: 'Blu BCA Digital', logo: require('../..//assets/images/ic-BCA.png') },
-    { id: 'bsi', name: 'Bank Syariah Indonesia', logo: require('../..//assets/images/ic-BCA.png') },
-    { id: 'mandiri', name: 'Mandiri', logo: require('../..//assets/images/ic-BCA.png') },
-    { id: 'bca', name: 'Bank Central Asia', logo: require('../..//assets/images/ic-BCA.png') },
-    { id: 'blu', name: 'Blu BCA Digital', logo: require('../..//assets/images/ic-BCA.png') },
-    { id: 'bsi', name: 'Bank Syariah Indonesia', logo: require('../..//assets/images/ic-BCA.png') },
-    { id: 'mandiri', name: 'Mandiri', logo: require('../..//assets/images/ic-BCA.png') },
-    { id: 'bca', name: 'Bank Central Asia', logo: require('../..//assets/images/ic-BCA.png') },
-    { id: 'blu', name: 'Blu BCA Digital', logo: require('../..//assets/images/ic-BCA.png') },
-    { id: 'bsi', name: 'Bank Syariah Indonesia', logo: require('../..//assets/images/ic-BCA.png') },
-    { id: 'mandiri', name: 'Mandiri', logo: require('../..//assets/images/ic-BCA.png') },
-    { id: 'bca', name: 'Bank Central Asia', logo: require('../..//assets/images/ic-BCA.png') },
-    { id: 'blu', name: 'Blu BCA Digital', logo: require('../..//assets/images/ic-BCA.png') },
-    { id: 'bsi', name: 'Bank Syariah Indonesia', logo: require('../..//assets/images/ic-BCA.png') },
-    { id: 'mandiri', name: 'Mandiri', logo: require('../..//assets/images/ic-BCA.png') },
-    { id: 'bca', name: 'Bank Central Asia', logo: require('../..//assets/images/ic-BCA.png') },
-    { id: 'blu', name: 'Blu BCA Digital', logo: require('../..//assets/images/ic-BCA.png') },
-    { id: 'bsi', name: 'Bank Syariah Indonesia', logo: require('../..//assets/images/ic-BCA.png') },
-    { id: 'mandiri', name: 'Mandiri', logo: require('../..//assets/images/ic-BCA.png') },
+    { id: 'bca', name: 'Bank Central Asia', logo: require('../../../assets/images/ic-BCA.png') },
+    { id: 'blu', name: 'Blu BCA Digital', logo: require('../../../assets/images/ic-BCA.png') },
+    {
+      id: 'bsi',
+      name: 'Bank Syariah Indonesia',
+      logo: require('../../..//assets/images/ic-BCA.png'),
+    },
+    { id: 'mandiri', name: 'Mandiri', logo: require('../../..//assets/images/ic-BCA.png') },
+    { id: 'bca', name: 'Bank Central Asia', logo: require('../../../assets/images/ic-BCA.png') },
+    { id: 'blu', name: 'Blu BCA Digital', logo: require('../../../assets/images/ic-BCA.png') },
+    {
+      id: 'bsi',
+      name: 'Bank Syariah Indonesia',
+      logo: require('../../../assets/images/ic-BCA.png'),
+    },
+    { id: 'mandiri', name: 'Mandiri', logo: require('../../../assets/images/ic-BCA.png') },
+    { id: 'bca', name: 'Bank Central Asia', logo: require('../../../assets/images/ic-BCA.png') },
+    { id: 'blu', name: 'Blu BCA Digital', logo: require('../../../assets/images/ic-BCA.png') },
+    {
+      id: 'bsi',
+      name: 'Bank Syariah Indonesia',
+      logo: require('../../../assets/images/ic-BCA.png'),
+    },
+    { id: 'mandiri', name: 'Mandiri', logo: require('../../../assets/images/ic-BCA.png') },
+    { id: 'bca', name: 'Bank Central Asia', logo: require('../../../assets/images/ic-BCA.png') },
+    { id: 'blu', name: 'Blu BCA Digital', logo: require('../../../assets/images/ic-BCA.png') },
+    {
+      id: 'bsi',
+      name: 'Bank Syariah Indonesia',
+      logo: require('../../../assets/images/ic-BCA.png'),
+    },
+    { id: 'mandiri', name: 'Mandiri', logo: require('../../../assets/images/ic-BCA.png') },
+    { id: 'bca', name: 'Bank Central Asia', logo: require('../../../assets/images/ic-BCA.png') },
+    { id: 'blu', name: 'Blu BCA Digital', logo: require('../../../assets/images/ic-BCA.png') },
+    {
+      id: 'bsi',
+      name: 'Bank Syariah Indonesia',
+      logo: require('../../../assets/images/ic-BCA.png'),
+    },
+    { id: 'mandiri', name: 'Mandiri', logo: require('../../../assets/images/ic-BCA.png') },
   ];
 
   return (
