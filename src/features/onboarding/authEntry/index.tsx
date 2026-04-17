@@ -1,13 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import {
-  Text,
-  View,
-  TextInput,
-  TouchableOpacity,
-  Keyboard,
-  TouchableWithoutFeedback,
-  Pressable,
-} from 'react-native';
+import { View, TextInput, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { useTheme } from '../../../theme/ThemeProvider.tsx';
 import { createStyles } from './styles.ts';
 import HeaderToolbar from '../../../components/molecules/HeaderToolbar/index.tsx';
@@ -18,12 +10,13 @@ import { Formik, FormikProps } from 'formik';
 import * as Yup from 'yup';
 import Button from '../../../components/atoms/Button/index.tsx';
 import { useBlurOnFulfill, useClearByFocusCell } from 'react-native-confirmation-code-field';
-import { CreditCard, Sun, User, AlertCircle } from 'lucide-react-native';
 import _ from 'lodash';
-import { useRequestOtp } from '../../../hooks/useAuthMutation.ts';
+import { useRequestOtp, useVerifyOtp } from '../../../hooks/useAuthMutation.ts';
 import InputPhoneNumber from './components/InputPhoneNumber.tsx';
 import InputOTPNumber from './components/InputOTPNumber.tsx';
 import Toast from 'react-native-toast-message';
+import CreateAndConfirmPIN from './components/CreateAndConfirmPIN.tsx';
+import IdentityVerification from './components/IdentityVerification.tsx';
 
 export const AuthEntry = ({ route }) => {
   const { isLoginState } = route.params;
@@ -51,7 +44,8 @@ export const AuthEntry = ({ route }) => {
   const PIN_LENGTH = 6;
   const enableButtonNextRef = useRef(false);
 
-  const { mutate, isPending } = useRequestOtp();
+  const { mutate: requestOTP, isPending: isRequesting } = useRequestOtp();
+  const { mutate: verifyOTP, isPending: isVerifying } = useVerifyOtp();
 
   const handlePressPIN = () => {
     inputRef.current?.focus();
@@ -107,133 +101,6 @@ export const AuthEntry = ({ route }) => {
     }
   }, [formikRef?.current?.values]);
 
-  const createAndConfirmPIN = (step: number) => {
-    return (
-      <View style={{ flex: 1, marginHorizontal: 16 }}>
-        <Text style={styles.titleStep}>
-          {t(
-            step === 4 && isLoginState
-              ? 'authEntry.inputPIN'
-              : step === 3
-                ? 'authEntry.createPIN'
-                : 'authEntry.confirmationPIN',
-          )}
-        </Text>
-        <Text style={styles.descStep}>
-          {t(
-            step === 4 && isLoginState
-              ? 'authEntry.descInputPIN'
-              : step === 3
-                ? 'authEntry.descCreatePIN'
-                : 'authEntry.descConfirmationPIN',
-          )}
-        </Text>
-        <Pressable style={styles.dotsContainer} onPress={handlePressPIN}>
-          {renderDotsPIN(step === 3 ? pin : confirmationPin, isErrorPIN)}
-        </Pressable>
-
-        {step === 4 && isErrorPIN && (
-          <Text style={styles.errorTextPIN}>
-            PIN yang Anda masukkan tidak cocok. Silakan coba lagi.
-          </Text>
-        )}
-
-        <TextInput
-          ref={inputRef}
-          value={step === 3 ? pin : confirmationPin}
-          onChangeText={(text) => {
-            if (isErrorPIN) setIsErrorPIN(false);
-
-            if (text.length <= PIN_LENGTH) {
-              if (step === 3) {
-                setPin(text);
-              } else {
-                setConfirmationPin(text);
-              }
-            }
-
-            if (text.length === PIN_LENGTH) {
-              if (step === 3) {
-                setTimeout(() => {
-                  setCurrentStep(4);
-                }, 250);
-              } else {
-                if (!isLoginState) {
-                  if (text === pin) {
-                    setTimeout(() => {
-                      setCurrentStep((prev) => Math.min(prev + 1, 10));
-                    }, 250);
-                  } else {
-                    setIsErrorPIN(true);
-                    setConfirmationPin('');
-                  }
-                } else {
-                  // if pin is true
-                  navigation.navigate('Home', { isLoginState: isLoginState });
-                }
-              }
-            }
-          }}
-          keyboardType="number-pad"
-          maxLength={PIN_LENGTH}
-          style={styles.hiddenInput}
-          autoFocus={true}
-        />
-      </View>
-    );
-  };
-
-  const identityVerification = () => {
-    return (
-      <View style={{ flex: 1, marginHorizontal: 16 }}>
-        <Text style={styles.titleStep}>{t('authEntry.identityVerification')}</Text>
-        <Text style={styles.descStep}>
-          {t('authEntry.descIdentityVerification')}{' '}
-          <Text style={styles.boldText}>{t('authEntry.descIdentityVerification2')}</Text>
-        </Text>
-
-        <TouchableOpacity style={[styles.cardVerif, styles.activeCardVerif]}>
-          <View style={[styles.iconBoxVerif, styles.blueIconBoxVerif]}>
-            <CreditCard color="#FFF" size={24} />
-          </View>
-          <View style={styles.cardTextContentVerif}>
-            <Text style={styles.cardTitleVerif}>{t('authEntry.verifyNow')}</Text>
-            <Text style={styles.cardSubtitleVerif}>{t('authEntry.idCardSelfie')}</Text>
-          </View>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.cardVerif} onPress={() => navigation.navigate('BankList')}>
-          <View style={[styles.iconBoxVerif, styles.yellowIconBoxVerif]}>
-            <AlertCircle color="#EAB308" size={24} />
-          </View>
-          <View style={styles.cardTextContentVerif}>
-            <Text style={styles.cardTitleVerif}>{t('authEntry.maybeLater')}</Text>
-            <Text style={styles.cardSubtitleVerif}>{t('authEntry.limitDaily')}</Text>
-          </View>
-        </TouchableOpacity>
-
-        <View style={styles.infoContainerVerif}>
-          <Text style={styles.infoTitleVerif}>{t('authEntry.thingsToPrepare')}</Text>
-
-          <View style={styles.infoRowVerif}>
-            <CreditCard color="#666" size={22} style={styles.infoIconVerif} />
-            <Text style={styles.infoTextVerif}>{t('authEntry.originalIDCard')}</Text>
-          </View>
-
-          <View style={styles.infoRowVerif}>
-            <Sun color="#666" size={22} style={styles.infoIconVerif} />
-            <Text style={styles.infoTextVerif}>{t('authEntry.lightRoom')}</Text>
-          </View>
-
-          <View style={styles.infoRowVerif}>
-            <User color="#666" size={22} style={styles.infoIconVerif} />
-            <Text style={styles.infoTextVerif}>{t('authEntry.clearFace')}</Text>
-          </View>
-        </View>
-      </View>
-    );
-  };
-
   const detailStep = () => {
     switch (currentStep) {
       case 1:
@@ -257,19 +124,71 @@ export const AuthEntry = ({ route }) => {
             CELL_COUNT_OTP={CELL_COUNT_OTP}
             otpFieldProps={props} // ini dari useClearByFocusCell
             getCellOnLayoutHandler={getCellOnLayoutHandler}
-            // onResendOtp={handleSendOtp} // Fungsi mutasi API Anda
-            isPending={isPending}
+            onResendOtp={handleSendOtp}
+            isPending={isRequesting}
           />
         );
       case 3:
-        return createAndConfirmPIN(currentStep);
       case 4:
-        return createAndConfirmPIN(currentStep);
+        return (
+          <CreateAndConfirmPIN
+            step={currentStep}
+            isLoginState={isLoginState}
+            pin={pin}
+            confirmationPin={confirmationPin}
+            isErrorPIN={isErrorPIN}
+            styles={styles}
+            inputRef={inputRef}
+            handlePressPIN={handlePressPIN}
+            renderDotsPIN={renderDotsPIN}
+            PIN_LENGTH={PIN_LENGTH}
+            onChangeText={(text) => {
+              handlePINChange(text);
+            }}
+          />
+        );
       case 5:
-        return identityVerification();
+        return (
+          <IdentityVerification
+            styles={styles}
+            onVerifyNow={() => console.log('Verify Now')}
+            onMaybeLater={() => navigation.navigate('BankList')}
+          />
+        );
       default:
         return '';
     }
+  };
+
+  const handleSendOtp = () => {
+    const { phoneNumber, countryCode } = phoneNumbData;
+    const formattedPhone = (countryCode + phoneNumber).replace('+', '');
+
+    requestOTP(
+      {
+        phoneNumber: formattedPhone,
+        method: 'SMS',
+      },
+      {
+        onSuccess: (res) => {
+          setTimerOTP(res.data.resendAfterSeconds || 30);
+
+          Toast.show({
+            type: 'success',
+            text1: t('authEntry.otpSentSuccess') || 'OTP berhasil dikirim ulang',
+          });
+
+          setValueOTP('');
+        },
+        onError: (err: any) => {
+          console.error('Resend OTP Error:', err);
+          Toast.show({
+            type: 'error',
+            text1: err?.message || 'Gagal mengirim ulang OTP',
+          });
+        },
+      },
+    );
   };
 
   useEffect(() => {
@@ -288,13 +207,47 @@ export const AuthEntry = ({ route }) => {
     }
   }, [formikRef.current?.isValid, formikRef.current?.dirty, currentStep, valueOTP]);
 
+  const handlePINChange = (text: string) => {
+    if (isErrorPIN) setIsErrorPIN(false);
+
+    if (text.length <= PIN_LENGTH) {
+      if (currentStep === 3) {
+        setPin(text);
+      } else {
+        setConfirmationPin(text);
+      }
+    }
+
+    if (text.length === PIN_LENGTH) {
+      if (currentStep === 3) {
+        setTimeout(() => {
+          setCurrentStep(4);
+        }, 250);
+      } else {
+        if (!isLoginState) {
+          if (text === pin) {
+            setTimeout(() => {
+              setCurrentStep(5);
+            }, 250);
+          } else {
+            setIsErrorPIN(true);
+            setConfirmationPin('');
+          }
+        } else {
+          navigation.navigate('Home', { isLoginState: isLoginState });
+        }
+      }
+    }
+  };
+
   const onPressNext = () => {
+    // STEP 1: Request OTP
     if (currentStep === 1) {
       const { phoneNumber, countryCode } = formikRef.current?.values;
 
       const formattedPhone = (countryCode + phoneNumber).replace('+', '');
 
-      mutate(
+      requestOTP(
         {
           phoneNumber: formattedPhone,
           method: 'SMS',
@@ -309,6 +262,35 @@ export const AuthEntry = ({ route }) => {
             Toast.show({
               type: 'error',
               text1: err.message,
+            });
+          },
+        },
+      );
+      return;
+    }
+
+    // STEP 2: OTP Verification
+    if (currentStep === 2) {
+      const { phoneNumber, countryCode } = phoneNumbData;
+      const formattedPhone = (countryCode + phoneNumber).replace('+', '');
+
+      verifyOTP(
+        {
+          phoneNumber: formattedPhone,
+          otpCode: valueOTP,
+        },
+        {
+          onSuccess: (res) => {
+            if (!isLoginState) {
+              setCurrentStep(3);
+            } else {
+              setCurrentStep(4);
+            }
+          },
+          onError: (err: any) => {
+            Toast.show({
+              type: 'error',
+              text1: err?.message || 'Kode OTP salah',
             });
           },
         },
@@ -384,15 +366,17 @@ export const AuthEntry = ({ route }) => {
             <Button
               type="regular"
               onPress={() => onPressNext()}
-              title={t(currentStep == 1 ? 'authEntry.sendOTPNumber' : 'authEntry.verification')}
+              loading={isRequesting || isVerifying}
+              title={t(currentStep === 1 ? 'authEntry.sendOTPNumber' : 'authEntry.verification')}
               style={{
-                backgroundColor: enableButtonNextRef.current
-                  ? colors.buttonBlue
-                  : colors.disableButton,
+                backgroundColor:
+                  enableButtonNextRef.current && !isVerifying && !isRequesting
+                    ? colors.buttonBlue
+                    : colors.disableButton,
               }}
               color={colors.buttonBlue}
               textColor="white"
-              disable={!enableButtonNextRef.current}
+              disable={!enableButtonNextRef.current || isVerifying || isRequesting}
             />
           )}
         </View>

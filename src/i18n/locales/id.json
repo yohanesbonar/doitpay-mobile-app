@@ -29,7 +29,7 @@
     "enterOTPNumber": "Masukkan kode OTP",
     "descEnterOTPNumber": "Kode 6 digit telah dikirim ke ",
     "descTermsOTP1": "Tidak menerima ? ",
-    "descTermsOTP2": "KKirim ulang (30s)",
+    "descTermsOTP2": "Kirim ulang (30s)",
     "createPIN": "Buat PIN 6 Digit",
     "descCreatePIN": "PIN untuk konfirmasi setiap transfer",
     "phoneNumberLabel": "Phone Number", 

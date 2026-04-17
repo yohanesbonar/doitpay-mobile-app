@@ -1,6 +1,6 @@
 import { useTheme } from '../../../theme/ThemeProvider.tsx';
 import React from 'react';
-import { TouchableOpacity, Text, Image } from 'react-native';
+import { TouchableOpacity, Text, Image, ActivityIndicator, View } from 'react-native';
 
 interface ButtonProps {
   onPress: () => void;
@@ -11,8 +11,9 @@ interface ButtonProps {
   type: 'regular' | 'withIcon';
   textColor: 'white' | 'black';
   borderColor?: string;
-  sourceIcon?: string;
+  sourceIcon?: any;
   disable?: boolean;
+  loading?: boolean;
 }
 
 const Button = ({
@@ -26,16 +27,34 @@ const Button = ({
   borderColor,
   sourceIcon,
   disable,
+  loading,
 }: ButtonProps) => {
   const { colors } = useTheme();
+
+  const loaderColor = disable
+    ? colors.disableText
+    : textColor === 'white'
+      ? colors.white
+      : colors.black;
+
+  const isButtonDisabled = disable || loading;
+
+  const renderContent = (content: React.ReactNode) => {
+    if (loading) {
+      return <ActivityIndicator size="small" color={loaderColor} style={{ paddingVertical: 6 }} />;
+    }
+    return content;
+  };
+
   switch (type) {
     case 'withIcon':
       return (
         <TouchableOpacity
-          onPress={onPress}
+          onPress={!isButtonDisabled ? onPress : undefined}
+          disabled={isButtonDisabled}
           style={[
             {
-              backgroundColor: color ?? colors.white,
+              backgroundColor: isButtonDisabled ? colors.disableButton : (color ?? colors.white),
               padding: 10,
               borderRadius: 30,
               borderWidth: borderColor ? 0.2 : 0,
@@ -43,61 +62,74 @@ const Button = ({
               alignItems: 'center',
               flexDirection: 'row',
               justifyContent: 'center',
+              opacity: loading ? 0.8 : 1,
             },
             style,
           ]}>
-          {sourceIcon && (
-            <Image
-              source={sourceIcon}
-              style={{ width: 20, height: 20, marginRight: 8 }}
-              resizeMode="contain"
-            />
+          {renderContent(
+            <>
+              {sourceIcon && (
+                <Image
+                  source={sourceIcon}
+                  style={{ width: 20, height: 20, marginRight: 8 }}
+                  resizeMode="contain"
+                />
+              )}
+              <Text
+                style={[
+                  {
+                    color: isButtonDisabled
+                      ? colors.disableText
+                      : textColor === 'white'
+                        ? colors.white
+                        : colors.black,
+                    textAlign: 'center',
+                    fontFamily: 'Switzer',
+                    paddingVertical: 6,
+                    fontSize: 16,
+                  },
+                  textStyle,
+                ]}>
+                {title}
+              </Text>
+            </>,
           )}
-          <Text
-            style={[
-              {
-                color: textColor === 'white' ? colors.white : colors.black,
-                textAlign: 'center',
-                fontFamily: 'Switzer',
-                paddingVertical: 6,
-                fontSize: 16,
-              },
-              textStyle,
-            ]}>
-            {title}
-          </Text>
         </TouchableOpacity>
       );
     case 'regular':
       return (
         <TouchableOpacity
-          onPress={!disable ? onPress : null}
-          disabled={disable}
+          onPress={!isButtonDisabled ? onPress : undefined}
+          disabled={isButtonDisabled}
           style={[
             {
-              backgroundColor: disable ? colors.disableButton : color ? color : colors.white,
+              backgroundColor: isButtonDisabled ? colors.disableButton : (color ?? colors.white),
               padding: 10,
               borderRadius: 30,
+              justifyContent: 'center',
+              minHeight: 48,
             },
             style,
           ]}>
-          <Text
-            style={[
-              {
-                color: disable
-                  ? colors.disableText
-                  : textColor === 'white'
-                    ? colors.white
-                    : colors.black,
-                textAlign: 'center',
-                fontFamily: 'Switzer',
-                paddingVertical: 6,
-                fontSize: 16,
-              },
-              textStyle,
-            ]}>
-            {title}
-          </Text>
+          {renderContent(
+            <Text
+              style={[
+                {
+                  color: isButtonDisabled
+                    ? colors.disableText
+                    : textColor === 'white'
+                      ? colors.white
+                      : colors.black,
+                  textAlign: 'center',
+                  fontFamily: 'Switzer',
+                  paddingVertical: 6,
+                  fontSize: 16,
+                },
+                textStyle,
+              ]}>
+              {title}
+            </Text>,
+          )}
         </TouchableOpacity>
       );
   }

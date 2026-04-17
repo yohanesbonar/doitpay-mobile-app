@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import { authApi, OtpRequestPayload, OtpResponse } from '../api/auth';
+import { authApi, OtpRequestPayload, OtpResponse, OtpVerifyPayload, OtpVerifyResponse } from '../api/auth';
 
 export const useRequestOtp = () => {
   return useMutation<OtpResponse, Error, OtpRequestPayload>({
@@ -14,3 +14,17 @@ export const useRequestOtp = () => {
     },
   });
 };
+
+export const useVerifyOtp = () => {
+  return useMutation<OtpVerifyResponse, Error, OtpVerifyPayload>({
+    mutationFn: (payload) => authApi.verifyOtp(payload), 
+    onSuccess: (data) => {
+      console.log('useVerifyOtp sent data.message:', data.message);
+      console.log('useVerifyOtp sent data', data);
+    },
+    onError: (error) => {
+      console.log('error useVerifyOtp', error);
+      console.error('useVerifyOtp Request failed:', error.message);
+    },
+  })
+}

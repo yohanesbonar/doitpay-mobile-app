@@ -5,6 +5,11 @@ export interface OtpRequestPayload {
   method: 'SMS' | 'WHATSAPP';
 }
 
+export interface OtpVerifyPayload {
+  phoneNumber: string;
+  otpCode: string;
+}
+
 export type OtpResponse = {
   status: string;
   message: string;
@@ -13,11 +18,28 @@ export type OtpResponse = {
   };
 };
 
+export type OtpVerifyResponse = {
+  status: string;
+  message: string;
+  data: {
+    verificationToken: string;
+    session: {
+      currentStep: string;
+      expiredAt: string;
+      sessionId: string;
+    }
+  };
+};
+
 export const authApi = {
   requestOtp: async (payload: OtpRequestPayload): Promise<OtpResponse> => {
     const { data } = await apiClient.post<OtpResponse>('/v1/onboarding/otp/request', payload);
     return data;
   },
+  verifyOtp: async (payload: OtpVerifyPayload): Promise<OtpVerifyResponse> => {
+    const { data } = await apiClient.post<OtpVerifyResponse>('/v1/onboarding/otp/verify', payload);
+    return data;
+  }
   // Contoh penambahan fungsi lain nanti:
   // login: (credentials) => apiClient.post('/login', credentials),
 };
