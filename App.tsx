@@ -5,6 +5,7 @@ import { I18nextProvider } from 'react-i18next';
 import i18next from 'i18next';
 import Toast from 'react-native-toast-message';
 import messaging from '@react-native-firebase/messaging';
+import notifee, { EventType } from '@notifee/react-native';
 
 import { initI18next } from './src/i18n/initI18next.ts';
 import { ThemeProvider } from './src/theme/ThemeProvider.tsx';
@@ -34,6 +35,12 @@ initI18next();
 // Handle background messages
 messaging().setBackgroundMessageHandler(async (remoteMessage) => {
   // console.log('Message handled in the background!', remoteMessage);
+});
+
+notifee.onBackgroundEvent(async ({ type, detail }) => {
+  if (type === EventType.PRESS) {
+    console.log('User pressed notification in background', detail.notification);
+  }
 });
 
 const App = () => {

@@ -23,6 +23,7 @@
     "@gluestack-ui/utils": "^3.0.11",
     "@gluestack/ui-next-adapter": "^3.0.3",
     "@legendapp/motion": "^2.3.0",
+    "@notifee/react-native": "^9.1.8",
     "@react-native-firebase/app": "^24.0.0",
     "@react-native-firebase/messaging": "^24.0.0",
     "@react-native/new-app-screen": "0.83.0",
