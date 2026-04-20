@@ -1,6 +1,7 @@
 import axios from 'axios';
 import Config from 'react-native-config';
 import { getDeviceFingerprint } from '../utils/Device/Device.ts';
+import { getStorageItem, StorageKey } from '../storage/index.ts';
 
 const apiClient = axios.create({
   baseURL: Config.API_URL,
@@ -16,7 +17,11 @@ apiClient.interceptors.request.use(async (config) => {
   const deviceId = await getDeviceFingerprint();
   config.headers['X-Device-ID'] = deviceId;
 
- 
+  const token = getStorageItem(StorageKey.ACCESS_TOKEN);
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
   if (__DEV__) {
     console.log('--- 🛫 API REQUEST ---');
     console.log(`URL: ${config.baseURL}${config.url}`);

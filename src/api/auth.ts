@@ -10,6 +10,11 @@ export interface OtpVerifyPayload {
   otpCode: string;
 }
 
+export interface PinSetupPayload {
+  phoneNumber: string;
+  pin: string;
+}
+
 export type OtpResponse = {
   status: string;
   message: string;
@@ -31,6 +36,19 @@ export type OtpVerifyResponse = {
   };
 };
 
+export type PinSetupResponse = {
+  status: string;
+  message: string;
+  data: {
+    verificationToken: string;
+    session: {
+      accessToken: string;
+      expiredIn: string;
+      refreshToken: string;
+    }
+  };
+}
+
 export const authApi = {
   requestOtp: async (payload: OtpRequestPayload): Promise<OtpResponse> => {
     const { data } = await apiClient.post<OtpResponse>('/v1/onboarding/otp/request', payload);
@@ -39,6 +57,10 @@ export const authApi = {
   verifyOtp: async (payload: OtpVerifyPayload): Promise<OtpVerifyResponse> => {
     const { data } = await apiClient.post<OtpVerifyResponse>('/v1/onboarding/otp/verify', payload);
     return data;
+  },
+  pinSetup: async (payload: PinSetupPayload): Promise<PinSetupResponse> => {
+    const { data } = await apiClient.post<PinSetupResponse>('/v1/onboarding/pin-setup', payload);
+    return data; 
   }
   // Contoh penambahan fungsi lain nanti:
   // login: (credentials) => apiClient.post('/login', credentials),

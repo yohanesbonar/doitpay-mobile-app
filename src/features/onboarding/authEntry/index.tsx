@@ -11,7 +11,7 @@ import * as Yup from 'yup';
 import Button from '../../../components/atoms/Button/index.tsx';
 import { useBlurOnFulfill, useClearByFocusCell } from 'react-native-confirmation-code-field';
 import _ from 'lodash';
-import { useRequestOtp, useVerifyOtp } from '../../../hooks/useAuthMutation.ts';
+import { useRequestOtp, useVerifyOtp, usePinSetup } from '../../../hooks/useAuthMutation.ts';
 import InputPhoneNumber from './components/InputPhoneNumber.tsx';
 import InputOTPNumber from './components/InputOTPNumber.tsx';
 import Toast from 'react-native-toast-message';
@@ -46,6 +46,7 @@ export const AuthEntry = ({ route }) => {
 
   const { mutate: requestOTP, isPending: isRequesting } = useRequestOtp();
   const { mutate: verifyOTP, isPending: isVerifying } = useVerifyOtp();
+  const { mutate: setupPin, isPending: isSettingPin } = usePinSetup();
 
   const handlePressPIN = () => {
     inputRef.current?.focus();
@@ -208,43 +209,71 @@ export const AuthEntry = ({ route }) => {
   }, [formikRef.current?.isValid, formikRef.current?.dirty, currentStep, valueOTP]);
 
   const handlePINChange = (text: string) => {
-    if (isErrorPIN) setIsErrorPIN(false);
+  if (isErrorPIN) setIsErrorPIN(false);
 
-    if (text.length <= PIN_LENGTH) {
-      if (currentStep === 3) {
-        setPin(text);
-      } else {
-        setConfirmationPin(text);
-      }
+  if (text.length <= PIN_LENGTH) {
+    if (currentStep === 3) {
+      setPin(text);
+    } else {
+      setConfirmationPin(text);
     }
+  }
 
-    if (text.length === PIN_LENGTH) {
-      if (currentStep === 3) {
-        setTimeout(() => {
-          setCurrentStep(4);
-        }, 250);
-      } else {
-        if (!isLoginState) {
-          if (text === pin) {
-            setTimeout(() => {
-              setCurrentStep(5);
-            }, 250);
-          } else {
-            setIsErrorPIN(true);
-            setConfirmationPin('');
-          }
+  if (text.length === PIN_LENGTH) {
+    if (currentStep === 3) {
+      setTimeout(() => {
+        setCurrentStep(4);
+      }, 250);
+    } else {
+      // Logic Step 4: Confirmation PIN Registration
+      if (!isLoginState) {
+        if (text === pin) {
+          const { phoneNumber, countryCode } = phoneNumbData;
+          const formattedPhone = (countryCode + phoneNumber).replace('+', '');
+
+          setupPin(
+            {
+              phoneNumber: formattedPhone,
+              pin: text,
+            },
+            {
+              onSuccess: (res) => {
+                // Simpan token/session jika perlu di storage (EncryptedStorage/MMKV)
+                Toast.show({
+                  type: 'success',
+                  text1: 'PIN berhasil dibuat',
+                });
+                
+                setTimeout(() => {
+                  setCurrentStep(5);
+                }, 250);
+              },
+              onError: (err: any) => {
+                setIsErrorPIN(true);
+                setConfirmationPin('');
+                Toast.show({
+                  type: 'error',
+                  text1: err?.message || 'Gagal mengatur PIN',
+                });
+              },
+            },
+          );
         } else {
-          navigation.navigate('Home', { isLoginState: isLoginState });
+          setIsErrorPIN(true);
+          setConfirmationPin('');
         }
+      } else {
+        // Jika isLoginState, logic biasanya hit login API dengan PIN
+        navigation.navigate('Home', { isLoginState: isLoginState });
       }
     }
-  };
+  }
+};
 
   const onPressNext = () => {
     // STEP 1: Request OTP
     if (currentStep === 1) {
       const { phoneNumber, countryCode } = formikRef.current?.values;
-
       const formattedPhone = (countryCode + phoneNumber).replace('+', '');
 
       requestOTP(
