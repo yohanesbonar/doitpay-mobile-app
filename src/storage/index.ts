@@ -20,4 +20,5 @@ export const getStorageItem = (key: string) => {
 export const clearAuthStorage = () => {
   storage.remove(StorageKey.ACCESS_TOKEN);
   storage.remove(StorageKey.REFRESH_TOKEN);
+  storage.remove(StorageKey.VERIFICATION_TOKEN);
 };
