@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { CodeField, Cursor } from 'react-native-confirmation-code-field';
+import { formatOTPTimer } from '../../../../utils/Common/index';
 
 interface InputOTPNumberProps {
   styles: any;
@@ -67,7 +68,7 @@ const InputOTPNumber: React.FC<InputOTPNumberProps> = ({
         <Text style={styles.resendText}>Tidak menerima ? </Text>
         <TouchableOpacity disabled={timerOTP > 0 || isPending} onPress={onResendOtp}>
           <Text style={[styles.resendLink, (timerOTP > 0 || isPending) && styles.resendDisabled]}>
-            {isPending ? 'Mengirim...' : `Kirim ulang (${timerOTP}s)`}
+            {isPending ? 'Mengirim...' : `Kirim ulang (${formatOTPTimer(timerOTP)})`}
           </Text>
         </TouchableOpacity>
       </View>

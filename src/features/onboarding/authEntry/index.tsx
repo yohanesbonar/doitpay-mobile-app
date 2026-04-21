@@ -184,7 +184,7 @@ export const AuthEntry = ({ route }) => {
         },
         {
           onSuccess: (res) => {
-            setTimerOTP(res.data.resendAfterSeconds || 30);
+            setTimerOTP(res.data.retryAfterSeconds || 30);
             setCurrentStep(2);
           },
           onError: (err) => {
@@ -204,7 +204,7 @@ export const AuthEntry = ({ route }) => {
         },
         {
           onSuccess: (res) => {
-            setTimerOTP(res.data.resendAfterSeconds || 30);
+            setTimerOTP(res.data.retryAfterSeconds || 30);
             setCurrentStep(2);
           },
           onError: (err) => {
@@ -335,7 +335,7 @@ export const AuthEntry = ({ route }) => {
           },
           {
             onSuccess: (res) => {
-              setTimerOTP(res.data.resendAfterSeconds || 30);
+              setTimerOTP(res.data.retryAfterSeconds || 30);
               setCurrentStep(2);
             },
             onError: (err) => {
@@ -355,7 +355,7 @@ export const AuthEntry = ({ route }) => {
           },
           {
             onSuccess: (res) => {
-              setTimerOTP(res.data.resendAfterSeconds || 30);
+              setTimerOTP(res.data.retryAfterSeconds || 30);
               setCurrentStep(2);
             },
             onError: (err) => {

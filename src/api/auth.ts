@@ -20,7 +20,7 @@ export type RegisterOtpResponse = {
   status: string;
   message: string;
   data: {
-    resendAfterSeconds: number;
+    retryAfterSeconds: number;
   };
 };
 
@@ -70,7 +70,7 @@ export type LoginOtpResponse = {
   status: string;
   message: string;
   data: {
-    resendAfterSeconds: number;
+    retryAfterSeconds: number;
   };
 };
 
