@@ -274,11 +274,11 @@ export const AuthEntry = ({ route }) => {
                   }, 250);
                 },
                 onError: (err: any) => {
-                  setIsErrorPIN(true);
+                  // setIsErrorPIN(true);
                   setConfirmationPin('');
                   Toast.show({
                     type: 'error',
-                    text1: err?.message || 'Gagal mengatur PIN',
+                    text1: err?.message || '',
                   });
                 },
               },

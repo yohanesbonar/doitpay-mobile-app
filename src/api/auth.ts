@@ -98,6 +98,7 @@ export const authApi = {
     const { data } = await apiClient.post<RegisterOtpResponse>(
       '/v1/onboarding/otp/request',
       payload,
+      { noNeedAuth: true },
     );
     return data;
   },
@@ -107,6 +108,7 @@ export const authApi = {
     const { data } = await apiClient.post<RegisterOtpVerifyResponse>(
       '/v1/onboarding/otp/verify',
       payload,
+      { noNeedAuth: true },
     );
     return data;
   },
@@ -118,13 +120,16 @@ export const authApi = {
     return data;
   },
   loginRequestOtp: async (payload: LoginOtpRequestPayload): Promise<LoginOtpResponse> => {
-    const { data } = await apiClient.post<LoginOtpResponse>('v1/auth/login/otp/request', payload);
+    const { data } = await apiClient.post<LoginOtpResponse>('v1/auth/login/otp/request', payload, {
+      noNeedAuth: true,
+    });
     return data;
   },
   loginVerifyOtp: async (payload: LoginOtpVerifyPayload): Promise<LoginOtpVerifyResponse> => {
     const { data } = await apiClient.post<LoginOtpVerifyResponse>(
       'v1/auth/login/otp/verify',
       payload,
+      { noNeedAuth: true },
     );
     return data;
   },
