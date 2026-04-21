@@ -19,6 +19,7 @@ const BankListScreen = () => {
 
   const handleNext = (values: any) => {
     console.log('Footer Next Pressed', values);
+    navigation.navigate('Home');
   };
 
   return (

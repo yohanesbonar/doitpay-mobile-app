@@ -35,11 +35,7 @@ export const AddBankRecipientView = ({
 
   return (
     <View style={styles.container}>
-      <HeaderToolbar
-        title={t('addBankAccount.rekening')}
-        withBackButton={true}
-        onPressBack={onPressBack}
-      />
+      <HeaderToolbar title={t('addBankAccount.rekening')} onPressBack={onPressBack} />
       <Formik
         initialValues={{ accountNumber: '' }}
         validationSchema={BankAccountSchema}

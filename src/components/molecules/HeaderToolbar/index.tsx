@@ -9,7 +9,6 @@ interface HeaderToolbarProps {
   title: string;
   leftComponent?: React.ReactNode;
   rightComponent?: React.ReactNode;
-  withBackButton?: boolean;
   onPressBack?: () => void;
   withCloseButton?: boolean;
   onPressRightButton?: () => void;
@@ -21,7 +20,6 @@ const HeaderToolbar = ({
   title,
   leftComponent,
   rightComponent,
-  withBackButton,
   onPressBack,
   withCloseButton,
   onPressRightButton,
@@ -37,7 +35,7 @@ const HeaderToolbar = ({
         <View style={styles.sectionLeft}>
           {leftComponent
             ? leftComponent
-            : withBackButton && <IconBackButton style={styles.backButton} onPress={onPressBack} />}
+            : onPressBack && <IconBackButton style={styles.backButton} onPress={onPressBack} />}
         </View>
 
         <View style={styles.sectionCenter}>

@@ -76,11 +76,7 @@ export const BankListView = ({ onPressBack, onSelectBank, onPressNext }: BankLis
 
   return (
     <View style={styles.container}>
-      <HeaderToolbar
-        title={t('bankList.rekening')}
-        withBackButton={true}
-        onPressBack={onPressBack} // Menggunakan props
-      />
+      <HeaderToolbar title={t('bankList.rekening')} onPressBack={onPressBack} />
       <Formik initialValues={{ selectedBank: '', searchQuery: '' }} onSubmit={onPressNext}>
         {({ values, setFieldValue, handleSubmit }) => (
           <View style={{ flex: 1 }}>

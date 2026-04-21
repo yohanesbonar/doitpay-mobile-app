@@ -451,7 +451,6 @@ export const AuthEntry = ({ route }) => {
       <View style={{ flex: 1, backgroundColor: colors.pageBackground }}>
         <HeaderToolbar
           title={title}
-          withBackButton={true}
           onPressBack={() => {
             if (currentStep > 1) {
               if (!isLoginState) {
