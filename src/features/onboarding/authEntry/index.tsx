@@ -11,7 +11,14 @@ import * as Yup from 'yup';
 import Button from '../../../components/atoms/Button/index.tsx';
 import { useBlurOnFulfill, useClearByFocusCell } from 'react-native-confirmation-code-field';
 import _ from 'lodash';
-import { useRequestOtp, useVerifyOtp, usePinSetup } from '../../../hooks/useAuthMutation.ts';
+import {
+  useRegisterRequestOtp,
+  useRegisterVerifyOtp,
+  useRegisterPinSetup,
+  useLoginRequestOtp,
+  useLoginVerifyOtp,
+  useLogin,
+} from '../../../hooks/useAuthMutation.ts';
 import InputPhoneNumber from './components/InputPhoneNumber.tsx';
 import InputOTPNumber from './components/InputOTPNumber.tsx';
 import Toast from 'react-native-toast-message';
@@ -44,9 +51,13 @@ export const AuthEntry = ({ route }) => {
   const PIN_LENGTH = 6;
   const enableButtonNextRef = useRef(false);
 
-  const { mutate: requestOTP, isPending: isRequesting } = useRequestOtp();
-  const { mutate: verifyOTP, isPending: isVerifying } = useVerifyOtp();
-  const { mutate: setupPin, isPending: isSettingPin } = usePinSetup();
+  const { mutate: registerRequestOTP, isPending: isRequesting } = useRegisterRequestOtp();
+  const { mutate: registerVerifyOTP, isPending: isVerifying } = useRegisterVerifyOtp();
+  const { mutate: registerSetupPin, isPending: isSettingPin } = useRegisterPinSetup();
+
+  const { mutate: loginRequestOTP, isPending: isLoginRequesting } = useLoginRequestOtp();
+  const { mutate: loginVerifyOTP, isPending: isLoginVerifying } = useLoginVerifyOtp();
+  const { mutate: loginMutate, isPending: isSettingPinLogin } = useLogin();
 
   const handlePressPIN = () => {
     inputRef.current?.focus();
@@ -126,7 +137,7 @@ export const AuthEntry = ({ route }) => {
             otpFieldProps={props} // ini dari useClearByFocusCell
             getCellOnLayoutHandler={getCellOnLayoutHandler}
             onResendOtp={handleSendOtp}
-            isPending={isRequesting}
+            isPending={isRequesting || isLoginRequesting}
           />
         );
       case 3:
@@ -165,31 +176,47 @@ export const AuthEntry = ({ route }) => {
     const { phoneNumber, countryCode } = phoneNumbData;
     const formattedPhone = (countryCode + phoneNumber).replace('+', '');
 
-    requestOTP(
-      {
-        phoneNumber: formattedPhone,
-        method: 'SMS',
-      },
-      {
-        onSuccess: (res) => {
-          setTimerOTP(res.data.resendAfterSeconds || 30);
-
-          Toast.show({
-            type: 'success',
-            text1: t('authEntry.otpSentSuccess') || 'OTP berhasil dikirim ulang',
-          });
-
-          setValueOTP('');
+    if (!isLoginState) {
+      registerRequestOTP(
+        {
+          phoneNumber: formattedPhone,
+          method: 'SMS',
         },
-        onError: (err: any) => {
-          console.error('Resend OTP Error:', err);
-          Toast.show({
-            type: 'error',
-            text1: err?.message || 'Gagal mengirim ulang OTP',
-          });
+        {
+          onSuccess: (res) => {
+            setTimerOTP(res.data.resendAfterSeconds || 30);
+            setCurrentStep(2);
+          },
+          onError: (err) => {
+            console.error('error OTP request', err);
+            Toast.show({
+              type: 'error',
+              text1: err.message,
+            });
+          },
         },
-      },
-    );
+      );
+    } else {
+      loginRequestOTP(
+        {
+          phoneNumber: formattedPhone,
+          method: 'SMS',
+        },
+        {
+          onSuccess: (res) => {
+            setTimerOTP(res.data.resendAfterSeconds || 30);
+            setCurrentStep(2);
+          },
+          onError: (err) => {
+            console.error('error OTP request', err);
+            Toast.show({
+              type: 'error',
+              text1: err.message,
+            });
+          },
+        },
+      );
+    }
   };
 
   useEffect(() => {
@@ -209,66 +236,64 @@ export const AuthEntry = ({ route }) => {
   }, [formikRef.current?.isValid, formikRef.current?.dirty, currentStep, valueOTP]);
 
   const handlePINChange = (text: string) => {
-  if (isErrorPIN) setIsErrorPIN(false);
+    if (isErrorPIN) setIsErrorPIN(false);
 
-  if (text.length <= PIN_LENGTH) {
-    if (currentStep === 3) {
-      setPin(text);
-    } else {
-      setConfirmationPin(text);
-    }
-  }
-
-  if (text.length === PIN_LENGTH) {
-    if (currentStep === 3) {
-      setTimeout(() => {
-        setCurrentStep(4);
-      }, 250);
-    } else {
-      // Logic Step 4: Confirmation PIN Registration
-      if (!isLoginState) {
-        if (text === pin) {
-          const { phoneNumber, countryCode } = phoneNumbData;
-          const formattedPhone = (countryCode + phoneNumber).replace('+', '');
-
-          setupPin(
-            {
-              phoneNumber: formattedPhone,
-              pin: text,
-            },
-            {
-              onSuccess: (res) => {
-                // Simpan token/session jika perlu di storage (EncryptedStorage/MMKV)
-                Toast.show({
-                  type: 'success',
-                  text1: 'PIN berhasil dibuat',
-                });
-                
-                setTimeout(() => {
-                  setCurrentStep(5);
-                }, 250);
-              },
-              onError: (err: any) => {
-                setIsErrorPIN(true);
-                setConfirmationPin('');
-                Toast.show({
-                  type: 'error',
-                  text1: err?.message || 'Gagal mengatur PIN',
-                });
-              },
-            },
-          );
-        } else {
-          setIsErrorPIN(true);
-          setConfirmationPin('');
-        }
+    if (text.length <= PIN_LENGTH) {
+      if (currentStep === 3) {
+        setPin(text);
       } else {
-        // Jika isLoginState, logic biasanya hit login API dengan PIN
-        navigation.navigate('Home', { isLoginState: isLoginState });
+        setConfirmationPin(text);
       }
     }
-  }
-};
+
+    if (text.length === PIN_LENGTH) {
+      if (currentStep === 3) {
+        setTimeout(() => {
+          setCurrentStep(4);
+        }, 250);
+      } else {
+        if (!isLoginState) {
+          if (text === pin) {
+            const { phoneNumber, countryCode } = phoneNumbData;
+            const formattedPhone = (countryCode + phoneNumber).replace('+', '');
+
+            registerSetupPin(
+              {
+                phoneNumber: formattedPhone,
+                pin: text,
+              },
+              {
+                onSuccess: (res) => {
+                  // Simpan token/session jika perlu di storage (EncryptedStorage/MMKV)
+                  Toast.show({
+                    type: 'success',
+                    text1: 'PIN berhasil dibuat',
+                  });
+
+                  setTimeout(() => {
+                    setCurrentStep(5);
+                  }, 250);
+                },
+                onError: (err: any) => {
+                  setIsErrorPIN(true);
+                  setConfirmationPin('');
+                  Toast.show({
+                    type: 'error',
+                    text1: err?.message || 'Gagal mengatur PIN',
+                  });
+                },
+              },
+            );
+          } else {
+            setIsErrorPIN(true);
+            setConfirmationPin('');
+          }
+        } else {
+          navigation.navigate('Home', { isLoginState: isLoginState });
+        }
+      }
+    }
+  };
 
   const onPressNext = () => {
     // STEP 1: Request OTP
@@ -276,25 +301,48 @@ export const AuthEntry = ({ route }) => {
       const { phoneNumber, countryCode } = formikRef.current?.values;
       const formattedPhone = (countryCode + phoneNumber).replace('+', '');
 
-      requestOTP(
-        {
-          phoneNumber: formattedPhone,
-          method: 'SMS',
-        },
-        {
-          onSuccess: (res) => {
-            setTimerOTP(res.data.resendAfterSeconds || 30);
-            setCurrentStep(2);
+      if (!isLoginState) {
+        registerRequestOTP(
+          {
+            phoneNumber: formattedPhone,
+            method: 'SMS',
           },
-          onError: (err) => {
-            console.error('error OTP request', err);
-            Toast.show({
-              type: 'error',
-              text1: err.message,
-            });
+          {
+            onSuccess: (res) => {
+              setTimerOTP(res.data.resendAfterSeconds || 30);
+              setCurrentStep(2);
+            },
+            onError: (err) => {
+              console.error('error OTP request', err);
+              Toast.show({
+                type: 'error',
+                text1: err.message,
+              });
+            },
           },
-        },
-      );
+        );
+      } else {
+        loginRequestOTP(
+          {
+            phoneNumber: formattedPhone,
+            method: 'SMS',
+          },
+          {
+            onSuccess: (res) => {
+              setTimerOTP(res.data.resendAfterSeconds || 30);
+              setCurrentStep(2);
+            },
+            onError: (err) => {
+              console.error('error OTP request', err);
+              Toast.show({
+                type: 'error',
+                text1: err.message,
+              });
+            },
+          },
+        );
+      }
+
       return;
     }
 
@@ -303,27 +351,43 @@ export const AuthEntry = ({ route }) => {
       const { phoneNumber, countryCode } = phoneNumbData;
       const formattedPhone = (countryCode + phoneNumber).replace('+', '');
 
-      verifyOTP(
-        {
-          phoneNumber: formattedPhone,
-          otpCode: valueOTP,
-        },
-        {
-          onSuccess: (res) => {
-            if (!isLoginState) {
+      if (!isLoginState) {
+        registerVerifyOTP(
+          {
+            phoneNumber: formattedPhone,
+            otpCode: valueOTP,
+          },
+          {
+            onSuccess: (res) => {
               setCurrentStep(3);
-            } else {
+            },
+            onError: (err: any) => {
+              Toast.show({
+                type: 'error',
+                text1: err?.message || 'Kode OTP salah',
+              });
+            },
+          },
+        );
+      } else {
+        loginVerifyOTP(
+          {
+            phoneNumber: formattedPhone,
+            otpCode: valueOTP,
+          },
+          {
+            onSuccess: (res) => {
               setCurrentStep(4);
-            }
+            },
+            onError: (err: any) => {
+              Toast.show({
+                type: 'error',
+                text1: err?.message || 'Kode OTP salah',
+              });
+            },
           },
-          onError: (err: any) => {
-            Toast.show({
-              type: 'error',
-              text1: err?.message || 'Kode OTP salah',
-            });
-          },
-        },
-      );
+        );
+      }
       return;
     }
 
@@ -395,17 +459,19 @@ export const AuthEntry = ({ route }) => {
             <Button
               type="regular"
               onPress={() => onPressNext()}
-              loading={isRequesting || isVerifying}
+              loading={isRequesting || isVerifying || isLoginRequesting}
               title={t(currentStep === 1 ? 'authEntry.sendOTPNumber' : 'authEntry.verification')}
               style={{
                 backgroundColor:
-                  enableButtonNextRef.current && !isVerifying && !isRequesting
+                  enableButtonNextRef.current && !isVerifying && !isRequesting && !isLoginRequesting
                     ? colors.buttonBlue
                     : colors.disableButton,
               }}
               color={colors.buttonBlue}
               textColor="white"
-              disable={!enableButtonNextRef.current || isVerifying || isRequesting}
+              disable={
+                !enableButtonNextRef.current || isVerifying || isRequesting || isLoginRequesting
+              }
             />
           )}
         </View>

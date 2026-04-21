@@ -1,62 +1,126 @@
 import { useMutation } from '@tanstack/react-query';
-import { authApi, OtpRequestPayload, OtpResponse, OtpVerifyPayload, OtpVerifyResponse, PinSetupPayload, PinSetupResponse } from '../api/auth';
+import {
+  authApi,
+  LoginOtpRequestPayload,
+  LoginOtpResponse,
+  LoginOtpVerifyPayload,
+  LoginOtpVerifyResponse,
+  LoginPayload,
+  LoginResponse,
+  RegisterOtpRequestPayload,
+  RegisterOtpResponse,
+  RegisterOtpVerifyPayload,
+  RegisterOtpVerifyResponse,
+  RegisterPinSetupPayload,
+  RegisterPinSetupResponse,
+} from '../api/auth';
 import { setStorageItem, StorageKey } from '../storage';
 
-export const useRequestOtp = () => {
-  return useMutation<OtpResponse, Error, OtpRequestPayload>({
-    mutationFn: (payload) => authApi.requestOtp(payload), 
+export const useRegisterRequestOtp = () => {
+  return useMutation<RegisterOtpResponse, Error, RegisterOtpRequestPayload>({
+    mutationFn: (payload) => authApi.registerRequestOtp(payload),
     onSuccess: (data) => {
-      console.log('OTP sent data.message:', data.message);
-      console.log('OTP sent data', data);
+      console.log('useRegisterRequestOtp data.message:', data.message);
+      console.log('useRegisterRequestOtp data', data);
     },
-    onError: (error) => {
-      console.log('error useRequestOtp', error);
-      console.error('Request failed:', error.message);
+    onError: (error) => {ß
+      console.log('error useRegisterRequestOtp', error);
+      console.error('useRegisterRequestOtp Request failed:', error.message);
     },
   });
 };
 
-export const useVerifyOtp = () => {
-  return useMutation<OtpVerifyResponse, Error, OtpVerifyPayload>({
-    mutationFn: (payload) => authApi.verifyOtp(payload), 
+export const useRegisterVerifyOtp = () => {
+  return useMutation<RegisterOtpVerifyResponse, Error, RegisterOtpVerifyPayload>({
+    mutationFn: (payload) => authApi.registerVerifyOtp(payload),
     onSuccess: (data) => {
-      console.log('useVerifyOtp sent data.message:', data.message);
-      console.log('useVerifyOtp sent data', data);
+      console.log('useRegisterVerifyOtp data.message:', data.message);
+      console.log('useRegisterVerifyOtp data', data);
 
       const session = data?.data;
 
       if (session?.verificationToken) {
         setStorageItem(StorageKey.VERIFICATION_TOKEN, session.verificationToken);
-        
-        console.log('VERIFICATION_TOKEN saved to MMKV');
+
+        console.log('useRegisterVerifyOtp VERIFICATION_TOKEN saved to MMKV');
       }
     },
     onError: (error) => {
-      console.log('error useVerifyOtp', error);
-      console.error('useVerifyOtp Request failed:', error.message);
+      console.log('error useRegisterVerifyOtp', error);
+      console.error('useRegisterVerifyOtp Request failed:', error.message);
     },
-  })
-}
+  });
+};
 
-export const usePinSetup = () => {
-  return useMutation<PinSetupResponse, Error, PinSetupPayload>({
-    mutationFn: (payload) => authApi.pinSetup(payload), 
+export const useRegisterPinSetup = () => {
+  return useMutation<RegisterPinSetupResponse, Error, RegisterPinSetupPayload>({
+    mutationFn: (payload) => authApi.registerPinSetup(payload),
     onSuccess: (data) => {
-      console.log('usePinSetup sent data.message:', data?.message);
-      console.log('usePinSetup sent data', data);
+      console.log('useRegisterPinSetup data.message:', data?.message);
+      console.log('useRegisterPinSetup data', data);
 
       const session = data?.data;
 
       if (session?.accessToken) {
         setStorageItem(StorageKey.ACCESS_TOKEN, session.accessToken);
         setStorageItem(StorageKey.REFRESH_TOKEN, session.refreshToken);
-        
-        console.log('ACCESS_TOKEN & REFRESH_TOKEN saved to MMKV');
+
+        console.log('useRegisterPinSetup ACCESS_TOKEN & REFRESH_TOKEN saved to MMKV');
       }
     },
     onError: (error) => {
-      console.log('error usePinSetup', error);
-      console.error('usePinSetup Request failed:', error?.message);
+      console.log('error useRegisterPinSetup', error);
+      console.error('useRegisterPinSetup Request failed:', error?.message);
     },
-  })
-}
+  });
+};
+
+export const useLoginRequestOtp = () => {
+  return useMutation<LoginOtpResponse, Error, LoginOtpRequestPayload>({
+    mutationFn: (payload) => authApi.loginRequestOtp(payload),
+    onSuccess: (data) => {
+      console.log('useLoginRequestOtp data.message:', data.message);
+      console.log('useLoginRequestOtp data', data);
+    },
+    onError: (error) => {ß
+      console.log('error useLoginRequestOtp', error);
+      console.error('useLoginRequestOtp Request failed:', error.message);
+    },
+  });
+};
+
+export const useLoginVerifyOtp = () => {
+  return useMutation<LoginOtpVerifyResponse, Error, LoginOtpVerifyPayload>({
+    mutationFn: (payload) => authApi.loginVerifyOtp(payload),
+    onSuccess: (data) => {
+      console.log('useLoginVerifyOtp sent data.message:', data.message);
+      console.log('useLoginVerifyOtp sent data', data);
+
+      const session = data?.data;
+
+      if (session?.verificationToken) {
+        setStorageItem(StorageKey.VERIFICATION_TOKEN, session.verificationToken);
+
+        console.log('useLoginVerifyOtp VERIFICATION_TOKEN saved to MMKV');
+      }
+    },
+    onError: (error) => {
+      console.log('error useLoginVerifyOtp', error);
+      console.error('useLoginVerifyOtp Request failed:', error.message);
+    },
+  });
+};
+
+export const useLogin = () => {
+  return useMutation<LoginResponse, Error, LoginPayload>({
+    mutationFn: (payload) => authApi.login(payload),
+    onSuccess: (data) => {
+      console.log('LOGIN data.message:', data.message);
+      console.log('LOGIN data', data);
+    },
+    onError: (error) => {ß
+      console.log('error login', error);
+      console.error('error login:', error.message);
+    },
+  });
+};
