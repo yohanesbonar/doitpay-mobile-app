@@ -1,17 +1,21 @@
 import { useEffect } from 'react';
 import { PermissionsAndroid, Platform } from 'react-native';
-import messaging from '@react-native-firebase/messaging';
-import { useGetFcmToken } from './useGetFcmToken';
-import { useNotificationListener } from './useNotificationListener';
+import {
+  getMessaging,
+  requestPermission as firebaseRequestPermission,
+  AuthorizationStatus,
+  getInitialNotification,
+} from '@react-native-firebase/messaging';
 import { handleNotificationNavigation } from '../utils/Notification/notificationHandler';
 
 export const useNotifications = () => {
+  const messagingInstance = getMessaging();
 
   const requestPermission = async () => {
     try {
       if (Platform.OS === 'android' && Platform.Version >= 33) {
         const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+          PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
         );
         if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
           console.log('User reject permission Android');
@@ -19,10 +23,11 @@ export const useNotifications = () => {
         }
       }
 
-      const authStatus = await messaging().requestPermission();
+      const authStatus = await firebaseRequestPermission(messagingInstance);
+
       const enabled =
-        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+        authStatus === AuthorizationStatus.AUTHORIZED ||
+        authStatus === AuthorizationStatus.PROVISIONAL;
 
       if (enabled) {
         console.log('Permission status:', authStatus);
@@ -35,16 +40,14 @@ export const useNotifications = () => {
   useEffect(() => {
     requestPermission();
 
-    messaging()
-      .getInitialNotification()
-      .then((remoteMessage) => {
-        if (remoteMessage) {
-          console.log('App opened from quit state:', remoteMessage.notification);
-          const timer = setTimeout(() => {
-            handleNotificationNavigation(remoteMessage);
-          }, 500);
-          return () => clearTimeout(timer);
-        }
-      });
-  }, []);
+    getInitialNotification(messagingInstance).then((remoteMessage) => {
+      if (remoteMessage) {
+        console.log('App opened from quit state:', remoteMessage.notification);
+        const timer = setTimeout(() => {
+          handleNotificationNavigation(remoteMessage);
+        }, 500);
+        return () => clearTimeout(timer);
+      }
+    });
+  }, [messagingInstance]);
 };

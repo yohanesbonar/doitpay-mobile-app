@@ -4,7 +4,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { I18nextProvider } from 'react-i18next';
 import i18next from 'i18next';
 import Toast from 'react-native-toast-message';
-import messaging from '@react-native-firebase/messaging';
+import { getMessaging, setBackgroundMessageHandler } from '@react-native-firebase/messaging';
 import notifee, { EventType } from '@notifee/react-native';
 
 import { initI18next } from './src/i18n/initI18next.ts';
@@ -32,14 +32,15 @@ const queryClient = new QueryClient({
 // Start i18n
 initI18next();
 
+const messagingInstance = getMessaging();
 // Handle background messages
-messaging().setBackgroundMessageHandler(async (remoteMessage) => {
+setBackgroundMessageHandler(messagingInstance, async (remoteMessage) => {
   // console.log('Message handled in the background!', remoteMessage);
 });
 
 notifee.onBackgroundEvent(async ({ type, detail }) => {
   if (type === EventType.PRESS) {
-    console.log('User pressed notification in background', detail.notification);
+    console.log('User pressed notification in background', detail?.notification);
   }
 });
 
