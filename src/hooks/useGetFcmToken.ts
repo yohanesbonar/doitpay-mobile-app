@@ -14,7 +14,7 @@ export const useGetFcmToken = () => {
         console.log('FCM Token:', token);
       }
     } catch (error) {
-      console.error('Gagal mengambil FCM Token:', error);
+      console.error('Failed to get FCM Token - error:', error);
     }
   };
 
