@@ -134,7 +134,7 @@ export const AuthEntry = ({ route }) => {
             timerOTP={timerOTP}
             phoneNumbData={phoneNumbData}
             CELL_COUNT_OTP={CELL_COUNT_OTP}
-            otpFieldProps={props} // ini dari useClearByFocusCell
+            otpFieldProps={props}
             getCellOnLayoutHandler={getCellOnLayoutHandler}
             onResendOtp={handleSendOtp}
             isPending={isRequesting || isLoginRequesting}
@@ -264,7 +264,6 @@ export const AuthEntry = ({ route }) => {
               },
               {
                 onSuccess: (res) => {
-                  // Simpan token/session jika perlu di storage (EncryptedStorage/MMKV)
                   Toast.show({
                     type: 'success',
                     text1: 'PIN berhasil dibuat',
@@ -289,7 +288,34 @@ export const AuthEntry = ({ route }) => {
             setConfirmationPin('');
           }
         } else {
-          navigation.navigate('Home', { isLoginState: isLoginState });
+          const { phoneNumber, countryCode } = phoneNumbData;
+          const formattedPhone = (countryCode + phoneNumber).replace('+', '');
+
+          loginMutate(
+            {
+              phoneNumber: formattedPhone,
+              pin: text,
+            },
+            {
+              onSuccess: (res) => {
+                Toast.show({
+                  type: 'success',
+                  text1: 'PIN berhasil dibuat',
+                });
+
+                setTimeout(() => {
+                  navigation.navigate('Home', { isLoginState });
+                }, 250);
+              },
+              onError: (err: any) => {
+                setConfirmationPin('');
+                Toast.show({
+                  type: 'error',
+                  text1: err?.message || 'Gagal mengatur PIN',
+                });
+              },
+            },
+          );
         }
       }
     }
@@ -459,18 +485,26 @@ export const AuthEntry = ({ route }) => {
             <Button
               type="regular"
               onPress={() => onPressNext()}
-              loading={isRequesting || isVerifying || isLoginRequesting}
+              loading={isRequesting || isVerifying || isLoginRequesting || isLoginVerifying}
               title={t(currentStep === 1 ? 'authEntry.sendOTPNumber' : 'authEntry.verification')}
               style={{
                 backgroundColor:
-                  enableButtonNextRef.current && !isVerifying && !isRequesting && !isLoginRequesting
+                  enableButtonNextRef.current &&
+                  !isVerifying &&
+                  !isRequesting &&
+                  !isLoginRequesting &&
+                  !isLoginVerifying
                     ? colors.buttonBlue
                     : colors.disableButton,
               }}
               color={colors.buttonBlue}
               textColor="white"
               disable={
-                !enableButtonNextRef.current || isVerifying || isRequesting || isLoginRequesting
+                !enableButtonNextRef.current ||
+                isVerifying ||
+                isRequesting ||
+                isLoginRequesting ||
+                isLoginVerifying
               }
             />
           )}
