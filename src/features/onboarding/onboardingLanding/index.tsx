@@ -32,7 +32,7 @@ export const OnboardingView = ({ onGetStarted, onLoginRedirect }: OnboardingView
         <Text style={styles.freeTransferText}>{t('onboarding.freeTransfer')}</Text>
         <Text style={styles.descriptionText}>{t('onboarding.description')}</Text>
       </View>
-      <View style={{ position: 'absolute', bottom: 32, left: 16, right: 16 }}>
+      <View style={{ position: 'absolute', bottom: 42, left: 16, right: 16 }}>
         <Button
           type="regular"
           onPress={onGetStarted}

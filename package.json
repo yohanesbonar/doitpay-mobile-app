@@ -13,7 +13,10 @@
     "format": "prettier --write .",
     "start": "react-native start",
     "test": "jest",
-    "clean-run-android": "rm -rf yarn.lock && rm -rf node_modules && yarn && cd android && ./gradlew clean && cd .. && yarn android"
+    "clean-run-android": "rm -rf yarn.lock && rm -rf node_modules && yarn && cd android && ./gradlew clean && cd .. && yarn android",
+    "build:android-staging": "export ENVFILE=.env.staging && cd android && ./gradlew assembleStagingRelease && cd ..",
+    "build:android-production": "export ENVFILE=.env.production && cd android && ./gradlew bundleProductionRelease && cd ..",
+    "clean:android": "cd android && ./gradlew clean && cd .."
   },
   "dependencies": {
     "@expo/html-elements": "^0.10.1",
