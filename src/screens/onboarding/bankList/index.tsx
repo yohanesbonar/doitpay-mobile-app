@@ -1,12 +1,14 @@
 import React from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, StackActions, useRoute } from '@react-navigation/native';
 import { BankListView } from '../../../features/onboarding/bankList';
 
 const BankListScreen = () => {
   const navigation = useNavigation<any>();
+  const route = useRoute<any>();
+  const isLoginState = route.params?.isLoginState;
 
   const handleBack = () => {
-    navigation.goBack();
+    navigation.dispatch(StackActions.replace('Home', { isLoginState }));
   };
 
   const handleSelectBank = (bankId: string) => {
@@ -18,8 +20,7 @@ const BankListScreen = () => {
   };
 
   const handleNext = (values: any) => {
-    console.log('Footer Next Pressed', values);
-    navigation.navigate('Home');
+    navigation.navigate('Home', { isLoginState });
   };
 
   return (
@@ -27,6 +28,7 @@ const BankListScreen = () => {
       onPressBack={handleBack}
       onSelectBank={handleSelectBank}
       onPressNext={handleNext}
+      isLoginState={isLoginState}
     />
   );
 };

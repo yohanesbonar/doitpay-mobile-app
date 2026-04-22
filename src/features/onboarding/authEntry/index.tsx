@@ -32,7 +32,8 @@ export const AuthEntry = ({ route }) => {
   const { t } = useTranslation();
   const navigation = useNavigation();
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 3;
+  // total steps set 2 because KYC is not ready
+  const totalSteps = 2;
 
   const CELL_COUNT_OTP = 6;
   const [valueOTP, setValueOTP] = useState('');
@@ -159,14 +160,15 @@ export const AuthEntry = ({ route }) => {
             }}
           />
         );
-      case 5:
-        return (
-          <IdentityVerification
-            styles={styles}
-            onVerifyNow={() => console.log('Verify Now')}
-            onMaybeLater={() => navigation.navigate('BankList')}
-          />
-        );
+      // disable this step because KYC is not ready
+      // case 5:
+      //   return (
+      //     <IdentityVerification
+      //       styles={styles}
+      //       onVerifyNow={() => console.log('Verify Now')}
+      //       onMaybeLater={() => navigation.navigate('BankList')}
+      //     />
+      //   );
       default:
         return '';
     }
@@ -271,8 +273,12 @@ export const AuthEntry = ({ route }) => {
                     text1: 'PIN berhasil dibuat',
                   });
 
+                  // disable this step because KYC is not ready
+                  // setTimeout(() => {
+                  //   setCurrentStep(5);
+                  // }, 250);
                   setTimeout(() => {
-                    setCurrentStep(5);
+                    navigation.navigate('BankList', { isLoginState });
                   }, 250);
                 },
                 onError: (err: any) => {
@@ -302,7 +308,7 @@ export const AuthEntry = ({ route }) => {
               onSuccess: (res) => {
                 Toast.show({
                   type: 'success',
-                  text1: 'PIN berhasil dibuat',
+                  text1: 'Berhasil login',
                 });
 
                 setTimeout(() => {
@@ -453,21 +459,23 @@ export const AuthEntry = ({ route }) => {
       <View style={{ flex: 1, backgroundColor: colors.pageBackground }}>
         <HeaderToolbar
           title={title}
-          onPressBack={() => {
-            if (currentStep > 1) {
-              if (!isLoginState) {
-                setCurrentStep((prev) => Math.max(prev - 1, 1));
-              } else {
-                if (currentStep == 4) {
-                  setCurrentStep((prev) => Math.max(prev - 2, 1));
-                } else {
-                  setCurrentStep((prev) => Math.max(prev - 1, 1));
+          onPressBack={
+            currentStep == 3
+              ? undefined
+              : () => {
+                  if (currentStep > 1) {
+                    if (!isLoginState) {
+                      setCurrentStep((prev) => Math.max(prev - 1, 1));
+                    } else {
+                      if (currentStep == 4) {
+                        setCurrentStep((prev) => Math.max(prev - 2, 1));
+                      } else {
+                        setCurrentStep((prev) => Math.max(prev - 1, 1));
+                      }
+                    }
+                  } else navigation.goBack();
                 }
-              }
-            } else navigation.goBack();
-          }}
-          withCloseButton={true}
-          onPressRightButton={() => navigation.goBack()}
+          }
           titlePosition="center"
         />
         {!isLoginState ? (

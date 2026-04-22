@@ -8,14 +8,19 @@ import { useTheme } from '../../../theme/ThemeProvider.tsx';
 import { Formik } from 'formik';
 import { Search } from 'lucide-react-native';
 
-// Definisikan Props
 interface BankListViewProps {
-  onPressBack: () => void;
+  onPressBack: (values: any) => void;
   onSelectBank: (id: string) => void;
   onPressNext: (values: any) => void;
+  isLoginState: boolean;
 }
 
-export const BankListView = ({ onPressBack, onSelectBank, onPressNext }: BankListViewProps) => {
+export const BankListView = ({
+  onPressBack,
+  onSelectBank,
+  onPressNext,
+  isLoginState,
+}: BankListViewProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const { t } = useTranslation();
