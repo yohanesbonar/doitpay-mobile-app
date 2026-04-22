@@ -135,7 +135,7 @@ export const createStyles = (colors: any) => {
       fontFamily: 'Switzer-Semibold',
     },
     resendDisabled: {
-      color: '#4A80F0',
+      color: '#1c675e',
     },
     dotsContainer: {
       flexDirection: 'row',

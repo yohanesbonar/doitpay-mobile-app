@@ -68,7 +68,8 @@ const InputOTPNumber: React.FC<InputOTPNumberProps> = ({
         <Text style={styles.resendText}>Tidak menerima ? </Text>
         <TouchableOpacity disabled={timerOTP > 0 || isPending} onPress={onResendOtp}>
           <Text style={[styles.resendLink, (timerOTP > 0 || isPending) && styles.resendDisabled]}>
-            {isPending ? 'Mengirim...' : `Kirim ulang (${formatOTPTimer(timerOTP)})`}
+            {isPending ? 'Mengirim...' : `Kirim ulang `}
+            <Text style={styles.resendLink}>({formatOTPTimer(timerOTP)})</Text>
           </Text>
         </TouchableOpacity>
       </View>
