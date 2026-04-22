@@ -221,7 +221,9 @@ export const AuthEntry = ({ route }) => {
 
   useEffect(() => {
     if (currentStep == 1) {
-      if (!formikRef.current?.isValid || !formikRef.current?.dirty) {
+      const isValid = formikRef.current?.isValid;
+      const isDirty = formikRef.current?.dirty;
+      if (!isValid || !isDirty) {
         enableButtonNextRef.current = false;
       } else {
         enableButtonNextRef.current = true;
