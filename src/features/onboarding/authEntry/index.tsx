@@ -473,6 +473,7 @@ export const AuthEntry = ({ route }) => {
                 }
           }
           titlePosition="center"
+          titleStyle="regular"
         />
         {!isLoginState ? (
           <FlowIndicator
