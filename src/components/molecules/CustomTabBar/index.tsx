@@ -60,7 +60,7 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
                 size={24}
                 color={isFocused ? '#2F6BFF' : '#000'}
               />
-              <Text style={[styles.label, { color: isFocused ? '#2F6BFF' : '#000' }]}>
+              <Text style={[styles.label, { color: isFocused ? '#2F6BFF' : colors.text }]}>
                 {route.name}
               </Text>
             </TouchableOpacity>
@@ -73,7 +73,7 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
         onPress={() => navigation.navigate('BankList')}
         activeOpacity={0.9}>
         <View style={styles.fabInner}>
-          <Icon name="paper-plane-outline" size={26} color="#FFF" />
+          <Icon name="paper-plane-outline" size={26} color={colors.textWhite} />
           <Text style={styles.fabText}>Transfer</Text>
         </View>
       </TouchableOpacity>

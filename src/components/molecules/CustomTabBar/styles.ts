@@ -30,7 +30,7 @@ export const createStyles = (colors: any) => {
       flex: 1,
     },
     label: {
-      fontSize: 14,
+      fontSize: 15,
       marginTop: 4,
       fontFamily: 'Switzer-Regular',
     },
@@ -60,9 +60,9 @@ export const createStyles = (colors: any) => {
     },
     fabText: {
       color: '#FFF',
-      fontSize: 14,
+      fontSize: 15,
       marginTop: 2,
-      fontFamily: 'Switzer-Semibold',
+      fontFamily: 'Switzer-Medium',
     },
   });
 };
