@@ -26,7 +26,7 @@ export const createStyles = (colors: typeof themeColors.light) => {
       alignItems: 'center',
       justifyContent: 'center',
     },
-    safeAreaContainer: { flex: 1, backgroundColor: colors.pageBackground },
+    safeAreaContainer: { flex: 1, backgroundColor: colors.background },
     headerContainer: { padding: 20, flex: 1, backgroundColor: colors.background }
   });
 };

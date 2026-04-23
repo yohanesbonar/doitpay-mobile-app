@@ -10,6 +10,7 @@ import AddBankRecipient from '../screens/onboarding/addBankAccount';
 import { navigationRef } from './navigationRef';
 import { Home } from '../features/home';
 import { useAuthStore } from '../storage/useAuthStore';
+import MainTabNavigator from './page-navigators/MainTabNavigator';
 
 const Stack = createNativeStackNavigator();
 
@@ -29,7 +30,7 @@ export default function RootNavigator() {
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {isAuthenticated ? (
           <Stack.Group>
-            <Stack.Screen name="Home" component={Home} />
+            <Stack.Screen name="MainTabs" component={MainTabNavigator} />
             <Stack.Screen name="BankList" component={BankList} />
             <Stack.Screen name="AddBankRecipient" component={AddBankRecipient} />
           </Stack.Group>

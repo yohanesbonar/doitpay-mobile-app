@@ -13,7 +13,7 @@ const BankListScreen = () => {
   const hasHomeRoute = state.routeNames.includes('Home');
 
   const handleBack = () => {
-    navigation.dispatch(StackActions.replace('Home'));
+    navigation.dispatch(StackActions.replace('MainTabs'));
   };
 
   const handleSelectBank = (bankId: string) => {
@@ -25,7 +25,7 @@ const BankListScreen = () => {
   };
 
   const handleNext = (values: any) => {
-    navigation.dispatch(StackActions.replace('Home'));
+    navigation.dispatch(StackActions.replace('MainTabs'));
   };
 
   return (
