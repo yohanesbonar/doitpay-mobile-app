@@ -15,6 +15,7 @@ import {
   RegisterPinSetupResponse,
 } from '../api/auth';
 import { setStorageItem, StorageKey } from '../storage';
+import { useAuthStore } from '../storage/useAuthStore';
 
 export const useRegisterRequestOtp = () => {
   return useMutation<RegisterOtpResponse, Error, RegisterOtpRequestPayload>({
@@ -23,7 +24,7 @@ export const useRegisterRequestOtp = () => {
       console.log('useRegisterRequestOtp data.message:', data.message);
       console.log('useRegisterRequestOtp data', data);
     },
-    onError: (error) => {ß
+    onError: (error) => {
       console.log('error useRegisterRequestOtp', error);
       console.error('useRegisterRequestOtp Request failed:', error.message);
     },
@@ -53,6 +54,7 @@ export const useRegisterVerifyOtp = () => {
 };
 
 export const useRegisterPinSetup = () => {
+  const setToken = useAuthStore((state) => state.setToken);
   return useMutation<RegisterPinSetupResponse, Error, RegisterPinSetupPayload>({
     mutationFn: (payload) => authApi.registerPinSetup(payload),
     onSuccess: (data) => {
@@ -62,10 +64,7 @@ export const useRegisterPinSetup = () => {
       const session = data?.data;
 
       if (session?.accessToken) {
-        setStorageItem(StorageKey.ACCESS_TOKEN, session.accessToken);
-        setStorageItem(StorageKey.REFRESH_TOKEN, session.refreshToken);
-
-        console.log('useRegisterPinSetup ACCESS_TOKEN & REFRESH_TOKEN saved to MMKV');
+        setToken(session.accessToken, true);
       }
     },
     onError: (error) => {
@@ -82,7 +81,8 @@ export const useLoginRequestOtp = () => {
       console.log('useLoginRequestOtp data.message:', data.message);
       console.log('useLoginRequestOtp data', data);
     },
-    onError: (error) => {ß
+    onError: (error) => {
+      ß;
       console.log('error useLoginRequestOtp', error);
       console.error('useLoginRequestOtp Request failed:', error.message);
     },
@@ -112,13 +112,21 @@ export const useLoginVerifyOtp = () => {
 };
 
 export const useLogin = () => {
+  const setToken = useAuthStore((state) => state.setToken);
   return useMutation<LoginResponse, Error, LoginPayload>({
     mutationFn: (payload) => authApi.login(payload),
     onSuccess: (data) => {
       console.log('LOGIN data.message:', data.message);
       console.log('LOGIN data', data);
+
+      const session = data?.data;
+
+      if (session?.accessToken) {
+        setToken(session.accessToken);
+      }
     },
-    onError: (error) => {ß
+    onError: (error) => {
+      ß;
       console.log('error login', error);
       console.error('error login:', error.message);
     },

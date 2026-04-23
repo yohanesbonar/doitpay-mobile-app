@@ -1,14 +1,19 @@
 import React from 'react';
-import { useNavigation, StackActions, useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute, CommonActions, StackActions } from '@react-navigation/native';
 import { BankListView } from '../../../features/onboarding/bankList';
+import { useAuthStore } from '@/storage/useAuthStore';
 
 const BankListScreen = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const isLoginState = route.params?.isLoginState;
 
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const state = navigation.getState();
+  const hasHomeRoute = state.routeNames.includes('Home');
+
   const handleBack = () => {
-    navigation.dispatch(StackActions.replace('Home', { isLoginState }));
+    navigation.dispatch(StackActions.replace('Home'));
   };
 
   const handleSelectBank = (bankId: string) => {
@@ -20,7 +25,7 @@ const BankListScreen = () => {
   };
 
   const handleNext = (values: any) => {
-    navigation.navigate('Home', { isLoginState });
+    navigation.dispatch(StackActions.replace('Home'));
   };
 
   return (

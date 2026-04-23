@@ -1,5 +1,5 @@
-import {StyleSheet} from 'react-native';
-import {colors as themeColors} from '../../theme/colors';
+import { StyleSheet } from 'react-native';
+import { colors as themeColors } from '../../theme/colors';
 import metrics from '../../theme/metrics';
 import typography from '../../theme/typography.ts';
 
@@ -7,9 +7,9 @@ export const createStyles = (colors: typeof themeColors.light) => {
   return StyleSheet.create({
     container: {
       flex: 1,
+      paddingHorizontal: 16,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: colors.background,
     },
     title: {
       color: colors.text,
@@ -21,10 +21,12 @@ export const createStyles = (colors: typeof themeColors.light) => {
       fontSize: metrics.moderateScale(16),
       fontFamily: typography.REGULAR,
     },
-    buttonContainer:{
+    buttonContainer: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
     },
+    safeAreaContainer: { flex: 1, backgroundColor: colors.pageBackground },
+    headerContainer: { padding: 20, flex: 1, backgroundColor: colors.background }
   });
 };

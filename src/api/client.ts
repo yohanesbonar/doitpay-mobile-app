@@ -2,6 +2,8 @@ import axios, { AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios';
 import Config from 'react-native-config';
 import { getDeviceFingerprint } from '../utils/Device/Device.ts';
 import { getStorageItem, StorageKey } from '../storage/index.ts';
+import { useAuthStore } from '../storage/useAuthStore.ts';
+import Toast from 'react-native-toast-message';
 
 const apiClient = axios.create({
   baseURL: Config.API_URL,
@@ -72,6 +74,21 @@ apiClient.interceptors.response.use(
     }
     return Promise.reject(error);
   },
+);
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401) {
+      useAuthStore.getState().logout();
+      Toast.show({
+        type: 'error',
+        text1: 'Sesi Telah Berakhir',
+        text2: 'Silakan masuk kembali untuk melanjutkan.',
+      });
+    }
+    return Promise.reject(error);
+  }
 );
 
 export default apiClient;

@@ -277,9 +277,7 @@ export const AuthEntry = ({ route }) => {
                   // setTimeout(() => {
                   //   setCurrentStep(5);
                   // }, 250);
-                  setTimeout(() => {
-                    navigation.navigate('BankList', { isLoginState });
-                  }, 250);
+                  navigation.navigate('BankList', { isLoginState });
                 },
                 onError: (err: any) => {
                   // setIsErrorPIN(true);
@@ -311,9 +309,7 @@ export const AuthEntry = ({ route }) => {
                   text1: 'Berhasil login',
                 });
 
-                setTimeout(() => {
-                  navigation.navigate('Home', { isLoginState });
-                }, 250);
+                navigation.navigate('Home', { isLoginState });
               },
               onError: (err: any) => {
                 setConfirmationPin('');
