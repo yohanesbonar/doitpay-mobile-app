@@ -28,7 +28,7 @@ const createStyles = (colors: any) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: colors.backgroundCard || 'white', // Gunakan warna dari theme
+      backgroundColor: colors.backgroundCard || 'white',
       borderRadius: 12,
       padding: 16,
       borderWidth: 1,
