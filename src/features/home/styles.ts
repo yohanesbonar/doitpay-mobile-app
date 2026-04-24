@@ -27,6 +27,6 @@ export const createStyles = (colors: typeof themeColors.light) => {
       justifyContent: 'center',
     },
     safeAreaContainer: { flex: 1, backgroundColor: colors.background },
-    headerContainer: { padding: 20, flex: 1, backgroundColor: colors.background }
+    headerContainer: { flex: 1, backgroundColor: colors.background },
   });
 };

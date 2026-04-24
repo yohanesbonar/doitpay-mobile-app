@@ -1,31 +1,26 @@
-import {
-  Image,
-  Keyboard,
-  Text,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View,
-} from 'react-native';
+import { Image, Text, TouchableOpacity, View, ScrollView } from 'react-native';
 import React, { useEffect } from 'react';
 import { useTheme } from '../../theme/ThemeProvider.tsx';
 import { createStyles } from './styles.ts';
 import { useTranslation } from 'react-i18next';
-import Button from '../../components/Button/Button.tsx';
 import SizedBox from '../../components/SizedBox';
-import metrics from '../../theme/metrics.ts';
-import HeaderToolbar from '../../components/molecules/HeaderToolbar/index.tsx';
 import { StackActions, useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconNotification } from '../../assets/icons/index.ts';
 import { handleLogout } from '@/utils/Common/index.ts';
 import { useAuthStore } from '../../storage/useAuthStore.ts';
 
-export const Home = () => {
-  const { colors, toggleTheme, theme } = useTheme();
-  const styles = createStyles(colors);
-  const { t, i18n } = useTranslation();
-  const navigation = useNavigation();
+import { TransferLimitCard } from './components/TransferLimitCard.tsx';
+import { BillCard } from './components/BillCard.tsx';
+import { RecentActivityItem } from './components/RecentActivityItem.tsx';
+import { RecentRecipient } from './components/RecentRecipient.tsx';
+import { SearchBar } from './components/SearchBar.tsx';
 
+export const Home = () => {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+  const { t } = useTranslation();
+  const navigation = useNavigation();
   const { isNewUser, setIsNewUser } = useAuthStore();
 
   useEffect(() => {
@@ -36,41 +31,76 @@ export const Home = () => {
   }, [isNewUser]);
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <SafeAreaView style={styles.safeAreaContainer}>
-        <View style={styles.headerContainer}>
+    <SafeAreaView style={styles.safeAreaContainer}>
+      <View style={[styles.headerContainer, { flex: 1 }]}>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            paddingHorizontal: 16,
+          }}>
+          <Image
+            source={require('../../assets/images/ic-doitpay-home.png')}
+            style={{ width: 100, height: 30, resizeMode: 'contain' }}
+          />
+          <TouchableOpacity onPress={() => handleLogout()}>
+            <IconNotification />
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
           <View
-            style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Image
-              source={require('../../assets/images/ic-doitpay-home.png')}
-              style={{ marginRight: 5 }}
-            />
-            <TouchableOpacity onPress={() => handleLogout()}>
-              <IconNotification />
-            </TouchableOpacity>
+            style={{
+              paddingHorizontal: 20,
+              paddingTop: 20,
+              paddingBottom: 12,
+            }}>
+            <Text style={{ fontSize: 22, fontFamily: 'Switzer-Semibold' }}>
+              Limit Transfer Harian
+            </Text>
+            <TransferLimitCard usedAmount={500000} maxAmount={25000000} percentage={5} />
           </View>
-          <View style={styles.container}>
-            <Text style={styles.title}>{t('hello')}</Text>
-            <SizedBox />
-            <Text style={styles.text}>{t('home.welcome')}</Text>
-            <SizedBox height={metrics.verticalScale(50)} />
-            <View style={styles.buttonContainer}>
-              <Button
-                title={i18n.language}
-                onPress={() => i18n.changeLanguage(i18n.language === 'en' ? 'id' : 'en')}
-              />
-              <SizedBox width={metrics.scale(20)} />
-              <Button
-                icon={theme === 'dark' ? 'moon-outline' : 'sunny-outline'}
-                iconSize={metrics.moderateScale(20)}
-                bgColor={colors.primary}
-                title={t('home.changeTheme')}
-                onPress={() => toggleTheme()}
-              />
+          <View
+            style={{
+              backgroundColor: colors.pageBackground,
+              paddingHorizontal: 16,
+              paddingTop: 16,
+              borderTopWidth: 0.2,
+              borderTopColor: '#737373',
+            }}>
+            <SearchBar />
+            <SizedBox height={20} />
+            <View style={{ flexDirection: 'row', gap: 12 }}>
+              <BillCard title="Bayar kos" accountInfo="Joni Wahyu  BCA ****3910" />
+              <BillCard title="Tagihan Listrik" accountInfo="PLN  BCA ****3910" />
+            </View>
+            <SizedBox height={24} />
+            <View style={{ marginRight: -16 }}>
+              <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>
+                Terakhir dikirim
+              </Text>
+              <RecentRecipient />
+            </View>
+            <SizedBox height={24} />
+            <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>
+              Aktivitas Terakhir
+            </Text>
+            <View style={{ paddingBottom: 75 }}>
+              {[{}, {}, {}, {}].map((item, index) => (
+                <RecentActivityItem
+                  key={index}
+                  initial="JW"
+                  name="Joni Wahyu"
+                  bank="BCA"
+                  time="14:00 WIB"
+                  amount="Rp 500,000"
+                />
+              ))}
             </View>
           </View>
-        </View>
-      </SafeAreaView>
-    </TouchableWithoutFeedback>
+        </ScrollView>
+      </View>
+    </SafeAreaView>
   );
 };
