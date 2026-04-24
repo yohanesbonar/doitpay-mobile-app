@@ -82,7 +82,6 @@ export const useLoginRequestOtp = () => {
       console.log('useLoginRequestOtp data', data);
     },
     onError: (error) => {
-      ß;
       console.log('error useLoginRequestOtp', error);
       console.error('useLoginRequestOtp Request failed:', error.message);
     },
@@ -126,7 +125,6 @@ export const useLogin = () => {
       }
     },
     onError: (error) => {
-      ß;
       console.log('error login', error);
       console.error('error login:', error.message);
     },
