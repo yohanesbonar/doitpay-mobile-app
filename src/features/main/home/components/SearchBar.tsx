@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, TextInput, StyleSheet } from 'react-native';
-import metrics from '../../../theme/metrics';
+import metrics from '../../../../theme/metrics';
 import { Search } from 'lucide-react-native';
 
 export const SearchBar = () => {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
-import metrics from '../../../theme/metrics';
+import metrics from '../../../../theme/metrics';
 
 const DATA = [
   { id: '1', name: 'Joni', initial: 'JW', color: '#1A1A1A' },

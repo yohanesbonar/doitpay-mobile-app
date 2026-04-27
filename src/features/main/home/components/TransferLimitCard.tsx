@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient'; // Import library ini
-import metrics from '../../../theme/metrics';
-import { useTheme } from '../../../theme/ThemeProvider';
+import metrics from '../../../../theme/metrics';
+import { useTheme } from '../../../../theme/ThemeProvider';
 
 interface Props {
   usedAmount: number;

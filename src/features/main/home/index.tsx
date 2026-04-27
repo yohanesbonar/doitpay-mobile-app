@@ -1,14 +1,14 @@
 import { Image, Text, TouchableOpacity, View, ScrollView } from 'react-native';
 import React, { useEffect } from 'react';
-import { useTheme } from '../../theme/ThemeProvider.tsx';
+import { useTheme } from '../../../theme/ThemeProvider.tsx';
 import { createStyles } from './styles.ts';
 import { useTranslation } from 'react-i18next';
-import SizedBox from '../../components/SizedBox';
+import SizedBox from '../../../components/SizedBox';
 import { StackActions, useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { IconNotification } from '../../assets/icons/index.ts';
+import { IconNotification } from '../../../assets/icons/index.ts';
 import { handleLogout } from '@/utils/Common/index.ts';
-import { useAuthStore } from '../../storage/useAuthStore.ts';
+import { useAuthStore } from '../../../storage/useAuthStore.ts';
 
 import { TransferLimitCard } from './components/TransferLimitCard.tsx';
 import { BillCard } from './components/BillCard.tsx';
@@ -33,15 +33,9 @@ export const Home = () => {
   return (
     <SafeAreaView style={styles.safeAreaContainer}>
       <View style={[styles.headerContainer, { flex: 1 }]}>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            paddingHorizontal: 16,
-          }}>
+        <View style={styles.headerWrapper}>
           <Image
-            source={require('../../assets/images/ic-doitpay-home.png')}
+            source={require('../../../assets/images/ic-doitpay-home.png')}
             style={{ width: 100, height: 30, resizeMode: 'contain' }}
           />
           <TouchableOpacity onPress={() => handleLogout()}>
@@ -50,25 +44,13 @@ export const Home = () => {
         </View>
 
         <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-          <View
-            style={{
-              paddingHorizontal: 20,
-              paddingTop: 20,
-              paddingBottom: 12,
-            }}>
+          <View style={styles.dailyLimitWrapper}>
             <Text style={{ fontSize: 22, fontFamily: 'Switzer-Semibold' }}>
               Limit Transfer Harian
             </Text>
             <TransferLimitCard usedAmount={500000} maxAmount={25000000} percentage={5} />
           </View>
-          <View
-            style={{
-              backgroundColor: colors.pageBackground,
-              paddingHorizontal: 16,
-              paddingTop: 16,
-              borderTopWidth: 0.2,
-              borderTopColor: '#737373',
-            }}>
+          <View style={styles.mainWrapper}>
             <SearchBar />
             <SizedBox height={20} />
             <View style={{ flexDirection: 'row', gap: 12 }}>
@@ -76,7 +58,7 @@ export const Home = () => {
               <BillCard title="Tagihan Listrik" accountInfo="PLN  BCA ****3910" />
             </View>
             <SizedBox height={24} />
-            <View style={{ marginRight: -16 }}>
+            <View style={{ marginRight: -24 }}>
               <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>
                 Terakhir dikirim
               </Text>
