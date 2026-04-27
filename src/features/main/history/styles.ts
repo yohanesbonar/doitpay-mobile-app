@@ -14,7 +14,6 @@ export const createStyles = (colors: any) =>
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 10,
     paddingBottom: 10,
     marginBottom: 14,
     paddingHorizontal: 24, 
