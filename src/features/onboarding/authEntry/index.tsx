@@ -270,7 +270,7 @@ export const AuthEntry = ({ route }) => {
                 onSuccess: (res) => {
                   Toast.show({
                     type: 'success',
-                    text1: 'PIN berhasil dibuat',
+                    text1: 'PIN berhasil dibuat, register berhasil',
                   });
 
                   // disable this step because KYC is not ready
