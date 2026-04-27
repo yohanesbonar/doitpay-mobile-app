@@ -2,15 +2,18 @@ import React from 'react';
 import { View, Text, TextInput, Image } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import { useTranslation } from 'react-i18next';
-import { FormikProps } from 'formik';
+import { useFormikContext } from 'formik';
+import { PhoneNumberFormValues } from '../../authEntry';
 
 interface InputPhoneNumberProps {
   styles: any;
-  formik: FormikProps<any>;
 }
 
-const InputPhoneNumber: React.FC<InputPhoneNumberProps> = ({ styles, formik }) => {
+const InputPhoneNumber: React.FC<InputPhoneNumberProps> = ({ styles }) => {
   const { t } = useTranslation();
+
+  const { handleChange, handleBlur, setFieldValue, values, errors } =
+    useFormikContext<PhoneNumberFormValues>();
 
   const countryData = [
     {
@@ -19,8 +22,6 @@ const InputPhoneNumber: React.FC<InputPhoneNumberProps> = ({ styles, formik }) =
       flag: require('../../../../assets/images/ic-indonesia-flag.png'),
     },
   ];
-
-  const { handleChange, handleBlur, setFieldValue, values, errors } = formik;
 
   return (
     <View style={{ flex: 1, marginHorizontal: 16 }}>

@@ -31,6 +31,11 @@ import InputOTPNumber from './components/InputOTPNumber.tsx';
 import Toast from 'react-native-toast-message';
 import CreateAndConfirmPIN from './components/CreateAndConfirmPIN.tsx';
 
+export interface PhoneNumberFormValues {
+  phoneNumber: string;
+  countryCode: string;
+}
+
 export const AuthEntry = ({ route }) => {
   const { isLoginState } = route.params;
   const { colors } = useTheme();
@@ -85,6 +90,8 @@ export const AuthEntry = ({ route }) => {
     return dots;
   };
 
+  const formikRef = useRef<FormikProps<PhoneNumberFormValues>>(null);
+
   useEffect(() => {
     if (currentStep == 3) {
       setPin('');
@@ -123,8 +130,6 @@ export const AuthEntry = ({ route }) => {
     phoneNumber: Yup.string().min(9, 'Nomor terlalu pendek').required('Wajib diisi'),
   });
 
-  const formikRef = useRef<FormikProps<any>>(null);
-
   useEffect(() => {
     if (formikRef?.current) {
       const { phoneNumber, countryCode } = formikRef?.current?.values;
@@ -142,12 +147,12 @@ export const AuthEntry = ({ route }) => {
     switch (currentStep) {
       case 1:
         return (
-          <Formik
+          <Formik<PhoneNumberFormValues>
             innerRef={formikRef}
             initialValues={{ phoneNumber: '', countryCode: '+62' }}
             validationSchema={PhoneSchema}
             onSubmit={(values) => console.log('Form Data:', values)}>
-            {(formikProps) => <InputPhoneNumber styles={styles} formik={formikProps} />}
+            <InputPhoneNumber styles={styles} />
           </Formik>
         );
       case 2:
@@ -353,51 +358,53 @@ export const AuthEntry = ({ route }) => {
     // STEP 1: Request OTP
     Keyboard.dismiss();
     if (currentStep === 1) {
-      const { phoneNumber, countryCode } = formikRef.current?.values;
-      const formattedPhone = (countryCode + phoneNumber).replace('+', '');
+      const values = formikRef.current?.values;
+      if (values) {
+        const { phoneNumber, countryCode } = values;
+        const formattedPhone = (countryCode + phoneNumber).replace('+', '');
 
-      if (!isLoginState) {
-        registerRequestOTP(
-          {
-            phoneNumber: formattedPhone,
-            method: 'SMS',
-          },
-          {
-            onSuccess: (res) => {
-              setTimerOTP(res.data.retryAfterSeconds || 30);
-              setCurrentStep(2);
+        if (!isLoginState) {
+          registerRequestOTP(
+            {
+              phoneNumber: formattedPhone,
+              method: 'SMS',
             },
-            onError: (err) => {
-              console.error('error OTP request', err);
-              Toast.show({
-                type: 'error',
-                text1: err.message,
-              });
+            {
+              onSuccess: (res) => {
+                setTimerOTP(res.data.retryAfterSeconds || 30);
+                setCurrentStep(2);
+              },
+              onError: (err) => {
+                console.error('error OTP request', err);
+                Toast.show({
+                  type: 'error',
+                  text1: err.message,
+                });
+              },
             },
-          },
-        );
-      } else {
-        loginRequestOTP(
-          {
-            phoneNumber: formattedPhone,
-            method: 'SMS',
-          },
-          {
-            onSuccess: (res) => {
-              setTimerOTP(res.data.retryAfterSeconds || 30);
-              setCurrentStep(2);
+          );
+        } else {
+          loginRequestOTP(
+            {
+              phoneNumber: formattedPhone,
+              method: 'SMS',
             },
-            onError: (err) => {
-              console.error('error OTP request', err);
-              Toast.show({
-                type: 'error',
-                text1: err.message,
-              });
+            {
+              onSuccess: (res) => {
+                setTimerOTP(res.data.retryAfterSeconds || 30);
+                setCurrentStep(2);
+              },
+              onError: (err) => {
+                console.error('error OTP request', err);
+                Toast.show({
+                  type: 'error',
+                  text1: err.message,
+                });
+              },
             },
-          },
-        );
+          );
+        }
       }
-
       return;
     }
 
