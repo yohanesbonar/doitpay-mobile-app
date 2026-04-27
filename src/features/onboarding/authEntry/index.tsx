@@ -1,5 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, TextInput, Keyboard, TouchableWithoutFeedback } from 'react-native';
+import {
+  View,
+  TextInput,
+  Keyboard,
+  TouchableWithoutFeedback,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 import { useTheme } from '../../../theme/ThemeProvider.tsx';
 import { createStyles } from './styles.ts';
 import HeaderToolbar from '../../../components/molecules/HeaderToolbar/index.tsx';
@@ -23,7 +30,6 @@ import InputPhoneNumber from './components/InputPhoneNumber.tsx';
 import InputOTPNumber from './components/InputOTPNumber.tsx';
 import Toast from 'react-native-toast-message';
 import CreateAndConfirmPIN from './components/CreateAndConfirmPIN.tsx';
-import IdentityVerification from './components/IdentityVerification.tsx';
 
 export const AuthEntry = ({ route }) => {
   const { isLoginState } = route.params;
@@ -36,6 +42,7 @@ export const AuthEntry = ({ route }) => {
   const totalSteps = 2;
 
   const CELL_COUNT_OTP = 6;
+  const [bottomSpacing, setBottomSpacing] = useState(32);
   const [valueOTP, setValueOTP] = useState('');
   const [timerOTP, setTimerOTP] = useState(30);
   const [phoneNumbData, setPhoneNumData] = useState({ phoneNumber: '', countryCode: '' });
@@ -87,6 +94,23 @@ export const AuthEntry = ({ route }) => {
       setValueOTP('');
     }
   }, [currentStep]);
+
+  useEffect(() => {
+    const showEvt = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvt = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+    const keyboardDidShowListener = Keyboard.addListener(showEvt, () => {
+      setBottomSpacing(Platform.OS === 'ios' ? 16 : 16);
+    });
+
+    const keyboardDidHideListener = Keyboard.addListener(hideEvt, () => {
+      setBottomSpacing(Platform.OS === 'ios' ? 32 : -35);
+    });
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -327,6 +351,7 @@ export const AuthEntry = ({ route }) => {
 
   const onPressNext = () => {
     // STEP 1: Request OTP
+    Keyboard.dismiss();
     if (currentStep === 1) {
       const { phoneNumber, countryCode } = formikRef.current?.values;
       const formattedPhone = (countryCode + phoneNumber).replace('+', '');
@@ -452,70 +477,81 @@ export const AuthEntry = ({ route }) => {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <View style={{ flex: 1, backgroundColor: colors.pageBackground }}>
-        <HeaderToolbar
-          title={title}
-          onPressBack={
-            currentStep == 3
-              ? undefined
-              : () => {
-                  if (currentStep > 1) {
-                    if (!isLoginState) {
-                      setCurrentStep((prev) => Math.max(prev - 1, 1));
-                    } else {
-                      if (currentStep == 4) {
-                        setCurrentStep((prev) => Math.max(prev - 2, 1));
-                      } else {
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+        style={{ flex: 1, backgroundColor: colors.pageBackground }}
+        enabled={true}>
+        <View style={{ flex: 1 }}>
+          <HeaderToolbar
+            title={title}
+            onPressBack={
+              currentStep == 3
+                ? undefined
+                : () => {
+                    if (currentStep > 1) {
+                      if (!isLoginState) {
                         setCurrentStep((prev) => Math.max(prev - 1, 1));
+                      } else {
+                        if (currentStep == 4) {
+                          setCurrentStep((prev) => Math.max(prev - 2, 1));
+                        } else {
+                          setCurrentStep((prev) => Math.max(prev - 1, 1));
+                        }
                       }
-                    }
-                  } else navigation.goBack();
-                }
-          }
-          titlePosition="center"
-          titleStyle="regular"
-        />
-        {!isLoginState ? (
-          <FlowIndicator
-            totalSteps={totalSteps}
-            currentStep={Math.ceil(currentStep / 2)}
-            barStep={currentStep}
+                    } else navigation.goBack();
+                  }
+            }
+            titlePosition="center"
+            titleStyle="regular"
           />
-        ) : (
-          <View style={{ marginBottom: -22 }} />
-        )}
-
-        {detailStep()}
-        <View style={{ position: 'absolute', bottom: 32, left: 16, right: 16 }}>
-          {currentStep == 3 || currentStep == 4 || currentStep == 5 ? null : (
-            <Button
-              type="regular"
-              onPress={() => onPressNext()}
-              loading={isRequesting || isVerifying || isLoginRequesting || isLoginVerifying}
-              title={t(currentStep === 1 ? 'authEntry.sendOTPNumber' : 'authEntry.verification')}
-              style={{
-                backgroundColor:
-                  enableButtonNextRef.current &&
-                  !isVerifying &&
-                  !isRequesting &&
-                  !isLoginRequesting &&
-                  !isLoginVerifying
-                    ? colors.buttonBlue
-                    : colors.disableButton,
-              }}
-              color={colors.buttonBlue}
-              textColor="white"
-              disable={
-                !enableButtonNextRef.current ||
-                isVerifying ||
-                isRequesting ||
-                isLoginRequesting ||
-                isLoginVerifying
-              }
+          {!isLoginState ? (
+            <FlowIndicator
+              totalSteps={totalSteps}
+              currentStep={Math.ceil(currentStep / 2)}
+              barStep={currentStep}
             />
+          ) : (
+            <View style={{ marginBottom: -22 }} />
           )}
+
+          {detailStep()}
+          <View
+            style={{
+              position: 'absolute',
+              bottom: bottomSpacing,
+              left: 16,
+              right: 16,
+            }}>
+            {currentStep == 3 || currentStep == 4 || currentStep == 5 ? null : (
+              <Button
+                type="regular"
+                onPress={() => onPressNext()}
+                loading={isRequesting || isVerifying || isLoginRequesting || isLoginVerifying}
+                title={t(currentStep === 1 ? 'authEntry.sendOTPNumber' : 'authEntry.verification')}
+                style={{
+                  backgroundColor:
+                    enableButtonNextRef.current &&
+                    !isVerifying &&
+                    !isRequesting &&
+                    !isLoginRequesting &&
+                    !isLoginVerifying
+                      ? colors.buttonBlue
+                      : colors.disableButton,
+                }}
+                color={colors.buttonBlue}
+                textColor="white"
+                disable={
+                  !enableButtonNextRef.current ||
+                  isVerifying ||
+                  isRequesting ||
+                  isLoginRequesting ||
+                  isLoginVerifying
+                }
+              />
+            )}
+          </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
   );
 };
