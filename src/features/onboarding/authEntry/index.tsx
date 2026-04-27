@@ -306,6 +306,7 @@ export const AuthEntry = ({ route }) => {
                   // setTimeout(() => {
                   //   setCurrentStep(5);
                   // }, 250);
+                  Keyboard.dismiss();
                   navigation.navigate('BankList', { isLoginState });
                 },
                 onError: (err: any) => {
@@ -338,6 +339,7 @@ export const AuthEntry = ({ route }) => {
                   text1: 'Berhasil login',
                 });
 
+                Keyboard.dismiss();
                 navigation.navigate('Home', { isLoginState });
               },
               onError: (err: any) => {
