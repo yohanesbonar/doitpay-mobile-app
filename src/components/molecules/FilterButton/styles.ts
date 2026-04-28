@@ -6,7 +6,7 @@ export const createStyles = (colors: any) => {
       flexDirection: 'row',
       borderWidth: 0.2,
       borderRadius: 10,
-      paddingHorizontal: 16,
+      paddingHorizontal: 20,
       height: 48,
       alignItems: 'center',
       gap: 6,
