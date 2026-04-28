@@ -55,6 +55,7 @@ export const useRegisterVerifyOtp = () => {
 
 export const useRegisterPinSetup = () => {
   const setToken = useAuthStore((state) => state.setToken);
+  const setExpiresAt = useAuthStore((state) => state.setExpiresAt);
   return useMutation<RegisterPinSetupResponse, Error, RegisterPinSetupPayload>({
     mutationFn: (payload) => authApi.registerPinSetup(payload),
     onSuccess: (data) => {
@@ -65,6 +66,9 @@ export const useRegisterPinSetup = () => {
 
       if (session?.accessToken) {
         setToken(session.accessToken, true);
+      }
+      if (session?.expiresAt) {
+        setExpiresAt(session.expiresAt);
       }
     },
     onError: (error) => {
@@ -112,6 +116,7 @@ export const useLoginVerifyOtp = () => {
 
 export const useLogin = () => {
   const setToken = useAuthStore((state) => state.setToken);
+  const setExpiresAt = useAuthStore((state) => state.setExpiresAt);
   return useMutation<LoginResponse, Error, LoginPayload>({
     mutationFn: (payload) => authApi.login(payload),
     onSuccess: (data) => {
@@ -122,6 +127,9 @@ export const useLogin = () => {
 
       if (session?.accessToken) {
         setToken(session.accessToken);
+      }
+      if (session?.expiresAt) {
+        setExpiresAt(session.expiresAt);
       }
     },
     onError: (error) => {

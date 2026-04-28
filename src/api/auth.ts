@@ -31,7 +31,7 @@ export type RegisterOtpVerifyResponse = {
     verificationToken: string;
     session: {
       currentStep: string;
-      expiredAt: string;
+      expiresAt: string;
       sessionId: string;
     };
   };
@@ -81,7 +81,7 @@ export type LoginOtpVerifyResponse = {
     verificationToken: string;
     session: {
       currentStep: string;
-      expiredAt: string;
+      expiresAt: string;
       sessionId: string;
     };
   };
@@ -92,6 +92,22 @@ export type LoginResponse = {
   message: string;
   data: {};
 };
+
+//Refresh Token
+export interface RefreshTokenPayload {
+  refreshToken: string;
+}
+
+export type RefreshTokenResponse = {
+  status: string;
+  message: string;
+  data: {
+    accessToken: string;
+    expiresAt: string;
+    refreshToken: string;
+  };
+};
+
 
 export const authApi = {
   registerRequestOtp: async (payload: RegisterOtpRequestPayload): Promise<RegisterOtpResponse> => {
@@ -137,4 +153,8 @@ export const authApi = {
     const { data } = await apiClient.post<LoginResponse>('v1/auth/login', payload);
     return data;
   },
+  refreshToken: async (payload: RefreshTokenPayload): Promise<RefreshTokenResponse> => {
+    const { data } = await apiClient.post<RefreshTokenResponse>('v1/auth/refresh', payload);
+    return data;
+  }
 };

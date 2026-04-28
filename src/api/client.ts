@@ -1,9 +1,21 @@
 import axios, { AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios';
 import Config from 'react-native-config';
+import { isBefore, subSeconds } from 'date-fns';
 import { getDeviceFingerprint } from '../utils/Device/Device.ts';
-import { getStorageItem, StorageKey } from '../storage/index.ts';
+import { getStorageItem, setStorageItem, StorageKey } from '../storage/index.ts';
 import { useAuthStore } from '../storage/useAuthStore.ts';
 import Toast from 'react-native-toast-message';
+
+let isRefreshing = false;
+let failedQueue: any[] = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) prom.reject(error);
+    else prom.resolve(token);
+  });
+  failedQueue = [];
+};
 
 const apiClient = axios.create({
   baseURL: Config.API_URL,
@@ -30,28 +42,81 @@ apiClient.interceptors.request.use(
     const noNeedAuth = config?.noNeedAuth;
 
     if (!noNeedAuth) {
-      const token = getStorageItem(StorageKey.VERIFICATION_TOKEN);
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+      const accessToken = getStorageItem(StorageKey.VERIFICATION_TOKEN);
+      const expiresAt = getStorageItem(StorageKey.EXPIRES_AT);
+
+      if (accessToken && expiresAt) {
+        const expirationDate = new Date(expiresAt);
+
+        const isTokenExpired = isBefore(subSeconds(expirationDate, 10), new Date());
+
+        if (isTokenExpired && !isRefreshing) {
+          isRefreshing = true;
+
+          try {
+            const refreshToken = getStorageItem(StorageKey.REFRESH_TOKEN);
+            
+            const response = await axios.post(
+              `${Config.API_URL}/v1/auth/refresh`,
+              { refreshToken },
+              {
+                headers: {
+                  'accept': 'application/json',
+                  'X-Device-ID': deviceId,
+                  'Content-Type': 'application/json',
+                },
+              }
+            );
+
+            const { 
+              accessToken: newAccessToken, 
+              refreshToken: newRefreshToken, 
+              expiresAt: newExpiresAt 
+            } = response?.data?.data;
+
+            setStorageItem(StorageKey.ACCESS_TOKEN, newAccessToken);
+            setStorageItem(StorageKey.REFRESH_TOKEN, newRefreshToken);
+            setStorageItem(StorageKey.EXPIRES_AT, newExpiresAt);
+
+            config.headers.Authorization = `Bearer ${newAccessToken}`;
+            
+            processQueue(null, newAccessToken);
+            return config;
+          } catch (refreshError) {
+            processQueue(refreshError, null);
+            useAuthStore.getState().logout(); 
+            return Promise.reject(refreshError);
+          } finally {
+            isRefreshing = false;
+          }
+        } else if (isTokenExpired && isRefreshing) {
+          return new Promise((resolve, reject) => {
+            failedQueue.push({ resolve, reject });
+          })
+            .then((token) => {
+              config.headers.Authorization = `Bearer ${token}`;
+              return config;
+            })
+            .catch((err) => Promise.reject(err));
+        }
+      } 
+
+      const currentToken = getStorageItem(StorageKey.VERIFICATION_TOKEN);
+      if (currentToken) {
+        config.headers.Authorization = `Bearer ${currentToken}`;
       }
     }
 
     if (__DEV__) {
       console.log('--- 🛫 API REQUEST ---');
       console.log(`URL: ${config.baseURL}${config.url}`);
-      console.log(`Method: ${config.method?.toUpperCase()}`);
       console.log('Headers:', JSON.stringify(config.headers, null, 2));
-      if (config.data) {
-        console.log('Body:', JSON.stringify(config.data, null, 2));
-      }
       console.log('----------------------');
     }
 
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  },
+  (error) => Promise.reject(error),
 );
 
 apiClient.interceptors.response.use(
