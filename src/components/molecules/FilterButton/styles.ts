@@ -4,7 +4,7 @@ export const createStyles = (colors: any) => {
   return StyleSheet.create({
     filterButton: {
       flexDirection: 'row',
-      borderWidth: 0.2,
+      borderWidth: 0.5,
       borderRadius: 10,
       paddingHorizontal: 20,
       height: 48,

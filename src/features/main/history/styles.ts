@@ -59,7 +59,7 @@ export const createStyles = (colors: any) =>
       flexDirection: 'row',
       alignItems: 'center',
       gap: 8,
-      borderWidth: 0.2,
+      borderWidth: 0.5,
       borderColor: '#737373',
       borderRadius: 10,
       paddingHorizontal: 12,

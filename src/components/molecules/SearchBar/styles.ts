@@ -10,7 +10,7 @@ export const createStyles = (colors: any) => {
       borderRadius: 10,
       paddingHorizontal: 12,
       alignItems: 'center',
-      borderWidth: 0.2,
+      borderWidth: 0.5,
     },
     searchIcon: {
       marginRight: 8,
