@@ -10,6 +10,7 @@ export const createStyles = (colors: any) => {
       height: 48,
       alignItems: 'center',
       gap: 6,
+      borderColor: '#737373',
     },
     filterText: {
       fontFamily: 'Switzer-Medium',

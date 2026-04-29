@@ -10,7 +10,7 @@ import { SearchBar } from '@/components/molecules/SearchBar';
 import { FilterButton } from '@/components/molecules/FilterButton';
 import { FilterBottomSheet } from '@/components/molecules/FilterBottomsheet';
 import { DateBottomSheet } from '@/components/molecules/DateBottomsheet';
-import { Calendar } from 'lucide-react-native';
+import { Calendar, X } from 'lucide-react-native';
 
 const DATA_MOCK = [
   {
@@ -93,12 +93,31 @@ export const History = () => {
   const [showFilter, setShowFilter] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  const [activeFilters, setActiveFilters] = useState({
+  const initialFilters = {
     paymentType: 'Semua',
     transactionType: 'Semua',
-  });
+  };
+  const initialDate = { month: undefined, year: 2026 };
 
-  const [selectedDate, setSelectedDate] = useState({ month: undefined, year: 2026 });
+  const [activeFilters, setActiveFilters] = useState(initialFilters);
+  const [selectedDate, setSelectedDate] = useState(initialDate);
+
+  const filterCounter = useMemo(() => {
+    let count = 0;
+    if (activeFilters.paymentType !== 'Semua') count++;
+    if (activeFilters.transactionType !== 'Semua') count++;
+    return count;
+  }, [activeFilters]);
+
+  const isAnyFilterActive = useMemo(() => {
+    return filterCounter > 0 || selectedDate.month !== undefined || searchQuery !== '';
+  }, [filterCounter, selectedDate, searchQuery]);
+
+  const handleClearFilter = () => {
+    setActiveFilters(initialFilters);
+    setSelectedDate(initialDate);
+    setSearchQuery('');
+  };
 
   const monthsLabel = [
     'Januari',
@@ -125,11 +144,9 @@ export const History = () => {
         ...section,
         data: section.data.filter((item) => {
           const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
-
           const matchesPayment =
             activeFilters.paymentType === 'Semua' ||
             (item.type && item.type.includes(activeFilters.paymentType));
-
           const matchesType =
             activeFilters.transactionType === 'Semua' ||
             item.category === activeFilters.transactionType;
@@ -157,15 +174,25 @@ export const History = () => {
             placeholder="Cari transaksi"
           />
         </View>
+
         <View style={styles.filterContainer}>
           <TouchableOpacity style={styles.dateButton} onPress={() => setShowDatePicker(true)}>
             <Calendar size={18} color="#1A1A1A" />
             <Text style={styles.dateText}>
-              {`${selectedDate?.month ? monthsLabel[selectedDate.month] : ''} ${selectedDate.year}`}
+              {selectedDate?.month !== undefined
+                ? `${monthsLabel[selectedDate.month]} ${selectedDate.year}`
+                : `${selectedDate.year}`}
             </Text>
           </TouchableOpacity>
 
-          <FilterButton onPress={() => setShowFilter(true)} />
+          <FilterButton onPress={() => setShowFilter(true)} count={filterCounter} />
+
+          {isAnyFilterActive && (
+            <TouchableOpacity style={styles.clearFilterButton} onPress={handleClearFilter}>
+              <X size={16} color="#E25C5C" />
+              <Text style={styles.clearFilterText}>Clear Filter</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         <SectionList

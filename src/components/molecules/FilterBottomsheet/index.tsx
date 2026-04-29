@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, Pressable } from 'react-native';
-import { X } from 'lucide-react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, Pressable, Animated } from 'react-native';
+import { ChevronDown, ChevronUp } from 'lucide-react-native';
 
 interface FilterBottomSheetProps {
   isVisible: boolean;
@@ -16,10 +16,14 @@ export const FilterBottomSheet = ({
   setFilters,
 }: FilterBottomSheetProps) => {
   const [tempFilters, setTempFilters] = useState(filters);
+  const [showPaymentOptions, setShowPaymentOptions] = useState(false);
+  const [showTransactionOptions, setShowTransactionOptions] = useState(false);
 
   useEffect(() => {
     if (isVisible) {
       setTempFilters(filters);
+      setShowPaymentOptions(false);
+      setShowTransactionOptions(false);
     }
   }, [isVisible, filters]);
 
@@ -31,90 +35,179 @@ export const FilterBottomSheet = ({
     onClose();
   };
 
+  const renderDropdown = (
+    label: string,
+    options: string[],
+    currentValue: string,
+    isOpen: boolean,
+    onToggle: () => void,
+    onSelect: (val: string) => void,
+  ) => (
+    <View style={styles.filterSection}>
+      <Text style={styles.label}>{label}</Text>
+      <TouchableOpacity
+        style={[styles.dropdownHeader, isOpen && styles.dropdownHeaderActive]}
+        onPress={onToggle}
+        activeOpacity={0.7}>
+        <Text style={styles.dropdownText}>
+          {currentValue === 'Semua'
+            ? label === 'Tipe Pembayaran'
+              ? 'QRIS/VA'
+              : 'Pengeluaran / Pemasukan'
+            : currentValue}
+        </Text>
+        {isOpen ? <ChevronUp size={20} color="#666" /> : <ChevronDown size={20} color="#666" />}
+      </TouchableOpacity>
+
+      {isOpen && (
+        <View style={styles.optionsContainer}>
+          {options.map((opt) => (
+            <TouchableOpacity
+              key={opt}
+              style={[styles.optionItem, currentValue === opt && styles.activeOptionItem]}
+              onPress={() => {
+                onSelect(opt);
+                onToggle();
+              }}>
+              <Text style={[styles.optionText, currentValue === opt && styles.activeOptionText]}>
+                {opt}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+
   return (
     <Modal visible={isVisible} transparent animationType="slide">
       <Pressable style={styles.overlay} onPress={onClose}>
-        <View style={styles.sheet}>
+        <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
+          <View style={styles.handleBar} />
+
           <View style={styles.header}>
             <Text style={styles.title}>Filter</Text>
-            <TouchableOpacity onPress={onClose}>
-              <X color="#000" size={24} />
-            </TouchableOpacity>
           </View>
 
-          <Text style={styles.label}>Tipe Pembayaran</Text>
-          <View style={styles.chipContainer}>
-            {paymentOptions.map((opt) => (
-              <TouchableOpacity
-                key={opt}
-                style={[styles.chip, tempFilters.paymentType === opt && styles.activeChip]}
-                onPress={() => setTempFilters({ ...tempFilters, paymentType: opt })}>
-                <Text
-                  style={[
-                    styles.chipText,
-                    tempFilters.paymentType === opt && styles.activeChipText,
-                  ]}>
-                  {opt}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          {renderDropdown(
+            'Tipe Pembayaran',
+            paymentOptions,
+            tempFilters.paymentType,
+            showPaymentOptions,
+            () => setShowPaymentOptions(!showPaymentOptions),
+            (val) => setTempFilters({ ...tempFilters, paymentType: val }),
+          )}
 
-          <Text style={styles.label}>Tipe Transaksi</Text>
-          <View style={styles.chipContainer}>
-            {transactionOptions.map((opt) => (
-              <TouchableOpacity
-                key={opt}
-                style={[styles.chip, tempFilters.transactionType === opt && styles.activeChip]}
-                onPress={() => setTempFilters({ ...tempFilters, transactionType: opt })}>
-                <Text
-                  style={[
-                    styles.chipText,
-                    tempFilters.transactionType === opt && styles.activeChipText,
-                  ]}>
-                  {opt}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          {renderDropdown(
+            'Tipe Transaksi',
+            transactionOptions,
+            tempFilters.transactionType,
+            showTransactionOptions,
+            () => setShowTransactionOptions(!showTransactionOptions),
+            (val) => setTempFilters({ ...tempFilters, transactionType: val }),
+          )}
 
           <TouchableOpacity style={styles.applyButton} onPress={handleApply}>
             <Text style={styles.applyText}>Terapkan Filter</Text>
           </TouchableOpacity>
-        </View>
+        </Pressable>
       </Pressable>
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
-  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
   sheet: {
     backgroundColor: '#FFF',
-    padding: 20,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    paddingHorizontal: 20,
+    paddingBottom: 40,
+    paddingTop: 10,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
   },
-  header: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
-  title: { fontSize: 18, fontWeight: 'bold' },
-  label: { fontSize: 14, color: '#666', marginBottom: 10, marginTop: 10 },
-  chipContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 20 },
-  chip: {
-    paddingVertical: 8,
+  handleBar: {
+    width: 60,
+    height: 4,
+    backgroundColor: '#E5E5E5',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginBottom: 20,
+  },
+  header: {
+    marginBottom: 20,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#000',
+  },
+  filterSection: {
+    marginBottom: 16,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#000',
+    marginBottom: 8,
+  },
+  dropdownHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 16,
-    borderRadius: 20,
+    paddingVertical: 12,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#E5E5E5',
+    backgroundColor: '#FFF',
   },
-  activeChip: { backgroundColor: '#0066FF', borderColor: '#0066FF' },
-  chipText: { color: '#000' },
-  activeChipText: { color: '#FFF' },
+  dropdownHeaderActive: {
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+    borderColor: '#E5E5E5',
+  },
+  dropdownText: {
+    fontSize: 14,
+    color: '#666',
+  },
+  optionsContainer: {
+    borderWidth: 1,
+    borderTopWidth: 0,
+    borderColor: '#E5E5E5',
+    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 12,
+    overflow: 'hidden',
+  },
+  optionItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: '#FFF',
+  },
+  activeOptionItem: {
+    backgroundColor: '#D1E3FF',
+  },
+  optionText: {
+    fontSize: 14,
+    color: '#000',
+  },
+  activeOptionText: {
+    fontWeight: '500',
+  },
   applyButton: {
-    backgroundColor: '#0066FF',
-    padding: 15,
-    borderRadius: 10,
+    backgroundColor: '#4F84F6',
+    paddingVertical: 16,
+    borderRadius: 25,
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 20,
   },
-  applyText: { color: '#FFF', fontWeight: 'bold' },
+  applyText: {
+    color: '#FFF',
+    fontWeight: '600',
+    fontSize: 16,
+  },
 });

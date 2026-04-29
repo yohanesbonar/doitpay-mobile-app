@@ -68,4 +68,15 @@ export const createStyles = (colors: any) =>
       marginRight: 8,
     },
     dateText: { fontFamily: 'Switzer-Medium', fontSize: 14, color: '#1A1A1A' },
+    clearFilterButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginLeft: 12,
+      gap: 4,
+    },
+    clearFilterText: {
+      color: '#E25C5C',
+      fontSize: 14,
+      fontFamily: 'Switzer-Medium'
+    },
   });
