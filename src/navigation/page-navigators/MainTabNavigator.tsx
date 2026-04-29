@@ -3,8 +3,6 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Home } from '../../features/main/home';
 import { History } from '../../features/main/history';
 import { Beneficiary } from '../../features/main/beneficiary';
-// import { Profil } from '../../features/home';
-// import { Penerima } from '../../features/home';
 import CustomTabBar from '../../components/molecules/CustomTabBar/index';
 
 const Tab = createBottomTabNavigator();
