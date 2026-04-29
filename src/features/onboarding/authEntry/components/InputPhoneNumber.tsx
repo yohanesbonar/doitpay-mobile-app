@@ -60,7 +60,7 @@ const InputPhoneNumber: React.FC<InputPhoneNumberProps> = ({ styles }) => {
 
           <TextInput
             style={[styles.input, errors.phoneNumber && styles.inputError]}
-            placeholder="Value"
+            placeholder="Ex: 8132193203101"
             placeholderTextColor="#A9A9A9"
             keyboardType="phone-pad"
             onChangeText={handleChange('phoneNumber')}

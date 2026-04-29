@@ -103,6 +103,52 @@ export const AuthEntry = ({ route }) => {
   }, [currentStep]);
 
   useEffect(() => {
+    if (valueOTP?.length === 6 && currentStep === 2) {
+      const { phoneNumber, countryCode } = phoneNumbData;
+      const formattedPhone = (countryCode + phoneNumber).replace('+', '');
+
+      if (!isLoginState) {
+        registerVerifyOTP(
+          {
+            phoneNumber: formattedPhone,
+            otpCode: valueOTP,
+          },
+          {
+            onSuccess: (res) => {
+              setCurrentStep(3);
+            },
+            onError: (err: any) => {
+              Toast.show({
+                type: 'error',
+                text1: err?.message || 'Kode OTP salah',
+              });
+            },
+          },
+        );
+      } else {
+        loginVerifyOTP(
+          {
+            phoneNumber: formattedPhone,
+            otpCode: valueOTP,
+          },
+          {
+            onSuccess: (res) => {
+              setCurrentStep(4);
+            },
+            onError: (err: any) => {
+              Toast.show({
+                type: 'error',
+                text1: err?.message || 'Kode OTP salah',
+              });
+            },
+          },
+        );
+      }
+      return;
+    }
+  }, [valueOTP]);
+
+  useEffect(() => {
     const showEvt = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
     const hideEvt = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
     const keyboardDidShowListener = Keyboard.addListener(showEvt, () => {
@@ -410,51 +456,6 @@ export const AuthEntry = ({ route }) => {
       return;
     }
 
-    // STEP 2: OTP Verification
-    if (currentStep === 2) {
-      const { phoneNumber, countryCode } = phoneNumbData;
-      const formattedPhone = (countryCode + phoneNumber).replace('+', '');
-
-      if (!isLoginState) {
-        registerVerifyOTP(
-          {
-            phoneNumber: formattedPhone,
-            otpCode: valueOTP,
-          },
-          {
-            onSuccess: (res) => {
-              setCurrentStep(3);
-            },
-            onError: (err: any) => {
-              Toast.show({
-                type: 'error',
-                text1: err?.message || 'Kode OTP salah',
-              });
-            },
-          },
-        );
-      } else {
-        loginVerifyOTP(
-          {
-            phoneNumber: formattedPhone,
-            otpCode: valueOTP,
-          },
-          {
-            onSuccess: (res) => {
-              setCurrentStep(4);
-            },
-            onError: (err: any) => {
-              Toast.show({
-                type: 'error',
-                text1: err?.message || 'Kode OTP salah',
-              });
-            },
-          },
-        );
-      }
-      return;
-    }
-
     if (currentStep == 5) {
       navigation.navigate('Home', { isLoginState });
     }
@@ -531,7 +532,7 @@ export const AuthEntry = ({ route }) => {
               left: 16,
               right: 16,
             }}>
-            {currentStep == 3 || currentStep == 4 || currentStep == 5 ? null : (
+            {currentStep == 3 || currentStep == 4 || currentStep == 5 || currentStep == 2 ? null : (
               <Button
                 type="regular"
                 onPress={() => onPressNext()}
