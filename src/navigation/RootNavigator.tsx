@@ -11,6 +11,13 @@ import { navigationRef } from './navigationRef';
 import { Home } from '../features/home';
 import { useAuthStore } from '../storage/useAuthStore';
 import MainTabNavigator from './page-navigators/MainTabNavigator';
+import { Settings } from '../features/main/profile/Settings';
+import { Security } from '../features/main/profile/Security';
+import { BankAccounts } from '../features/main/profile/BankAccount';
+import { HelpCenter } from '../features/main/profile/HelpCenter';
+import Beneficiary from '../features/main/beneficiary';
+import { History } from '../features/main/history';
+import Profile from '../features/main/profile';
 
 const Stack = createNativeStackNavigator();
 
@@ -33,6 +40,13 @@ export default function RootNavigator() {
             <Stack.Screen name="MainTabs" component={MainTabNavigator} />
             <Stack.Screen name="BankList" component={BankList} />
             <Stack.Screen name="AddBankRecipient" component={AddBankRecipient} />
+            <Stack.Screen name="Settings" component={Settings} />
+            <Stack.Screen name="Security" component={Security} />
+            <Stack.Screen name="BankAccounts" component={BankAccounts} />
+            <Stack.Screen name="HelpCenter" component={HelpCenter} />
+            <Stack.Screen name="Beneficiary" component={Beneficiary} />
+            <Stack.Screen name="History" component={History} />
+            <Stack.Screen name="Profile" component={Profile} />
           </Stack.Group>
         ) : (
           <Stack.Group>

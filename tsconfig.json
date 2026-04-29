@@ -11,7 +11,7 @@
     }
   },
   "include": [
-    "src/**/*.ts", // Fokuskan include ke src agar indexing lebih cepat
+    "src/**/*.ts",
     "src/**/*.tsx",
     "**/*.ts",
     "**/*.tsx",

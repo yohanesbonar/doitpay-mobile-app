@@ -10,7 +10,8 @@ import { SearchBar } from '@/components/molecules/SearchBar';
 import { FilterButton } from '@/components/molecules/FilterButton';
 import { FilterBottomSheet } from '@/components/molecules/FilterBottomsheet';
 import { DateBottomSheet } from '@/components/molecules/DateBottomsheet';
-import { Calendar, X } from 'lucide-react-native';
+import { Calendar, Navigation, X } from 'lucide-react-native';
+import { useNavigation } from '@react-navigation/native';
 
 const DATA_MOCK = [
   {
@@ -88,6 +89,7 @@ const DATA_MOCK = [
 export const History = () => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
+  const navigation = useNavigation<any>();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilter, setShowFilter] = useState(false);
