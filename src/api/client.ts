@@ -5,6 +5,7 @@ import { getDeviceFingerprint } from '../utils/Device/Device.ts';
 import { getStorageItem, setStorageItem, StorageKey } from '../storage/index.ts';
 import { useAuthStore } from '../storage/useAuthStore.ts';
 import Toast from 'react-native-toast-message';
+import { Platform } from 'react-native';
 
 let isRefreshing = false;
 let failedQueue: any[] = [];
@@ -37,6 +38,9 @@ declare module 'axios' {
 apiClient.interceptors.request.use(
   async (config) => {
     const deviceId = await getDeviceFingerprint();
+
+    config.headers['X-Platform'] = Platform.OS;
+    config.headers['X-App-Type'] = 'mobile';
     config.headers['X-Device-ID'] = deviceId;
 
     const noNeedAuth = config?.noNeedAuth;
@@ -47,7 +51,6 @@ apiClient.interceptors.request.use(
 
       if (accessToken && expiresAt) {
         const expirationDate = new Date(expiresAt);
-
         const isTokenExpired = isBefore(subSeconds(expirationDate, 10), new Date());
 
         if (isTokenExpired && !isRefreshing) {
@@ -55,23 +58,25 @@ apiClient.interceptors.request.use(
 
           try {
             const refreshToken = getStorageItem(StorageKey.REFRESH_TOKEN);
-            
+
             const response = await axios.post(
               `${Config.API_URL}/v1/auth/refresh`,
               { refreshToken },
               {
                 headers: {
-                  'accept': 'application/json',
-                  'X-Device-ID': deviceId,
+                  accept: 'application/json',
                   'Content-Type': 'application/json',
+                  'X-Platform': Platform.OS,
+                  'X-App-Type': 'mobile',
+                  'X-Device-ID': deviceId,
                 },
-              }
+              },
             );
 
-            const { 
-              accessToken: newAccessToken, 
-              refreshToken: newRefreshToken, 
-              expiresAt: newExpiresAt 
+            const {
+              accessToken: newAccessToken,
+              refreshToken: newRefreshToken,
+              expiresAt: newExpiresAt,
             } = response?.data?.data;
 
             setStorageItem(StorageKey.ACCESS_TOKEN, newAccessToken);
@@ -79,12 +84,12 @@ apiClient.interceptors.request.use(
             setStorageItem(StorageKey.EXPIRES_AT, newExpiresAt);
 
             config.headers.Authorization = `Bearer ${newAccessToken}`;
-            
+
             processQueue(null, newAccessToken);
             return config;
           } catch (refreshError) {
             processQueue(refreshError, null);
-            useAuthStore.getState().logout(); 
+            useAuthStore.getState().logout();
             return Promise.reject(refreshError);
           } finally {
             isRefreshing = false;
@@ -99,7 +104,7 @@ apiClient.interceptors.request.use(
             })
             .catch((err) => Promise.reject(err));
         }
-      } 
+      }
 
       const currentToken = getStorageItem(StorageKey.VERIFICATION_TOKEN);
       if (currentToken) {
@@ -153,7 +158,7 @@ apiClient.interceptors.response.use(
       });
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default apiClient;
