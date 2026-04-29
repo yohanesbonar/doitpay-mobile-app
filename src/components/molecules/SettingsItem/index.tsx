@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    flex: 1, // Supaya teks tidak menabrak switch
+    flex: 1,
   },
   itemTitle: {
     fontSize: 16,
