@@ -23,7 +23,7 @@ export const handleLogout = () => {
   logout();
   Toast.show({
     type: 'success',
-    text1: 'Berhasil logout',
+    text1: 'Log Out Berhasil',
     position: 'top',
     visibilityTime: 3000,
   });

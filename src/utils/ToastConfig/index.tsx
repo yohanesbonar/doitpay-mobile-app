@@ -8,12 +8,38 @@ export const toastConfig = {
   success: (props) => (
     <BaseToast
       {...props}
-      style={{ borderLeftColor: 'pink', marginTop: 40 }}
-      contentContainerStyle={{ paddingHorizontal: 15 }}
+      style={{
+        borderLeftWidth: 0,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 100,
+        height: 'auto',
+        minHeight: 50,
+
+        width: undefined,
+        maxWidth: '85%',
+        alignSelf: 'center',
+
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+        elevation: 5,
+        marginTop: 45,
+      }}
+      contentContainerStyle={{
+        paddingHorizontal: 24,
+        paddingVertical: 12,
+        flex: 0,
+      }}
       text1Style={{
         fontSize: 15,
         fontFamily: 'Switzer-Regular',
+        fontWeight: '400',
+        color: '#1A1A1A',
+        textAlign: 'center',
+        flexWrap: 'wrap',
       }}
+      text1NumberOfLines={2}
     />
   ),
   /*
@@ -23,11 +49,38 @@ export const toastConfig = {
   error: (props) => (
     <ErrorToast
       {...props}
-      style={{ marginTop: 40, backgroundColor: '#e63946' }}
-      text1Style={{
-        fontSize: 14,
-        color: 'white',
+      style={{
+        borderLeftWidth: 0,
+        borderRadius: 100,
+        height: 'auto',
+        minHeight: 50,
+
+        width: undefined,
+        maxWidth: '85%',
+        alignSelf: 'center',
+
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+        elevation: 5,
+        marginTop: 45,
+        backgroundColor: '#e63946',
       }}
+      contentContainerStyle={{
+        paddingHorizontal: 24,
+        paddingVertical: 12,
+        flex: 0,
+      }}
+      text1Style={{
+        fontSize: 15,
+        fontFamily: 'Switzer-Regular',
+        color: '#FFFFFF',
+        fontWeight: '400',
+        textAlign: 'center',
+        flexWrap: 'wrap',
+      }}
+      text1NumberOfLines={2}
       text2Style={{
         fontSize: 12,
       }}

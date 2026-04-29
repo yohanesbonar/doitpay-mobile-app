@@ -345,18 +345,18 @@ export const AuthEntry = ({ route }) => {
                 onSuccess: (res) => {
                   Toast.show({
                     type: 'success',
-                    text1: 'PIN berhasil dibuat, register berhasil',
+                    text1: 'Register Berhasil',
                   });
 
                   // disable this step because KYC is not ready
                   // setTimeout(() => {
                   //   setCurrentStep(5);
                   // }, 250);
+                  //   navigation.navigate('BankList', { isLoginState });
+                  navigation.navigate('Home', { isLoginState });
                   Keyboard.dismiss();
-                  navigation.navigate('BankList', { isLoginState });
                 },
                 onError: (err: any) => {
-                  // setIsErrorPIN(true);
                   setConfirmationPin('');
                   Toast.show({
                     type: 'error',
