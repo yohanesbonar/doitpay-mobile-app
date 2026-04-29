@@ -41,6 +41,7 @@ export const SettingItem = ({
           onValueChange={onPress}
           trackColor={{ false: '#E5E5E5', true: '#4F84F6' }}
           thumbColor="#FFFFFF"
+          style={{ transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }}
         />
       )}
     </TouchableOpacity>
