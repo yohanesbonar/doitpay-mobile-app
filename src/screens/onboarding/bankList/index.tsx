@@ -6,6 +6,7 @@ import { useAuthStore } from '@/storage/useAuthStore';
 const BankListScreen = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
+  const fromTabBar = route.params?.fromTabBar;
   const isLoginState = route.params?.isLoginState;
 
   const accessToken = useAuthStore((state) => state.accessToken);
@@ -13,7 +14,20 @@ const BankListScreen = () => {
   const hasHomeRoute = state.routeNames.includes('Home');
 
   const handleBack = () => {
-    navigation.dispatch(StackActions.replace('MainTabs'));
+    if (fromTabBar) {
+      navigation.dispatch(
+        CommonActions.navigate({
+          name: 'MainTabs',
+          params: { screen: 'Home' },
+        }),
+      );
+    } else {
+      if (navigation.canGoBack()) {
+        navigation.goBack();
+      } else {
+        navigation.dispatch(StackActions.replace('MainTabs'));
+      }
+    }
   };
 
   const handleSelectBank = (bankId: string) => {

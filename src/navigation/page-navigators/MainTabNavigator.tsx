@@ -1,6 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Home } from '../../features/main/home';
+import BankList from '../../screens/onboarding/bankList';
 import { History } from '../../features/main/history';
 import { Beneficiary } from '../../features/main/beneficiary';
 import { Profile } from '../../features/main/profile';
@@ -15,7 +16,7 @@ export default function MainTabNavigator() {
       screenOptions={{ headerShown: false }}>
       <Tab.Screen name="Beranda" component={Home} />
       <Tab.Screen name="Riwayat" component={History} />
-      <Tab.Screen name="TransferTab" component={Home} />
+      <Tab.Screen name="TransferTab" component={BankList} />
       <Tab.Screen name="Penerima" component={Beneficiary} />
       <Tab.Screen name="Profil" component={Profile} />
     </Tab.Navigator>

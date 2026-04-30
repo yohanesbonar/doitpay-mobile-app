@@ -28,7 +28,11 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
             });
 
             if (!isFocused && !event.defaultPrevented) {
-              navigation.navigate(route.name);
+              navigation.navigate({
+                name: route.name,
+                merge: true,
+                params: { fromTabBar: true },
+              });
             }
           };
 
