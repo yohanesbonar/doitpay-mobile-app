@@ -68,7 +68,7 @@ export const Home = () => {
           <UnprotectedAccount onPress={() => handleOpenEmailSheet()} isShow={true} />
           <View style={styles.dailyLimitWrapper}>
             <Text style={{ fontSize: 22, fontFamily: 'Switzer-Semibold' }}>
-              Limit Transfer Harian
+              {t('home.dailyLimitTransfer')}
             </Text>
             <TransferLimitCard usedAmount={500000} maxAmount={25000000} percentage={5} />
           </View>
@@ -82,13 +82,13 @@ export const Home = () => {
             <SizedBox height={24} />
             <View style={{ marginRight: -24 }}>
               <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>
-                Terakhir dikirim
+                {t('home.lastSend')}
               </Text>
               <RecentRecipient />
             </View>
             <SizedBox height={24} />
             <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>
-              Aktivitas Terakhir
+              {t('home.lastActivity')}
             </Text>
             <View style={{ paddingBottom: 75 }}>
               {[{}, {}, {}, {}].map((item, index) => (

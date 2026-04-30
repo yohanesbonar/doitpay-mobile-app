@@ -1,8 +1,12 @@
 {
   "hello": "Halo!",
   "home": {
-    "welcome": "Selamat datang di Doitpay!",
-    "changeTheme": "Ubah Tema"
+    "dailyLimitTransfer": "Limit Transfer Harian",
+    "lastSend": "Terakhir dikirim",
+    "lastActivity": "Aktivitas Terakhir",
+    "search": "Cari nama, bank, nomor rekening",
+    "unprotectedAccount": "Akun belum terlindungi.",
+    "verifyNow": "Verifikasi email sekarang"
   },
   "onboarding": {
     "freeTransfer": "Transfer Gratis", 
