@@ -12,6 +12,7 @@ import { FilterBottomSheet } from '@/components/molecules/FilterBottomsheet';
 import { DateBottomSheet } from '@/components/molecules/DateBottomsheet';
 import { Calendar, Navigation, X } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 
 const DATA_MOCK = [
   {
@@ -90,6 +91,7 @@ export const History = () => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const navigation = useNavigation<any>();
+  const { t } = useTranslation();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilter, setShowFilter] = useState(false);
@@ -163,7 +165,7 @@ export const History = () => {
     <SafeAreaView style={styles.safeAreaContainer}>
       <View style={styles.container}>
         <View style={styles.headerWrapper}>
-          <Text style={styles.headerTitle}>Riwayat</Text>
+          <Text style={styles.headerTitle}>{t('history.title')}</Text>
           <TouchableOpacity onPress={() => handleLogout()}>
             <IconNotification />
           </TouchableOpacity>
@@ -173,7 +175,7 @@ export const History = () => {
           <SearchBar
             value={searchQuery}
             onChangeText={setSearchQuery}
-            placeholder="Cari transaksi"
+            placeholder={t('history.searchTransaction')}
           />
         </View>
 
@@ -192,7 +194,7 @@ export const History = () => {
           {isAnyFilterActive && (
             <TouchableOpacity style={styles.clearFilterButton} onPress={handleClearFilter}>
               <X size={16} color="#E25C5C" />
-              <Text style={styles.clearFilterText}>Clear Filter</Text>
+              <Text style={styles.clearFilterText}>{t('history.clearFilter')}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -212,7 +214,7 @@ export const History = () => {
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={() => (
             <View style={styles.emptyState}>
-              <Text style={styles.emptyText}>Transaksi tidak ditemukan</Text>
+              <Text style={styles.emptyText}>{t('history.transactionNotFound')}</Text>
             </View>
           )}
         />

@@ -1,7 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Home } from '../../features/main/home';
-import BankList from '../../screens/onboarding/bankList';
+import BankList from '../../screens/transfer/bankList';
 import { History } from '../../features/main/history';
 import { Beneficiary } from '../../features/main/beneficiary';
 import { Profile } from '../../features/main/profile';

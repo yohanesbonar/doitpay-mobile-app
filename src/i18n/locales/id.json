@@ -70,5 +70,11 @@
   "bankAccountForm": {
     "accountNumber": "Nomor Rekening",
     "8DigitAccountNumber": "8 Digit no rekening"
+  }, 
+  "history": {
+    "title": "Riwayat", 
+    "searchTransaction": "Cari transaksi",
+    "clearFilter": "Clear Filter",
+    "transactionNotFound": "Transaksi tidak ditemukan"
   }
 }

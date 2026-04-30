@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, FlatList, TouchableOpacity, TextInput, Image } from 'react-native';
-import { createStyles } from './styles';
+import { createStyles } from './styles.ts';
 import { useTranslation } from 'react-i18next';
-import HeaderToolbar from '../../../components/molecules/HeaderToolbar';
+import HeaderToolbar from '../../../components/molecules/HeaderToolbar/index.tsx';
 import Button from '../../../components/atoms/Button/index.tsx';
 import { useTheme } from '../../../theme/ThemeProvider.tsx';
 import { Formik } from 'formik';
