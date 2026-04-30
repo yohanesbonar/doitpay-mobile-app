@@ -7,6 +7,7 @@ import { IconNotification } from '@/assets/icons';
 import { SearchBar } from '@/components/molecules/SearchBar';
 import BeneficiaryItem from './components/BeneficiaryItem';
 import { handleLogout } from '@/utils/Common';
+import { useTranslation } from 'react-i18next';
 
 const DATA_BENEFICIARY = [
   { id: '1', name: 'Joni Wahyu', bank: 'BCA', accountNumber: '7453023301', isFavorite: true },
@@ -22,6 +23,7 @@ const DATA_BENEFICIARY = [
 export const Beneficiary = () => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
+  const { t } = useTranslation();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'Favorit' | 'Semua'>('Favorit');
@@ -51,7 +53,7 @@ export const Beneficiary = () => {
     <SafeAreaView style={styles.safeAreaContainer}>
       <View style={styles.container}>
         <View style={styles.headerWrapper}>
-          <Text style={styles.headerTitle}>Penerima</Text>
+          <Text style={styles.headerTitle}>{t('beneficiary.title')}</Text>
           <TouchableOpacity onPress={() => handleLogout()}>
             <IconNotification />
           </TouchableOpacity>
@@ -61,7 +63,7 @@ export const Beneficiary = () => {
           <SearchBar
             value={searchQuery}
             onChangeText={setSearchQuery}
-            placeholder="Cari Penerima"
+            placeholder={t('beneficiary.search')}
           />
         </View>
 

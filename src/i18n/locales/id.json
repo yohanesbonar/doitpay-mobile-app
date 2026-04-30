@@ -76,5 +76,9 @@
     "searchTransaction": "Cari transaksi",
     "clearFilter": "Clear Filter",
     "transactionNotFound": "Transaksi tidak ditemukan"
+  }, 
+  "beneficiary": {
+    "title": "Penerima",
+    "search": "Cari Penerima"
   }
 }
