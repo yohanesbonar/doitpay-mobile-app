@@ -5,6 +5,7 @@ import { ShieldCheck } from 'lucide-react-native';
 import { useTheme } from '@/theme/ThemeProvider';
 import { createStyles } from './styles';
 import Toast from 'react-native-toast-message';
+import { useTranslation } from 'react-i18next';
 
 export const EmailBottomsheet = forwardRef(({ onDismiss }: any, ref: any) => {
   const snapPoints = useMemo(() => ['65%'], []);
@@ -12,6 +13,7 @@ export const EmailBottomsheet = forwardRef(({ onDismiss }: any, ref: any) => {
   const styles = createStyles(colors);
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
+  const { t } = useTranslation();
 
   const validateEmail = (text: string) => {
     setEmail(text);
@@ -45,11 +47,8 @@ export const EmailBottomsheet = forwardRef(({ onDismiss }: any, ref: any) => {
       onDismiss={onDismiss}
       handleIndicatorStyle={{ backgroundColor: '#E5E5E5', width: 40 }}>
       <BottomSheetView style={styles.contentContainer}>
-        <Text style={styles.title}>Amankan akun kamu</Text>
-        <Text style={styles.description}>
-          Tambahkan email untuk melindungi akun dari SIM dan sebagai metode pemulihan jika kamu lupa
-          PIN
-        </Text>
+        <Text style={styles.title}>{t('home.protectYourAccount')}</Text>
+        <Text style={styles.description}>{t('home.addYourEmail')}</Text>
 
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Email</Text>
@@ -68,10 +67,8 @@ export const EmailBottomsheet = forwardRef(({ onDismiss }: any, ref: any) => {
         <View style={styles.infoBox}>
           <ShieldCheck size={20} color="#1A1A1A" style={styles.infoIcon} />
           <View style={{ flex: 1 }}>
-            <Text style={styles.infoTitle}>Perlindungan SIM Swap</Text>
-            <Text style={styles.infoText}>
-              Email sebagai faktor keamanan kedua untuk PIN reset dan login perangkat baru.
-            </Text>
+            <Text style={styles.infoTitle}>{t('home.safeSIMSwap')}</Text>
+            <Text style={styles.infoText}>{t('home.emailFactorSafety')}</Text>
           </View>
         </View>
 
@@ -93,12 +90,12 @@ export const EmailBottomsheet = forwardRef(({ onDismiss }: any, ref: any) => {
             setError('');
           }}>
           <Text style={[styles.buttonTextPrimary, !isValid && { color: '#A3A3A3' }]}>
-            Verifikasi Email
+            {t('home.verificationEmail')}
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.buttonSecondary} onPress={() => ref.current?.dismiss()}>
-          <Text style={styles.buttonTextSecondary}>Nanti Saja</Text>
+          <Text style={styles.buttonTextSecondary}>{t('home.next')}</Text>
         </TouchableOpacity>
       </BottomSheetView>
     </BottomSheetModal>

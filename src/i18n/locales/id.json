@@ -6,7 +6,13 @@
     "lastActivity": "Aktivitas Terakhir",
     "search": "Cari nama, bank, nomor rekening",
     "unprotectedAccount": "Akun belum terlindungi.",
-    "verifyNow": "Verifikasi email sekarang"
+    "verifyNow": "Verifikasi email sekarang",
+    "protectYourAccount": "Amankan akun kamu",
+    "addYourEmail": "Tambahkan email untuk melindungi akun dari SIM dan sebagai metode pemulihan jika kamu lupa PIN",
+    "safeSIMSwap": "Perlindungan SIM Swap", 
+    "emailFactorSafety": "Email sebagai faktor keamanan kedua untuk PIN reset dan login perangkat baru.",
+    "verificationEmail": "Verifikasi Email",
+    "next": "Nanti Saja"
   },
   "onboarding": {
     "freeTransfer": "Transfer Gratis", 
