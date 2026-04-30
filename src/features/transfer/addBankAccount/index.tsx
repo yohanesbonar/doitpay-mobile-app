@@ -59,25 +59,27 @@ export const AddBankRecipientView = ({
           <View style={{ flex: 1 }}>
             <BankAccountForm {...formikProps} showResult={showResult} searchData={mockSearchData} />
 
-            <View style={styles.footer}>
-              <Button
-                type="regular"
-                onPress={() => formikProps.handleSubmit()}
-                title={
-                  showResult
-                    ? t('addBankAccount.continue')
-                    : formikProps.values.accountNumber
-                      ? t('addBankAccount.checkAccount')
-                      : t('addBankAccount.skip')
-                }
-                style={{ borderWidth: 1, borderColor: '#D4D4D4' }}
-                textStyle={{
-                  color:
-                    showResult || formikProps.values.accountNumber ? colors.white : colors.black,
-                }}
-                color={formikProps.values.accountNumber ? colors.buttonBlue : colors.buttonWhite}
-              />
-            </View>
+            {!fromTabBar && (
+              <View style={styles.footer}>
+                <Button
+                  type="regular"
+                  onPress={() => formikProps.handleSubmit()}
+                  title={
+                    showResult
+                      ? t('addBankAccount.continue')
+                      : formikProps.values.accountNumber
+                        ? t('addBankAccount.checkAccount')
+                        : t('addBankAccount.skip')
+                  }
+                  style={{ borderWidth: 1, borderColor: '#D4D4D4' }}
+                  textStyle={{
+                    color:
+                      showResult || formikProps.values.accountNumber ? colors.white : colors.black,
+                  }}
+                  color={formikProps.values.accountNumber ? colors.buttonBlue : colors.buttonWhite}
+                />
+              </View>
+            )}
 
             <SuccessBottomSheet
               isVisible={showModal}
