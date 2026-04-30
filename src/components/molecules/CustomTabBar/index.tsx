@@ -76,7 +76,13 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
 
       <TouchableOpacity
         style={styles.fabButton}
-        onPress={() => navigation.navigate('BankList')}
+        onPress={() =>
+          navigation.navigate({
+            name: 'BankList',
+            merge: true,
+            params: { fromTabBar: true },
+          })
+        }
         activeOpacity={0.9}>
         <View style={styles.fabInner}>
           <Icon name="paper-plane-outline" size={26} color={colors.textWhite} />

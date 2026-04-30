@@ -41,7 +41,7 @@ const HeaderToolbar: React.FC<HeaderToolbarProps> = ({
       case 'regular':
         return 'normal';
       default:
-        return 'bold';
+        return '400';
     }
   };
 

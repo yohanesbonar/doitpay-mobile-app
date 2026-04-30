@@ -9,7 +9,7 @@ import {
   Image,
 } from 'react-native';
 import { useTheme } from '../../../theme/ThemeProvider.tsx';
-import { createStyles } from './styles';
+import { createStyles } from './styles.ts';
 import Button from '../../../components/atoms/Button/index.tsx';
 import { useTranslation } from 'react-i18next';
 

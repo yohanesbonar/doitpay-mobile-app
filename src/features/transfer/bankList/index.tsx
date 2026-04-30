@@ -13,6 +13,7 @@ interface BankListViewProps {
   onSelectBank: (id: string) => void;
   onPressNext: (values: any) => void;
   isLoginState: boolean;
+  fromTabBar: boolean;
 }
 
 export const BankListView = ({
@@ -20,6 +21,7 @@ export const BankListView = ({
   onSelectBank,
   onPressNext,
   isLoginState,
+  fromTabBar,
 }: BankListViewProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -81,7 +83,12 @@ export const BankListView = ({
 
   return (
     <View style={styles.container}>
-      <HeaderToolbar title={t('bankList.rekening')} onPressBack={onPressBack} />
+      <HeaderToolbar
+        title={t('bankList.rekening')}
+        onPressBack={onPressBack}
+        titlePosition={fromTabBar ? 'left' : 'center'}
+        titleStyle="normal"
+      />
       <Formik initialValues={{ selectedBank: '', searchQuery: '' }} onSubmit={onPressNext}>
         {({ values, setFieldValue, handleSubmit }) => (
           <View style={{ flex: 1 }}>
@@ -113,7 +120,7 @@ export const BankListView = ({
                         ]}
                         onPress={() => {
                           setFieldValue('selectedBank', bank.id);
-                          onSelectBank(bank.id); // Panggil fungsi navigasi dari props
+                          onSelectBank(bank.id);
                         }}>
                         <Image source={bank.logo} style={styles.logoGrid} resizeMode="contain" />
                       </TouchableOpacity>
@@ -138,16 +145,18 @@ export const BankListView = ({
               contentContainerStyle={styles.listPadding}
             />
 
-            <View style={styles.footer}>
-              <Button
-                type="regular"
-                onPress={handleSubmit}
-                title={t('bankList.next')}
-                style={{ borderWidth: 1, borderColor: '#D4D4D4' }}
-                color={colors.white}
-                textColor="black"
-              />
-            </View>
+            {!fromTabBar && (
+              <View style={styles.footer}>
+                <Button
+                  type="regular"
+                  onPress={handleSubmit}
+                  title={t('bankList.next')}
+                  style={{ borderWidth: 1, borderColor: '#D4D4D4' }}
+                  color={colors.white}
+                  textColor="black"
+                />
+              </View>
+            )}
           </View>
         )}
       </Formik>

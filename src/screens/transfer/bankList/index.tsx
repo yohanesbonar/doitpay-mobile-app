@@ -15,12 +15,7 @@ const BankListScreen = () => {
 
   const handleBack = () => {
     if (fromTabBar) {
-      navigation.dispatch(
-        CommonActions.navigate({
-          name: 'MainTabs',
-          params: { screen: 'Home' },
-        }),
-      );
+      navigation.goBack();
     } else {
       if (navigation.canGoBack()) {
         navigation.goBack();
@@ -34,7 +29,7 @@ const BankListScreen = () => {
     console.log('Bank Selected:', bankId);
 
     setTimeout(() => {
-      navigation.navigate('AddBankRecipient');
+      navigation.navigate({ name: 'AddBankRecipient', merge: true, params: { fromTabBar: true } });
     }, 50);
   };
 
@@ -48,6 +43,7 @@ const BankListScreen = () => {
       onSelectBank={handleSelectBank}
       onPressNext={handleNext}
       isLoginState={isLoginState}
+      fromTabBar={fromTabBar}
     />
   );
 };

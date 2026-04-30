@@ -2,17 +2,19 @@ import React, { useState } from 'react';
 import { View } from 'react-native';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
-import BankAccountForm from './BankAccountForm';
-import SuccessBottomSheet from './SuccessBottomSheet';
-import HeaderToolbar from '../../../components/molecules/HeaderToolbar';
+import BankAccountForm from './BankAccountForm.tsx';
+import SuccessBottomSheet from './SuccessBottomSheet.tsx';
+import HeaderToolbar from '../../../components/molecules/HeaderToolbar/index.tsx';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../theme/ThemeProvider.tsx';
-import { createStyles } from './styles';
+import { createStyles } from './styles.ts';
 import Button from '../../../components/atoms/Button/index.tsx';
 
 interface AddBankRecipientViewProps {
   onPressBack: () => void;
   onNavigateHome: () => void;
+  isLoginState: boolean;
+  fromTabBar: boolean;
 }
 
 const BankAccountSchema = Yup.object().shape({
@@ -22,6 +24,8 @@ const BankAccountSchema = Yup.object().shape({
 export const AddBankRecipientView = ({
   onPressBack,
   onNavigateHome,
+  isLoginState,
+  fromTabBar,
 }: AddBankRecipientViewProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -35,7 +39,12 @@ export const AddBankRecipientView = ({
 
   return (
     <View style={styles.container}>
-      <HeaderToolbar title={t('addBankAccount.rekening')} onPressBack={onPressBack} />
+      <HeaderToolbar
+        title={t('addBankAccount.rekening')}
+        onPressBack={onPressBack}
+        titleStyle="normal"
+        titlePosition={fromTabBar ? 'left' : 'center'}
+      />
       <Formik
         initialValues={{ accountNumber: '' }}
         validationSchema={BankAccountSchema}

@@ -60,6 +60,7 @@
     "clearFace": "Wajah terlihat jelas, tanpa masker atau kacamata hitam"
   },
   "bankList": {
+    "sendTo": "Kirim ke",
     "rekening": "Rekening", 
     "next": "Lewati", 
     "populerBank": "Bank Populer",
