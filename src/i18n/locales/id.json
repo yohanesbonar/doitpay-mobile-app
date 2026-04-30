@@ -84,5 +84,12 @@
   "beneficiary": {
     "title": "Penerima",
     "search": "Cari Penerima"
+  }, 
+  "mainTabNav": {
+    "homepage": "Beranda",
+    "history": "Riwayat",
+    "transfer": "Transfer",
+    "beneficiary": "Penerima",
+    "profile": "Profil"
   }
 }

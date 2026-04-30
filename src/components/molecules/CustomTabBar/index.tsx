@@ -4,10 +4,12 @@ import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useTheme } from '../../../theme/ThemeProvider';
 import { createStyles } from './styles';
+import { useTranslation } from 'react-i18next';
 
 export default function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const { colors } = useTheme();
   const styles = createStyles({});
+  const { t } = useTranslation();
 
   return (
     <View style={styles.outerContainer}>
@@ -16,7 +18,7 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
           const { options } = descriptors[route.key];
           const isFocused = state.index === index;
 
-          if (route.name === 'TransferTab') {
+          if (route.name === t('mainTabNav.transfer')) {
             return <View key={index} style={styles.placeholder} />;
           }
 
