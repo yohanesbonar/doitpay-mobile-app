@@ -36,7 +36,7 @@ const createStyles = (colors: any) =>
   StyleSheet.create({
     container: {
       backgroundColor: '#FEFCE8',
-      borderRadius: 16,
+      borderRadius: 8,
       padding: 16,
       borderWidth: 1,
       borderColor: '#E5E5E5',
