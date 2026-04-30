@@ -1,5 +1,5 @@
 import { Image, Text, TouchableOpacity, View, ScrollView } from 'react-native';
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { useTheme } from '../../../theme/ThemeProvider.tsx';
 import { createStyles } from './styles.ts';
 import { useTranslation } from 'react-i18next';
@@ -16,7 +16,8 @@ import { RecentActivityItem } from './components/RecentActivityItem.tsx';
 import { RecentRecipient } from './components/RecentRecipient.tsx';
 import { SearchBar } from './components/SearchBar.tsx';
 import { UnprotectedAccount } from './components/UnprotectedAccount.tsx';
-import Toast from 'react-native-toast-message';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { EmailBottomsheet } from '@/components/molecules/EmailBottomsheet';
 
 export const Home = () => {
   const { colors } = useTheme();
@@ -24,6 +25,21 @@ export const Home = () => {
   const { t } = useTranslation();
   const navigation = useNavigation();
   const { isNewUser, setIsNewUser } = useAuthStore();
+
+  useEffect(() => {
+    if (isNewUser) {
+      navigation.dispatch(StackActions.replace('BankList'));
+      setIsNewUser(false);
+    }
+  }, [isNewUser]);
+
+  const emailSheetRef = useRef<BottomSheetModal>(null);
+
+  const handleOpenEmailSheet = useCallback(() => {
+    requestAnimationFrame(() => {
+      emailSheetRef.current?.present();
+    });
+  }, []);
 
   useEffect(() => {
     if (isNewUser) {
@@ -46,15 +62,7 @@ export const Home = () => {
         </View>
 
         <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-          <UnprotectedAccount
-            onPress={() =>
-              Toast.show({
-                type: 'success',
-                text1: 'Tekan Unprotected Verif',
-              })
-            }
-            isShow={true}
-          />
+          <UnprotectedAccount onPress={handleOpenEmailSheet} isShow={true} />
           <View style={styles.dailyLimitWrapper}>
             <Text style={{ fontSize: 22, fontFamily: 'Switzer-Semibold' }}>
               Limit Transfer Harian
@@ -94,6 +102,7 @@ export const Home = () => {
           </View>
         </ScrollView>
       </View>
+      <EmailBottomsheet ref={emailSheetRef} />
     </SafeAreaView>
   );
 };

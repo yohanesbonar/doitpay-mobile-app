@@ -19,6 +19,7 @@ import { useGetFcmToken } from './src/hooks/useGetFcmToken.ts';
 import { useNotificationListener } from './src/hooks/useNotificationListener.ts';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -51,18 +52,20 @@ const App = () => {
 
   return (
     // <GluestackUIProvider mode="dark">
-    //   <GestureHandlerRootView style={{flex: 1}}>
-    <QueryClientProvider client={queryClient}>
-      <I18nextProvider i18n={i18next}>
-        <SafeAreaProvider>
-          <ThemeProvider>
-            <RootNavigator />
-          </ThemeProvider>
-          <Toast config={toastConfig} />
-        </SafeAreaProvider>
-      </I18nextProvider>
-    </QueryClientProvider>
-    // </GestureHandlerRootView>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <BottomSheetModalProvider>
+        <QueryClientProvider client={queryClient}>
+          <I18nextProvider i18n={i18next}>
+            <SafeAreaProvider>
+              <ThemeProvider>
+                <RootNavigator />
+              </ThemeProvider>
+              <Toast config={toastConfig} />
+            </SafeAreaProvider>
+          </I18nextProvider>
+        </QueryClientProvider>
+      </BottomSheetModalProvider>
+    </GestureHandlerRootView>
     // </GluestackUIProvider>
   );
 };

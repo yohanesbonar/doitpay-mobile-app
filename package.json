@@ -25,6 +25,7 @@
     "@gluestack-ui/themed": "^1.1.73",
     "@gluestack-ui/utils": "^3.0.11",
     "@gluestack/ui-next-adapter": "^3.0.3",
+    "@gorhom/bottom-sheet": "^5.2.12",
     "@legendapp/motion": "^2.3.0",
     "@notifee/react-native": "^9.1.8",
     "@react-native-community/datetimepicker": "^9.1.0",
