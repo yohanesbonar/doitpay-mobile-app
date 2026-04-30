@@ -1,5 +1,5 @@
 import { Image, Text, TouchableOpacity, View, ScrollView } from 'react-native';
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTheme } from '../../../theme/ThemeProvider.tsx';
 import { createStyles } from './styles.ts';
 import { useTranslation } from 'react-i18next';
@@ -33,9 +33,12 @@ export const Home = () => {
     }
   }, [isNewUser]);
 
+  const [isSheetMounted, setIsSheetMounted] = useState(false);
   const emailSheetRef = useRef<BottomSheetModal>(null);
 
   const handleOpenEmailSheet = useCallback(() => {
+    setIsSheetMounted(true);
+
     requestAnimationFrame(() => {
       emailSheetRef.current?.present();
     });
@@ -62,7 +65,7 @@ export const Home = () => {
         </View>
 
         <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-          <UnprotectedAccount onPress={handleOpenEmailSheet} isShow={true} />
+          <UnprotectedAccount onPress={() => handleOpenEmailSheet()} isShow={true} />
           <View style={styles.dailyLimitWrapper}>
             <Text style={{ fontSize: 22, fontFamily: 'Switzer-Semibold' }}>
               Limit Transfer Harian
@@ -102,7 +105,9 @@ export const Home = () => {
           </View>
         </ScrollView>
       </View>
-      <EmailBottomsheet ref={emailSheetRef} />
+      {isSheetMounted && (
+        <EmailBottomsheet ref={emailSheetRef} onDismiss={() => setIsSheetMounted(false)} />
+      )}
     </SafeAreaView>
   );
 };

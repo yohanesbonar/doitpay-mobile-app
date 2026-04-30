@@ -6,7 +6,8 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { createStyles } from './styles';
 import Toast from 'react-native-toast-message';
 
-export const EmailBottomsheet = forwardRef((props, ref: any) => {
+export const EmailBottomsheet = forwardRef(({ onDismiss }: any, ref: any) => {
+  const snapPoints = useMemo(() => ['65%'], []);
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const [email, setEmail] = useState('');
@@ -39,7 +40,9 @@ export const EmailBottomsheet = forwardRef((props, ref: any) => {
       ref={ref}
       stackBehavior="replace"
       backdropComponent={renderBackdrop}
+      snapPoints={snapPoints}
       enablePanDownToClose
+      onDismiss={onDismiss}
       handleIndicatorStyle={{ backgroundColor: '#E5E5E5', width: 40 }}>
       <BottomSheetView style={styles.contentContainer}>
         <Text style={styles.title}>Amankan akun kamu</Text>
