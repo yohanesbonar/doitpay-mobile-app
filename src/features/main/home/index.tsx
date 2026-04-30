@@ -15,6 +15,8 @@ import { BillCard } from './components/BillCard.tsx';
 import { RecentActivityItem } from './components/RecentActivityItem.tsx';
 import { RecentRecipient } from './components/RecentRecipient.tsx';
 import { SearchBar } from './components/SearchBar.tsx';
+import { UnprotectedAccount } from './components/UnprotectedAccount.tsx';
+import Toast from 'react-native-toast-message';
 
 export const Home = () => {
   const { colors } = useTheme();
@@ -44,6 +46,15 @@ export const Home = () => {
         </View>
 
         <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+          <UnprotectedAccount
+            onPress={() =>
+              Toast.show({
+                type: 'success',
+                text1: 'Tekan Unprotected Verif',
+              })
+            }
+            isShow={true}
+          />
           <View style={styles.dailyLimitWrapper}>
             <Text style={{ fontSize: 22, fontFamily: 'Switzer-Semibold' }}>
               Limit Transfer Harian
