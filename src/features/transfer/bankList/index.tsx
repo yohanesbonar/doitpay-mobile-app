@@ -10,7 +10,7 @@ import { ArrowDownLeft, ArrowUpRight, Search } from 'lucide-react-native';
 
 interface BankListViewProps {
   onPressBack: () => void;
-  onSelectBank: (id: string) => void;
+  onSelectBank: (bank: any) => void;
   onPressNext: (values: any) => void;
   isLoginState: boolean;
   fromTabBar: boolean;
@@ -141,8 +141,8 @@ export const BankListView = ({
                           values.selectedBank === bank.id && styles.selectedBox,
                         ]}
                         onPress={() => {
-                          setFieldValue('selectedBank', bank.id);
-                          onSelectBank(bank.id);
+                          setFieldValue('selectedBank', bank);
+                          onSelectBank(bank);
                         }}>
                         <Image source={bank.logo} style={styles.logoGrid} resizeMode="contain" />
                       </TouchableOpacity>
@@ -155,8 +155,8 @@ export const BankListView = ({
                 <TouchableOpacity
                   style={styles.listItem}
                   onPress={() => {
-                    setFieldValue('selectedBank', item.id);
-                    onSelectBank(item.id);
+                    setFieldValue('selectedBank', item);
+                    onSelectBank(item);
                   }}>
                   <View style={styles.listLogoContainer}>
                     <Image source={item.logo} style={styles.logoList} resizeMode="contain" />

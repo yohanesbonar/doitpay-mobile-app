@@ -7,6 +7,7 @@ const AddBankRecipientScreen = () => {
   const route = useRoute<any>();
   const fromTabBar = route.params?.fromTabBar;
   const isLoginState = route.params?.isLoginState;
+  const bankData = route.params?.bank;
 
   const handleBack = () => {
     navigation.goBack();
@@ -22,6 +23,7 @@ const AddBankRecipientScreen = () => {
       onNavigateHome={handleSuccessNavigation}
       fromTabBar={fromTabBar}
       isLoginState={isLoginState}
+      bankData={bankData}
     />
   );
 };

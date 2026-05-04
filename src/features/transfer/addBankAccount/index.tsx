@@ -15,6 +15,7 @@ interface AddBankRecipientViewProps {
   onNavigateHome: () => void;
   isLoginState: boolean;
   fromTabBar: boolean;
+  bankData: any;
 }
 
 const BankAccountSchema = Yup.object().shape({
@@ -26,6 +27,7 @@ export const AddBankRecipientView = ({
   onNavigateHome,
   isLoginState,
   fromTabBar,
+  bankData,
 }: AddBankRecipientViewProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -40,7 +42,7 @@ export const AddBankRecipientView = ({
   return (
     <View style={styles.container}>
       <HeaderToolbar
-        title={t('addBankAccount.rekening')}
+        title={bankData?.name ? `${bankData?.name}` : t('addBankAccount.rekening')}
         onPressBack={onPressBack}
         titleStyle="normal"
         titlePosition={fromTabBar ? 'left' : 'center'}

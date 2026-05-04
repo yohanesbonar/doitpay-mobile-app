@@ -25,11 +25,13 @@ const BankListScreen = () => {
     }
   };
 
-  const handleSelectBank = (bankId: string) => {
-    console.log('Bank Selected:', bankId);
-
+  const handleSelectBank = (bank: any) => {
     setTimeout(() => {
-      navigation.navigate({ name: 'AddBankRecipient', merge: true, params: { fromTabBar: true } });
+      navigation.navigate({
+        name: 'AddBankRecipient',
+        merge: true,
+        params: { fromTabBar: true, bank: bank },
+      });
     }, 50);
   };
 
