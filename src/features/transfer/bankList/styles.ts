@@ -23,7 +23,7 @@ export const createStyles = (colors: any) => {
       fontSize: 18,
       marginHorizontal: 16,
       marginBottom: 15,
-      fontFamily: "Switzer-Semibold"
+      fontFamily: 'Switzer-Semibold',
     },
     gridContainer: {
       flexDirection: 'row',
@@ -35,7 +35,7 @@ export const createStyles = (colors: any) => {
       aspectRatio: 1,
       borderWidth: 1,
       borderColor: '#E0E0E0',
-      backgroundColor: "#FFF",
+      backgroundColor: '#FFF',
       borderRadius: 4,
       justifyContent: 'center',
       alignItems: 'center',
@@ -55,22 +55,22 @@ export const createStyles = (colors: any) => {
       height: 64,
       borderWidth: 1,
       borderColor: '#E0E0E0',
-      backgroundColor: "#FFF",
+      backgroundColor: '#FFF',
       borderRadius: 4,
       justifyContent: 'center',
       alignItems: 'center',
       marginRight: 15,
     },
     logoList: { width: 30, height: 30 },
-    listText: { fontSize: 16, fontFamily: "Switzer-Regular" },
+    listText: { fontSize: 16, fontFamily: 'Switzer-Regular' },
     footer: {
       position: 'absolute',
       bottom: 0,
       width: '100%',
       paddingBottom: 22,
-      paddingTop: 22, 
+      paddingTop: 22,
       paddingHorizontal: 24,
-      backgroundColor: "#FFF"
+      backgroundColor: '#FFF',
     },
     skipButton: {
       height: 55,
@@ -81,5 +81,37 @@ export const createStyles = (colors: any) => {
       alignItems: 'center',
     },
     skipText: { fontSize: 16, color: '#000', fontFamily: 'Switzer-Medium' },
+    tabContainer: {
+      flexDirection: 'row',
+      paddingHorizontal: 16,
+      marginTop: 15,
+      marginBottom: 10,
+      gap: 12,
+    },
+    tabButton: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      paddingVertical: 12,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: '#E0E0E0',
+      backgroundColor: '#FFF',
+      gap: 8,
+      paddingHorizontal: 16,
+    },
+    activeTab: {
+      backgroundColor: '#4A86FF',
+      borderColor: '#4A86FF',
+    },
+    tabText: {
+      fontSize: 16,
+      fontFamily: 'Switzer-Medium',
+      color: '#000',
+    },
+    activeTabText: {
+      color: '#FFF',
+    },
   });
 };

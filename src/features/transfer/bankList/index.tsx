@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, TextInput, Image } from 'react-native';
 import { createStyles } from './styles.ts';
 import { useTranslation } from 'react-i18next';
@@ -6,10 +6,10 @@ import HeaderToolbar from '../../../components/molecules/HeaderToolbar/index.tsx
 import Button from '../../../components/atoms/Button/index.tsx';
 import { useTheme } from '../../../theme/ThemeProvider.tsx';
 import { Formik } from 'formik';
-import { Search } from 'lucide-react-native';
+import { ArrowDownLeft, ArrowUpRight, Search } from 'lucide-react-native';
 
 interface BankListViewProps {
-  onPressBack: (values: any) => void;
+  onPressBack: () => void;
   onSelectBank: (id: string) => void;
   onPressNext: (values: any) => void;
   isLoginState: boolean;
@@ -26,6 +26,8 @@ export const BankListView = ({
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const { t } = useTranslation();
+
+  const [activeTab, setActiveTab] = useState<'kirim' | 'terima'>('kirim');
 
   const POPULAR_BANKS = [
     { id: '1', name: 'blu', logo: require('../../../assets/images/ic-BCA.png') },
@@ -92,6 +94,26 @@ export const BankListView = ({
       <Formik initialValues={{ selectedBank: '', searchQuery: '' }} onSubmit={onPressNext}>
         {({ values, setFieldValue, handleSubmit }) => (
           <View style={{ flex: 1 }}>
+            <View style={styles.tabContainer}>
+              <TouchableOpacity
+                style={[styles.tabButton, activeTab === 'kirim' && styles.activeTab]}
+                onPress={() => setActiveTab('kirim')}>
+                <ArrowUpRight size={18} color={activeTab === 'kirim' ? '#FFF' : '#000'} />
+                <Text style={[styles.tabText, activeTab === 'kirim' && styles.activeTabText]}>
+                  Kirim
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.tabButton, activeTab === 'terima' && styles.activeTab]}
+                onPress={() => setActiveTab('terima')}>
+                <ArrowDownLeft size={18} color={activeTab === 'terima' ? '#FFF' : '#000'} />
+                <Text style={[styles.tabText, activeTab === 'terima' && styles.activeTabText]}>
+                  Terima
+                </Text>
+              </TouchableOpacity>
+            </View>
+
             <View style={styles.searchContainer}>
               <Search size={20} color="#A9A9A9" style={styles.searchIcon} />
               <TextInput
