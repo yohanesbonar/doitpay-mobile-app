@@ -1,0 +1,98 @@
+import { StyleSheet } from 'react-native';
+
+export const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F8FAFF',
+  },
+  content: {
+    padding: 20,
+  },
+  resultCard: {
+    backgroundColor: '#2563EB',
+    borderRadius: 28,
+    paddingVertical: 40,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  resultIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#1D4ED8',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  resultTitle: {
+    fontFamily: 'Switzer-Medium',
+    fontSize: 20,
+    color: '#FFFFFF',
+    marginBottom: 12,
+  },
+  resultAmount: {
+    fontFamily: 'Switzer-Bold',
+    fontSize: 32,
+    color: '#FFFFFF',
+  },
+  detailsCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    marginBottom: 24,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  detailLabel: {
+    fontFamily: 'Switzer-Regular',
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  detailValue: {
+    fontFamily: 'Switzer-Medium',
+    fontSize: 14,
+    color: '#111827',
+    textAlign: 'right',
+    flex: 1,
+    marginLeft: 16,
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+  },
+  actionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 14,
+    marginHorizontal: 4,
+  },
+  actionText: {
+    fontFamily: 'Switzer-Medium',
+    fontSize: 14,
+    color: '#111827',
+  },
+  homeButton: {
+    backgroundColor: '#2563EB',
+    borderRadius: 16,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  homeButtonText: {
+    fontFamily: 'Switzer-Medium',
+    fontSize: 16,
+    color: '#FFFFFF',
+  },
+});

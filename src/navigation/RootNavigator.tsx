@@ -8,7 +8,7 @@ import { AuthEntry } from '../features/onboarding/authEntry';
 import BankList from '../screens/transfer/bankList';
 import AddBankRecipient from '../screens/transfer/addBankAccount';
 import { navigationRef } from './navigationRef';
-import { Home } from '../features/home';
+import { Home } from '../features/main/home';
 import { useAuthStore } from '../storage/useAuthStore';
 import MainTabNavigator from './page-navigators/MainTabNavigator';
 import { Settings } from '../features/main/profile/Settings';
@@ -20,6 +20,8 @@ import { History } from '../features/main/history';
 import Profile from '../features/main/profile';
 import TransferDetail from '../screens/transfer/transferDetail';
 import PaymentInstruction from '../screens/transfer/paymentInstruction';
+import TransferProcessing from '../screens/transfer/transferProcessing';
+import PaymentReceipt from '../screens/transfer/paymentReceipt';
 
 const Stack = createNativeStackNavigator();
 
@@ -43,6 +45,9 @@ export default function RootNavigator() {
             <Stack.Screen name="BankList" component={BankList} />
             <Stack.Screen name="AddBankRecipient" component={AddBankRecipient} />
             <Stack.Screen name="TransferDetail" component={TransferDetail} />
+            <Stack.Screen name="PaymentInstruction" component={PaymentInstruction} />
+            <Stack.Screen name="TransferProcessing" component={TransferProcessing} />
+            <Stack.Screen name="PaymentReceipt" component={PaymentReceipt} />
             <Stack.Screen name="Settings" component={Settings} />
             <Stack.Screen name="Security" component={Security} />
             <Stack.Screen name="BankAccounts" component={BankAccounts} />
@@ -50,7 +55,6 @@ export default function RootNavigator() {
             <Stack.Screen name="Beneficiary" component={Beneficiary} />
             <Stack.Screen name="History" component={History} />
             <Stack.Screen name="Profile" component={Profile} />
-            <Stack.Screen name="PaymentInstruction" component={PaymentInstruction} />
           </Stack.Group>
         ) : (
           <Stack.Group>

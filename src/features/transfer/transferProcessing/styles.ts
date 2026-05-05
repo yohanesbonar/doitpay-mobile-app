@@ -1,0 +1,176 @@
+import { StyleSheet } from 'react-native';
+
+export const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FAFAFA',
+  },
+  content: {
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    paddingBottom: 40,
+  },
+  topInfo: {
+    alignItems: 'center',
+    marginTop: 20,
+    width: '100%',
+  },
+  bankRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF',
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+    marginBottom: 24,
+  },
+  bankLogoPlaceholder: {
+    width: 32,
+    height: 32,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  bankInitial: {
+    fontFamily: 'Switzer-Bold',
+    fontSize: 10,
+    color: '#1D4ED8',
+  },
+  bankNameText: {
+    fontFamily: 'Switzer-Medium',
+    fontSize: 14,
+    color: '#374151',
+  },
+  sendToText: {
+    fontFamily: 'Switzer-Regular',
+    fontSize: 14,
+    color: '#6B7280',
+    marginBottom: 4,
+  },
+  sendToName: {
+    fontFamily: 'Switzer-Bold',
+    color: '#111827',
+  },
+  amountText: {
+    fontFamily: 'Switzer-Bold',
+    fontSize: 32,
+    color: '#111827',
+  },
+  iconVisualContainer: {
+    marginVertical: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  iconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#3B82F6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#3B82F6',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  progressLineContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  segmentActive: {
+    backgroundColor: '#3B82F6',
+  },
+  segmentInactive: {
+    backgroundColor: '#E5E7EB',
+  },
+  labelContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  stepperWrapper: {
+    width: '100%',
+    paddingHorizontal: 4,
+    marginBottom: 32,
+  },
+  stepperRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  stepColumn: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  progressSegment: {
+    height: 4,
+    width: '90%',
+    borderRadius: 2,
+    marginBottom: 8,
+  },
+  stepLabel: {
+    fontFamily: 'Switzer-Medium',
+    fontSize: 12,
+    textAlign: 'center',
+  },
+  labelActive: {
+    color: '#3B82F6',
+  },
+  labelInactive: {
+    color: '#9CA3AF',
+  },
+  statusBadgeContainer: {
+    alignItems: 'center',
+    marginTop: 20,
+    width: '100%',
+  },
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFF',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 25,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+    minWidth: 150,
+  },
+  blueDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#3B82F6',
+    marginRight: 10,
+  },
+  statusBadgeText: {
+    fontFamily: 'Switzer-Medium',
+    fontSize: 14,
+    color: '#111827',
+    flexShrink: 0
+  },
+  finishButton: {
+    marginTop: 40,
+    backgroundColor: '#3B82F6',
+    width: '100%',
+    height: 52,
+    borderRadius: 26,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  finishButtonText: {
+    color: '#FFF',
+    fontFamily: 'Switzer-Bold',
+    fontSize: 16,
+  },
+});

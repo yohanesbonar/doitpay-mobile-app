@@ -19,6 +19,16 @@ const PaymentInstructionScreen = () => {
     navigation.goBack();
   };
 
+  setTimeout(() => {
+    navigation.navigate('TransferProcessing', {
+      accountData,
+      bankData,
+      amount,
+      paymentMethod,
+      currentStep: 'received',
+    });
+  }, 2000);
+
   return (
     <PaymentInstructionView
       accountData={accountData}
