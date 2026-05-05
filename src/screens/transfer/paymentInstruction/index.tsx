@@ -1,0 +1,36 @@
+import React from 'react';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import PaymentInstructionView from '@/features/transfer/paymentInstruction';
+
+const PaymentInstructionScreen = () => {
+  const navigation = useNavigation<any>();
+  const route = useRoute<any>();
+  const { accountData, bankData, fromTabBar, isLoginState, method, paymentMethod, amount } =
+    (route.params || {}) as any;
+
+  console.log('PaymentInstructionScreen - Route Params:', {
+    accountData,
+    bankData,
+    paymentMethod,
+    amount,
+  });
+
+  const handleBack = () => {
+    navigation.goBack();
+  };
+
+  return (
+    <PaymentInstructionView
+      accountData={accountData}
+      bankData={bankData}
+      fromTabBar={fromTabBar}
+      isLoginState={isLoginState}
+      method={method}
+      paymentMethod={paymentMethod}
+      amount={amount}
+      onPressBack={handleBack}
+    />
+  );
+};
+
+export default PaymentInstructionScreen;

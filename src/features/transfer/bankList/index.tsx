@@ -10,7 +10,7 @@ import { ArrowDownLeft, ArrowUpRight, Search } from 'lucide-react-native';
 
 interface BankListViewProps {
   onPressBack: () => void;
-  onSelectBank: (bank: any) => void;
+  onSelectBank: (bank: any, method: 'send' | 'receive') => void;
   onPressNext: (values: any) => void;
   isLoginState: boolean;
   fromTabBar: boolean;
@@ -27,7 +27,7 @@ export const BankListView = ({
   const styles = createStyles(colors);
   const { t } = useTranslation();
 
-  const [activeTab, setActiveTab] = useState<'kirim' | 'terima'>('kirim');
+  const [activeTab, setActiveTab] = useState<'send' | 'receive'>('send');
 
   const POPULAR_BANKS = [
     { id: '1', name: 'blu', logo: require('../../../assets/images/ic-BCA.png') },
@@ -96,19 +96,19 @@ export const BankListView = ({
           <View style={{ flex: 1 }}>
             <View style={styles.tabContainer}>
               <TouchableOpacity
-                style={[styles.tabButton, activeTab === 'kirim' && styles.activeTab]}
-                onPress={() => setActiveTab('kirim')}>
-                <ArrowUpRight size={18} color={activeTab === 'kirim' ? '#FFF' : '#000'} />
-                <Text style={[styles.tabText, activeTab === 'kirim' && styles.activeTabText]}>
+                style={[styles.tabButton, activeTab === 'send' && styles.activeTab]}
+                onPress={() => setActiveTab('send')}>
+                <ArrowUpRight size={18} color={activeTab === 'send' ? '#FFF' : '#000'} />
+                <Text style={[styles.tabText, activeTab === 'send' && styles.activeTabText]}>
                   Kirim
                 </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.tabButton, activeTab === 'terima' && styles.activeTab]}
-                onPress={() => setActiveTab('terima')}>
-                <ArrowDownLeft size={18} color={activeTab === 'terima' ? '#FFF' : '#000'} />
-                <Text style={[styles.tabText, activeTab === 'terima' && styles.activeTabText]}>
+                style={[styles.tabButton, activeTab === 'receive' && styles.activeTab]}
+                onPress={() => setActiveTab('receive')}>
+                <ArrowDownLeft size={18} color={activeTab === 'receive' ? '#FFF' : '#000'} />
+                <Text style={[styles.tabText, activeTab === 'receive' && styles.activeTabText]}>
                   Terima
                 </Text>
               </TouchableOpacity>
@@ -142,7 +142,7 @@ export const BankListView = ({
                         ]}
                         onPress={() => {
                           setFieldValue('selectedBank', bank);
-                          onSelectBank(bank);
+                          onSelectBank(bank, activeTab);
                         }}>
                         <Image source={bank.logo} style={styles.logoGrid} resizeMode="contain" />
                       </TouchableOpacity>
@@ -156,7 +156,7 @@ export const BankListView = ({
                   style={styles.listItem}
                   onPress={() => {
                     setFieldValue('selectedBank', item);
-                    onSelectBank(item);
+                    onSelectBank(item, activeTab);
                   }}>
                   <View style={styles.listLogoContainer}>
                     <Image source={item.logo} style={styles.logoList} resizeMode="contain" />

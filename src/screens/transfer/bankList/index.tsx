@@ -25,12 +25,12 @@ const BankListScreen = () => {
     }
   };
 
-  const handleSelectBank = (bank: any) => {
+  const handleSelectBank = (bank: any, method: 'send' | 'receive') => {
     setTimeout(() => {
       navigation.navigate({
         name: 'AddBankRecipient',
         merge: true,
-        params: { fromTabBar: true, bank: bank },
+        params: { fromTabBar: true, bank: bank, method: method },
       });
     }, 50);
   };

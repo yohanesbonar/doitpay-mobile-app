@@ -16,6 +16,8 @@ interface AddBankRecipientViewProps {
   isLoginState: boolean;
   fromTabBar: boolean;
   bankData: any;
+  method: 'send' | 'receive';
+  onClickContinue?: (method: 'send' | 'receive', bankData: any, accountData: any) => void;
 }
 
 const BankAccountSchema = Yup.object().shape({
@@ -28,6 +30,8 @@ export const AddBankRecipientView = ({
   isLoginState,
   fromTabBar,
   bankData,
+  method,
+  onClickContinue,
 }: AddBankRecipientViewProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -54,15 +58,21 @@ export const AddBankRecipientView = ({
           if (!showResult) {
             setShowResult(true);
           } else {
-            setShowModal(true);
+            if (!fromTabBar) {
+              setShowModal(true);
+            } else {
+              if (onClickContinue) {
+                onClickContinue(method, bankData, mockSearchData[0]);
+              }
+            }
           }
         }}>
         {(formikProps) => (
           <View style={{ flex: 1 }}>
             <BankAccountForm {...formikProps} showResult={showResult} searchData={mockSearchData} />
 
-            {!fromTabBar && (
-              <View style={styles.footer}>
+            <View style={styles.footer}>
+              {showResult || formikProps.values.accountNumber ? (
                 <Button
                   type="regular"
                   onPress={() => formikProps.handleSubmit()}
@@ -80,15 +90,15 @@ export const AddBankRecipientView = ({
                   }}
                   color={formikProps.values.accountNumber ? colors.buttonBlue : colors.buttonWhite}
                 />
-              </View>
-            )}
+              ) : null}
+            </View>
 
             <SuccessBottomSheet
               isVisible={showModal}
               onClose={() => setShowModal(false)}
               onContinue={() => {
                 setShowModal(false);
-                onNavigateHome(); // Panggil fungsi navigasi dari props
+                onNavigateHome();
               }}
             />
           </View>

@@ -8,6 +8,7 @@ const AddBankRecipientScreen = () => {
   const fromTabBar = route.params?.fromTabBar;
   const isLoginState = route.params?.isLoginState;
   const bankData = route.params?.bank;
+  const method = route.params?.method;
 
   const handleBack = () => {
     navigation.goBack();
@@ -17,6 +18,21 @@ const AddBankRecipientScreen = () => {
     navigation.navigate('Home');
   };
 
+  const onClickContinue = (method: 'send' | 'receive', bankData: any, accountData: any) => {
+    if (method === 'send') {
+      console.log('Navigate to transfer page with bankData:', bankData);
+      navigation.navigate({
+        name: 'TransferDetail',
+        merge: true,
+        params: { fromTabBar: true, bankData: bankData, accountData: accountData, method: method },
+      });
+      // to transfer page
+    } else if (method === 'receive') {
+      console.log('Navigate to receive page with bankData:', bankData);
+      // to receive page
+    }
+  };
+
   return (
     <AddBankRecipientView
       onPressBack={handleBack}
@@ -24,6 +40,8 @@ const AddBankRecipientScreen = () => {
       fromTabBar={fromTabBar}
       isLoginState={isLoginState}
       bankData={bankData}
+      method={method}
+      onClickContinue={onClickContinue}
     />
   );
 };
