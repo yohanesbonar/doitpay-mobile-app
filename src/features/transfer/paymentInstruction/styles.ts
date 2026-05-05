@@ -199,4 +199,49 @@ export const styles = StyleSheet.create({
   vaShareButton: {
     marginTop: 16,
   },
+  recipientInfo: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  recipientName: {
+    fontFamily: 'Switzer-Medium',
+    fontSize: 24,
+    color: '#111827',
+    marginBottom: 4,
+  },
+  recipientId: {
+    fontFamily: 'Switzer-Regular',
+    fontSize: 14,
+    color: '#000',
+  },
+  inputAmountWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    marginVertical: 24,
+  },
+  inputCurrencyPrefix: {
+    fontFamily: 'Switzer-Bold', // Gunakan font Switzer sesuai profile Anda
+    fontSize: 18,
+    color: '#111827',
+    marginRight: 12,
+  },
+  amountInput: {
+    flex: 1,
+    height: 56,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    fontSize: 24,
+    fontFamily: 'Switzer-Medium',
+    color: '#111827',
+    backgroundColor: '#FFFFFF',
+  },
+  amountInputPlaceholder: {
+    fontSize: 14, // Ukuran font kecil untuk placeholder
+  },
+  amountInputActive: {
+    fontSize: 24, // Ukuran menjadi 24 sesuai permintaan Anda
+  },
 });

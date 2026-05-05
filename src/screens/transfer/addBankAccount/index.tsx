@@ -29,6 +29,11 @@ const AddBankRecipientScreen = () => {
       // to transfer page
     } else if (method === 'receive') {
       console.log('Navigate to receive page with bankData:', bankData);
+      navigation.navigate({
+        name: 'PaymentInstruction',
+        merge: true,
+        params: { fromTabBar: true, bankData: bankData, accountData: accountData, method: method },
+      });
       // to receive page
     }
   };

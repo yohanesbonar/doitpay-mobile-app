@@ -19,15 +19,27 @@ const PaymentInstructionScreen = () => {
     navigation.goBack();
   };
 
-  setTimeout(() => {
-    navigation.navigate('TransferProcessing', {
-      accountData,
-      bankData,
-      amount,
-      paymentMethod,
-      currentStep: 'received',
-    });
-  }, 2000);
+  setTimeout(
+    () => {
+      method !== 'receive'
+        ? navigation.navigate('TransferProcessing', {
+            accountData,
+            bankData,
+            amount,
+            paymentMethod,
+            currentStep: 'received',
+          })
+        : navigation.navigate('PaymentReceipt', {
+            accountData,
+            bankData,
+            paymentMethod,
+            amount,
+            transactionId: 'TRX0123123',
+            dateTime: '12 February 2026 10:30:20',
+          });
+    },
+    method !== 'receive' ? 2000 : 8000,
+  );
 
   return (
     <PaymentInstructionView

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,8 +6,8 @@ import {
   ScrollView,
   Share,
   Alert,
-  StyleSheet,
   Image,
+  TextInput,
 } from 'react-native';
 import { ChevronDown, Copy, Download, Share2 } from 'lucide-react-native';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
@@ -23,26 +23,34 @@ interface PaymentInstructionViewProps {
   paymentMethod?: 'VA' | 'QRIS';
   amount?: string;
   onPressBack: () => void;
+  method?: 'receive' | 'pay';
 }
 
 const PaymentInstructionView = ({
   accountData,
   bankData,
   paymentMethod,
-  amount,
+  amount: initialAmount,
   onPressBack,
+  method,
 }: PaymentInstructionViewProps) => {
-  console.log('PaymentInstructionView - Props:', {
-    accountData,
-    bankData,
-    paymentMethod,
-    amount,
-  });
+  const [amount, setAmount] = useState(initialAmount || '');
 
-  const accountNumber = accountData?.accountNumber || '123012932141293120';
   const bankName = bankData?.name || 'Bank Central Asia';
   const ownerName = bankData?.name || 'Prabu Suwito';
+  const accountNumber = accountData?.accountNumber || '123012932141293120';
   const isQris = paymentMethod === 'QRIS';
+
+  const formatNumber = (val: string) => {
+    const cleanNumber = val.replace(/[^0-9]/g, '');
+    if (cleanNumber === '') return '';
+    return parseInt(cleanNumber).toLocaleString('id-ID');
+  };
+
+  const handleInputChange = (val: string) => {
+    const formatted = formatNumber(val);
+    setAmount(formatted);
+  };
 
   const handleCopy = () => Alert.alert('Sukses', 'Nomor VA berhasil disalin');
 
@@ -60,36 +68,62 @@ const PaymentInstructionView = ({
   return (
     <View style={styles.container}>
       <HeaderToolbar
-        title="Pembayaran"
+        title={method === 'receive' ? 'Terima Pembayaran' : 'Pembayaran'}
         onPressBack={onPressBack}
         titlePosition="left"
         titleStyle="regular"
       />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {isQris ? (
+        {isQris || method === 'receive' ? (
           <View style={styles.qrisContainer}>
-            <Text style={styles.qrisLabel}>Total pembayaran</Text>
-            <View style={styles.qrisAmountWrapper}>
-              <Text style={styles.qrisCurrency}>Rp</Text>
-              <Text style={styles.qrisAmountText}>{amount}</Text>
-            </View>
-            <Text style={styles.qrisTarget}>
-              Mengirim ke <Text style={styles.qrisTargetBoldText}>{ownerName}</Text>
-            </Text>
+            {method !== 'receive' ? (
+              <View>
+                <Text style={styles.qrisLabel}>Total pembayaran</Text>
+                <View style={styles.qrisAmountWrapper}>
+                  <Text style={styles.qrisCurrency}>Rp</Text>
+                  <Text style={styles.qrisAmountText}>{amount}</Text>
+                </View>
+                <Text style={styles.qrisTarget}>
+                  Mengirim ke <Text style={styles.qrisTargetBoldText}>{ownerName}</Text>
+                </Text>
+              </View>
+            ) : (
+              <View style={styles.recipientInfo}>
+                <Text style={styles.recipientName}>Yahya Rusdi</Text>
+                <Text style={styles.recipientId}>NMID: ID12312932103</Text>
+              </View>
+            )}
 
             <View style={styles.qrCard}>
               <Image
                 source={require('../../../assets/images/ic-qris-sample.png')}
-                style={{ width: 322 }}
+                style={{ width: 280, height: 280 }}
                 resizeMode="contain"
               />
               <Image
                 source={require('../../../assets/images/ic-qris.png')}
-                style={{ width: 90 }}
+                style={{ width: 80, height: 30, marginTop: 10 }}
                 resizeMode="contain"
               />
             </View>
+
+            {method === 'receive' && (
+              <View style={styles.inputAmountWrapper}>
+                <Text style={styles.inputCurrencyPrefix}>Rp</Text>
+                <TextInput
+                  style={[
+                    styles.amountInput,
+                    amount.length === 0 ? styles.amountInputPlaceholder : styles.amountInputActive,
+                  ]}
+                  placeholder="Nominal transfer"
+                  placeholderTextColor="#9CA3AF"
+                  keyboardType="numeric"
+                  value={amount}
+                  onChangeText={handleInputChange}
+                />
+              </View>
+            )}
 
             <TouchableOpacity style={styles.outlineButton} onPress={handleShareQris}>
               <Download size={18} color="#111827" style={{ marginRight: 8 }} />
@@ -106,7 +140,7 @@ const PaymentInstructionView = ({
             <View style={styles.vaCard}>
               <View style={styles.vaHeader}>
                 <View style={styles.bankLogoPlaceholder}>
-                  <Text style={styles.bankInitial}>{bankName.toUpperCase()}</Text>
+                  <Text style={styles.bankInitial}>{bankName.toUpperCase().substring(0, 3)}</Text>
                 </View>
                 <Text style={styles.bankNameText}>{bankName}</Text>
               </View>
@@ -127,14 +161,12 @@ const PaymentInstructionView = ({
             </View>
 
             <Text style={styles.guideTitle}>Cara Pembayaran</Text>
-            <TouchableOpacity style={styles.dropdownItem}>
-              <Text style={styles.dropdownText}>Mobile Banking</Text>
-              <ChevronDown size={20} color="#6B7280" />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.dropdownItem}>
-              <Text style={styles.dropdownText}>ATM</Text>
-              <ChevronDown size={20} color="#6B7280" />
-            </TouchableOpacity>
+            {['Mobile Banking', 'ATM'].map((item) => (
+              <TouchableOpacity key={item} style={styles.dropdownItem}>
+                <Text style={styles.dropdownText}>{item}</Text>
+                <ChevronDown size={20} color="#6B7280" />
+              </TouchableOpacity>
+            ))}
           </View>
         )}
       </ScrollView>
