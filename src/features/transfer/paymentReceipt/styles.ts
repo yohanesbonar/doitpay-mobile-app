@@ -6,11 +6,10 @@ export const styles = StyleSheet.create({
     backgroundColor: '#F8FAFF',
   },
   content: {
-    padding: 20,
+    paddingVertical: 20,
   },
   resultCard: {
-    backgroundColor: '#2563EB',
-    borderRadius: 28,
+    backgroundColor: '#3981FF',
     paddingVertical: 40,
     paddingHorizontal: 24,
     alignItems: 'center',
@@ -20,7 +19,7 @@ export const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#1D4ED8',
+    backgroundColor: '#3d78dd',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
@@ -43,6 +42,7 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E7EB',
     marginBottom: 24,
+    marginHorizontal: 24,
   },
   detailRow: {
     flexDirection: 'row',
@@ -66,6 +66,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 24,
+    marginHorizontal: 24,
   },
   actionButton: {
     flex: 1,
@@ -85,10 +86,11 @@ export const styles = StyleSheet.create({
     color: '#111827',
   },
   homeButton: {
-    backgroundColor: '#2563EB',
+    backgroundColor: '#3981FF',
     borderRadius: 16,
     paddingVertical: 16,
     alignItems: 'center',
+    marginHorizontal: 24,
   },
   homeButtonText: {
     fontFamily: 'Switzer-Medium',
