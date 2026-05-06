@@ -24,6 +24,7 @@ interface PaymentInstructionViewProps {
   amount?: string;
   onPressBack: () => void;
   method?: 'receive' | 'pay';
+  setNewAmount?: (val: string) => void;
 }
 
 const PaymentInstructionView = ({
@@ -33,6 +34,7 @@ const PaymentInstructionView = ({
   amount: initialAmount,
   onPressBack,
   method,
+  setNewAmount,
 }: PaymentInstructionViewProps) => {
   const [amount, setAmount] = useState(initialAmount || '');
 
@@ -48,8 +50,8 @@ const PaymentInstructionView = ({
   };
 
   const handleInputChange = (val: string) => {
-    const formatted = formatNumber(val);
-    setAmount(formatted);
+    setNewAmount?.(val);
+    setAmount(val);
   };
 
   const handleCopy = () => Alert.alert('Sukses', 'Nomor VA berhasil disalin');

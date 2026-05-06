@@ -16,6 +16,7 @@ import {
 } from '../api/auth';
 import { setStorageItem, StorageKey } from '../storage';
 import { useAuthStore } from '../storage/useAuthStore';
+import Toast from 'react-native-toast-message';
 
 export const useRegisterRequestOtp = () => {
   return useMutation<RegisterOtpResponse, Error, RegisterOtpRequestPayload>({
@@ -61,6 +62,11 @@ export const useRegisterPinSetup = () => {
     onSuccess: (data) => {
       console.log('useRegisterPinSetup data.message:', data?.message);
       console.log('useRegisterPinSetup data', data);
+
+      Toast.show({
+        type: 'success',
+        text1: 'Register Berhasil',
+      });
 
       const session = data?.data;
 

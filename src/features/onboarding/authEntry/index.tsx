@@ -343,17 +343,9 @@ export const AuthEntry = ({ route }) => {
               },
               {
                 onSuccess: (res) => {
-                  Toast.show({
-                    type: 'success',
-                    text1: 'Register Berhasil',
-                  });
-
-                  // disable this step because KYC is not ready
-                  // setTimeout(() => {
-                  //   setCurrentStep(5);
-                  // }, 250);
-                  //   navigation.navigate('BankList', { isLoginState });
-                  navigation.navigate('Home', { isLoginState });
+                  setTimeout(() => {
+                    navigation.navigate('MainTabs', { isLoginState });
+                  }, 500);
                   Keyboard.dismiss();
                 },
                 onError: (err: any) => {
@@ -380,13 +372,14 @@ export const AuthEntry = ({ route }) => {
             },
             {
               onSuccess: (res) => {
+                console.log('Login success:', res);
                 Toast.show({
                   type: 'success',
                   text1: 'Berhasil login',
                 });
 
                 Keyboard.dismiss();
-                navigation.navigate('Home', { isLoginState });
+                navigation.navigate('MainTabs', { isLoginState });
               },
               onError: (err: any) => {
                 setConfirmationPin('');

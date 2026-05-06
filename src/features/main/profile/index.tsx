@@ -16,14 +16,13 @@ export const Profile = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Profil</Text>
+        <TouchableOpacity onPress={() => handleLogout()}>
+          <IconNotification />
+        </TouchableOpacity>
+      </View>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Profil</Text>
-          <TouchableOpacity onPress={() => handleLogout()}>
-            <IconNotification />
-          </TouchableOpacity>
-        </View>
-
         <View style={styles.userCard}>
           <View style={styles.avatar}>
             <Text style={styles.avatarText}>PS</Text>

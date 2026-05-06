@@ -26,12 +26,12 @@ export const Home = () => {
   const navigation = useNavigation();
   const { isNewUser, setIsNewUser } = useAuthStore();
 
-  useEffect(() => {
-    if (isNewUser) {
-      navigation.dispatch(StackActions.replace('BankList'));
-      setIsNewUser(false);
-    }
-  }, [isNewUser]);
+  // useEffect(() => {
+  //   if (isNewUser) {
+  //     navigation.dispatch(StackActions.replace('BankList'));
+  //     setIsNewUser(false);
+  //   }
+  // }, [isNewUser]);
 
   const [isSheetMounted, setIsSheetMounted] = useState(false);
   const emailSheetRef = useRef<BottomSheetModal>(null);
@@ -43,13 +43,6 @@ export const Home = () => {
       emailSheetRef.current?.present();
     });
   }, []);
-
-  useEffect(() => {
-    if (isNewUser) {
-      navigation.dispatch(StackActions.replace('BankList'));
-      setIsNewUser(false);
-    }
-  }, [isNewUser]);
 
   return (
     <SafeAreaView style={styles.safeAreaContainer}>

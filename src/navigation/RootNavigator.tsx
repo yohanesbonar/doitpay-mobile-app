@@ -60,8 +60,6 @@ export default function RootNavigator() {
           <Stack.Group>
             <Stack.Screen name="MainApp" component={Onboarding} />
             <Stack.Screen name="AuthEntry" component={AuthEntry} />
-            <Stack.Screen name="BankList" component={BankList} />
-            <Stack.Screen name="AddBankRecipient" component={AddBankRecipient} />
           </Stack.Group>
         )}
       </Stack.Navigator>

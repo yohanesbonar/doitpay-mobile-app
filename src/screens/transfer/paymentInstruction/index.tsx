@@ -5,6 +5,7 @@ import PaymentInstructionView from '@/features/transfer/paymentInstruction';
 const PaymentInstructionScreen = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
+  const [newAmount, setAmount] = React.useState('');
   const { accountData, bankData, fromTabBar, isLoginState, method, paymentMethod, amount } =
     (route.params || {}) as any;
 
@@ -33,7 +34,7 @@ const PaymentInstructionScreen = () => {
             accountData,
             bankData,
             paymentMethod,
-            amount,
+            amount: newAmount,
             transactionId: 'TRX0123123',
             dateTime: '12 February 2026 10:30:20',
           });
@@ -51,6 +52,7 @@ const PaymentInstructionScreen = () => {
       paymentMethod={paymentMethod}
       amount={amount}
       onPressBack={handleBack}
+      setNewAmount={setAmount}
     />
   );
 };
