@@ -221,7 +221,7 @@ export const styles = StyleSheet.create({
     marginVertical: 24,
   },
   inputCurrencyPrefix: {
-    fontFamily: 'Switzer-Bold', // Gunakan font Switzer sesuai profile Anda
+    fontFamily: 'Switzer-Bold', 
     fontSize: 18,
     color: '#111827',
     marginRight: 12,
@@ -239,9 +239,9 @@ export const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   amountInputPlaceholder: {
-    fontSize: 14, // Ukuran font kecil untuk placeholder
+    fontSize: 14, 
   },
   amountInputActive: {
-    fontSize: 24, // Ukuran menjadi 24 sesuai permintaan Anda
+    fontSize: 24,
   },
 });

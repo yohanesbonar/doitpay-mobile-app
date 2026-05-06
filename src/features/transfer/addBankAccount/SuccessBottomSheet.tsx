@@ -17,9 +17,17 @@ interface SuccessBottomSheetProps {
   isVisible: boolean;
   onClose: () => void;
   onContinue: () => void;
+  onGoToBankList: () => void;
+  accountData: any;
 }
 
-const SuccessBottomSheet = ({ isVisible, onClose, onContinue }: SuccessBottomSheetProps) => {
+const SuccessBottomSheet = ({
+  isVisible,
+  onClose,
+  onContinue,
+  onGoToBankList,
+  accountData,
+}: SuccessBottomSheetProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const { t } = useTranslation();
@@ -30,10 +38,13 @@ const SuccessBottomSheet = ({ isVisible, onClose, onContinue }: SuccessBottomShe
         <View style={styles.modalOverlay}>
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <View style={styles.bottomSheet}>
+              {/* Handle Bar untuk visual BottomSheet */}
+              <View style={styles.handleBar} />
+
               <Text style={styles.successTitle}>{t('successBottomSheet.successAddAccount')}</Text>
               <Text style={styles.successSubtitle}>{t('successBottomSheet.readyToTransfer')}</Text>
 
-              <View style={[styles.cardRecipient, { borderColor: '#E0E0E0' }]}>
+              <View style={styles.cardRecipientSuccess}>
                 <View style={styles.bankLogoContainer}>
                   <Image
                     source={require('../../../assets/images/ic-BCA.png')}
@@ -41,25 +52,29 @@ const SuccessBottomSheet = ({ isVisible, onClose, onContinue }: SuccessBottomShe
                     resizeMode="contain"
                   />
                 </View>
-                <View style={{ marginLeft: 10 }}>
-                  <Text style={styles.recipientName}>Bank BCA</Text>
-                  <Text style={styles.bankDetails}>Prabu Suwito</Text>
-                  <Text style={styles.bankDetails}>0498374820</Text>
+                <View style={{ marginLeft: 12 }}>
+                  <Text style={styles.bankNameText}>{accountData?.bank ?? ''}</Text>
+                  <Text style={styles.recipientNameText}>{accountData?.name ?? ''}</Text>
+                  <Text style={styles.accountNumberText}>{accountData?.accNo ?? ''}</Text>
                 </View>
               </View>
 
-              <View style={{ marginTop: 'auto', paddingTop: 20 }}>
+              <View style={styles.footerButtons}>
                 <Button
                   type="regular"
-                  onPress={onContinue}
-                  title={t('successBottomSheet.continueToHomepage')}
-                  style={{
-                    borderWidth: 1,
-                    borderColor: '#D4D4D4',
-                  }}
-                  textStyle={{ color: colors.white }}
+                  onPress={onGoToBankList}
+                  title={t('successBottomSheet.continueToBankList') || 'Lanjut ke Rekening Bank'}
                   color={colors.buttonBlue}
+                  textStyle={{ color: colors.white }}
+                  style={styles.primaryButton}
                 />
+
+                {/* Tombol Sekunder: Lanjut ke Homepage */}
+                <TouchableOpacity style={styles.secondaryButton} onPress={onContinue}>
+                  <Text style={styles.secondaryButtonText}>
+                    {t('successBottomSheet.continueToHomepage') || 'Lanjut ke Homepage'}
+                  </Text>
+                </TouchableOpacity>
               </View>
             </View>
           </TouchableWithoutFeedback>

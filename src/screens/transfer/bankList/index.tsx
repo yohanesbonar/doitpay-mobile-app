@@ -7,6 +7,7 @@ const BankListScreen = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const fromTabBar = route.params?.fromTabBar;
+  const fromProfile = route.params?.fromProfile;
   const isLoginState = route.params?.isLoginState;
 
   const accessToken = useAuthStore((state) => state.accessToken);
@@ -30,7 +31,7 @@ const BankListScreen = () => {
       navigation.navigate({
         name: 'AddBankRecipient',
         merge: true,
-        params: { fromTabBar: true, bank: bank, method: method },
+        params: { fromTabBar: true, bank: bank, method: method, fromProfile: fromProfile },
       });
     }, 50);
   };
@@ -46,6 +47,7 @@ const BankListScreen = () => {
       onPressNext={handleNext}
       isLoginState={isLoginState}
       fromTabBar={fromTabBar}
+      fromProfile={fromProfile}
     />
   );
 };

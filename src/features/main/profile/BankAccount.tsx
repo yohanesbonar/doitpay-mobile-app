@@ -1,21 +1,76 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Image, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Trash2, Edit3, Plus, AlertCircle } from 'lucide-react-native';
+import { storage, StorageKey } from '@/storage'; // Sesuaikan path storage Anda
+import HeaderToolbar from '@/components/molecules/HeaderToolbar';
+import { useFocusEffect } from '@react-navigation/native';
+
+interface Account {
+  id: string;
+  bank: string;
+  name: string;
+  accNo: string;
+  isVerified: boolean;
+  isActive: boolean;
+  image: any;
+}
 
 export const BankAccounts = ({ navigation }: any) => {
-  const BankCard = ({ bank, name, accNo, isVerified, isActive, type }: any) => (
+  const [accounts, setAccounts] = useState<Account[]>([]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const savedAccounts = storage.getString(StorageKey.BANK_ACCOUNTS);
+      console.log('Loaded accounts from storage:', savedAccounts);
+      if (savedAccounts) {
+        setAccounts(JSON.parse(savedAccounts));
+      }
+    }, []),
+  );
+
+  const saveToStorage = (data: Account[]) => {
+    setAccounts(data);
+    storage.set(StorageKey.BANK_ACCOUNTS, JSON.stringify(data));
+  };
+
+  const handleSetActive = (accountNumber: string) => {
+    const updated = accounts.map((acc) => ({
+      ...acc,
+      isActive: acc.accNo === accountNumber,
+    }));
+    console.log('Setting active account:', accountNumber, 'Updated accounts:', updated);
+    saveToStorage(updated);
+  };
+
+  const handleDelete = (accountNumber: string) => {
+    Alert.alert('Hapus Rekening', 'Apakah Anda yakin ingin menghapus rekening ini?', [
+      { text: 'Batal', style: 'cancel' },
+      {
+        text: 'Hapus',
+        style: 'destructive',
+        onPress: () => {
+          const updated = accounts.filter((acc) => acc.accNo !== accountNumber);
+          saveToStorage(updated);
+        },
+      },
+    ]);
+  };
+
+  const BankCard = ({ item }: { item: Account }) => (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
         <View style={styles.bankInfo}>
-          <View style={styles.bankLogoPlaceholder} />
+          <View style={styles.bankLogoPlaceholder}>
+            <Image source={item.image} style={{ width: 40, height: 40 }} resizeMode="contain" />
+          </View>
           <View>
-            <Text style={styles.bankName}>{bank}</Text>
-            <Text style={styles.accName}>{name}</Text>
-            <Text style={styles.accName}>{accNo}</Text>
+            <Text style={styles.bankName}>{item.bank}</Text>
+            <Text style={styles.accName}>{item.name}</Text>
+            <Text style={styles.accNo}>{item.accNo}</Text>
           </View>
         </View>
-        {isVerified && (
+        {item.isVerified && (
           <View style={styles.badge}>
             <Text style={styles.badgeText}>Terverifikasi</Text>
           </View>
@@ -23,18 +78,18 @@ export const BankAccounts = ({ navigation }: any) => {
       </View>
 
       <View style={styles.cardActions}>
-        <TouchableOpacity style={styles.btnSecondary}>
+        <TouchableOpacity style={styles.btnSecondary} onPress={() => handleDelete(item.accNo)}>
           <Trash2 size={16} color="#E25C5C" />
           <Text style={[styles.btnText, { color: '#E25C5C' }]}>Hapus</Text>
         </TouchableOpacity>
 
-        {type === 'settlement' ? (
+        {item.isActive ? (
           <TouchableOpacity style={styles.btnSecondary}>
             <Edit3 size={16} color="#1A1A1A" />
             <Text style={styles.btnText}>Edit</Text>
           </TouchableOpacity>
         ) : (
-          <TouchableOpacity style={styles.btnPrimary}>
+          <TouchableOpacity style={styles.btnPrimary} onPress={() => handleSetActive(item.accNo)}>
             <Text style={styles.btnTextWhite}>Jadikan Aktif</Text>
           </TouchableOpacity>
         )}
@@ -42,32 +97,76 @@ export const BankAccounts = ({ navigation }: any) => {
     </View>
   );
 
+  const renderEmptyState = () => (
+    <View style={styles.emptyContainer}>
+      <Image
+        source={require('../../../assets/images/ic-empty-bank.png')}
+        style={styles.emptyImage}
+        resizeMode="contain"
+      />
+      <Text style={styles.emptyTitle}>Belum ada rekening bank</Text>
+      <Text style={styles.emptySubtitle}>
+        Tambahkan rekening bank untuk menerima settlement dan menarik dana
+      </Text>
+
+      <TouchableOpacity
+        style={styles.btnLargePrimary}
+        onPress={() => navigation.navigate('BankList', { fromProfile: true })}>
+        <Plus size={20} color="#FFF" />
+        <Text style={styles.btnTextWhiteLarge}>Tambah Rekening Baru</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  const activeAccount = accounts.find((a) => a.isActive);
+  const otherAccounts = accounts.filter((a) => !a.isActive);
+
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <ChevronLeft size={24} color="#1A1A1A" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Rekening Bank</Text>
-      </View>
+    <View style={styles.container}>
+      <HeaderToolbar
+        title="Rekening Bank"
+        onPressBack={() => navigation.goBack()}
+        titlePosition="left"
+        titleStyle="Regular"
+      />
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={styles.sectionLabel}>Rekening Settlement Aktif</Text>
-        <BankCard
-          bank="Bank BCA"
-          name="Prabu Suwito"
-          accNo="0498374820"
-          isVerified
-          type="settlement"
-        />
+        {accounts.length === 0 ? (
+          renderEmptyState()
+        ) : (
+          <>
+            {activeAccount && (
+              <View>
+                <Text style={[styles.sectionLabel, { marginTop: 16 }]}>
+                  Rekening Settlement Aktif
+                </Text>
+                <View style={{ backgroundColor: '#FAFAFA', paddingHorizontal: 20, paddingTop: 12 }}>
+                  <BankCard item={activeAccount} />
+                </View>
+              </View>
+            )}
 
-        <Text style={[styles.sectionLabel, { marginTop: 24 }]}>Rekening Lainnya</Text>
-        <BankCard bank="Bank BRI" name="Prabu Suwito" accNo="0498374820" />
+            {otherAccounts.length > 0 && (
+              <View style={{ marginTop: 8 }}>
+                <Text style={styles.sectionLabel}>Rekening Lainnya</Text>
+                {otherAccounts.map((acc) => (
+                  <View
+                    style={{ backgroundColor: '#FAFAFA', paddingHorizontal: 20, paddingTop: 12 }}
+                    key={acc.id}>
+                    <BankCard key={acc.id} item={acc} />
+                  </View>
+                ))}
+              </View>
+            )}
 
-        <TouchableOpacity style={styles.btnAdd}>
-          <Plus size={20} color="#1A1A1A" />
-          <Text style={styles.btnAddText}>Tambah Rekening Baru</Text>
-        </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.btnAddOutline}
+              onPress={() => navigation.navigate('BankList', { fromProfile: true })}>
+              <Plus size={20} color="#1A1A1A" />
+              <Text style={styles.btnAddText}>Tambah Rekening Baru</Text>
+            </TouchableOpacity>
+          </>
+        )}
 
         <View style={styles.alertBox}>
           <AlertCircle size={20} color="#D4A017" />
@@ -78,7 +177,7 @@ export const BankAccounts = ({ navigation }: any) => {
           </Text>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -86,8 +185,14 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFF' },
   header: { flexDirection: 'row', alignItems: 'center', padding: 20, gap: 16 },
   headerTitle: { fontFamily: 'Switzer-Semibold', fontSize: 22, color: '#1A1A1A' },
-  content: { paddingHorizontal: 20 },
-  sectionLabel: { fontSize: 14, fontFamily: 'Switzer-Medium', color: '#1A1A1A', marginBottom: 12 },
+  content: {},
+  sectionLabel: {
+    fontSize: 14,
+    fontFamily: 'Switzer-Medium',
+    color: '#1A1A1A',
+    marginBottom: 12,
+    paddingHorizontal: 20,
+  },
   card: { padding: 16, borderRadius: 16, borderWidth: 1, borderColor: '#F0F0F0', marginBottom: 16 },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   bankInfo: { flexDirection: 'row', gap: 12 },
@@ -138,6 +243,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginTop: 20,
     marginBottom: 40,
+    marginHorizontal: 20,
   },
   alertText: {
     flex: 1,
@@ -145,5 +251,64 @@ const styles = StyleSheet.create({
     fontFamily: 'Switzer-Regular',
     color: '#1A1A1A',
     lineHeight: 18,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 40,
+    paddingHorizontal: 20,
+  },
+  emptyImage: {
+    width: 240,
+    height: 200,
+    marginBottom: 24,
+  },
+  emptyTitle: {
+    fontFamily: 'Switzer-Bold',
+    fontSize: 20,
+    color: '#1A1A1A',
+    marginBottom: 8,
+  },
+  emptySubtitle: {
+    fontFamily: 'Switzer-Regular',
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    paddingHorizontal: 20,
+    lineHeight: 20,
+    marginBottom: 32,
+  },
+  btnLargePrimary: {
+    flexDirection: 'row',
+    backgroundColor: '#4F84F6',
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 16,
+    borderRadius: 30,
+    marginHorizontal: 20,
+  },
+  btnTextWhiteLarge: {
+    fontSize: 16,
+    fontFamily: 'Switzer-Medium',
+    color: '#FFF',
+  },
+  btnAddOutline: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 14,
+    borderRadius: 30,
+    borderWidth: 1,
+    borderColor: '#E5E5E5',
+    marginTop: 16,
+    marginHorizontal: 20,
+  },
+  accNo: {
+    fontSize: 14,
+    fontFamily: 'Switzer-Regular',
+    color: '#666',
   },
 });

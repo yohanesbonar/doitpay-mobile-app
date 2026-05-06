@@ -1,11 +1,12 @@
 import React from 'react';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { CommonActions, StackActions, useNavigation, useRoute } from '@react-navigation/native';
 import { AddBankRecipientView } from '../../../features/transfer/addBankAccount';
 
 const AddBankRecipientScreen = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const fromTabBar = route.params?.fromTabBar;
+  const fromProfile = route.params?.fromProfile;
   const isLoginState = route.params?.isLoginState;
   const bankData = route.params?.bank;
   const method = route.params?.method;
@@ -15,7 +16,16 @@ const AddBankRecipientScreen = () => {
   };
 
   const handleSuccessNavigation = () => {
-    navigation.navigate('Home');
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [{ name: 'MainTabs' }],
+      }),
+    );
+  };
+
+  const onBackToBankAccount = () => {
+    navigation.dispatch(StackActions.pop(2));
   };
 
   const onClickContinue = (method: 'send' | 'receive', bankData: any, accountData: any) => {
@@ -47,6 +57,8 @@ const AddBankRecipientScreen = () => {
       bankData={bankData}
       method={method}
       onClickContinue={onClickContinue}
+      fromProfile={fromProfile}
+      onBackToBankAccount={onBackToBankAccount}
     />
   );
 };

@@ -14,6 +14,7 @@ interface BankListViewProps {
   onPressNext: (values: any) => void;
   isLoginState: boolean;
   fromTabBar: boolean;
+  fromProfile: boolean;
 }
 
 export const BankListView = ({
@@ -22,6 +23,7 @@ export const BankListView = ({
   onPressNext,
   isLoginState,
   fromTabBar,
+  fromProfile,
 }: BankListViewProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -88,31 +90,33 @@ export const BankListView = ({
       <HeaderToolbar
         title={t('bankList.rekening')}
         onPressBack={onPressBack}
-        titlePosition={fromTabBar ? 'left' : 'center'}
+        titlePosition={fromTabBar || fromProfile ? 'left' : 'center'}
         titleStyle="normal"
       />
       <Formik initialValues={{ selectedBank: '', searchQuery: '' }} onSubmit={onPressNext}>
         {({ values, setFieldValue, handleSubmit }) => (
           <View style={{ flex: 1 }}>
-            <View style={styles.tabContainer}>
-              <TouchableOpacity
-                style={[styles.tabButton, activeTab === 'send' && styles.activeTab]}
-                onPress={() => setActiveTab('send')}>
-                <ArrowUpRight size={18} color={activeTab === 'send' ? '#FFF' : '#000'} />
-                <Text style={[styles.tabText, activeTab === 'send' && styles.activeTabText]}>
-                  Kirim
-                </Text>
-              </TouchableOpacity>
+            {!fromProfile && (
+              <View style={styles.tabContainer}>
+                <TouchableOpacity
+                  style={[styles.tabButton, activeTab === 'send' && styles.activeTab]}
+                  onPress={() => setActiveTab('send')}>
+                  <ArrowUpRight size={18} color={activeTab === 'send' ? '#FFF' : '#000'} />
+                  <Text style={[styles.tabText, activeTab === 'send' && styles.activeTabText]}>
+                    Kirim
+                  </Text>
+                </TouchableOpacity>
 
-              <TouchableOpacity
-                style={[styles.tabButton, activeTab === 'receive' && styles.activeTab]}
-                onPress={() => setActiveTab('receive')}>
-                <ArrowDownLeft size={18} color={activeTab === 'receive' ? '#FFF' : '#000'} />
-                <Text style={[styles.tabText, activeTab === 'receive' && styles.activeTabText]}>
-                  Terima
-                </Text>
-              </TouchableOpacity>
-            </View>
+                <TouchableOpacity
+                  style={[styles.tabButton, activeTab === 'receive' && styles.activeTab]}
+                  onPress={() => setActiveTab('receive')}>
+                  <ArrowDownLeft size={18} color={activeTab === 'receive' ? '#FFF' : '#000'} />
+                  <Text style={[styles.tabText, activeTab === 'receive' && styles.activeTabText]}>
+                    Terima
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
 
             <View style={styles.searchContainer}>
               <Search size={20} color="#A9A9A9" style={styles.searchIcon} />
@@ -167,7 +171,7 @@ export const BankListView = ({
               contentContainerStyle={styles.listPadding}
             />
 
-            {!fromTabBar && (
+            {!fromTabBar && !fromProfile && (
               <View style={styles.footer}>
                 <Button
                   type="regular"

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View } from 'react-native';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../theme/ThemeProvider.tsx';
 import { createStyles } from './styles.ts';
 import Button from '../../../components/atoms/Button/index.tsx';
+import { storage, StorageKey } from '@/storage';
 
 interface AddBankRecipientViewProps {
   onPressBack: () => void;
@@ -18,6 +19,8 @@ interface AddBankRecipientViewProps {
   bankData: any;
   method: 'send' | 'receive';
   onClickContinue?: (method: 'send' | 'receive', bankData: any, accountData: any) => void;
+  fromProfile?: boolean;
+  onBackToBankAccount?: () => void;
 }
 
 const BankAccountSchema = Yup.object().shape({
@@ -32,16 +35,65 @@ export const AddBankRecipientView = ({
   bankData,
   method,
   onClickContinue,
+  fromProfile,
+  onBackToBankAccount,
 }: AddBankRecipientViewProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const [showResult, setShowResult] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const { t } = useTranslation();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedAccount, setSelectedAccount] = useState<any>(null);
 
-  const mockSearchData = [
-    { id: '1', ownerName: 'Prabu Suwito', bankName: 'BCA', accountNumber: '12312412031' },
+  const getMockData = (accountNumber: string) => [
+    {
+      id: '12313123',
+      ownerName: 'Prabu Suwito',
+      bank: bankData?.name || 'Bank BCA',
+      bankName: bankData?.name || 'Bank BCA',
+      accNo: accountNumber,
+      accountNumber: accountNumber,
+      isVerified: true,
+      isActive: false,
+      image: require('../../../assets/images/ic-BCA.png'),
+    },
   ];
+
+  const handleAccountSelect = (item: any) => {
+    console.log('Selected item:', item);
+    setSelectedId(item.id);
+
+    const existingDataStr = storage.getString(StorageKey.BANK_ACCOUNTS);
+    let updatedAccounts = [];
+    const newEntry = {
+      id: item.id,
+      bank: item.bankName,
+      name: item.ownerName,
+      accNo: item.accountNumber,
+      isVerified: true,
+      isActive: false,
+      image: item.image,
+    };
+
+    if (existingDataStr) {
+      const parsedData = JSON.parse(existingDataStr);
+      if (!parsedData.some((a: any) => a.accNo === newEntry.accNo)) {
+        updatedAccounts = [...parsedData, newEntry];
+      } else {
+        updatedAccounts = parsedData;
+      }
+    } else {
+      newEntry.isActive = true;
+      updatedAccounts = [newEntry];
+    }
+    storage.set(StorageKey.BANK_ACCOUNTS, JSON.stringify(updatedAccounts));
+    setSelectedAccount(newEntry);
+
+    setTimeout(() => {
+      setShowModal(true);
+    }, 800);
+  };
 
   return (
     <View style={styles.container}>
@@ -55,24 +107,20 @@ export const AddBankRecipientView = ({
         initialValues={{ accountNumber: '' }}
         validationSchema={BankAccountSchema}
         onSubmit={() => {
-          if (!showResult) {
-            setShowResult(true);
-          } else {
-            if (!fromTabBar) {
-              setShowModal(true);
-            } else {
-              if (onClickContinue) {
-                onClickContinue(method, bankData, mockSearchData[0]);
-              }
-            }
-          }
+          setShowResult(true);
         }}>
         {(formikProps) => (
           <View style={{ flex: 1 }}>
-            <BankAccountForm {...formikProps} showResult={showResult} searchData={mockSearchData} />
+            <BankAccountForm
+              {...formikProps}
+              showResult={showResult}
+              searchData={getMockData(formikProps.values.accountNumber)}
+              onSelectItem={handleAccountSelect}
+              selectedId={selectedId}
+            />
 
             <View style={styles.footer}>
-              {showResult || formikProps.values.accountNumber ? (
+              {!showResult && formikProps.values.accountNumber ? (
                 <Button
                   type="regular"
                   onPress={() => formikProps.handleSubmit()}
@@ -96,10 +144,12 @@ export const AddBankRecipientView = ({
             <SuccessBottomSheet
               isVisible={showModal}
               onClose={() => setShowModal(false)}
-              onContinue={() => {
+              onContinue={onNavigateHome}
+              onGoToBankList={() => {
                 setShowModal(false);
-                onNavigateHome();
+                onBackToBankAccount();
               }}
+              accountData={selectedAccount}
             />
           </View>
         )}

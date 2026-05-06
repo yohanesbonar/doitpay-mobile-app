@@ -76,7 +76,8 @@
   "successBottomSheet": {
     "readyToTransfer": "Siap untuk transfer kapan saja",
     "successAddAccount": "Rekening berhasil ditambahkan",
-    "continueToHomepage": "Lanjut ke Homepage"
+    "continueToHomepage": "Lanjut ke Homepage", 
+    "continueToBankList": "Lanjut ke Rekening Bank"
   }, 
   "bankAccountForm": {
     "accountNumber": "Nomor Rekening",

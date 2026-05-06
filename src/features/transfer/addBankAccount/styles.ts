@@ -47,7 +47,7 @@ export const createStyles = (colors: any) => {
       flexDirection: 'row',
       alignItems: 'center',
       backgroundColor: '#FFF',
-      marginBottom: 18
+      marginBottom: 18,
     },
     bankLogoContainer: {
       width: 40,
@@ -64,18 +64,18 @@ export const createStyles = (colors: any) => {
       fontSize: 16,
       color: '#000',
       marginBottom: 4,
-      fontFamily: "Switzer-Semibold"
+      fontFamily: 'Switzer-Semibold',
     },
     bankDetails: {
       fontSize: 14,
       color: '#000',
       marginTop: 3,
-      fontFamily: "Switzer-Regular"
+      fontFamily: 'Switzer-Regular',
     },
     footer: {
       padding: 16,
       backgroundColor: '#FFF',
-      bottom: 10
+      bottom: 10,
     },
     button: {
       height: 55,
@@ -106,13 +106,13 @@ export const createStyles = (colors: any) => {
       fontSize: 22,
       color: '#000',
       marginBottom: 8,
-      fontFamily: "Switzer-Semibold"
+      fontFamily: 'Switzer-Semibold',
     },
     successSubtitle: {
       fontSize: 16,
       color: 'colors.text',
       marginBottom: 16,
-      fontFamily: "Switzer-Regular"
+      fontFamily: 'Switzer-Regular',
     },
     cardRecipientBankAccount: {
       padding: 16,
@@ -122,7 +122,88 @@ export const createStyles = (colors: any) => {
       flexDirection: 'row',
       alignItems: 'center',
       backgroundColor: '#FFF',
-      marginBottom: 12, 
+      marginBottom: 12,
+    },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      justifyContent: 'flex-end',
+    },
+    bottomSheet: {
+      backgroundColor: colors.white,
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      paddingHorizontal: 20,
+      paddingBottom: 40,
+      paddingTop: 12,
+    },
+    handleBar: {
+      width: 40,
+      height: 4,
+      backgroundColor: '#E0E0E0',
+      borderRadius: 2,
+      alignSelf: 'center',
+      marginBottom: 24,
+    },
+    successTitle: {
+      fontSize: 20,
+      fontFamily: 'Switzer-Bold',
+      color: '#1A1A1A',
+      textAlign: 'left',
+    },
+    successSubtitle: {
+      fontSize: 14,
+      fontFamily: 'Switzer-Regular',
+      color: '#666',
+      marginTop: 8,
+      marginBottom: 24,
+      textAlign: 'left',
+    },
+    cardRecipientSuccess: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: 16,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: '#F0F0F0',
+      marginBottom: 32,
+    },
+    bankNameText: {
+      fontSize: 14,
+      fontFamily: 'Switzer-Bold',
+      color: '#1A1A1A',
+    },
+    recipientNameText: {
+      fontSize: 12,
+      fontFamily: 'Switzer-Regular',
+      color: '#1A1A1A',
+      marginTop: 2,
+    },
+    accountNumberText: {
+      fontSize: 12,
+      fontFamily: 'Switzer-Regular',
+      color: '#1A1A1A',
+      marginTop: 2,
+    },
+    footerButtons: {
+      gap: 12,
+    },
+    primaryButton: {
+      borderRadius: 30,
+      height: 52,
+    },
+    secondaryButton: {
+      height: 52,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderRadius: 30,
+      borderWidth: 1,
+      borderColor: '#E5E5E5',
+    },
+    secondaryButtonText: {
+      fontSize: 14,
+      fontFamily: 'Switzer-Medium',
+      color: '#1A1A1A',
     },
   });
 };
