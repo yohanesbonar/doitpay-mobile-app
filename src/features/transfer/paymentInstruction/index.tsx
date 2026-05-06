@@ -12,6 +12,7 @@ import {
 import { ChevronDown, Copy, Download, Share2 } from 'lucide-react-native';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import { styles } from './styles';
+import { formatNumber } from '@/utils/Common';
 
 interface PaymentInstructionViewProps {
   accountData?: {
@@ -39,19 +40,13 @@ const PaymentInstructionView = ({
   const [amount, setAmount] = useState(initialAmount || '');
 
   const bankName = bankData?.name || 'Bank Central Asia';
-  const ownerName = bankData?.name || 'Prabu Suwito';
+  const ownerName = accountData?.ownerName || 'Prabu Suwito';
   const accountNumber = accountData?.accountNumber || '123012932141293120';
   const isQris = paymentMethod === 'QRIS';
 
-  const formatNumber = (val: string) => {
-    const cleanNumber = val.replace(/[^0-9]/g, '');
-    if (cleanNumber === '') return '';
-    return parseInt(cleanNumber).toLocaleString('id-ID');
-  };
-
   const handleInputChange = (val: string) => {
     setNewAmount?.(val);
-    setAmount(val);
+    setAmount(formatNumber(val));
   };
 
   const handleCopy = () => Alert.alert('Sukses', 'Nomor VA berhasil disalin');
@@ -84,7 +79,7 @@ const PaymentInstructionView = ({
                 <Text style={styles.qrisLabel}>Total pembayaran</Text>
                 <View style={styles.qrisAmountWrapper}>
                   <Text style={styles.qrisCurrency}>Rp</Text>
-                  <Text style={styles.qrisAmountText}>{amount}</Text>
+                  <Text style={styles.qrisAmountText}>{formatNumber(amount)}</Text>
                 </View>
                 <Text style={styles.qrisTarget}>
                   Mengirim ke <Text style={styles.qrisTargetBoldText}>{ownerName}</Text>
@@ -121,7 +116,7 @@ const PaymentInstructionView = ({
                   placeholder="Nominal transfer"
                   placeholderTextColor="#9CA3AF"
                   keyboardType="numeric"
-                  value={amount}
+                  value={formatNumber(amount)}
                   onChangeText={handleInputChange}
                 />
               </View>
@@ -158,7 +153,7 @@ const PaymentInstructionView = ({
 
               <Text style={styles.vaLabelWithMargin}>Amount</Text>
               <Text style={styles.vaAmountText}>
-                Rp <Text style={styles.vaAmountBoldText}>{amount}</Text>
+                Rp <Text style={styles.vaAmountBoldText}>{formatNumber(amount)}</Text>
               </Text>
             </View>
 

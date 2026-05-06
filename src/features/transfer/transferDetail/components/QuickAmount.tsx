@@ -1,3 +1,4 @@
+import { formatNumber } from '@/utils/Common';
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 
@@ -6,7 +7,7 @@ interface QuickAmountProps {
   currentAmount: string;
 }
 
-const AMOUNTS = ['50,000', '100,000', '200,000', '500,000', '1,000,000', '2,000,000'];
+const AMOUNTS = ['50000', '100000', '200000', '500000', '1000000', '2000000'];
 
 const QuickAmount: React.FC<QuickAmountProps> = ({ onAmountPress, currentAmount }) => {
   return (
@@ -43,7 +44,7 @@ const QuickAmount: React.FC<QuickAmountProps> = ({ onAmountPress, currentAmount 
                 fontSize: 16,
                 color: isSelected ? '#2F80ED' : '#1A1A1A',
               }}>
-              {val}
+              {formatNumber(val)}
             </Text>
           </TouchableOpacity>
         );

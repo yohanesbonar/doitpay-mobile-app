@@ -28,3 +28,9 @@ export const handleLogout = () => {
     visibilityTime: 3000,
   });
 };
+
+export const formatNumber = (val: string) => {
+  const cleanNumber = val.replace(/[^0-9]/g, '');
+  if (cleanNumber === '') return '';
+  return parseInt(cleanNumber).toLocaleString('id-ID');
+};

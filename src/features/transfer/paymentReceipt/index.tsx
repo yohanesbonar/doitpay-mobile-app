@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, ScrollView, Alert, Share } from 'react-na
 import { CheckCircle2, Download, Share2 } from 'lucide-react-native';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import { styles } from './styles';
+import { formatNumber } from '@/utils/Common';
 
 interface PaymentReceiptViewProps {
   accountData?: {
@@ -40,7 +41,7 @@ const PaymentReceiptView = ({
     transactionId,
     dateTime,
   });
-  const formattedAmount = amount;
+  const formattedAmount = formatNumber(amount || '0');
 
   const handleDownload = () =>
     Alert.alert('Unduh Bukti', 'Fungsi unduh bukti akan segera tersedia.');

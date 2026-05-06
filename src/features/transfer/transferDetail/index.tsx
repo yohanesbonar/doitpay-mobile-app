@@ -12,12 +12,13 @@ import { styles } from './styles';
 import PaymentMethod from './components/PaymentMethod';
 import QuickAmount from './components/QuickAmount';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
+import { formatNumber } from '@/utils/Common';
 
 interface TransferDetailViewProps {
   accountData: {
     accountNumber: string;
     bankName: string;
-    name: string;
+    ownerName: string;
   };
   bankData: any;
   fromTabBar: boolean;
@@ -44,17 +45,12 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
     gotoPaymentInstruction,
     accountData,
   } = props;
-  const { accountNumber, bankName, name } = accountData || {};
-  const ownerName = name;
+  const { accountNumber, bankName, ownerName } = accountData || {};
 
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
   const [methodPayment, setMethodPayment] = useState<'VA' | 'QRIS'>('VA');
 
-  const formatIDR = (val: string) => {
-    if (!val) return '0';
-    return val.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-  };
   return (
     <View style={{ flex: 1, backgroundColor: '#FFF' }}>
       <HeaderToolbar
@@ -88,7 +84,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
                 style={[styles.inputAmount, { fontSize: amount.length > 0 ? 32 : 16 }]}
                 placeholder="Nominal Transfer"
                 keyboardType="numeric"
-                value={amount}
+                value={formatNumber(amount)}
                 onFocus={() => setIsFocused(true)}
                 onBlur={() => setIsFocused(false)}
                 onChangeText={(val) => setAmount(val.replace(/[^0-9]/g, ''))}
@@ -137,7 +133,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
             <Text style={{ fontFamily: 'Switzer-Regular', color: '#666', fontSize: 14 }}>
               Total Bayar
             </Text>
-            <Text style={styles.totalText}>Rp {formatIDR(amount)}</Text>
+            <Text style={styles.totalText}>Rp {formatNumber(amount)}</Text>
           </View>
           <TouchableOpacity
             style={[styles.confirmButton, !amount && styles.disabledButton]}
