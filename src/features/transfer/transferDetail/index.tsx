@@ -45,7 +45,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
     gotoPaymentInstruction,
     accountData,
   } = props;
-  const { accountNumber, bankName, ownerName } = accountData || {};
+  const { accountNumber, bankName, accountHolderName } = accountData || {};
 
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
@@ -63,13 +63,14 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
         <View style={styles.recipientCard}>
           <View style={styles.avatar}>
             <Text style={styles.avatarText}>
-              {ownerName?.substring(0, 2).toUpperCase() || 'N/A'}
+              {accountHolderName?.substring(0, 2).toUpperCase() || 'N/A'}
             </Text>
           </View>
           <View>
-            <Text style={styles.recipientName}>{ownerName || 'Nama tidak tersedia'}</Text>
+            <Text style={styles.recipientName}>{accountHolderName || 'Nama tidak tersedia'}</Text>
             <Text style={styles.recipientBank}>
-              {bankName} • {accountNumber ? `A/N ${accountNumber}` : 'No. Rekening tidak tersedia'}
+              {bankData?.shortName || ''} •{' '}
+              {accountNumber ? `${accountNumber.replace(/^.{3}/, '***')}` : ''}
             </Text>
           </View>
         </View>
@@ -133,7 +134,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
             <Text style={{ fontFamily: 'Switzer-Regular', color: '#666', fontSize: 14 }}>
               Total Bayar
             </Text>
-            <Text style={styles.totalText}>Rp {formatNumber(amount)}</Text>
+            <Text style={styles.totalText}>Rp {amount ? formatNumber(amount) : '0'}</Text>
           </View>
           <TouchableOpacity
             style={[styles.confirmButton, !amount && styles.disabledButton]}

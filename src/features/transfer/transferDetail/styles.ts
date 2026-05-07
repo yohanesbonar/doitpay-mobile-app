@@ -42,13 +42,14 @@ export const styles = StyleSheet.create({
     fontFamily: 'Switzer-Medium',
   },
   recipientName: {
-    fontFamily: 'Switzer-Bold',
-    fontSize: 14,
+    fontFamily: 'Switzer-Medium',
+    fontSize: 16,
   },
   recipientBank: {
     fontFamily: 'Switzer-Regular',
-    fontSize: 12,
-    color: '#666',
+    fontSize: 14,
+    marginTop: 4,
+    color: '#000',
   },
   labelRp: {
     fontFamily: 'Switzer-Medium',

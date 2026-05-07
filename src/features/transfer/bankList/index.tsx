@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, TextInput, Image } from 'react-native';
 import { createStyles } from './styles.ts';
 import { useTranslation } from 'react-i18next';
@@ -7,6 +7,8 @@ import Button from '../../../components/atoms/Button/index.tsx';
 import { useTheme } from '../../../theme/ThemeProvider.tsx';
 import { Formik } from 'formik';
 import { ArrowDownLeft, ArrowUpRight, Search } from 'lucide-react-native';
+import { useBanks } from '@/hooks/useBankMutation.ts';
+import FastImage from 'react-native-fast-image';
 
 interface BankListViewProps {
   onPressBack: () => void;
@@ -25,65 +27,39 @@ export const BankListView = ({
   fromTabBar,
   fromProfile,
 }: BankListViewProps) => {
+  console.log('BankListView Props:', {
+    onPressBack,
+    onSelectBank,
+    onPressNext,
+    isLoginState,
+    fromTabBar,
+    fromProfile,
+  });
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const { t } = useTranslation();
 
   const [activeTab, setActiveTab] = useState<'send' | 'receive'>('send');
+  const [allBanks, setAllBanks] = useState<any[]>([]);
+  const [popularBanks, setPopularBanks] = useState<any[]>([]);
 
-  const POPULAR_BANKS = [
-    { id: '1', name: 'blu', logo: require('../../../assets/images/ic-BCA.png') },
-    { id: '2', name: 'BCA', logo: require('../../../assets/images/ic-BCA.png') },
-    { id: '3', name: 'BRI', logo: require('../../../assets/images/ic-BCA.png') },
-    { id: '4', name: 'BNI', logo: require('../../../assets/images/ic-BCA.png') },
-    { id: '5', name: 'blu', logo: require('../../../assets/images/ic-BCA.png') },
-    { id: '6', name: 'BCA', logo: require('../../../assets/images/ic-BCA.png') },
-    { id: '7', name: 'BRI', logo: require('../../../assets/images/ic-BCA.png') },
-    { id: '8', name: 'BNI', logo: require('../../../assets/images/ic-BCA.png') },
-  ];
+  const { mutate: mutateBanks, isPending: isPendingBank } = useBanks();
 
-  const ALL_BANKS = [
-    { id: 'bca', name: 'Bank Central Asia', logo: require('../../../assets/images/ic-BCA.png') },
-    { id: 'blu', name: 'Blu BCA Digital', logo: require('../../../assets/images/ic-BCA.png') },
-    {
-      id: 'bsi',
-      name: 'Bank Syariah Indonesia',
-      logo: require('../../..//assets/images/ic-BCA.png'),
-    },
-    { id: 'mandiri', name: 'Mandiri', logo: require('../../..//assets/images/ic-BCA.png') },
-    { id: 'bca', name: 'Bank Central Asia', logo: require('../../../assets/images/ic-BCA.png') },
-    { id: 'blu', name: 'Blu BCA Digital', logo: require('../../../assets/images/ic-BCA.png') },
-    {
-      id: 'bsi',
-      name: 'Bank Syariah Indonesia',
-      logo: require('../../../assets/images/ic-BCA.png'),
-    },
-    { id: 'mandiri', name: 'Mandiri', logo: require('../../../assets/images/ic-BCA.png') },
-    { id: 'bca', name: 'Bank Central Asia', logo: require('../../../assets/images/ic-BCA.png') },
-    { id: 'blu', name: 'Blu BCA Digital', logo: require('../../../assets/images/ic-BCA.png') },
-    {
-      id: 'bsi',
-      name: 'Bank Syariah Indonesia',
-      logo: require('../../../assets/images/ic-BCA.png'),
-    },
-    { id: 'mandiri', name: 'Mandiri', logo: require('../../../assets/images/ic-BCA.png') },
-    { id: 'bca', name: 'Bank Central Asia', logo: require('../../../assets/images/ic-BCA.png') },
-    { id: 'blu', name: 'Blu BCA Digital', logo: require('../../../assets/images/ic-BCA.png') },
-    {
-      id: 'bsi',
-      name: 'Bank Syariah Indonesia',
-      logo: require('../../../assets/images/ic-BCA.png'),
-    },
-    { id: 'mandiri', name: 'Mandiri', logo: require('../../../assets/images/ic-BCA.png') },
-    { id: 'bca', name: 'Bank Central Asia', logo: require('../../../assets/images/ic-BCA.png') },
-    { id: 'blu', name: 'Blu BCA Digital', logo: require('../../../assets/images/ic-BCA.png') },
-    {
-      id: 'bsi',
-      name: 'Bank Syariah Indonesia',
-      logo: require('../../../assets/images/ic-BCA.png'),
-    },
-    { id: 'mandiri', name: 'Mandiri', logo: require('../../../assets/images/ic-BCA.png') },
-  ];
+  useEffect(() => {
+    mutateBanks(
+      {},
+      {
+        onSuccess: (data) => {
+          console.log('Fetched banks:', data);
+          setAllBanks(data?.data?.all || []);
+          setPopularBanks(data?.data?.popular || []);
+        },
+        onError: (error) => {
+          console.error('Error fetching banks:', error);
+        },
+      },
+    );
+  }, [mutateBanks]);
 
   return (
     <View style={styles.container}>
@@ -129,7 +105,7 @@ export const BankListView = ({
             </View>
 
             <FlatList
-              data={ALL_BANKS}
+              data={allBanks}
               keyExtractor={(item, index) => index.toString()}
               ListHeaderComponent={
                 <View>
@@ -137,7 +113,7 @@ export const BankListView = ({
                     {t('bankList.populerBank')}
                   </Text>
                   <View style={styles.gridContainer}>
-                    {POPULAR_BANKS.map((bank, index) => (
+                    {popularBanks.map((bank, index) => (
                       <TouchableOpacity
                         key={index}
                         style={[
@@ -148,7 +124,15 @@ export const BankListView = ({
                           setFieldValue('selectedBank', bank);
                           onSelectBank(bank, activeTab);
                         }}>
-                        <Image source={bank.logo} style={styles.logoGrid} resizeMode="contain" />
+                        <FastImage
+                          style={styles.logoGrid}
+                          source={{
+                            uri: bank?.logoUrl,
+                            priority: FastImage.priority.normal,
+                            cache: FastImage.cacheControl.immutable,
+                          }}
+                          resizeMode={FastImage.resizeMode.cover}
+                        />
                       </TouchableOpacity>
                     ))}
                   </View>
@@ -163,9 +147,19 @@ export const BankListView = ({
                     onSelectBank(item, activeTab);
                   }}>
                   <View style={styles.listLogoContainer}>
-                    <Image source={item.logo} style={styles.logoList} resizeMode="contain" />
+                    <FastImage
+                      style={styles.logoList}
+                      source={{
+                        uri: item?.logoUrl,
+                        priority: FastImage.priority.normal,
+                        cache: FastImage.cacheControl.immutable,
+                      }}
+                      resizeMode={FastImage.resizeMode.cover}
+                    />
                   </View>
-                  <Text style={styles.listText}>{item.name}</Text>
+                  <Text style={styles.listText} numberOfLines={2} ellipsizeMode="tail">
+                    {item?.shortName}
+                  </Text>
                 </TouchableOpacity>
               )}
               contentContainerStyle={styles.listPadding}

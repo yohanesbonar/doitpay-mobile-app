@@ -15,6 +15,8 @@ interface BankAccountFormProps {
   searchData: any[];
   onSelectItem: (item: any) => void;
   selectedId: string | null;
+  setShowResult: (val: boolean) => void;
+  setResultData: (data: any) => void;
 }
 
 const BankAccountForm = ({
@@ -28,6 +30,8 @@ const BankAccountForm = ({
   searchData,
   onSelectItem,
   selectedId,
+  setShowResult,
+  setResultData,
 }: BankAccountFormProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -36,10 +40,15 @@ const BankAccountForm = ({
   const handleAccountNumberChange = (text: string) => {
     const numericValue = text.replace(/\D/g, '').slice(0, 16);
     setFieldValue('accountNumber', numericValue);
+
+    if (showResult) {
+      setShowResult(false);
+      setResultData(null);
+    }
   };
 
   const renderRecipientItem = ({ item }: { item: any }) => {
-    const isSelected = item.id === selectedId;
+    const isSelected = item?.id === selectedId;
     console.log('Rendering item:', item, 'Selected ID:', selectedId, 'Is Selected:', isSelected);
     return (
       <TouchableOpacity
@@ -54,16 +63,12 @@ const BankAccountForm = ({
           },
         ]}>
         <View style={styles.bankLogoContainer}>
-          <Image
-            source={require('../../../assets/images/ic-BCA.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
+          <Image source={{ uri: item?.bank?.logoUrl }} style={styles.logo} resizeMode="contain" />
         </View>
         <View>
-          <Text style={styles.recipientName}>{item.ownerName}</Text>
+          <Text style={styles.recipientName}>{item?.accountHolderName}</Text>
           <Text style={styles.bankDetails}>
-            {item.bankName} {item.accountNumber}
+            {item?.bankName} {item?.accountNumber}
           </Text>
         </View>
       </TouchableOpacity>
@@ -88,7 +93,7 @@ const BankAccountForm = ({
         {showResult && !errors.accountNumber && (
           <FlatList
             data={searchData}
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item) => item?.id}
             renderItem={renderRecipientItem}
             contentContainerStyle={{}}
             style={{ marginTop: 22 }}

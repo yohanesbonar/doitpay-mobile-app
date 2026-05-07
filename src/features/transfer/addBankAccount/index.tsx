@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { View } from 'react-native';
+import { Alert, View } from 'react-native';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import BankAccountForm from './BankAccountForm.tsx';
@@ -10,6 +10,7 @@ import { useTheme } from '../../../theme/ThemeProvider.tsx';
 import { createStyles } from './styles.ts';
 import Button from '../../../components/atoms/Button/index.tsx';
 import { storage, StorageKey } from '@/storage';
+import { useBankInquiry, useBanks } from '@/hooks/useBankMutation.ts';
 
 interface AddBankRecipientViewProps {
   onPressBack: () => void;
@@ -38,6 +39,17 @@ export const AddBankRecipientView = ({
   fromProfile,
   onBackToBankAccount,
 }: AddBankRecipientViewProps) => {
+  console.log('AddBankRecipientView Props:', {
+    onPressBack,
+    onNavigateHome,
+    isLoginState,
+    fromTabBar,
+    bankData,
+    method,
+    onClickContinue,
+    fromProfile,
+    onBackToBankAccount,
+  });
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const [showResult, setShowResult] = useState(false);
@@ -46,59 +58,64 @@ export const AddBankRecipientView = ({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedAccount, setSelectedAccount] = useState<any>(null);
 
-  const getMockData = (accountNumber: string) => [
-    {
-      id: '12313123',
-      ownerName: 'Prabu Suwito',
-      bank: bankData?.name || 'Bank BCA',
-      bankName: bankData?.name || 'Bank BCA',
-      accNo: accountNumber,
-      accountNumber: accountNumber,
-      isVerified: true,
-      isActive: false,
-      image: require('../../../assets/images/ic-BCA.png'),
-    },
-  ];
+  const { mutate: fetchBanks, isPending: isFetchingBanks } = useBankInquiry();
+  const [resultData, setResultData] = useState<any>(null);
 
   const handleAccountSelect = (item: any) => {
     console.log('Selected item:', item);
     setSelectedId(item.id);
+    setSelectedAccount(item);
 
-    const existingDataStr = storage.getString(StorageKey.BANK_ACCOUNTS);
-    let updatedAccounts = [];
-    const newEntry = {
-      id: item.id,
-      bank: item.bankName,
-      name: item.ownerName,
-      accNo: item.accountNumber,
-      isVerified: true,
-      isActive: false,
-      image: item.image,
-    };
+    if (fromProfile) {
+      const existingDataStr = storage.getString(StorageKey.BANK_ACCOUNTS);
+      let updatedAccounts = [];
 
-    if (existingDataStr) {
-      const parsedData = JSON.parse(existingDataStr);
-      if (!parsedData.some((a: any) => a.accNo === newEntry.accNo)) {
-        updatedAccounts = [...parsedData, newEntry];
+      if (existingDataStr) {
+        const parsedData = JSON.parse(existingDataStr);
+        if (!parsedData.some((a: any) => a.accountNumber === item.accountNumber)) {
+          updatedAccounts = [...parsedData, item];
+        } else {
+          updatedAccounts = parsedData;
+        }
       } else {
-        updatedAccounts = parsedData;
+        item.isActive = true;
+        updatedAccounts = [item];
       }
+      storage.set(StorageKey.BANK_ACCOUNTS, JSON.stringify(updatedAccounts));
+      setTimeout(() => {
+        setShowModal(true);
+      }, 800);
     } else {
-      newEntry.isActive = true;
-      updatedAccounts = [newEntry];
+      console.log('Continuing with selected account:', item);
+      onClickContinue(method, bankData, item);
     }
-    storage.set(StorageKey.BANK_ACCOUNTS, JSON.stringify(updatedAccounts));
-    setSelectedAccount(newEntry);
+  };
 
-    setTimeout(() => {
-      setShowModal(true);
-    }, 800);
+  const searchInquiry = (accountNumber: string) => {
+    console.log('Initiating bank inquiry with:', { accountNumber, bankData: bankData });
+    fetchBanks(
+      { accountNumber, bankId: bankData?.id },
+      {
+        onSuccess: (data) => {
+          console.log('Bank inquiry result:', data);
+          if (data.data) {
+            setResultData(data?.data);
+            setShowResult(true);
+          } else {
+            Alert.alert('Gagal', 'Akun tidak ditemukan. Silakan periksa kembali nomor rekening.');
+          }
+        },
+        onError: (error) => {
+          Alert.alert('Gagal', 'Akun tidak ditemukan. Silakan periksa kembali nomor rekening.');
+        },
+      },
+    );
   };
 
   return (
     <View style={styles.container}>
       <HeaderToolbar
-        title={bankData?.name ? `${bankData?.name}` : t('addBankAccount.rekening')}
+        title={bankData?.shortName ? `${bankData?.shortName}` : t('addBankAccount.rekening')}
         onPressBack={onPressBack}
         titleStyle="normal"
         titlePosition={fromTabBar ? 'left' : 'center'}
@@ -106,17 +123,19 @@ export const AddBankRecipientView = ({
       <Formik
         initialValues={{ accountNumber: '' }}
         validationSchema={BankAccountSchema}
-        onSubmit={() => {
-          setShowResult(true);
+        onSubmit={(values) => {
+          searchInquiry(values.accountNumber);
         }}>
         {(formikProps) => (
           <View style={{ flex: 1 }}>
             <BankAccountForm
               {...formikProps}
               showResult={showResult}
-              searchData={getMockData(formikProps.values.accountNumber)}
+              searchData={resultData ? [resultData] : []}
               onSelectItem={handleAccountSelect}
               selectedId={selectedId}
+              setShowResult={setShowResult}
+              setResultData={setResultData}
             />
 
             <View style={styles.footer}>
@@ -137,6 +156,7 @@ export const AddBankRecipientView = ({
                       showResult || formikProps.values.accountNumber ? colors.white : colors.black,
                   }}
                   color={formikProps.values.accountNumber ? colors.buttonBlue : colors.buttonWhite}
+                  loading={isFetchingBanks}
                 />
               ) : null}
             </View>

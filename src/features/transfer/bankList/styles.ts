@@ -62,7 +62,14 @@ export const createStyles = (colors: any) => {
       marginRight: 15,
     },
     logoList: { width: 30, height: 30 },
-    listText: { fontSize: 16, fontFamily: 'Switzer-Regular' },
+    listText: {
+      flex: 1,
+      fontSize: 16,
+      fontFamily: 'Switzer-Regular',
+      textAlignVertical: 'center',
+      lineHeight: 22,
+      includeFontPadding: false,
+    },
     footer: {
       position: 'absolute',
       bottom: 0,

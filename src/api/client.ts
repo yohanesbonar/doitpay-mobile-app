@@ -6,6 +6,7 @@ import { getStorageItem, setStorageItem, StorageKey } from '../storage/index.ts'
 import { useAuthStore } from '../storage/useAuthStore.ts';
 import Toast from 'react-native-toast-message';
 import { Platform } from 'react-native';
+import { config } from '@/components/ui/gluestack-ui-provider/config.ts';
 
 let isRefreshing = false;
 let failedQueue: any[] = [];
@@ -89,7 +90,7 @@ apiClient.interceptors.request.use(
             return config;
           } catch (refreshError) {
             processQueue(refreshError, null);
-            useAuthStore.getState().logout();
+            // useAuthStore.getState().logout();
             return Promise.reject(refreshError);
           } finally {
             isRefreshing = false;
@@ -149,6 +150,83 @@ apiClient.interceptors.response.use(
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 400 && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then((token) => {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            return apiClient(originalRequest);
+          })
+          .catch((err) => Promise.reject(err));
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        const refreshToken = getStorageItem(StorageKey.REFRESH_TOKEN);
+        const deviceId = await getDeviceFingerprint();
+
+        const response = await axios.post(
+          `${Config.API_URL}/v1/auth/refresh`,
+          { refreshToken },
+          {
+            headers: {
+              accept: 'application/json',
+              'Content-Type': 'application/json',
+              'X-Platform': Platform.OS,
+              'X-App-Type': 'mobile',
+              'X-Device-ID': deviceId,
+            },
+          },
+        );
+
+        const {
+          accessToken: newAccessToken,
+          refreshToken: newRefreshToken,
+          expiresAt: newExpiresAt,
+        } = response?.data?.data;
+
+        if (__DEV__) {
+          console.log('--- 🔄 TOKEN REFRESHED ---');
+          console.log(`New Access Token: ${newAccessToken}`);
+          console.log(`New Refresh Token: ${newRefreshToken}`);
+          console.log(`Expires At: ${newExpiresAt}`);
+          console.log('-------------------------');
+        }
+
+        setStorageItem(StorageKey.ACCESS_TOKEN, newAccessToken);
+        setStorageItem(StorageKey.REFRESH_TOKEN, newRefreshToken);
+        setStorageItem(StorageKey.EXPIRES_AT, newExpiresAt);
+
+        apiClient.defaults.headers.common.Authorization = `Bearer ${newAccessToken}`;
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+
+        processQueue(null, newAccessToken);
+        return apiClient(originalRequest);
+      } catch (refreshError) {
+        processQueue(refreshError, null);
+        if (__DEV__) {
+          console.log('--- ❌ TOKEN REFRESH FAILED ---');
+          console.log(`Error: ${refreshError}`);
+          console.log('-------------------------------');
+        }
+        useAuthStore.getState().logout();
+        Toast.show({
+          type: 'error',
+          text1: 'Sesi Telah Berakhir',
+          text2: 'Silakan masuk kembali untuk melanjutkan.',
+        });
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+
     if (error.response?.status === 401) {
       useAuthStore.getState().logout();
       Toast.show({
