@@ -1,3 +1,5 @@
+## Features
+
 - ⚡ Built with React Native 0.85.0
 - ⚛️ React 19.2.0 support
 - 🧩 TypeScript for type safety
