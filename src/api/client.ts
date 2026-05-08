@@ -47,14 +47,16 @@ apiClient.interceptors.request.use(
     const noNeedAuth = config?.noNeedAuth;
 
     if (!noNeedAuth) {
-      const accessToken = getStorageItem(StorageKey.VERIFICATION_TOKEN);
+      const accessToken = getStorageItem(StorageKey.ACCESS_TOKEN);
       const expiresAt = getStorageItem(StorageKey.EXPIRES_AT);
 
       if (accessToken && expiresAt) {
+        console.log('Access token found, checking expiration... expiresAt', expiresAt);
         const expirationDate = new Date(expiresAt);
         const isTokenExpired = isBefore(subSeconds(expirationDate, 10), new Date());
-
+        console.log('Is token expired?', isTokenExpired);
         if (isTokenExpired && !isRefreshing) {
+          console.log('Token expired, refreshing token...');
           isRefreshing = true;
 
           try {
@@ -80,9 +82,15 @@ apiClient.interceptors.request.use(
               expiresAt: newExpiresAt,
             } = response?.data?.data;
 
-            setStorageItem(StorageKey.ACCESS_TOKEN, newAccessToken);
-            setStorageItem(StorageKey.REFRESH_TOKEN, newRefreshToken);
-            setStorageItem(StorageKey.EXPIRES_AT, newExpiresAt);
+            if (newAccessToken) {
+              setStorageItem(StorageKey.ACCESS_TOKEN, newAccessToken);
+            }
+            if (newRefreshToken) {
+              setStorageItem(StorageKey.REFRESH_TOKEN, newRefreshToken);
+            }
+            if (newExpiresAt) {
+              setStorageItem(StorageKey.EXPIRES_AT, newExpiresAt);
+            }
 
             config.headers.Authorization = `Bearer ${newAccessToken}`;
 
@@ -90,7 +98,7 @@ apiClient.interceptors.request.use(
             return config;
           } catch (refreshError) {
             processQueue(refreshError, null);
-            // useAuthStore.getState().logout();
+            useAuthStore.getState().logout();
             return Promise.reject(refreshError);
           } finally {
             isRefreshing = false;
@@ -107,7 +115,7 @@ apiClient.interceptors.request.use(
         }
       }
 
-      const currentToken = getStorageItem(StorageKey.VERIFICATION_TOKEN);
+      const currentToken = getStorageItem(StorageKey.ACCESS_TOKEN);
       if (currentToken) {
         config.headers.Authorization = `Bearer ${currentToken}`;
       }
@@ -152,7 +160,10 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 400 && !originalRequest._retry) {
+    if (
+      (error.response?.status === 400 || error.response?.status === 401) &&
+      !originalRequest._retry
+    ) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
@@ -164,11 +175,12 @@ apiClient.interceptors.response.use(
           .catch((err) => Promise.reject(err));
       }
 
+      console.log('Token expired, attempting to refresh token... with error 400 or 401');
       originalRequest._retry = true;
       isRefreshing = true;
 
       try {
-        const refreshToken = getStorageItem(StorageKey.REFRESH_TOKEN);
+        const refreshToken = await getStorageItem(StorageKey.REFRESH_TOKEN);
         const deviceId = await getDeviceFingerprint();
 
         const response = await axios.post(
@@ -227,14 +239,6 @@ apiClient.interceptors.response.use(
       }
     }
 
-    if (error.response?.status === 401) {
-      useAuthStore.getState().logout();
-      Toast.show({
-        type: 'error',
-        text1: 'Sesi Telah Berakhir',
-        text2: 'Silakan masuk kembali untuk melanjutkan.',
-      });
-    }
     return Promise.reject(error);
   },
 );

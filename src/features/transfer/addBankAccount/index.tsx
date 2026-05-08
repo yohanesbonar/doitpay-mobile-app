@@ -106,7 +106,7 @@ export const AddBankRecipientView = ({
           }
         },
         onError: (error) => {
-          Alert.alert('Gagal', 'Akun tidak ditemukan. Silakan periksa kembali nomor rekening.');
+          Alert.alert('Gagal', 'Error pencarian akun. Silakan coba lagi.');
         },
       },
     );

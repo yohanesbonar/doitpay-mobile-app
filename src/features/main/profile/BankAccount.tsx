@@ -62,12 +62,16 @@ export const BankAccounts = ({ navigation }: any) => {
       <View style={styles.cardHeader}>
         <View style={styles.bankInfo}>
           <View style={styles.bankLogoPlaceholder}>
-            <Image source={item.image} style={{ width: 40, height: 40 }} resizeMode="contain" />
+            <Image
+              source={{ uri: item?.bank?.logoUrl ?? '' }}
+              style={{ width: 80, height: 80 }}
+              resizeMode="contain"
+            />
           </View>
-          <View>
-            <Text style={styles.bankName}>{item.bank}</Text>
-            <Text style={styles.accName}>{item.name}</Text>
-            <Text style={styles.accNo}>{item.accNo}</Text>
+          <View style={{ flex: 1, justifyContent: 'center' }}>
+            <Text style={styles.bankName}>{item?.bank?.shortName ?? ''}</Text>
+            <Text style={styles.accName}>{item.accountHolderName ?? ''}</Text>
+            <Text style={styles.accNo}>{item.accountNumber ?? ''}</Text>
           </View>
         </View>
         {item.isVerified && (
@@ -193,12 +197,24 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     paddingHorizontal: 20,
   },
-  card: { padding: 16, borderRadius: 16, borderWidth: 1, borderColor: '#F0F0F0', marginBottom: 16 },
+  card: {
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#D4D4D4',
+    marginBottom: 16,
+    backgroundColor: '#FFF',
+  },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   bankInfo: { flexDirection: 'row', gap: 12 },
-  bankLogoPlaceholder: { width: 40, height: 40, backgroundColor: '#F5F5F5', borderRadius: 8 },
-  bankName: { fontSize: 16, fontFamily: 'Switzer-Bold', color: '#1A1A1A' },
-  accName: { fontSize: 14, fontFamily: 'Switzer-Regular', color: '#1A1A1A' },
+  bankLogoPlaceholder: {
+    width: 80,
+    height: 80,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 8,
+  },
+  bankName: { fontSize: 16, fontFamily: 'Switzer-Medium', color: '#1A1A1A' },
+  accName: { fontSize: 14, fontFamily: 'Switzer-Regular', color: '#1A1A1A', marginTop: 4 },
   badge: { backgroundColor: '#E8F5E9', padding: 4, borderRadius: 6 },
   badgeText: { fontSize: 10, color: '#4CAF50', fontFamily: 'Switzer-Medium' },
   cardActions: { flexDirection: 'row', gap: 12, marginTop: 16 },
@@ -211,7 +227,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#E5E5E5',
+    borderColor: '#D4D4D4',
   },
   btnPrimary: {
     flex: 1,
@@ -231,7 +247,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 25,
     borderWidth: 1,
-    borderColor: '#E5E5E5',
+    borderColor: '#D4D4D4',
     marginTop: 8,
   },
   btnAddText: { fontSize: 14, fontFamily: 'Switzer-Medium', color: '#1A1A1A' },

@@ -42,9 +42,9 @@ export const useRegisterVerifyOtp = () => {
       const session = data?.data;
 
       if (session?.verificationToken) {
-        setStorageItem(StorageKey.VERIFICATION_TOKEN, session.verificationToken);
+        setStorageItem(StorageKey.ACCESS_TOKEN, session.verificationToken);
 
-        console.log('useRegisterVerifyOtp VERIFICATION_TOKEN saved to MMKV');
+        console.log('useRegisterVerifyOtp ACCESS_TOKEN saved to MMKV');
       }
     },
     onError: (error) => {
@@ -72,6 +72,9 @@ export const useRegisterPinSetup = () => {
 
       if (session?.accessToken) {
         setToken(session.accessToken, true);
+      }
+      if (session?.refreshToken) {
+        setStorageItem(StorageKey.REFRESH_TOKEN, session.refreshToken);
       }
       if (session?.expiresAt) {
         setExpiresAt(session.expiresAt);
@@ -108,9 +111,9 @@ export const useLoginVerifyOtp = () => {
       const session = data?.data;
 
       if (session?.verificationToken) {
-        setStorageItem(StorageKey.VERIFICATION_TOKEN, session.verificationToken);
+        setStorageItem(StorageKey.ACCESS_TOKEN, session.verificationToken);
 
-        console.log('useLoginVerifyOtp VERIFICATION_TOKEN saved to MMKV');
+        console.log('useLoginVerifyOtp ACCESS_TOKEN saved to MMKV');
       }
     },
     onError: (error) => {
@@ -133,6 +136,9 @@ export const useLogin = () => {
 
       if (session?.accessToken) {
         setToken(session.accessToken);
+      }
+      if (session?.refreshToken) {
+        setStorageItem(StorageKey.REFRESH_TOKEN, session.refreshToken);
       }
       if (session?.expiresAt) {
         setExpiresAt(session.expiresAt);

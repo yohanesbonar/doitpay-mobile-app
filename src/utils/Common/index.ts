@@ -32,5 +32,6 @@ export const handleLogout = () => {
 export const formatNumber = (val: string) => {
   const cleanNumber = val.replace(/[^0-9]/g, '');
   if (cleanNumber === '') return '';
-  return parseInt(cleanNumber).toLocaleString('id-ID');
+
+  return cleanNumber.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 };

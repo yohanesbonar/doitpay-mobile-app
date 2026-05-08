@@ -6,7 +6,6 @@ export const StorageKey = {
   ACCESS_TOKEN: 'access_token',
   REFRESH_TOKEN: 'refresh_token',
   USER_DATA: 'user_data',
-  VERIFICATION_TOKEN: 'verification_token',
   EXPIRES_AT: 'expires_at',
   FCM_TOKEN: 'fcm_token',
   BANK_ACCOUNTS: 'bank_accounts',
@@ -23,7 +22,6 @@ export const getStorageItem = (key: string) => {
 export const clearAuthStorage = () => {
   storage.remove(StorageKey.ACCESS_TOKEN);
   storage.remove(StorageKey.REFRESH_TOKEN);
-  storage.remove(StorageKey.VERIFICATION_TOKEN);
   storage.remove(StorageKey.EXPIRES_AT);
   storage.remove(StorageKey.FCM_TOKEN);
 };

@@ -50,7 +50,6 @@ export const BankListView = ({
       {},
       {
         onSuccess: (data) => {
-          console.log('Fetched banks:', data);
           setAllBanks(data?.data?.all || []);
           setPopularBanks(data?.data?.popular || []);
         },
@@ -103,67 +102,68 @@ export const BankListView = ({
                 onChangeText={(text) => setFieldValue('searchQuery', text)}
               />
             </View>
-
-            <FlatList
-              data={allBanks}
-              keyExtractor={(item, index) => index.toString()}
-              ListHeaderComponent={
-                <View>
-                  <Text style={[styles.sectionTitle, { marginTop: 10 }]}>
-                    {t('bankList.populerBank')}
-                  </Text>
-                  <View style={styles.gridContainer}>
-                    {popularBanks.map((bank, index) => (
-                      <TouchableOpacity
-                        key={index}
-                        style={[
-                          styles.gridBox,
-                          values.selectedBank === bank.id && styles.selectedBox,
-                        ]}
-                        onPress={() => {
-                          setFieldValue('selectedBank', bank);
-                          onSelectBank(bank, activeTab);
-                        }}>
-                        <FastImage
-                          style={styles.logoGrid}
-                          source={{
-                            uri: bank?.logoUrl,
-                            priority: FastImage.priority.normal,
-                            cache: FastImage.cacheControl.immutable,
-                          }}
-                          resizeMode={FastImage.resizeMode.cover}
-                        />
-                      </TouchableOpacity>
-                    ))}
+            {!isPendingBank && (
+              <FlatList
+                data={allBanks}
+                keyExtractor={(item, index) => index.toString()}
+                ListHeaderComponent={
+                  <View>
+                    <Text style={[styles.sectionTitle, { marginTop: 10 }]}>
+                      {t('bankList.populerBank')}
+                    </Text>
+                    <View style={styles.gridContainer}>
+                      {popularBanks.map((bank, index) => (
+                        <TouchableOpacity
+                          key={index}
+                          style={[
+                            styles.gridBox,
+                            values.selectedBank === bank.id && styles.selectedBox,
+                          ]}
+                          onPress={() => {
+                            setFieldValue('selectedBank', bank);
+                            onSelectBank(bank, activeTab);
+                          }}>
+                          <FastImage
+                            style={styles.logoGrid}
+                            source={{
+                              uri: bank?.logoUrl,
+                              priority: FastImage.priority.normal,
+                              cache: FastImage.cacheControl.immutable,
+                            }}
+                            resizeMode={FastImage.resizeMode.cover}
+                          />
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                    <Text style={styles.sectionTitle}>{t('bankList.allBank')}</Text>
                   </View>
-                  <Text style={styles.sectionTitle}>{t('bankList.allBank')}</Text>
-                </View>
-              }
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={styles.listItem}
-                  onPress={() => {
-                    setFieldValue('selectedBank', item);
-                    onSelectBank(item, activeTab);
-                  }}>
-                  <View style={styles.listLogoContainer}>
-                    <FastImage
-                      style={styles.logoList}
-                      source={{
-                        uri: item?.logoUrl,
-                        priority: FastImage.priority.normal,
-                        cache: FastImage.cacheControl.immutable,
-                      }}
-                      resizeMode={FastImage.resizeMode.cover}
-                    />
-                  </View>
-                  <Text style={styles.listText} numberOfLines={2} ellipsizeMode="tail">
-                    {item?.shortName}
-                  </Text>
-                </TouchableOpacity>
-              )}
-              contentContainerStyle={styles.listPadding}
-            />
+                }
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    style={styles.listItem}
+                    onPress={() => {
+                      setFieldValue('selectedBank', item);
+                      onSelectBank(item, activeTab);
+                    }}>
+                    <View style={styles.listLogoContainer}>
+                      <FastImage
+                        style={styles.logoList}
+                        source={{
+                          uri: item?.logoUrl,
+                          priority: FastImage.priority.normal,
+                          cache: FastImage.cacheControl.immutable,
+                        }}
+                        resizeMode={FastImage.resizeMode.cover}
+                      />
+                    </View>
+                    <Text style={styles.listText} numberOfLines={2} ellipsizeMode="tail">
+                      {item?.shortName}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+                contentContainerStyle={styles.listPadding}
+              />
+            )}
 
             {!fromTabBar && !fromProfile && (
               <View style={styles.footer}>

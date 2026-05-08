@@ -30,9 +30,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
   logout: () => {
-    storage.remove(StorageKey.ACCESS_TOKEN);
-    storage.remove(StorageKey.VERIFICATION_TOKEN);
-    storage.remove(StorageKey.EXPIRES_AT);
+    storage.clearAll();
+    console.log('User logged out, all tokens cleared from storage');
     set({ accessToken: null });
   },
   setIsNewUser: (val) => set({ isNewUser: val }),
