@@ -53,9 +53,13 @@ const SuccessBottomSheet = ({
                   />
                 </View>
                 <View style={{ marginLeft: 12 }}>
-                  <Text style={styles.bankNameText}>{accountData?.bank ?? ''}</Text>
-                  <Text style={styles.recipientNameText}>{accountData?.name ?? ''}</Text>
-                  <Text style={styles.accountNumberText}>{accountData?.accNo ?? ''}</Text>
+                  <Text style={styles.bankNameText}>
+                    {accountData?.bank?.shortName ?? accountData?.bank?.name ?? ''}
+                  </Text>
+                  <Text style={styles.recipientNameText}>
+                    {accountData?.accountHolderName ?? ''}
+                  </Text>
+                  <Text style={styles.accountNumberText}>{accountData?.accountNumber ?? ''}</Text>
                 </View>
               </View>
 

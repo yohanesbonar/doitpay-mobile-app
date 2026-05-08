@@ -11,6 +11,7 @@ import { createStyles } from './styles.ts';
 import Button from '../../../components/atoms/Button/index.tsx';
 import { storage, StorageKey } from '@/storage';
 import { useBankInquiry, useBanks } from '@/hooks/useBankMutation.ts';
+import { useAddBankAccount } from '@/hooks/useMeMutation.ts';
 
 interface AddBankRecipientViewProps {
   onPressBack: () => void;
@@ -60,6 +61,7 @@ export const AddBankRecipientView = ({
 
   const { mutate: fetchBanks, isPending: isFetchingBanks } = useBankInquiry();
   const [resultData, setResultData] = useState<any>(null);
+  const { mutate: postBankAccount, isPending: isPostingBankAccount } = useAddBankAccount();
 
   const handleAccountSelect = (item: any) => {
     console.log('Selected item:', item);
@@ -67,24 +69,24 @@ export const AddBankRecipientView = ({
     setSelectedAccount(item);
 
     if (fromProfile) {
-      const existingDataStr = storage.getString(StorageKey.BANK_ACCOUNTS);
-      let updatedAccounts = [];
-
-      if (existingDataStr) {
-        const parsedData = JSON.parse(existingDataStr);
-        if (!parsedData.some((a: any) => a.accountNumber === item.accountNumber)) {
-          updatedAccounts = [...parsedData, item];
-        } else {
-          updatedAccounts = parsedData;
-        }
-      } else {
-        item.isActive = true;
-        updatedAccounts = [item];
-      }
-      storage.set(StorageKey.BANK_ACCOUNTS, JSON.stringify(updatedAccounts));
-      setTimeout(() => {
-        setShowModal(true);
-      }, 800);
+      postBankAccount(
+        {
+          bankCode: item.bank.code,
+          accountNumber: item.accountNumber,
+          accountHolderName: item.accountHolderName,
+        } as any,
+        {
+          onSuccess: (data) => {
+            console.log('Bank account added successfully:', data);
+            setTimeout(() => {
+              setShowModal(true);
+            }, 800);
+          },
+          onError: (error) => {
+            console.error('Error adding bank account:', error);
+          },
+        },
+      );
     } else {
       console.log('Continuing with selected account:', item);
       onClickContinue(method, bankData, item);

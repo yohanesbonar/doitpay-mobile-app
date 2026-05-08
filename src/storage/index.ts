@@ -8,7 +8,6 @@ export const StorageKey = {
   USER_DATA: 'user_data',
   EXPIRES_AT: 'expires_at',
   FCM_TOKEN: 'fcm_token',
-  BANK_ACCOUNTS: 'bank_accounts',
 };
 
 export const setStorageItem = (key: string, value: string) => {

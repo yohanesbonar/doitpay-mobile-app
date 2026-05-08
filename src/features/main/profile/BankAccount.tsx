@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Image, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, Trash2, Edit3, Plus, AlertCircle } from 'lucide-react-native';
-import { storage, StorageKey } from '@/storage'; // Sesuaikan path storage Anda
+import { Trash2, Edit3, Plus, AlertCircle } from 'lucide-react-native';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import { useFocusEffect } from '@react-navigation/native';
+import { useBankAccounts, useDeleteBankAccount } from '@/hooks/useMeMutation';
 
 interface Account {
   id: string;
@@ -19,39 +18,59 @@ interface Account {
 export const BankAccounts = ({ navigation }: any) => {
   const [accounts, setAccounts] = useState<Account[]>([]);
 
+  const { mutate: getBankAccounts, isPending: isGettingBankAccounts } = useBankAccounts();
+  const { mutate: deleteBankAccount, isPending: isDeletingBankAccount } = useDeleteBankAccount();
+
   useFocusEffect(
     useCallback(() => {
-      const savedAccounts = storage.getString(StorageKey.BANK_ACCOUNTS);
-      console.log('Loaded accounts from storage:', savedAccounts);
-      if (savedAccounts) {
-        setAccounts(JSON.parse(savedAccounts));
-      }
+      getBankAccounts(
+        {},
+        {
+          onSuccess: (data) => {
+            console.log('Fetched bank accounts:', data);
+            const fetchedAccounts = data?.data || [];
+            setAccounts(fetchedAccounts);
+          },
+          onError: (error) => {
+            console.error('Error fetching bank accounts:', error);
+          },
+        },
+      );
     }, []),
   );
 
-  const saveToStorage = (data: Account[]) => {
-    setAccounts(data);
-    storage.set(StorageKey.BANK_ACCOUNTS, JSON.stringify(data));
-  };
-
-  const handleSetActive = (accountNumber: string) => {
-    const updated = accounts.map((acc) => ({
-      ...acc,
-      isActive: acc.accNo === accountNumber,
-    }));
-    console.log('Setting active account:', accountNumber, 'Updated accounts:', updated);
-    saveToStorage(updated);
-  };
-
-  const handleDelete = (accountNumber: string) => {
+  const handleDelete = (id: string) => {
     Alert.alert('Hapus Rekening', 'Apakah Anda yakin ingin menghapus rekening ini?', [
       { text: 'Batal', style: 'cancel' },
       {
         text: 'Hapus',
         style: 'destructive',
         onPress: () => {
-          const updated = accounts.filter((acc) => acc.accNo !== accountNumber);
-          saveToStorage(updated);
+          deleteBankAccount(
+            { id },
+            {
+              onSuccess: () => {
+                setTimeout(() => {
+                  getBankAccounts(
+                    {},
+                    {
+                      onSuccess: (data) => {
+                        console.log('Fetched bank accounts afters deletion:', data);
+                        const fetchedAccounts = data?.data || [];
+                        setAccounts(fetchedAccounts);
+                      },
+                      onError: (error) => {
+                        console.error('Error fetching bank accounts after deletion:', error);
+                      },
+                    },
+                  );
+                }, 200);
+              },
+              onError: (error) => {
+                // Handle error, e.g., show error message
+              },
+            },
+          );
         },
       },
     ]);
@@ -63,13 +82,13 @@ export const BankAccounts = ({ navigation }: any) => {
         <View style={styles.bankInfo}>
           <View style={styles.bankLogoPlaceholder}>
             <Image
-              source={{ uri: item?.bank?.logoUrl ?? '' }}
+              source={{ uri: item?.bank?.logoUrl ?? item?.logoUrl ?? '' }}
               style={{ width: 80, height: 80 }}
               resizeMode="contain"
             />
           </View>
           <View style={{ flex: 1, justifyContent: 'center' }}>
-            <Text style={styles.bankName}>{item?.bank?.shortName ?? ''}</Text>
+            <Text style={styles.bankName}>{item?.bank?.shortName ?? item?.shortName ?? ''}</Text>
             <Text style={styles.accName}>{item.accountHolderName ?? ''}</Text>
             <Text style={styles.accNo}>{item.accountNumber ?? ''}</Text>
           </View>
@@ -82,7 +101,7 @@ export const BankAccounts = ({ navigation }: any) => {
       </View>
 
       <View style={styles.cardActions}>
-        <TouchableOpacity style={styles.btnSecondary} onPress={() => handleDelete(item.accNo)}>
+        <TouchableOpacity style={styles.btnSecondary} onPress={() => handleDelete(item.id)}>
           <Trash2 size={16} color="#E25C5C" />
           <Text style={[styles.btnText, { color: '#E25C5C' }]}>Hapus</Text>
         </TouchableOpacity>
@@ -93,7 +112,7 @@ export const BankAccounts = ({ navigation }: any) => {
             <Text style={styles.btnText}>Edit</Text>
           </TouchableOpacity>
         ) : (
-          <TouchableOpacity style={styles.btnPrimary} onPress={() => handleSetActive(item.accNo)}>
+          <TouchableOpacity style={styles.btnPrimary} onPress={() => handleSetActive(item.id)}>
             <Text style={styles.btnTextWhite}>Jadikan Aktif</Text>
           </TouchableOpacity>
         )}
@@ -122,8 +141,10 @@ export const BankAccounts = ({ navigation }: any) => {
     </View>
   );
 
-  const activeAccount = accounts.find((a) => a.isActive);
-  const otherAccounts = accounts.filter((a) => !a.isActive);
+  // const activeAccount = accounts.find((a) => a.isActive);
+  // const otherAccounts = accounts.filter((a) => !a.isActive);
+
+  let activeAccount = { ...accounts[0], isActive: true };
 
   return (
     <View style={styles.container}>
@@ -150,7 +171,7 @@ export const BankAccounts = ({ navigation }: any) => {
               </View>
             )}
 
-            {otherAccounts.length > 0 && (
+            {/* {otherAccounts.length > 0 && (
               <View style={{ marginTop: 8 }}>
                 <Text style={styles.sectionLabel}>Rekening Lainnya</Text>
                 {otherAccounts.map((acc) => (
@@ -161,14 +182,16 @@ export const BankAccounts = ({ navigation }: any) => {
                   </View>
                 ))}
               </View>
-            )}
+            )} */}
 
-            <TouchableOpacity
-              style={styles.btnAddOutline}
-              onPress={() => navigation.navigate('BankList', { fromProfile: true })}>
-              <Plus size={20} color="#1A1A1A" />
-              <Text style={styles.btnAddText}>Tambah Rekening Baru</Text>
-            </TouchableOpacity>
+            {accounts.length === 0 && (
+              <TouchableOpacity
+                style={styles.btnAddOutline}
+                onPress={() => navigation.navigate('BankList', { fromProfile: true })}>
+                <Plus size={20} color="#1A1A1A" />
+                <Text style={styles.btnAddText}>Tambah Rekening Baru</Text>
+              </TouchableOpacity>
+            )}
           </>
         )}
 
