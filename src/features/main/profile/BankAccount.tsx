@@ -106,7 +106,7 @@ export const BankAccounts = ({ navigation }: any) => {
           <Text style={[styles.btnText, { color: '#E25C5C' }]}>Hapus</Text>
         </TouchableOpacity>
 
-        {item.isActive ? (
+        {/* {item.isActive ? (
           <TouchableOpacity style={styles.btnSecondary}>
             <Edit3 size={16} color="#1A1A1A" />
             <Text style={styles.btnText}>Edit</Text>
@@ -115,7 +115,7 @@ export const BankAccounts = ({ navigation }: any) => {
           <TouchableOpacity style={styles.btnPrimary} onPress={() => handleSetActive(item.id)}>
             <Text style={styles.btnTextWhite}>Jadikan Aktif</Text>
           </TouchableOpacity>
-        )}
+        )} */}
       </View>
     </View>
   );
