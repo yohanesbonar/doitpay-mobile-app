@@ -141,9 +141,6 @@ export const BankAccounts = ({ navigation }: any) => {
     </View>
   );
 
-  // const activeAccount = accounts.find((a) => a.isActive);
-  // const otherAccounts = accounts.filter((a) => !a.isActive);
-
   let activeAccount = { ...accounts[0], isActive: true };
 
   return (
@@ -156,7 +153,9 @@ export const BankAccounts = ({ navigation }: any) => {
       />
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {accounts.length === 0 ? (
+        {isGettingBankAccounts ? (
+          <View></View>
+        ) : accounts.length === 0 ? (
           renderEmptyState()
         ) : (
           <>
@@ -171,19 +170,6 @@ export const BankAccounts = ({ navigation }: any) => {
               </View>
             )}
 
-            {/* {otherAccounts.length > 0 && (
-              <View style={{ marginTop: 8 }}>
-                <Text style={styles.sectionLabel}>Rekening Lainnya</Text>
-                {otherAccounts.map((acc) => (
-                  <View
-                    style={{ backgroundColor: '#FAFAFA', paddingHorizontal: 20, paddingTop: 12 }}
-                    key={acc.id}>
-                    <BankCard key={acc.id} item={acc} />
-                  </View>
-                ))}
-              </View>
-            )} */}
-
             {accounts.length === 0 && (
               <TouchableOpacity
                 style={styles.btnAddOutline}
@@ -195,14 +181,16 @@ export const BankAccounts = ({ navigation }: any) => {
           </>
         )}
 
-        <View style={styles.alertBox}>
-          <AlertCircle size={20} color="#D4A017" />
-          <Text style={styles.alertText}>
-            Rekening harus atas nama yang sama dengan akun Doitpay{' '}
-            <Text style={{ fontFamily: 'Switzer-Bold' }}>(Prabu Suwito)</Text>. Rekening atas nama
-            berbeda tidak bisa ditambahkan.
-          </Text>
-        </View>
+        {/* {accounts.length != 1 && (
+          <View style={styles.alertBox}>
+            <AlertCircle size={20} color="#D4A017" />
+            <Text style={styles.alertText}>
+              Rekening harus atas nama yang sama dengan akun Doitpay{' '}
+              <Text style={{ fontFamily: 'Switzer-Bold' }}>(Prabu Suwito)</Text>. Rekening atas nama
+              berbeda tidak bisa ditambahkan.
+            </Text>
+          </View>
+        )} */}
       </ScrollView>
     </View>
   );
