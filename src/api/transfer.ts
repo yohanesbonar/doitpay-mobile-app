@@ -56,7 +56,7 @@ export const transferApi = {
     return data;
   },
   postReceive: async (payload: TransferPayload, idempotencyKey: string): Promise<CreateTransferResponse> => {
-    const { data } = await apiClient.post<CreateTransferResponse>('/v1/receive', payload{
+    const { data } = await apiClient.post<CreateTransferResponse>('/v1/receive', payload, {
       headers: {
         'X-Idempotency-Key': idempotencyKey,
       },
