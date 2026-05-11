@@ -13,6 +13,7 @@ import PaymentMethod from './components/PaymentMethod';
 import QuickAmount from './components/QuickAmount';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import { formatNumber } from '@/utils/Common';
+import { useReceive, useTransfer } from '../../../hooks/useTransferMutation';
 
 interface TransferDetailViewProps {
   accountData: {
@@ -51,6 +52,9 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
   const [methodPayment, setMethodPayment] = useState<'VA' | 'QRIS'>('VA');
+
+  const { mutate: postTransfer, isPending: isLoadingTransfer } = useTransfer();
+  const { mutate: postReceive, isPending: isLoadingReceive } = useReceive();
 
   return (
     <View style={{ flex: 1, backgroundColor: '#FFF' }}>
