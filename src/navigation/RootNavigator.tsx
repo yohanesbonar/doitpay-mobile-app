@@ -22,6 +22,7 @@ import TransferDetail from '../screens/transfer/transferDetail';
 import PaymentInstruction from '../screens/transfer/paymentInstruction';
 import TransferProcessing from '../screens/transfer/transferProcessing';
 import PaymentReceipt from '../screens/transfer/paymentReceipt';
+import SearchAccountScreen from '../screens/transfer/searchAccount';
 
 const Stack = createNativeStackNavigator();
 
@@ -55,6 +56,7 @@ export default function RootNavigator() {
             <Stack.Screen name="Beneficiary" component={Beneficiary} />
             <Stack.Screen name="History" component={History} />
             <Stack.Screen name="Profile" component={Profile} />
+            <Stack.Screen name="SearchAccount" component={SearchAccountScreen} />
           </Stack.Group>
         ) : (
           <Stack.Group>

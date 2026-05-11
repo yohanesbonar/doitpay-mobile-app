@@ -73,6 +73,11 @@
     "checkAccount": "Cek no rekening",
     "skip": "Lewati"
   },
+  "searchAccount": {
+    "searchName": "Cari Nama", 
+    "accountName": "Nama Akun",
+    "labelName": "Nama"
+  },
   "successBottomSheet": {
     "readyToTransfer": "Siap untuk transfer kapan saja",
     "successAddAccount": "Rekening berhasil ditambahkan",

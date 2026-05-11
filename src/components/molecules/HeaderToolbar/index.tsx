@@ -27,7 +27,7 @@ const HeaderToolbar: React.FC<HeaderToolbarProps> = ({
   withCloseButton,
   onPressRightButton,
   titlePosition = 'center',
-  titleStyle = 'bold',
+  titleStyle = 'regular',
 }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);

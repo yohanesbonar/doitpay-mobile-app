@@ -19,7 +19,12 @@ import { UnprotectedAccount } from './components/UnprotectedAccount.tsx';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { EmailBottomsheet } from '@/components/molecules/EmailBottomsheet';
 
-export const Home = () => {
+interface HomeViewProps {
+  goToSearchAccount: () => void;
+  onPressBack: () => void;
+}
+
+export const HomeView = (props: HomeViewProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const { t } = useTranslation();
@@ -66,7 +71,7 @@ export const Home = () => {
             <TransferLimitCard usedAmount={500000} maxAmount={25000000} percentage={5} />
           </View>
           <View style={styles.mainWrapper}>
-            <SearchBar />
+            <SearchBar onPress={props.goToSearchAccount} />
             <SizedBox height={20} />
             <View style={{ flexDirection: 'row', gap: 12 }}>
               <BillCard title="Bayar kos" accountInfo="Joni Wahyu  BCA ****3910" />

@@ -19,6 +19,7 @@ interface TransferDetailViewProps {
     accountNumber: string;
     bankName: string;
     ownerName: string;
+    accountHolderName: string;
   };
   bankData: any;
   fromTabBar: boolean;

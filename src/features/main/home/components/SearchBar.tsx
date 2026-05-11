@@ -1,17 +1,27 @@
 import React from 'react';
-import { View, TextInput, StyleSheet } from 'react-native';
+import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import metrics from '../../../../theme/metrics';
 import { Search } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 
-export const SearchBar = () => {
+interface SearchBarProps {
+  onPress: () => void;
+}
+
+export const SearchBar = (props: SearchBarProps) => {
   const { t } = useTranslation();
 
   return (
-    <View style={styles.container}>
+    <TouchableOpacity style={styles.container} onPress={props.onPress}>
       <Search size={24} color="#737373" />
-      <TextInput placeholder={t('home.search')} placeholderTextColor="#999" style={styles.input} />
-    </View>
+      <TextInput
+        placeholder={t('home.search')}
+        placeholderTextColor="#999"
+        style={styles.input}
+        editable={false}
+        onPress={props.onPress}
+      />
+    </TouchableOpacity>
   );
 };
 
