@@ -125,6 +125,8 @@ apiClient.interceptors.request.use(
       console.log('--- 🛫 API REQUEST ---');
       console.log(`URL: ${config.baseURL}${config.url}`);
       console.log('Headers:', JSON.stringify(config.headers, null, 2));
+      console.log(`Method: ${config.method?.toUpperCase()}`);
+      console.log('Body:', JSON.stringify(config.data, null, 2));
       console.log('----------------------');
     }
 

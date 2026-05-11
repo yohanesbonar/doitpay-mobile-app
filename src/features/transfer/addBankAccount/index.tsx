@@ -71,9 +71,7 @@ export const AddBankRecipientView = ({
     if (fromProfile) {
       postBankAccount(
         {
-          bankCode: item.bank.code,
-          accountNumber: item.accountNumber,
-          accountHolderName: item.accountHolderName,
+          accountInquiryID: item.id,
         } as any,
         {
           onSuccess: (data) => {

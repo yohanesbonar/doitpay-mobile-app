@@ -16,9 +16,7 @@ export type BankAccountResponse = {
 };
 
 export interface BankAccountPostPayload {
-    accountHolderName: string;
-    accountNumber: string;
-    bankCode: string;
+    accountInquiryID: string;
 }
 
 export type BankAccountPostResponse = {
