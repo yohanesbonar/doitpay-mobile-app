@@ -25,7 +25,7 @@ export const createStyles = (colors: any) => {
       marginBottom: 16,
     },
     footer: {
-      marginVertical: 16
+      marginVertical: 16,
     },
     button: {
       width: '100%',
@@ -41,7 +41,7 @@ export const createStyles = (colors: any) => {
       borderRadius: 16,
     },
     closeButton: {
-      
-    }
+      backgroundColor: 'transparent',
+    },
   });
 };
