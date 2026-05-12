@@ -30,12 +30,10 @@ export const HomeView = (props: HomeViewProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const { t } = useTranslation();
-  const navigation = useNavigation();
 
   const [isSheetMounted, setIsSheetMounted] = useState(false);
   const emailSheetRef = useRef<BottomSheetModal>(null);
   const [isAccountSheetMounted, setIsAccountSheetMounted] = useState(false);
-  const accountSheetRef = useRef<BottomSheetModal>(null);
 
   const handleOpenEmailSheet = useCallback(() => {
     setIsSheetMounted(true);
@@ -57,13 +55,9 @@ export const HomeView = (props: HomeViewProps) => {
 
   const handleOpenAccountSheet = useCallback(() => {
     setIsAccountSheetMounted(true);
-    requestAnimationFrame(() => {
-      accountSheetRef.current?.present();
-    });
   }, []);
 
   const handleGoToAddBank = () => {
-    accountSheetRef.current?.dismiss();
     setIsAccountSheetMounted(false);
     storage.set(StorageKey.HAS_SHOWN_COMPLETE_ACCOUNT_HOME, true);
     props.goToBankAccounts();
@@ -133,7 +127,6 @@ export const HomeView = (props: HomeViewProps) => {
       )}
       {isAccountSheetMounted && (
         <CompleteAccountPopup
-          ref={accountSheetRef}
           onClose={onCloseCompleteModal}
           onAddAccount={handleGoToAddBank}
           withButtonClose={true}
