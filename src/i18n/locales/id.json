@@ -97,7 +97,9 @@
   }, 
   "beneficiary": {
     "title": "Penerima",
-    "search": "Cari Penerima"
+    "search": "Cari Penerima",
+    "beneficiaryNotFound": "Belum Ada Kontak Tersimpan",
+    "descBeneficiaryNotFound": "Semua rekening penerima yang kamu simpan akan muncul di sini."
   }, 
   "mainTabNav": {
     "homepage": "Beranda",

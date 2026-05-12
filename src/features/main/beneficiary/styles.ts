@@ -9,7 +9,6 @@ export const createStyles = (colors: any) =>
     },
     container: {
       flex: 1,
-      backgroundColor: colors.pageBackground,
     },
     headerWrapper: {
       flexDirection: 'row',
@@ -20,7 +19,7 @@ export const createStyles = (colors: any) =>
       paddingHorizontal: 24,
       borderBottomWidth: 0.2,
       borderBottomColor: '#737373',
-      backgroundColor: "#FFF"
+      backgroundColor: '#FFF',
     },
     headerTitle: {
       fontFamily: 'Switzer-Semibold',
@@ -34,7 +33,7 @@ export const createStyles = (colors: any) =>
       paddingHorizontal: 24,
     },
     tabContainer: {
-       flexDirection: 'row',
+      flexDirection: 'row',
       marginTop: 12,
       marginBottom: 10,
       paddingHorizontal: 24,
@@ -46,7 +45,7 @@ export const createStyles = (colors: any) =>
       backgroundColor: '#FAFAFA',
       borderWidth: 0.5,
       borderColor: '#E5E5E5',
-      marginRight: 10
+      marginRight: 10,
     },
     activeTabButton: {
       backgroundColor: '#FFF',
@@ -63,7 +62,28 @@ export const createStyles = (colors: any) =>
       fontSize: 14,
     },
     listContent: {
+      flexGrow: 1,
       paddingBottom: 100,
-      paddingHorizontal: 24
+      paddingHorizontal: 24,
+    },
+    emptyState: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: 'transparent',
+      paddingHorizontal: 24,
+    },
+    emptyText: {
+      fontFamily: 'Switzer-Semibold',
+      color: '#000000',
+      fontSize: 24,
+      textAlign: 'center',
+    },
+    emptyTextDesc: {
+      fontFamily: 'Switzer-Regular',
+      color: '#000000',
+      fontSize: 16,
+      textAlign: 'center',
+      marginTop: 12,
     },
   });

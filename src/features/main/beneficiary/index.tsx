@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../../theme/ThemeProvider';
 import { createStyles } from './styles';
@@ -59,24 +59,30 @@ export const Beneficiary = () => {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.searchContainer}>
-          <SearchBar
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            placeholder={t('beneficiary.search')}
-          />
-        </View>
+        {beneficiaries?.length > 0 && (
+          <View>
+            <View style={styles.searchContainer}>
+              <SearchBar
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                placeholder={t('beneficiary.search')}
+              />
+            </View>
 
-        <View style={styles.tabContainer}>
-          {['Favorit', 'Semua'].map((tab) => (
-            <TouchableOpacity
-              key={tab}
-              style={[styles.tabButton, activeTab === tab && styles.activeTabButton]}
-              onPress={() => setActiveTab(tab as any)}>
-              <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>{tab}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+            <View style={styles.tabContainer}>
+              {['Favorit', 'Semua'].map((tab) => (
+                <TouchableOpacity
+                  key={tab}
+                  style={[styles.tabButton, activeTab === tab && styles.activeTabButton]}
+                  onPress={() => setActiveTab(tab as any)}>
+                  <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
+                    {tab}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        )}
 
         <FlatList
           data={filteredData}
@@ -88,8 +94,24 @@ export const Beneficiary = () => {
               onFavoritePress={() => toggleFavorite(item.id)}
             />
           )}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[
+            styles.listContent,
+            {
+              backgroundColor: beneficiaries.length == 0 ? '#FFF' : colors.pageBackground,
+              paddingTop: beneficiaries.length > 0 ? 12 : 0,
+            },
+          ]}
           showsVerticalScrollIndicator={false}
+          ListEmptyComponent={() => (
+            <View style={styles.emptyState}>
+              <Image
+                source={require('../../../assets/images/ic-empty-beneficiary.png')}
+                style={{ width: 191, height: 208, resizeMode: 'contain' }}
+              />
+              <Text style={styles.emptyText}>{t('beneficiary.beneficiaryNotFound')}</Text>
+              <Text style={styles.emptyTextDesc}>{t('beneficiary.descBeneficiaryNotFound')}</Text>
+            </View>
+          )}
         />
       </View>
     </SafeAreaView>
