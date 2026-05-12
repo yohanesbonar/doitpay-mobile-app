@@ -47,12 +47,24 @@ export const createStyles = (colors: any) =>
       paddingHorizontal: 24,
     },
     emptyState: {
+      flex: 1,
+      justifyContent: 'center',
       alignItems: 'center',
-      marginTop: 50,
+      backgroundColor: 'transparent',
+      paddingHorizontal: 24,
     },
     emptyText: {
+      fontFamily: 'Switzer-Semibold',
+      color: '#000000',
+      fontSize: 24,
+      textAlign: 'center',
+    },
+    emptyTextDesc: {
       fontFamily: 'Switzer-Regular',
-      color: '#7C7C7C',
+      color: '#000000',
+      fontSize: 16,
+      textAlign: 'center',
+      marginTop: 12,
     },
     filterRow: { flexDirection: 'row', gap: 10, marginBottom: 20, paddingHorizontal: 20 },
     dateButton: {
@@ -77,6 +89,6 @@ export const createStyles = (colors: any) =>
     clearFilterText: {
       color: '#E25C5C',
       fontSize: 14,
-      fontFamily: 'Switzer-Medium'
+      fontFamily: 'Switzer-Medium',
     },
   });

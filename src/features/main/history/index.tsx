@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, SectionList, TouchableOpacity } from 'react-native';
+import { View, Text, SectionList, TouchableOpacity, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../../theme/ThemeProvider';
 import { createStyles } from './styles';
@@ -96,6 +96,7 @@ export const History = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilter, setShowFilter] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [data, setData] = useState(DATA_MOCK);
 
   const initialFilters = {
     paymentType: 'Semua',
@@ -139,27 +140,30 @@ export const History = () => {
   ];
 
   const filteredData = useMemo(() => {
-    return DATA_MOCK.map((section) => {
-      const isYearMatch = section.year === selectedDate.year;
-      const isMonthMatch = selectedDate.month === undefined || section.month === selectedDate.month;
-      const isDateMatch = isYearMatch && isMonthMatch;
+    return data
+      .map((section) => {
+        const isYearMatch = section.year === selectedDate.year;
+        const isMonthMatch =
+          selectedDate.month === undefined || section.month === selectedDate.month;
+        const isDateMatch = isYearMatch && isMonthMatch;
 
-      return {
-        ...section,
-        data: section.data.filter((item) => {
-          const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
-          const matchesPayment =
-            activeFilters.paymentType === 'Semua' ||
-            (item.type && item.type.includes(activeFilters.paymentType));
-          const matchesType =
-            activeFilters.transactionType === 'Semua' ||
-            item.category === activeFilters.transactionType;
+        return {
+          ...section,
+          data: section.data.filter((item) => {
+            const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
+            const matchesPayment =
+              activeFilters.paymentType === 'Semua' ||
+              (item.type && item.type.includes(activeFilters.paymentType));
+            const matchesType =
+              activeFilters.transactionType === 'Semua' ||
+              item.category === activeFilters.transactionType;
 
-          return matchesSearch && matchesPayment && matchesType && isDateMatch;
-        }),
-      };
-    }).filter((section) => section.data.length > 0);
-  }, [searchQuery, activeFilters, selectedDate]);
+            return matchesSearch && matchesPayment && matchesType && isDateMatch;
+          }),
+        };
+      })
+      .filter((section) => section.data.length > 0);
+  }, [searchQuery, activeFilters, selectedDate, data]);
 
   return (
     <SafeAreaView style={styles.safeAreaContainer}>
@@ -171,33 +175,37 @@ export const History = () => {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.searchContainer}>
-          <SearchBar
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            placeholder={t('history.searchTransaction')}
-          />
-        </View>
+        {data?.length > 0 && (
+          <View>
+            <View style={styles.searchContainer}>
+              <SearchBar
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                placeholder={t('history.searchTransaction')}
+              />
+            </View>
 
-        <View style={styles.filterContainer}>
-          <TouchableOpacity style={styles.dateButton} onPress={() => setShowDatePicker(true)}>
-            <Calendar size={18} color="#1A1A1A" />
-            <Text style={styles.dateText}>
-              {selectedDate?.month !== undefined
-                ? `${monthsLabel[selectedDate.month]} ${selectedDate.year}`
-                : `${selectedDate.year}`}
-            </Text>
-          </TouchableOpacity>
+            <View style={styles.filterContainer}>
+              <TouchableOpacity style={styles.dateButton} onPress={() => setShowDatePicker(true)}>
+                <Calendar size={18} color="#1A1A1A" />
+                <Text style={styles.dateText}>
+                  {selectedDate?.month !== undefined
+                    ? `${monthsLabel[selectedDate.month]} ${selectedDate.year}`
+                    : `${selectedDate.year}`}
+                </Text>
+              </TouchableOpacity>
 
-          <FilterButton onPress={() => setShowFilter(true)} count={filterCounter} />
+              <FilterButton onPress={() => setShowFilter(true)} count={filterCounter} />
 
-          {isAnyFilterActive && (
-            <TouchableOpacity style={styles.clearFilterButton} onPress={handleClearFilter}>
-              <X size={16} color="#E25C5C" />
-              <Text style={styles.clearFilterText}>{t('history.clearFilter')}</Text>
-            </TouchableOpacity>
-          )}
-        </View>
+              {isAnyFilterActive && (
+                <TouchableOpacity style={styles.clearFilterButton} onPress={handleClearFilter}>
+                  <X size={16} color="#E25C5C" />
+                  <Text style={styles.clearFilterText}>{t('history.clearFilter')}</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        )}
 
         <SectionList
           sections={filteredData}
@@ -207,14 +215,20 @@ export const History = () => {
             <Text style={styles.sectionHeader}>{title}</Text>
           )}
           contentContainerStyle={{
+            flexGrow: 1,
             paddingBottom: 120,
-            backgroundColor: colors.pageBackground,
+            backgroundColor: data?.length > 0 ? colors.pageBackground : '#FFF',
           }}
           stickySectionHeadersEnabled={false}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={() => (
             <View style={styles.emptyState}>
+              <Image
+                source={require('../../../assets/images/ic-empty-history.png')}
+                style={{ width: 191, height: 208, resizeMode: 'contain' }}
+              />
               <Text style={styles.emptyText}>{t('history.transactionNotFound')}</Text>
+              <Text style={styles.emptyTextDesc}>{t('history.descTransactionNotFound')}</Text>
             </View>
           )}
         />

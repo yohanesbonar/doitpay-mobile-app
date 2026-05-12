@@ -92,7 +92,8 @@
     "title": "Riwayat", 
     "searchTransaction": "Cari transaksi",
     "clearFilter": "Clear Filter",
-    "transactionNotFound": "Transaksi tidak ditemukan"
+    "transactionNotFound": "Belum Ada Riwayat Transaksi",
+    "descTransactionNotFound": "Semua aktivitas transfer, pembayaran, dan uang masuk akan muncul di sini."
   }, 
   "beneficiary": {
     "title": "Penerima",
