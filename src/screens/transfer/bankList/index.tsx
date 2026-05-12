@@ -40,6 +40,10 @@ const BankListScreen = () => {
     navigation.dispatch(StackActions.replace('MainTabs'));
   };
 
+  const goToBankAccounts = () => {
+    navigation.navigate('BankAccounts');
+  };
+
   return (
     <BankListView
       onPressBack={handleBack}
@@ -48,6 +52,7 @@ const BankListScreen = () => {
       isLoginState={isLoginState}
       fromTabBar={fromTabBar}
       fromProfile={fromProfile}
+      goToBankAccounts={goToBankAccounts}
     />
   );
 };

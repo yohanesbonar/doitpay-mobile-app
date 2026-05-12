@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, TextInput, Image } from 'react-native';
 import { createStyles } from './styles.ts';
 import { useTranslation } from 'react-i18next';
@@ -9,6 +9,8 @@ import { Formik } from 'formik';
 import { ArrowDownLeft, ArrowUpRight, Search } from 'lucide-react-native';
 import { useBanks } from '@/hooks/useBankMutation.ts';
 import FastImage from 'react-native-fast-image';
+import { storage, StorageKey } from '@/storage/index.ts';
+import { CompleteAccountPopup } from '@/components/molecules/CompleteAccountPopup/index.tsx';
 
 interface BankListViewProps {
   onPressBack: () => void;
@@ -17,6 +19,7 @@ interface BankListViewProps {
   isLoginState: boolean;
   fromTabBar: boolean;
   fromProfile: boolean;
+  goToBankAccounts: () => void;
 }
 
 export const BankListView = ({
@@ -26,6 +29,7 @@ export const BankListView = ({
   isLoginState,
   fromTabBar,
   fromProfile,
+  goToBankAccounts,
 }: BankListViewProps) => {
   console.log('BankListView Props:', {
     onPressBack,
@@ -34,6 +38,7 @@ export const BankListView = ({
     isLoginState,
     fromTabBar,
     fromProfile,
+    goToBankAccounts,
   });
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -44,6 +49,7 @@ export const BankListView = ({
   const [popularBanks, setPopularBanks] = useState<any[]>([]);
 
   const { mutate: mutateBanks, isPending: isPendingBank } = useBanks();
+  const [isAccountSheetMounted, setIsAccountSheetMounted] = useState(false);
 
   useEffect(() => {
     mutateBanks(
@@ -59,6 +65,37 @@ export const BankListView = ({
       },
     );
   }, [mutateBanks]);
+
+  useEffect(() => {
+    const hasShown = storage.getBoolean(StorageKey.HAS_SHOWN_COMPLETE_ACCOUNT_BANK_LIST);
+    console.log(
+      'HAS_SHOWN_COMPLETE_ACCOUNT_BANK_LIST - hasShown',
+      hasShown,
+      '- fromProfile',
+      fromProfile,
+    );
+    if (!hasShown && !fromProfile) {
+      setTimeout(() => {
+        handleOpenAccountSheet();
+      }, 500);
+
+      storage.set(StorageKey.HAS_SHOWN_COMPLETE_ACCOUNT_BANK_LIST, true);
+    }
+  }, []);
+
+  const handleOpenAccountSheet = useCallback(() => {
+    setIsAccountSheetMounted(true);
+  }, []);
+
+  const handleGoToAddBank = () => {
+    setIsAccountSheetMounted(false);
+    goToBankAccounts();
+  };
+
+  const onCloseCompleteModal = () => {
+    setIsAccountSheetMounted(false);
+    onPressBack();
+  };
 
   return (
     <View style={styles.container}>
@@ -176,6 +213,13 @@ export const BankListView = ({
                   textColor="black"
                 />
               </View>
+            )}
+            {isAccountSheetMounted && (
+              <CompleteAccountPopup
+                onClose={onCloseCompleteModal}
+                onAddAccount={handleGoToAddBank}
+                withButtonClose={true}
+              />
             )}
           </View>
         )}
