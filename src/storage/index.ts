@@ -8,6 +8,8 @@ export const StorageKey = {
   USER_DATA: 'user_data',
   EXPIRES_AT: 'expires_at',
   FCM_TOKEN: 'fcm_token',
+  HAS_SHOWN_COMPLETE_ACCOUNT_HOME: 'has_shown_complete_account_home',
+  HAS_SHOWN_COMPLETE_ACCOUNT_BANK_LIST: 'has_shown_complete_account_bank_list',
 };
 
 export const setStorageItem = (key: string, value: string) => {

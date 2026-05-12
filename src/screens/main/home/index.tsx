@@ -13,7 +13,17 @@ const HomeScreen = () => {
     navigation.goBack();
   };
 
-  return <HomeView goToSearchAccount={goToSearchAccount} onPressBack={onPressBack} />;
+  const goToBankAccounts = () => {
+    navigation.navigate('BankAccounts');
+  };
+
+  return (
+    <HomeView
+      goToSearchAccount={goToSearchAccount}
+      onPressBack={onPressBack}
+      goToBankAccounts={goToBankAccounts}
+    />
+  );
 };
 
 export default HomeScreen;

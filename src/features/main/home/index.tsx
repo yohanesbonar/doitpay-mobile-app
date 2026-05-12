@@ -8,7 +8,6 @@ import { StackActions, useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconNotification } from '../../../assets/icons/index.ts';
 import { handleLogout } from '@/utils/Common/index.ts';
-import { useAuthStore } from '../../../storage/useAuthStore.ts';
 
 import { TransferLimitCard } from './components/TransferLimitCard.tsx';
 import { BillCard } from './components/BillCard.tsx';
@@ -18,10 +17,13 @@ import { SearchBar } from './components/SearchBar.tsx';
 import { UnprotectedAccount } from './components/UnprotectedAccount.tsx';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { EmailBottomsheet } from '@/components/molecules/EmailBottomsheet';
+import { storage, StorageKey } from '../../../storage/index.ts';
+import { CompleteAccountPopup } from '@/components/molecules/CompleteAccountPopup';
 
 interface HomeViewProps {
   goToSearchAccount: () => void;
   onPressBack: () => void;
+  goToBankAccounts: () => void;
 }
 
 export const HomeView = (props: HomeViewProps) => {
@@ -29,17 +31,11 @@ export const HomeView = (props: HomeViewProps) => {
   const styles = createStyles(colors);
   const { t } = useTranslation();
   const navigation = useNavigation();
-  const { isNewUser, setIsNewUser } = useAuthStore();
-
-  // useEffect(() => {
-  //   if (isNewUser) {
-  //     navigation.dispatch(StackActions.replace('BankList'));
-  //     setIsNewUser(false);
-  //   }
-  // }, [isNewUser]);
 
   const [isSheetMounted, setIsSheetMounted] = useState(false);
   const emailSheetRef = useRef<BottomSheetModal>(null);
+  const [isAccountSheetMounted, setIsAccountSheetMounted] = useState(false);
+  const accountSheetRef = useRef<BottomSheetModal>(null);
 
   const handleOpenEmailSheet = useCallback(() => {
     setIsSheetMounted(true);
@@ -48,6 +44,35 @@ export const HomeView = (props: HomeViewProps) => {
       emailSheetRef.current?.present();
     });
   }, []);
+
+  useEffect(() => {
+    const hasShown = storage.getBoolean(StorageKey.HAS_SHOWN_COMPLETE_ACCOUNT_HOME);
+
+    if (!hasShown) {
+      handleOpenAccountSheet();
+
+      storage.set(StorageKey.HAS_SHOWN_COMPLETE_ACCOUNT_HOME, true);
+    }
+  }, []);
+
+  const handleOpenAccountSheet = useCallback(() => {
+    setIsAccountSheetMounted(true);
+    requestAnimationFrame(() => {
+      accountSheetRef.current?.present();
+    });
+  }, []);
+
+  const handleGoToAddBank = () => {
+    accountSheetRef.current?.dismiss();
+    setIsAccountSheetMounted(false);
+    storage.set(StorageKey.HAS_SHOWN_COMPLETE_ACCOUNT_HOME, true);
+    props.goToBankAccounts();
+  };
+
+  const onCloseCompleteModal = () => {
+    setIsAccountSheetMounted(false);
+    storage.set(StorageKey.HAS_SHOWN_COMPLETE_ACCOUNT_HOME, true);
+  };
 
   return (
     <SafeAreaView style={styles.safeAreaContainer}>
@@ -105,6 +130,14 @@ export const HomeView = (props: HomeViewProps) => {
       </View>
       {isSheetMounted && (
         <EmailBottomsheet ref={emailSheetRef} onDismiss={() => setIsSheetMounted(false)} />
+      )}
+      {isAccountSheetMounted && (
+        <CompleteAccountPopup
+          ref={accountSheetRef}
+          onClose={onCloseCompleteModal}
+          onAddAccount={handleGoToAddBank}
+          withButtonClose={true}
+        />
       )}
     </SafeAreaView>
   );
