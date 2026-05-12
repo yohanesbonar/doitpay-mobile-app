@@ -26,6 +26,7 @@ export const createStyles = (colors: any) => {
     },
     footer: {
       marginVertical: 16,
+      backgroundColor: 'transparent',
     },
     button: {
       width: '100%',
