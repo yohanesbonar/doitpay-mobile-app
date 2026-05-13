@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  Keyboard,
+} from 'react-native';
 import { useTheme } from '@/theme/ThemeProvider';
 import { createStyles } from './styles';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
@@ -31,7 +38,6 @@ export const RequestPaymentView = ({ onPressBack, onGenerateQR }: RequestPayment
 
   useEffect(() => {
     let amountInt = parseInt(amount);
-    console.log('amountInt', amountInt);
     if (amountInt >= 10000) {
       setIsErrorMinimumReached(false);
     } else {
@@ -41,63 +47,66 @@ export const RequestPaymentView = ({ onPressBack, onGenerateQR }: RequestPayment
 
   const handleInputChange = (val: string) => {
     const cleanNumber = val.replace(/[^0-9]/g, '');
-    setAmount(val);
+    console.log('val', cleanNumber);
+    setAmount(cleanNumber);
   };
 
   return (
-    <View style={styles.container}>
-      <HeaderToolbar title="Terima Pembayaran" onPressBack={onPressBack} titlePosition="left" />
+    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+      <View style={styles.container}>
+        <HeaderToolbar title="Terima Pembayaran" onPressBack={onPressBack} titlePosition="left" />
 
-      <View style={styles.content}>
-        <Text style={styles.title}>{t('requestPayment.inputNominal')}</Text>
-        <Text style={styles.subtitle}>{t('requestPayment.descInputNominal')}</Text>
+        <View style={styles.content}>
+          <Text style={styles.title}>{t('requestPayment.inputNominal')}</Text>
+          <Text style={styles.subtitle}>{t('requestPayment.descInputNominal')}</Text>
 
-        <View
-          style={[
-            styles.inputAmountWrapper,
-            { marginBottom: isErrorMinimumReached && !isInputEmpty ? 0 : 16 },
-          ]}>
-          <Text style={styles.inputCurrencyPrefix}>Rp</Text>
-          <TextInput
+          <View
             style={[
-              styles.amountInput,
-              amount.length === 0 ? styles.amountInputPlaceholder : styles.amountInputActive,
-              isErrorMinimumReached && !isInputEmpty && {},
-            ]}
-            placeholder="Masukkan Nominal"
-            placeholderTextColor="#9CA3AF"
-            keyboardType="numeric"
-            value={formatNumber(amount)}
-            onChangeText={handleInputChange}
-          />
+              styles.inputAmountWrapper,
+              { marginBottom: isErrorMinimumReached && !isInputEmpty ? 0 : 16 },
+            ]}>
+            <Text style={styles.inputCurrencyPrefix}>Rp</Text>
+            <TextInput
+              style={[
+                styles.amountInput,
+                amount.length === 0 ? styles.amountInputPlaceholder : styles.amountInputActive,
+                isErrorMinimumReached && !isInputEmpty && {},
+              ]}
+              placeholder="Masukkan Nominal"
+              placeholderTextColor="#9CA3AF"
+              keyboardType="numeric"
+              value={formatNumber(amount)}
+              onChangeText={handleInputChange}
+            />
+          </View>
+
+          {isErrorMinimumReached && !isInputEmpty && (
+            <Text style={styles.textError}>{t('requestPayment.minimal')}</Text>
+          )}
+
+          <View style={styles.chipContainer}>
+            {QUICK_AMOUNTS.map((item) => (
+              <TouchableOpacity key={item} style={styles.chip} onPress={() => setAmount(item)}>
+                <Text style={styles.chipText}>{formatNumber(item)}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
 
-        {isErrorMinimumReached && !isInputEmpty && (
-          <Text style={styles.textError}>{t('requestPayment.minimal')}</Text>
+        {!isErrorMinimumReached && (
+          <View style={styles.footer}>
+            <Button
+              type="regular"
+              title="Generate QR"
+              onPress={handleGenerateQR}
+              color={colors.buttonBlue}
+              textStyle={{ color: colors.textWhite }}
+              sourceIcon={require('../../../assets/images/ic-qr-small-button.png')}
+            />
+          </View>
         )}
-
-        <View style={styles.chipContainer}>
-          {QUICK_AMOUNTS.map((item) => (
-            <TouchableOpacity key={item} style={styles.chip} onPress={() => setAmount(item)}>
-              <Text style={styles.chipText}>{formatNumber(item)}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
       </View>
-
-      {!isErrorMinimumReached && (
-        <View style={styles.footer}>
-          <Button
-            type="regular"
-            title="Generate QR"
-            onPress={handleGenerateQR}
-            color={colors.buttonBlue}
-            textStyle={{ color: colors.textWhite }}
-            sourceIcon={require('../../../assets/images/ic-qr-small-button.png')}
-          />
-        </View>
-      )}
-    </View>
+    </TouchableWithoutFeedback>
   );
 };
 

@@ -12,14 +12,14 @@ export const createStyles = (colors: any) =>
     },
     title: {
       fontSize: 24,
-      fontFamily: 'Switzer-Bold',
+      fontFamily: 'Switzer-Semibold',
       color: colors.black,
       marginBottom: 8,
     },
     subtitle: {
       fontSize: 14,
       fontFamily: 'Switzer-Regular',
-      color: colors.grey,
+      color: colors.black,
     },
     inputContainer: {
       flexDirection: 'row',
