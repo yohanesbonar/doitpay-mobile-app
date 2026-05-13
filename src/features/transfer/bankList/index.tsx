@@ -11,6 +11,7 @@ import { useBanks } from '@/hooks/useBankMutation.ts';
 import FastImage from 'react-native-fast-image';
 import { storage, StorageKey } from '@/storage/index.ts';
 import { CompleteAccountPopup } from '@/components/molecules/CompleteAccountPopup/index.tsx';
+import { useFocusEffect } from '@react-navigation/native';
 
 interface BankListViewProps {
   onPressBack: () => void;
@@ -20,6 +21,7 @@ interface BankListViewProps {
   fromTabBar: boolean;
   fromProfile: boolean;
   goToBankAccounts: () => void;
+  goToRequestPayment: () => void;
 }
 
 export const BankListView = ({
@@ -30,6 +32,7 @@ export const BankListView = ({
   fromTabBar,
   fromProfile,
   goToBankAccounts,
+  goToRequestPayment,
 }: BankListViewProps) => {
   console.log('BankListView Props:', {
     onPressBack,
@@ -39,6 +42,7 @@ export const BankListView = ({
     fromTabBar,
     fromProfile,
     goToBankAccounts,
+    goToRequestPayment,
   });
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -50,6 +54,12 @@ export const BankListView = ({
 
   const { mutate: mutateBanks, isPending: isPendingBank } = useBanks();
   const [isAccountSheetMounted, setIsAccountSheetMounted] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      setActiveTab('send');
+    }, []),
+  );
 
   useEffect(() => {
     mutateBanks(
@@ -97,6 +107,13 @@ export const BankListView = ({
     onPressBack();
   };
 
+  const onPressReceive = () => {
+    setActiveTab('receive');
+    setTimeout(() => {
+      goToRequestPayment();
+    }, 700);
+  };
+
   return (
     <View style={styles.container}>
       <HeaderToolbar
@@ -121,7 +138,7 @@ export const BankListView = ({
 
                 <TouchableOpacity
                   style={[styles.tabButton, activeTab === 'receive' && styles.activeTab]}
-                  onPress={() => setActiveTab('receive')}>
+                  onPress={() => onPressReceive()}>
                   <ArrowDownLeft size={18} color={activeTab === 'receive' ? '#FFF' : '#000'} />
                   <Text style={[styles.tabText, activeTab === 'receive' && styles.activeTabText]}>
                     Terima

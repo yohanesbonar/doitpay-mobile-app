@@ -44,6 +44,10 @@ const BankListScreen = () => {
     navigation.navigate('BankAccounts');
   };
 
+  const goToRequestPayment = () => {
+    navigation.navigate('RequestPayment');
+  };
+
   return (
     <BankListView
       onPressBack={handleBack}
@@ -53,6 +57,7 @@ const BankListScreen = () => {
       fromTabBar={fromTabBar}
       fromProfile={fromProfile}
       goToBankAccounts={goToBankAccounts}
+      goToRequestPayment={goToRequestPayment}
     />
   );
 };

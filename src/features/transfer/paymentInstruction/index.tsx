@@ -108,29 +108,9 @@ const PaymentInstructionView = ({
             {method === 'receive' && (
               <View style={styles.inputAmountWrapper}>
                 <Text style={styles.inputCurrencyPrefix}>Rp</Text>
-                <TextInput
-                  style={[
-                    styles.amountInput,
-                    amount.length === 0 ? styles.amountInputPlaceholder : styles.amountInputActive,
-                  ]}
-                  placeholder="Nominal transfer"
-                  placeholderTextColor="#9CA3AF"
-                  keyboardType="numeric"
-                  value={formatNumber(amount)}
-                  onChangeText={handleInputChange}
-                />
+                <Text style={[styles.amountText]}>{formatNumber(amount)}</Text>
               </View>
             )}
-
-            <TouchableOpacity style={styles.outlineButton} onPress={handleShareQris}>
-              <Download size={18} color="#111827" style={{ marginRight: 8 }} />
-              <Text style={styles.outlineButtonText}>Unduh Gambar QRIS</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.outlineButton} onPress={handleShareQris}>
-              <Share2 size={18} color="#111827" style={{ marginRight: 8 }} />
-              <Text style={styles.outlineButtonText}>Bagikan</Text>
-            </TouchableOpacity>
           </View>
         ) : (
           <View>
@@ -167,6 +147,19 @@ const PaymentInstructionView = ({
           </View>
         )}
       </ScrollView>
+      {(isQris || method === 'receive') && (
+        <View style={styles.footer}>
+          <TouchableOpacity style={styles.outlineButton} onPress={handleShareQris}>
+            <Download size={18} color="#111827" style={{ marginRight: 8 }} />
+            <Text style={styles.outlineButtonText}>Unduh Gambar QRIS</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.outlineButton} onPress={handleShareQris}>
+            <Share2 size={18} color="#111827" style={{ marginRight: 8 }} />
+            <Text style={styles.outlineButtonText}>Bagikan</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 };

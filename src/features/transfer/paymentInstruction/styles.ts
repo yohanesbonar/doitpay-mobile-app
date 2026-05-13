@@ -142,6 +142,10 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   qrImagePlaceholder: {
     width: '100%',
@@ -218,30 +222,30 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     width: '100%',
-    marginVertical: 24,
+    marginBottom: 24,
+    marginTop: -12
   },
   inputCurrencyPrefix: {
-    fontFamily: 'Switzer-Bold', 
+    fontFamily: 'Switzer-Bold',
     fontSize: 18,
     color: '#111827',
     marginRight: 12,
   },
-  amountInput: {
+  amountText: {
     flex: 1,
-    height: 56,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    fontSize: 24,
+    fontSize: 40,
     fontFamily: 'Switzer-Medium',
-    color: '#111827',
-    backgroundColor: '#FFFFFF',
+    color: '#0A0A0A',
   },
   amountInputPlaceholder: {
-    fontSize: 14, 
+    fontSize: 14,
   },
   amountInputActive: {
     fontSize: 24,
+  },
+  footer: {
+    paddingHorizontal: 24,
+    paddingBottom: 20, 
+    paddingTop: 16
   },
 });

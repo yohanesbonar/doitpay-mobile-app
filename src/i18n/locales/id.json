@@ -112,5 +112,10 @@
     "title": "Lengkapi Rekening Bank Kamu",
     "desc": "Tambahkan rekening bank untuk mulai transfer, menerima uang, dan menggunakan semua fitur Doitpay dengan aman.",
     "addAccount": "Tambah Rekening"
+  }, 
+  "requestPayment": {
+    "inputNominal": "Masukkan nominal",
+    "descInputNominal": "Input nominal untuk menerima pembayaran",
+    "minimal": "Minimal nominal adalah Rp 10.000"
   }
 }

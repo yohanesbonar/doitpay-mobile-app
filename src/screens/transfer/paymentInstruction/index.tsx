@@ -39,7 +39,7 @@ const PaymentInstructionScreen = () => {
             dateTime: '12 February 2026 10:30:20',
           });
     },
-    method !== 'receive' ? 2000 : 8000,
+    method !== 'receive' ? 5000 : 8000,
   );
 
   return (
