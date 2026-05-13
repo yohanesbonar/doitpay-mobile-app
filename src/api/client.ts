@@ -153,7 +153,7 @@ apiClient.interceptors.response.use(
       console.log('Error Data:', JSON.stringify(error.response?.data, null, 2));
       console.log('---------------------');
     }
-    return Promise.reject(error);
+    return Promise.reject(error?.response?.data ?? error);
   },
 );
 

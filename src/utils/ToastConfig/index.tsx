@@ -29,7 +29,8 @@ export const toastConfig = {
       contentContainerStyle={{
         paddingHorizontal: 24,
         paddingVertical: 12,
-        flex: 0,
+        flex: 1,
+        justifyContent: 'center',
       }}
       text1Style={{
         fontSize: 15,
@@ -37,9 +38,9 @@ export const toastConfig = {
         fontWeight: '400',
         color: '#1A1A1A',
         textAlign: 'center',
-        flexWrap: 'wrap',
+        width: '100%',
       }}
-      text1NumberOfLines={2}
+      text1NumberOfLines={3}
     />
   ),
   /*
@@ -70,7 +71,8 @@ export const toastConfig = {
       contentContainerStyle={{
         paddingHorizontal: 24,
         paddingVertical: 12,
-        flex: 0,
+        flex: 1,
+        justifyContent: 'center',
       }}
       text1Style={{
         fontSize: 15,
@@ -78,9 +80,9 @@ export const toastConfig = {
         color: '#FFFFFF',
         fontWeight: '400',
         textAlign: 'center',
-        flexWrap: 'wrap',
+        width: '100%',
       }}
-      text1NumberOfLines={2}
+      text1NumberOfLines={3}
       text2Style={{
         fontSize: 12,
       }}

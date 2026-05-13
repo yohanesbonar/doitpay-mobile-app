@@ -265,7 +265,7 @@ export const AuthEntry = ({ route }) => {
             setCurrentStep(2);
           },
           onError: (err) => {
-            console.error('error OTP request', err);
+            console.error('error registerRequestOTP', err);
             Toast.show({
               type: 'error',
               text1: err.message,
@@ -285,7 +285,7 @@ export const AuthEntry = ({ route }) => {
             setCurrentStep(2);
           },
           onError: (err) => {
-            console.error('error OTP request', err);
+            console.error('error loginRequestOTP', err);
             Toast.show({
               type: 'error',
               text1: err.message,
@@ -416,10 +416,10 @@ export const AuthEntry = ({ route }) => {
                 setCurrentStep(2);
               },
               onError: (err) => {
-                console.error('error OTP request', err);
+                console.error('error registerRequestOTP', err?.error?.message);
                 Toast.show({
                   type: 'error',
-                  text1: err.message,
+                  text1: err?.error?.message ?? '',
                 });
               },
             },
@@ -436,7 +436,7 @@ export const AuthEntry = ({ route }) => {
                 setCurrentStep(2);
               },
               onError: (err) => {
-                console.error('error OTP request', err);
+                console.error('error loginRequestOTP', err);
                 Toast.show({
                   type: 'error',
                   text1: err.message,
