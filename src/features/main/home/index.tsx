@@ -19,6 +19,7 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { EmailBottomsheet } from '@/components/molecules/EmailBottomsheet';
 import { storage, StorageKey } from '../../../storage/index.ts';
 import { CompleteAccountPopup } from '@/components/molecules/CompleteAccountPopup';
+import { useAuthStore } from '@/storage/useAuthStore.ts';
 
 interface HomeViewProps {
   goToSearchAccount: () => void;
@@ -34,6 +35,7 @@ export const HomeView = (props: HomeViewProps) => {
   const [isSheetMounted, setIsSheetMounted] = useState(false);
   const emailSheetRef = useRef<BottomSheetModal>(null);
   const [isAccountSheetMounted, setIsAccountSheetMounted] = useState(false);
+  const { isNewUser, setIsNewUser } = useAuthStore();
 
   const handleOpenEmailSheet = useCallback(() => {
     setIsSheetMounted(true);
@@ -44,10 +46,19 @@ export const HomeView = (props: HomeViewProps) => {
   }, []);
 
   useEffect(() => {
-    const hasShown = storage.getBoolean(StorageKey.HAS_SHOWN_COMPLETE_ACCOUNT_HOME);
+    console.log('isNewUser', isNewUser);
+    if (isNewUser) {
+      setIsNewUser(false);
+    }
+  }, [isNewUser]);
 
-    if (!hasShown) {
-      handleOpenAccountSheet();
+  useEffect(() => {
+    const hasShown = false;
+
+    if (!hasShown && isNewUser) {
+      setTimeout(() => {
+        handleOpenAccountSheet();
+      }, 500);
 
       storage.set(StorageKey.HAS_SHOWN_COMPLETE_ACCOUNT_HOME, true);
     }
