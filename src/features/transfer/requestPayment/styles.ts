@@ -60,7 +60,7 @@ export const createStyles = (colors: any) =>
     },
     footer: {
       padding: 24,
-      paddingBottom: 40,
+      paddingBottom: 30,
     },
     amountInput: {
       flex: 1,
