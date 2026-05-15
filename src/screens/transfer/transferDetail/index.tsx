@@ -11,7 +11,11 @@ const TransferDetailScreen = () => {
     navigation.goBack();
   };
 
-  const gotoPaymentInstruction = (paymentMethod: 'VA' | 'QRIS', amount: string) => {
+  const gotoPaymentInstruction = (
+    paymentMethod: 'VA' | 'QRIS',
+    amount: string,
+    transferData: any,
+  ) => {
     console.log('Navigating to Payment Instruction with:', {
       accountData,
       bankData,
@@ -20,6 +24,7 @@ const TransferDetailScreen = () => {
       method,
       paymentMethod,
       amount,
+      transferData,
     });
     navigation.navigate('PaymentInstruction', {
       accountData,
@@ -29,6 +34,7 @@ const TransferDetailScreen = () => {
       method,
       paymentMethod,
       amount,
+      transferData,
     });
   };
 

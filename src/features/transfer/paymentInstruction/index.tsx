@@ -1,18 +1,13 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  Share,
-  Alert,
-  Image,
-  TextInput,
-} from 'react-native';
+import React, { useRef, useState } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, Alert, Image, TextInput } from 'react-native';
 import { ChevronDown, Copy, Download, Share2 } from 'lucide-react-native';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import { styles } from './styles';
 import { formatNumber } from '@/utils/Common';
+import QRCode from 'react-native-qrcode-svg';
+import { CameraRoll } from '@react-native-camera-roll/camera-roll';
+import Share from 'react-native-share';
+import ViewShot from 'react-native-view-shot';
 
 interface PaymentInstructionViewProps {
   accountData?: {
@@ -26,6 +21,8 @@ interface PaymentInstructionViewProps {
   onPressBack: () => void;
   method?: 'receive' | 'pay';
   setNewAmount?: (val: string) => void;
+  transferData?: any;
+  receiveData?: any;
 }
 
 const PaymentInstructionView = ({
@@ -36,6 +33,8 @@ const PaymentInstructionView = ({
   onPressBack,
   method,
   setNewAmount,
+  transferData,
+  receiveData,
 }: PaymentInstructionViewProps) => {
   const [amount, setAmount] = useState(initialAmount || '');
 
@@ -44,6 +43,9 @@ const PaymentInstructionView = ({
   const accountNumber = accountData?.accountNumber || '123012932141293120';
   const isQris = paymentMethod === 'QRIS';
 
+  console.log('transferData ->>', transferData);
+  console.log('receiveData ->>', receiveData);
+
   const handleInputChange = (val: string) => {
     setNewAmount?.(val);
     setAmount(formatNumber(val));
@@ -51,14 +53,28 @@ const PaymentInstructionView = ({
 
   const handleCopy = () => Alert.alert('Sukses', 'Nomor VA berhasil disalin');
 
-  const handleShareQris = async () => {
+  const viewShotRef = useRef<any>(null);
+
+  const handleDownloadQris = async () => {
     try {
-      await Share.share({
-        message: `QRIS Pembayaran\n\nBank: ${bankName}\nPenerima: ${ownerName}\nJumlah: Rp ${amount}\n\nSilakan scan QR code ini untuk melakukan pembayaran.`,
+      const uri = await viewShotRef.current.capture();
+      await CameraRoll.saveAsset(uri, { type: 'photo' });
+      Alert.alert('Sukses', 'QRIS berhasil disimpan ke galeri');
+    } catch (error) {
+      Alert.alert('Gagal', 'Gagal menyimpan QRIS');
+    }
+  };
+
+  const handleShareQrisImage = async () => {
+    try {
+      const uri = await viewShotRef.current.capture();
+      await Share.open({
+        url: uri,
         title: 'Bagikan QRIS',
+        message: `QRIS Pembayaran sebesar Rp ${amount}`,
       });
     } catch (error) {
-      Alert.alert('Gagal', 'Gagal untuk membagikan QRIS');
+      console.log('Share error:', error);
     }
   };
 
@@ -79,31 +95,39 @@ const PaymentInstructionView = ({
                 <Text style={styles.qrisLabel}>Total pembayaran</Text>
                 <View style={styles.qrisAmountWrapper}>
                   <Text style={styles.qrisCurrency}>Rp</Text>
-                  <Text style={styles.qrisAmountText}>{formatNumber(amount)}</Text>
+                  <Text style={styles.qrisAmountText}>
+                    {formatNumber(receiveData?.amount ?? 0)}
+                  </Text>
                 </View>
                 <Text style={styles.qrisTarget}>
-                  Mengirim ke <Text style={styles.qrisTargetBoldText}>{ownerName}</Text>
+                  Mengirim ke{' '}
+                  <Text style={styles.qrisTargetBoldText} numberOfLines={3}>
+                    {ownerName}
+                  </Text>
                 </Text>
               </View>
             ) : (
               <View style={styles.recipientInfo}>
-                <Text style={styles.recipientName}>Yahya Rusdi</Text>
-                <Text style={styles.recipientId}>NMID: ID12312932103</Text>
+                <Text style={styles.recipientName}>{receiveData?.recipientName ?? ''}</Text>
+                <Text style={styles.recipientId}>{`NMID: ${receiveData?.nmid ?? ''}`}</Text>
               </View>
             )}
 
-            <View style={styles.qrCard}>
-              <Image
-                source={require('../../../assets/images/ic-qris-sample.png')}
-                style={{ width: 280, height: 280 }}
-                resizeMode="contain"
-              />
-              <Image
-                source={require('../../../assets/images/ic-qris.png')}
-                style={{ width: 80, height: 30, marginTop: 10 }}
-                resizeMode="contain"
-              />
-            </View>
+            <ViewShot
+              ref={viewShotRef}
+              options={{ format: 'png', quality: 1.0 }}
+              style={{ backgroundColor: 'white', padding: 20, borderRadius: 16 }} // Pastikan ada bg white
+            >
+              <View style={styles.qrCard}>
+                {receiveData?.qrString && <QRCode value={receiveData?.qrString ?? ''} size={280} />}
+
+                <Image
+                  source={require('../../../assets/images/ic-qris.png')}
+                  style={{ width: 80, height: 30, marginTop: 16 }}
+                  resizeMode="contain"
+                />
+              </View>
+            </ViewShot>
 
             {method === 'receive' && (
               <View style={styles.inputAmountWrapper}>
@@ -149,12 +173,12 @@ const PaymentInstructionView = ({
       </ScrollView>
       {(isQris || method === 'receive') && (
         <View style={styles.footer}>
-          <TouchableOpacity style={styles.outlineButton} onPress={handleShareQris}>
+          <TouchableOpacity style={styles.outlineButton} onPress={handleDownloadQris}>
             <Download size={18} color="#111827" style={{ marginRight: 8 }} />
             <Text style={styles.outlineButtonText}>Unduh Gambar QRIS</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.outlineButton} onPress={handleShareQris}>
+          <TouchableOpacity style={styles.outlineButton} onPress={handleShareQrisImage}>
             <Share2 size={18} color="#111827" style={{ marginRight: 8 }} />
             <Text style={styles.outlineButtonText}>Bagikan</Text>
           </TouchableOpacity>

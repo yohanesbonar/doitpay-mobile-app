@@ -2,9 +2,14 @@ import { CreateTransferResponse, transferApi, TransferPayload } from '@/api/tran
 import { useMutation } from '@tanstack/react-query';
 import Toast from 'react-native-toast-message';
 
+type TransferMutationVariables = {
+  payload: TransferPayload;
+  idempotencyKey?: string;
+};
+
 export const useTransfer = () => {
-  return useMutation<CreateTransferResponse, Error, TransferPayload>({
-    mutationFn: (payload) => transferApi.postTransfers(payload, 'xxxxx'),
+  return useMutation<CreateTransferResponse, Error, TransferMutationVariables>({
+    mutationFn: ({ payload, idempotencyKey }) => transferApi.postTransfers(payload, idempotencyKey),
     onSuccess: (data) => {
       console.log('useTransfer data.message:', data.message);
       console.log('useTransfer data', data);
@@ -17,8 +22,8 @@ export const useTransfer = () => {
 };
 
 export const useReceive = () => {
-  return useMutation<CreateTransferResponse, Error, TransferPayload>({
-    mutationFn: (payload) => transferApi.postReceive(payload, 'xxxxx'),
+  return useMutation<CreateTransferResponse, Error, TransferMutationVariables>({
+    mutationFn: ({ payload, idempotencyKey }) => transferApi.postReceive(payload, idempotencyKey),
     onSuccess: (data) => {
       console.log('useReceive data.message:', data.message);
       console.log('useReceive data', data);

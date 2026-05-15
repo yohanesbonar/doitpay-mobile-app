@@ -15,12 +15,14 @@ import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import Button from '../../../components/atoms/Button/index.tsx';
 import { formatNumber } from '@/utils/Common';
 import { useTranslation } from 'react-i18next';
+import { useReceive } from '@/hooks/useTransferMutation.ts';
+import Toast from 'react-native-toast-message';
 
 const QUICK_AMOUNTS = ['50000', '100000', '200000', '500000', '1000000', '2000000'];
 
 interface RequestPaymentViewProps {
   onPressBack: () => void;
-  onGenerateQR: (amount: string) => void;
+  onGenerateQR: (amount: string, receiveData: any) => void;
 }
 
 export const RequestPaymentView = ({ onPressBack, onGenerateQR }: RequestPaymentViewProps) => {
@@ -31,11 +33,39 @@ export const RequestPaymentView = ({ onPressBack, onGenerateQR }: RequestPayment
   const { t } = useTranslation();
 
   const isInputEmpty = amount === '';
+  const { mutate: postReceive, isPending: isLoadingReceive } = useReceive();
 
   const handleGenerateQR = () => {
-    if (!isErrorMinimumReached) {
-      onGenerateQR(amount);
-    }
+    let payload = {
+      amount: parseInt(amount),
+      payChannel: 'QRIS',
+      payMethod: 'QRIS',
+      remark: '',
+    };
+    console.log('payload', payload);
+    let idempotencyKey = new Date().getTime().toString();
+    postReceive(
+      {
+        payload,
+        idempotencyKey,
+      },
+      {
+        onSuccess: (data) => {
+          console.log('onSuccess ->> ', data);
+          if (!isErrorMinimumReached) {
+            let receiveData = data?.data ?? {};
+            onGenerateQR(amount, receiveData);
+          }
+        },
+        onError: (error) => {
+          console.error('error postReceive', error?.error?.message);
+          Toast.show({
+            type: 'error',
+            text1: error?.error?.message ?? '',
+          });
+        },
+      },
+    );
   };
 
   useEffect(() => {
@@ -107,6 +137,7 @@ export const RequestPaymentView = ({ onPressBack, onGenerateQR }: RequestPayment
                 color={colors.buttonBlue}
                 textStyle={{ color: colors.textWhite }}
                 sourceIcon={require('../../../assets/images/ic-qr-small-button.png')}
+                loading={isLoadingReceive}
               />
             </View>
           )}

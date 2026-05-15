@@ -9,8 +9,8 @@ const RequestPaymentScreen = () => {
     navigation.goBack();
   };
 
-  const handleGenerateQR = (amount: string) => {
-    navigation.navigate('PaymentInstruction', { amount, method: 'receive' });
+  const handleGenerateQR = (amount: string, receiveData: any) => {
+    navigation.navigate('PaymentInstruction', { amount, receiveData, method: 'receive' });
   };
 
   return <RequestPaymentView onPressBack={handleBack} onGenerateQR={handleGenerateQR} />;

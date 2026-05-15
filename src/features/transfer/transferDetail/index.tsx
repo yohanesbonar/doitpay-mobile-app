@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -27,7 +27,7 @@ interface TransferDetailViewProps {
   isLoginState: boolean;
   method: 'send' | 'receive';
   onPressBack: () => void;
-  gotoPaymentInstruction: (paymentMethod: 'VA' | 'QRIS', amount: string) => void;
+  gotoPaymentInstruction: (paymentMethod: 'VA' | 'QRIS', amount: string, transferData: any) => void;
 }
 
 const TransferDetailView = (props: TransferDetailViewProps) => {
@@ -52,9 +52,40 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
   const [methodPayment, setMethodPayment] = useState<'VA' | 'QRIS'>('VA');
+  const [bankPayment, setBankPayment] = useState({});
 
   const { mutate: postTransfer, isPending: isLoadingTransfer } = useTransfer();
-  const { mutate: postReceive, isPending: isLoadingReceive } = useReceive();
+
+  useEffect(() => {
+    console.log('bankPayment ->>>', bankPayment);
+  }, [bankPayment]);
+
+  const onPressConfirm = () => {
+    let payload = {
+      amount: parseInt(amount),
+      inquiryId: accountData?.id,
+      payChannel:
+        methodPayment == 'VA' ? bankPayment?.shortName + '_' + methodPayment : methodPayment,
+      payMethod: methodPayment,
+      remark: note,
+    };
+    let idempotencyKey = new Date().getTime().toString();
+    postTransfer(
+      {
+        payload,
+        idempotencyKey,
+      },
+      {
+        onSuccess: (data) => {
+          let transferData = data;
+          gotoPaymentInstruction(methodPayment, amount, transferData);
+        },
+        onError: (error) => {
+          console.error('Transfer gagal ->>> ', error);
+        },
+      },
+    );
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: '#FFF' }}>
@@ -122,7 +153,11 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
           onChangeText={setNote}
         />
 
-        <PaymentMethod selectedMethod={methodPayment} onSelect={(val) => setMethodPayment(val)} />
+        <PaymentMethod
+          selectedMethod={methodPayment}
+          onSelect={(val) => setMethodPayment(val)}
+          onSelectBank={(val) => setBankPayment(val)}
+        />
       </ScrollView>
 
       <View style={styles.footerOverlay}>
@@ -144,7 +179,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
           <TouchableOpacity
             style={[styles.confirmButton, !amount && styles.disabledButton]}
             disabled={!amount}
-            onPress={() => gotoPaymentInstruction(methodPayment, amount)}>
+            onPress={() => onPressConfirm()}>
             <Text style={{ color: '#FFF', fontFamily: 'Switzer-Bold', fontSize: 16 }}>
               Konfirmasi & Bayar
             </Text>

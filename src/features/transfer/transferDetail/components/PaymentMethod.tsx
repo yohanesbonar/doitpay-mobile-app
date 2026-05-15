@@ -14,15 +14,30 @@ interface BankOption {
 interface PaymentMethodProps {
   selectedMethod: 'VA' | 'QRIS';
   onSelect: (method: 'VA' | 'QRIS') => void;
+  onSelectBank: (data: any) => void;
 }
 
 const BANKS: BankOption[] = [
-  { id: 'bca', name: 'Bank Central Asia', image: require('../../../../assets/images/ic-BCA.png') },
-  { id: 'blu', name: 'Blu BCA Digital', image: require('../../../../assets/images/ic-BCA.png') },
+  {
+    id: '1',
+    shortName: 'BCA',
+    name: 'Bank Central Asia',
+    image: require('../../../../assets/images/ic-BCA.png'),
+  },
+  {
+    id: '2',
+    shortName: 'CIMB',
+    name: 'CIMB Digital',
+    image: require('../../../../assets/images/ic-CIMB.png'),
+  },
 ];
 
-const PaymentMethod: React.FC<PaymentMethodProps> = ({ selectedMethod, onSelect }) => {
-  const [selectedBank, setSelectedBank] = useState('bca');
+const PaymentMethod: React.FC<PaymentMethodProps> = ({
+  selectedMethod,
+  onSelect,
+  onSelectBank,
+}) => {
+  const [selectedBank, setSelectedBank] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
   const { colors } = useTheme();
@@ -131,7 +146,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({ selectedMethod, onSelect 
             return (
               <TouchableOpacity
                 key={bank.id}
-                onPress={() => setSelectedBank(bank.id)}
+                onPress={() => setSelectedBank(bank.id) + onSelectBank(bank)}
                 activeOpacity={0.8}
                 style={{
                   flexDirection: 'row',
