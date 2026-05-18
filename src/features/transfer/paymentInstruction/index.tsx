@@ -6,7 +6,6 @@ import {
   ScrollView,
   Alert,
   Image,
-  TextInput,
   PermissionsAndroid,
   Platform,
   Linking,
@@ -19,6 +18,7 @@ import QRCode from 'react-native-qrcode-svg';
 import { CameraRoll } from '@react-native-camera-roll/camera-roll';
 import Share from 'react-native-share';
 import ViewShot from 'react-native-view-shot';
+import Clipboard from '@react-native-clipboard/clipboard';
 
 interface PaymentInstructionViewProps {
   accountData?: {
@@ -34,6 +34,7 @@ interface PaymentInstructionViewProps {
   setNewAmount?: (val: string) => void;
   transferData?: any;
   receiveData?: any;
+  bankPayment?: any;
 }
 
 const PaymentInstructionView = ({
@@ -46,23 +47,20 @@ const PaymentInstructionView = ({
   setNewAmount,
   transferData,
   receiveData,
+  bankPayment,
 }: PaymentInstructionViewProps) => {
-  const [amount, setAmount] = useState(initialAmount || '');
+  const [amount, setAmount] = useState(initialAmount || 0);
 
-  const bankName = bankData?.name || 'Bank Central Asia';
-  const ownerName = accountData?.ownerName || 'Prabu Suwito';
-  const accountNumber = accountData?.accountNumber || '123012932141293120';
   const isQris = paymentMethod === 'QRIS';
 
   console.log('transferData ->>', transferData);
   console.log('receiveData ->>', receiveData);
+  console.log('bankPayment ->>', bankPayment);
 
-  const handleInputChange = (val: string) => {
-    setNewAmount?.(val);
-    setAmount(formatNumber(val));
+  const handleCopy = (text) => {
+    Clipboard.setString(text);
+    Alert.alert('Sukses', 'Nomor VA berhasil disalin');
   };
-
-  const handleCopy = () => Alert.alert('Sukses', 'Nomor VA berhasil disalin');
 
   const viewShotRef = useRef<any>(null);
 
@@ -174,18 +172,21 @@ const PaymentInstructionView = ({
               options={{ format: 'png', quality: 1.0 }}
               style={{ backgroundColor: 'white', padding: 20, borderRadius: 16 }}>
               {method !== 'receive' ? (
-                <View>
+                <View
+                  style={{
+                    alignItems: 'center',
+                  }}>
                   <Text style={styles.qrisLabel}>Total pembayaran</Text>
                   <View style={styles.qrisAmountWrapper}>
                     <Text style={styles.qrisCurrency}>Rp</Text>
                     <Text style={styles.qrisAmountText}>
-                      {formatNumber(receiveData?.amount ?? 0)}
+                      {formatNumber(transferData?.amount ?? 0)}
                     </Text>
                   </View>
                   <Text style={styles.qrisTarget}>
                     Mengirim ke{' '}
                     <Text style={styles.qrisTargetBoldText} numberOfLines={3}>
-                      {ownerName}
+                      {transferData?.recipientName ?? ''}
                     </Text>
                   </Text>
                 </View>
@@ -198,7 +199,9 @@ const PaymentInstructionView = ({
 
               <View style={styles.qrCard}>
                 {receiveData?.qrString && <QRCode value={receiveData?.qrString ?? ''} size={280} />}
-
+                {transferData?.qrString && (
+                  <QRCode value={transferData?.qrString ?? ''} size={280} />
+                )}
                 <Image
                   source={require('../../../assets/images/ic-qris.png')}
                   style={{ width: 80, height: 30, marginTop: 16 }}
@@ -218,16 +221,23 @@ const PaymentInstructionView = ({
           <View>
             <View style={styles.vaCard}>
               <View style={styles.vaHeader}>
-                <View style={styles.bankLogoPlaceholder}>
-                  <Text style={styles.bankInitial}>{bankName.toUpperCase().substring(0, 3)}</Text>
-                </View>
-                <Text style={styles.bankNameText}>{bankName}</Text>
+                <Image
+                  source={
+                    bankPayment?.shortName == 'BCA'
+                      ? require('../../../assets/images/ic-BCA.png')
+                      : require('../../../assets/images/ic-CIMB.png')
+                  }
+                  style={{ width: 64, height: 64, resizeMode: 'contain' }}
+                />
+                <Text style={styles.bankNameText}>{bankPayment?.name ?? ''}</Text>
               </View>
 
               <Text style={styles.vaLabel}>Nomor virtual account</Text>
               <View style={styles.vaNumberRow}>
-                <Text style={styles.vaNumberText}>{accountNumber}</Text>
-                <TouchableOpacity style={styles.copyBadge} onPress={handleCopy}>
+                <Text style={styles.vaNumberText}>{transferData?.vaNumber ?? ''}</Text>
+                <TouchableOpacity
+                  style={styles.copyBadge}
+                  onPress={() => handleCopy(transferData?.vaNumber)}>
                   <Copy size={14} color="#FFF" style={{ marginRight: 4 }} />
                   <Text style={styles.copyText}>Salin</Text>
                 </TouchableOpacity>

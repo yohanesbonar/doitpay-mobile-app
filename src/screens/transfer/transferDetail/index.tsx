@@ -5,7 +5,8 @@ import TransferDetailView from '../../../features/transfer/transferDetail';
 const TransferDetailScreen = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
-  const { accountData, bankData, fromTabBar, isLoginState, method } = (route.params || {}) as any;
+  const { accountData, bankData, fromTabBar, isLoginState, method, bankPayment } = (route.params ||
+    {}) as any;
 
   const handleBack = () => {
     navigation.goBack();
@@ -15,6 +16,7 @@ const TransferDetailScreen = () => {
     paymentMethod: 'VA' | 'QRIS',
     amount: string,
     transferData: any,
+    bankPayment: any,
   ) => {
     console.log('Navigating to Payment Instruction with:', {
       accountData,
@@ -25,6 +27,7 @@ const TransferDetailScreen = () => {
       paymentMethod,
       amount,
       transferData,
+      bankPayment,
     });
     navigation.navigate('PaymentInstruction', {
       accountData,
@@ -35,6 +38,7 @@ const TransferDetailScreen = () => {
       paymentMethod,
       amount,
       transferData,
+      bankPayment,
     });
   };
 
@@ -47,6 +51,7 @@ const TransferDetailScreen = () => {
       method={method}
       onPressBack={handleBack}
       gotoPaymentInstruction={gotoPaymentInstruction}
+      bankPayment={bankPayment}
     />
   );
 };

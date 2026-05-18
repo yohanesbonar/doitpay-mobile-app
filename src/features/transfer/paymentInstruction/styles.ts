@@ -8,7 +8,6 @@ export const styles = StyleSheet.create({
   scrollContent: {
     padding: 20,
   },
-  /* VA STYLES */
   vaCard: {
     backgroundColor: '#FFF',
     borderRadius: 12,
@@ -40,6 +39,7 @@ export const styles = StyleSheet.create({
     fontFamily: 'Switzer-Medium',
     fontSize: 16,
     color: '#111827',
+    marginLeft: 10
   },
   vaLabel: {
     fontFamily: 'Switzer-Regular',
@@ -61,16 +61,17 @@ export const styles = StyleSheet.create({
   },
   copyBadge: {
     flexDirection: 'row',
-    backgroundColor: '#3B82F6',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    backgroundColor: '#3475E8',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
     borderRadius: 20,
     alignItems: 'center',
   },
   copyText: {
     color: '#FFF',
     fontFamily: 'Switzer-Medium',
-    fontSize: 12,
+    fontSize: 14,
+    marginLeft: 4
   },
   vaAmountText: {
     fontFamily: 'Switzer-Regular',

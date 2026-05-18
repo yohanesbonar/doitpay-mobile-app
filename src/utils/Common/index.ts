@@ -30,6 +30,9 @@ export const handleLogout = () => {
 };
 
 export const formatNumber = (val: string) => {
+  if (typeof val !== 'string'){
+    val = val.toString()
+  }
   const cleanNumber = val.replace(/[^0-9]/g, '');
   if (cleanNumber === '') return '';
 

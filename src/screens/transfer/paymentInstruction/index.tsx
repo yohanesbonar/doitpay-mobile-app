@@ -16,6 +16,7 @@ const PaymentInstructionScreen = () => {
     amount,
     transferData,
     receiveData,
+    bankPayment,
   } = (route.params || {}) as any;
 
   console.log('PaymentInstructionScreen - Route Params:', {
@@ -66,6 +67,7 @@ const PaymentInstructionScreen = () => {
       setNewAmount={setAmount}
       transferData={transferData}
       receiveData={receiveData}
+      bankPayment={bankPayment}
     />
   );
 };

@@ -14,6 +14,8 @@ import QuickAmount from './components/QuickAmount';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import { formatNumber } from '@/utils/Common';
 import { useReceive, useTransfer } from '../../../hooks/useTransferMutation';
+import _ from 'lodash';
+import Button from '../../../components/atoms/Button/index.tsx';
 
 interface TransferDetailViewProps {
   accountData: {
@@ -27,7 +29,12 @@ interface TransferDetailViewProps {
   isLoginState: boolean;
   method: 'send' | 'receive';
   onPressBack: () => void;
-  gotoPaymentInstruction: (paymentMethod: 'VA' | 'QRIS', amount: string, transferData: any) => void;
+  gotoPaymentInstruction: (
+    paymentMethod: 'VA' | 'QRIS',
+    amount: string,
+    transferData: any,
+    bankPayment: any,
+  ) => void;
 }
 
 const TransferDetailView = (props: TransferDetailViewProps) => {
@@ -52,7 +59,8 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
   const [methodPayment, setMethodPayment] = useState<'VA' | 'QRIS'>('VA');
-  const [bankPayment, setBankPayment] = useState({});
+  const [bankPayment, setBankPayment] = useState(null);
+  const [isDisableConfirm, setIsDisableConfirm] = useState(true);
 
   const { mutate: postTransfer, isPending: isLoadingTransfer } = useTransfer();
 
@@ -77,8 +85,9 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
       },
       {
         onSuccess: (data) => {
-          let transferData = data;
-          gotoPaymentInstruction(methodPayment, amount, transferData);
+          let transferData = data?.data;
+          console.log('postTransfer onSuccess bankPayment', bankPayment);
+          gotoPaymentInstruction(methodPayment, amount, transferData, bankPayment);
         },
         onError: (error) => {
           console.error('Transfer gagal ->>> ', error);
@@ -86,6 +95,21 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
       },
     );
   };
+
+  useEffect(() => {
+    let isDisable = true;
+
+    if (methodPayment == 'QRIS' && !amount) {
+      isDisable = true;
+      console.log('a');
+    } else if (methodPayment == 'VA' && (_.isEmpty(bankPayment) || !amount)) {
+      isDisable = true;
+      console.log('b');
+    } else {
+      isDisable = false;
+    }
+    setIsDisableConfirm(isDisable);
+  }, [methodPayment, bankPayment, amount]);
 
   return (
     <View style={{ flex: 1, backgroundColor: '#FFF' }}>
@@ -176,14 +200,15 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
             </Text>
             <Text style={styles.totalText}>Rp {amount ? formatNumber(amount) : '0'}</Text>
           </View>
-          <TouchableOpacity
-            style={[styles.confirmButton, !amount && styles.disabledButton]}
-            disabled={!amount}
-            onPress={() => onPressConfirm()}>
-            <Text style={{ color: '#FFF', fontFamily: 'Switzer-Bold', fontSize: 16 }}>
-              Konfirmasi & Bayar
-            </Text>
-          </TouchableOpacity>
+          <Button
+            type="regular"
+            onPress={() => onPressConfirm()}
+            title="Konfirmasi & Bayar"
+            textStyle={{ color: '#FFF', fontFamily: 'Switzer-Bold', fontSize: 16 }}
+            style={[styles.confirmButton, isDisableConfirm && styles.disabledButton]}
+            disable={isDisableConfirm}
+            loading={isLoadingTransfer}
+          />
         </View>
       </View>
     </View>
