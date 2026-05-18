@@ -34,7 +34,7 @@ const SuccessBottomSheet = ({
 
   return (
     <Modal visible={isVisible} transparent animationType="slide" onRequestClose={onClose}>
-      <TouchableWithoutFeedback onPress={onClose}>
+      <TouchableWithoutFeedback onPress={() => {}}>
         <View style={styles.modalOverlay}>
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <View style={styles.bottomSheet}>

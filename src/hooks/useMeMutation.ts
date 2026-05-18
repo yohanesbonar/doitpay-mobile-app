@@ -31,3 +31,13 @@ export const useDeleteBankAccount = () => {
         }
     });
 }
+
+export const useGetProfile = () => {
+    return useMutation({
+        mutationFn: (payload) => bankAccountApi.getProfile(payload),
+        onSuccess: (data) => {
+            console.log('useGetProfile data.message:', data.message);
+            console.log('useGetProfile data', data);
+        },
+    });
+}

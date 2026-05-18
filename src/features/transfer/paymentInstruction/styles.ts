@@ -99,10 +99,8 @@ export const styles = StyleSheet.create({
     fontSize: 15,
     color: '#111827',
   },
-  /* QRIS STYLES */
   qrisContainer: {
     alignItems: 'center',
-    paddingTop: 20,
   },
   qrisLabel: {
     fontFamily: 'Switzer-Medium',
@@ -146,7 +144,7 @@ export const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
-    paddingTop: 40
+    paddingTop: 24
   },
   qrImagePlaceholder: {
     width: '100%',
@@ -224,7 +222,6 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     marginBottom: 24,
-    marginTop: -12
   },
   inputCurrencyPrefix: {
     fontFamily: 'Switzer-Bold',

@@ -12,6 +12,7 @@ import FastImage from 'react-native-fast-image';
 import { storage, StorageKey } from '@/storage/index.ts';
 import { CompleteAccountPopup } from '@/components/molecules/CompleteAccountPopup/index.tsx';
 import { useFocusEffect } from '@react-navigation/native';
+import { useGetProfile } from '@/hooks/useMeMutation.ts';
 
 interface BankListViewProps {
   onPressBack: () => void;
@@ -51,13 +52,37 @@ export const BankListView = ({
   const [activeTab, setActiveTab] = useState<'send' | 'receive'>('send');
   const [allBanks, setAllBanks] = useState<any[]>([]);
   const [popularBanks, setPopularBanks] = useState<any[]>([]);
+  const [isHasBankAccount, setIsHasBankAccount] = useState(false);
 
   const { mutate: mutateBanks, isPending: isPendingBank } = useBanks();
   const [isAccountSheetMounted, setIsAccountSheetMounted] = useState(false);
 
+  const { mutate: getProfile, isPending: isLoadingProfile } = useGetProfile();
+
   useFocusEffect(
     useCallback(() => {
       setActiveTab('send');
+    }, []),
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      getProfile(
+        {},
+        {
+          onSuccess: (data) => {
+            console.log('getProfile data', data);
+            if (!data?.data?.hasBankAccount && !fromProfile) {
+              setTimeout(() => {
+                handleOpenAccountSheet();
+              }, 500);
+            }
+          },
+          onError: (error) => {
+            console.log('getProfile error', error);
+          },
+        },
+      );
     }, []),
   );
 
@@ -85,9 +110,9 @@ export const BankListView = ({
       fromProfile,
     );
     if (!hasShown && !fromProfile) {
-      setTimeout(() => {
-        handleOpenAccountSheet();
-      }, 500);
+      // setTimeout(() => {
+      //   handleOpenAccountSheet();
+      // }, 500);
 
       storage.set(StorageKey.HAS_SHOWN_COMPLETE_ACCOUNT_BANK_LIST, true);
     }

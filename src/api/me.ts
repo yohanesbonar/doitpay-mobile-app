@@ -43,6 +43,26 @@ export type BankAccountDeleteResponse = {
     data: null;
 };
 
+export interface ProfilePayload {
+
+}
+
+export type ProfileResponse = {
+    status: string;
+    message: string;
+    data: {
+        createdAt: string;
+        email: string;
+        fullName: string;
+        hasBankAccount: boolean;
+        id: string;
+        isEmailVerified: boolean;
+        kycStatus: string;
+        phoneNumber: string;
+        status: string;
+        tier: Int16Array;
+    }
+}
 
 export const bankAccountApi = {
     getBankAccounts: async (): Promise<BankAccountResponse> => {
@@ -55,6 +75,10 @@ export const bankAccountApi = {
     },
     deleteBankAccount: async (payload: BankAccountDeletePayload): Promise<BankAccountDeleteResponse> => {
         const { data } = await apiClient.delete<BankAccountDeleteResponse>(`/v1/me/bankAccount/${payload.id}`);
+        return data;
+    },
+    getProfile: async (payload: ProfilePayload): Promise<ProfileResponse> => {
+        const { data } = await apiClient.get<ProfileResponse>('/v1/me');
         return data;
     }
 

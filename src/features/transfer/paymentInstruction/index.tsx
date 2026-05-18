@@ -1,5 +1,16 @@
 import React, { useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Alert, Image, TextInput } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+  Image,
+  TextInput,
+  PermissionsAndroid,
+  Platform,
+  Linking,
+} from 'react-native';
 import { ChevronDown, Copy, Download, Share2 } from 'lucide-react-native';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import { styles } from './styles';
@@ -55,13 +66,81 @@ const PaymentInstructionView = ({
 
   const viewShotRef = useRef<any>(null);
 
+  const hasAndroidPermission = async () => {
+    const getCheckPermission =
+      Platform.Version >= 33
+        ? PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES
+        : PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE;
+
+    const hasPermission = await PermissionsAndroid.check(getCheckPermission);
+    if (hasPermission) return true;
+
+    const status = await PermissionsAndroid.request(getCheckPermission);
+    return status === 'granted';
+  };
+
+  const openGalleryApp = async () => {
+    try {
+      if (Platform.OS === 'ios') {
+        const iosPhotosUrl = 'photos-redirect://';
+        const isSupported = await Linking.canOpenURL(iosPhotosUrl);
+
+        if (isSupported) {
+          await Linking.openURL(iosPhotosUrl);
+        } else {
+          await Linking.openURL('calshow://');
+        }
+      } else {
+        await Linking.openURL('content://media/internal/images/media');
+      }
+    } catch (error) {
+      console.log('Gagal membuka galeri otomatis:', error);
+      Alert.alert('Info', 'QRIS disimpan. Silakan buka aplikasi Galeri/Photos di HP kamu.');
+    }
+  };
+
   const handleDownloadQris = async () => {
     try {
       const uri = await viewShotRef.current.capture();
-      await CameraRoll.saveAsset(uri, { type: 'photo' });
-      Alert.alert('Sukses', 'QRIS berhasil disimpan ke galeri');
-    } catch (error) {
-      Alert.alert('Gagal', 'Gagal menyimpan QRIS');
+
+      let targetUri = uri;
+
+      if (Platform.OS === 'ios') {
+        if (uri.startsWith('file://')) {
+          targetUri = uri.replace('file://', '');
+        }
+
+        await CameraRoll.saveAsset(targetUri, { type: 'photo' });
+        Alert.alert('Sukses', 'QRIS berhasil disimpan ke Galeri Foto.', [
+          {
+            text: 'OK',
+            style: 'cancel',
+          },
+          {
+            text: 'Buka Galeri',
+            onPress: () => openGalleryApp(),
+          },
+        ]);
+      } else {
+        const hasPermission = await hasAndroidPermission();
+        if (!hasPermission) {
+          Alert.alert('Izin Ditolak', 'Aplikasi butuh izin akses galeri');
+          return;
+        }
+        await CameraRoll.saveAsset(targetUri, { type: 'photo' });
+        Alert.alert('Sukses', 'QRIS berhasil disimpan ke galeri');
+      }
+    } catch (error: any) {
+      console.error('Download error:', error);
+
+      if (Platform.OS === 'ios') {
+        Alert.alert(
+          'Gagal Menyimpan',
+          'Terjadi kendala pada Simulator iOS. Fitur ini berjalan normal di iPhone fisik dengan Info.plist yang sudah kamu konfigurasi.',
+        );
+      } else {
+        Alert.alert('Gagal', 'Gagal menyimpan QRIS ke galeri');
+      }
     }
   };
 
@@ -90,34 +169,33 @@ const PaymentInstructionView = ({
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {isQris || method === 'receive' ? (
           <View style={styles.qrisContainer}>
-            {method !== 'receive' ? (
-              <View>
-                <Text style={styles.qrisLabel}>Total pembayaran</Text>
-                <View style={styles.qrisAmountWrapper}>
-                  <Text style={styles.qrisCurrency}>Rp</Text>
-                  <Text style={styles.qrisAmountText}>
-                    {formatNumber(receiveData?.amount ?? 0)}
-                  </Text>
-                </View>
-                <Text style={styles.qrisTarget}>
-                  Mengirim ke{' '}
-                  <Text style={styles.qrisTargetBoldText} numberOfLines={3}>
-                    {ownerName}
-                  </Text>
-                </Text>
-              </View>
-            ) : (
-              <View style={styles.recipientInfo}>
-                <Text style={styles.recipientName}>{receiveData?.recipientName ?? ''}</Text>
-                <Text style={styles.recipientId}>{`NMID: ${receiveData?.nmid ?? ''}`}</Text>
-              </View>
-            )}
-
             <ViewShot
               ref={viewShotRef}
               options={{ format: 'png', quality: 1.0 }}
-              style={{ backgroundColor: 'white', padding: 20, borderRadius: 16 }} // Pastikan ada bg white
-            >
+              style={{ backgroundColor: 'white', padding: 20, borderRadius: 16 }}>
+              {method !== 'receive' ? (
+                <View>
+                  <Text style={styles.qrisLabel}>Total pembayaran</Text>
+                  <View style={styles.qrisAmountWrapper}>
+                    <Text style={styles.qrisCurrency}>Rp</Text>
+                    <Text style={styles.qrisAmountText}>
+                      {formatNumber(receiveData?.amount ?? 0)}
+                    </Text>
+                  </View>
+                  <Text style={styles.qrisTarget}>
+                    Mengirim ke{' '}
+                    <Text style={styles.qrisTargetBoldText} numberOfLines={3}>
+                      {ownerName}
+                    </Text>
+                  </Text>
+                </View>
+              ) : (
+                <View style={styles.recipientInfo}>
+                  <Text style={styles.recipientName}>{receiveData?.recipientName ?? ''}</Text>
+                  <Text style={styles.recipientId}>{`NMID: ${receiveData?.nmid ?? ''}`}</Text>
+                </View>
+              )}
+
               <View style={styles.qrCard}>
                 {receiveData?.qrString && <QRCode value={receiveData?.qrString ?? ''} size={280} />}
 
@@ -127,14 +205,14 @@ const PaymentInstructionView = ({
                   resizeMode="contain"
                 />
               </View>
-            </ViewShot>
 
-            {method === 'receive' && (
-              <View style={styles.inputAmountWrapper}>
-                <Text style={styles.inputCurrencyPrefix}>Rp</Text>
-                <Text style={[styles.amountText]}>{formatNumber(amount)}</Text>
-              </View>
-            )}
+              {method === 'receive' && (
+                <View style={styles.inputAmountWrapper}>
+                  <Text style={styles.inputCurrencyPrefix}>Rp</Text>
+                  <Text style={[styles.amountText]}>{formatNumber(amount)}</Text>
+                </View>
+              )}
+            </ViewShot>
           </View>
         ) : (
           <View>
