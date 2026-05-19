@@ -7,7 +7,8 @@ export const createStyles = (colors: any) =>
       backgroundColor: colors.white,
     },
     content: {
-      padding: 24,
+      paddingVertical: 24,
+      paddingHorizontal: 16,
       flex: 1,
     },
     title: {
