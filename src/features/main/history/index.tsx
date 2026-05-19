@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { View, Text, SectionList, TouchableOpacity, Image } from 'react-native';
+import React, { useState, useMemo, useRef } from 'react';
+import { View, Text, SectionList, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../../theme/ThemeProvider';
 import { createStyles } from './styles';
@@ -13,6 +13,8 @@ import { DateBottomSheet } from '@/components/molecules/DateBottomsheet';
 import { Calendar, Navigation, X } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
+import { useGetTransactionHistoriesQuery } from './hooks/useGetTransactionHistoriesQuery';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 
 const DATA_MOCK = [
   {
@@ -93,10 +95,24 @@ export const History = () => {
   const navigation = useNavigation<any>();
   const { t } = useTranslation();
 
+  const filterSheetRef = useRef<BottomSheetModal>(null);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilter, setShowFilter] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [data, setData] = useState(DATA_MOCK);
+
+  const {
+    data: transactionHistoriesData,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useGetTransactionHistoriesQuery();
+
+  const transactionHistories = transactionHistoriesData?.pages.flatMap(
+    (page) => page?.result?.data ?? [],
+  );
 
   const initialFilters = {
     paymentType: 'Semua',
@@ -221,16 +237,27 @@ export const History = () => {
           }}
           stickySectionHeadersEnabled={false}
           showsVerticalScrollIndicator={false}
-          ListEmptyComponent={() => (
-            <View style={styles.emptyState}>
-              <Image
-                source={require('../../../assets/images/ic-empty-history.png')}
-                style={{ width: 191, height: 208, resizeMode: 'contain' }}
-              />
-              <Text style={styles.emptyText}>{t('history.transactionNotFound')}</Text>
-              <Text style={styles.emptyTextDesc}>{t('history.descTransactionNotFound')}</Text>
-            </View>
-          )}
+          onEndReached={() => {
+            if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+          }}
+          onEndReachedThreshold={0.3}
+          ListFooterComponent={
+            isFetchingNextPage ? <ActivityIndicator style={{ marginVertical: 16 }} /> : null
+          }
+          ListEmptyComponent={() =>
+            isLoading ? (
+              <ActivityIndicator style={{ marginTop: 40 }} />
+            ) : (
+              <View style={styles.emptyState}>
+                <Image
+                  source={require('../../../assets/images/ic-empty-history.png')}
+                  style={{ width: 191, height: 208, resizeMode: 'contain' }}
+                />
+                <Text style={styles.emptyText}>{t('history.transactionNotFound')}</Text>
+                <Text style={styles.emptyTextDesc}>{t('history.descTransactionNotFound')}</Text>
+              </View>
+            )
+          }
         />
 
         <FilterBottomSheet

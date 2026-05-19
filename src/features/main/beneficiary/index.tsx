@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { View, Text, TouchableOpacity, FlatList, Image } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, FlatList, Image, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../../theme/ThemeProvider';
 import { createStyles } from './styles';
@@ -8,46 +8,46 @@ import { SearchBar } from '@/components/molecules/SearchBar';
 import BeneficiaryItem from './components/BeneficiaryItem';
 import { handleLogout } from '@/utils/Common';
 import { useTranslation } from 'react-i18next';
+import { useGetBeneficiariesQuery } from './hooks/useGetBeneficiariesQuery';
+import { useUpdateBeneficieryMutation } from './hooks/useUpdateBeneficieryMutation';
+import { BeneficiaryListSkeleton } from './components/BeneficiaryItemSkeleton';
+import { useDebounce } from '@/utils/hooks/useDebounce';
+import { Beneficiary as BeneficiaryType } from './types';
 
-const DATA_BENEFICIARY = [
-  { id: '1', name: 'Joni Wahyu', bank: 'BCA', accountNumber: '7453023301', isFavorite: true },
-  { id: '2', name: 'Silvester', bank: 'BCA', accountNumber: '987654738', isFavorite: true },
-  { id: '3', name: 'Bonar', bank: 'BCA', accountNumber: '9389476372', isFavorite: true },
-  { id: '4', name: 'Joshua', bank: 'BCA', accountNumber: '0974576294', isFavorite: true },
-  { id: '5', name: 'Jordan', bank: 'BCA', accountNumber: '03874924', isFavorite: true },
-  { id: '6', name: 'Kunto', bank: 'BCA', accountNumber: '132323', isFavorite: false },
-  { id: '7', name: 'Jessica', bank: 'BCA', accountNumber: '5433123', isFavorite: false },
-  { id: '8', name: 'Jocelline', bank: 'BCA', accountNumber: '5435243', isFavorite: false },
-];
+const BeneficiaryItemRow = ({ item }: { item: BeneficiaryType }) => {
+  const { mutate: updateBeneficiary } = useUpdateBeneficieryMutation(item.id);
+
+  return (
+    <BeneficiaryItem
+      item={item}
+      onFavoritePress={() => updateBeneficiary({ isFavorite: !item.isFavorite })}
+    />
+  );
+};
 
 export const Beneficiary = () => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const { t } = useTranslation();
 
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const debouncedSearch = useDebounce(searchQuery);
+
   const [activeTab, setActiveTab] = useState<'Favorit' | 'Semua'>('Favorit');
 
-  const [beneficiaries, setBeneficiaries] = useState(DATA_BENEFICIARY);
+  const {
+    data: beneficiaryData,
+    isLoading,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  } = useGetBeneficiariesQuery({
+    isFavorite: activeTab === 'Favorit' ? true : undefined,
+    search: debouncedSearch || undefined,
+  });
 
-  const toggleFavorite = (id: string) => {
-    setBeneficiaries((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, isFavorite: !item.isFavorite } : item)),
-    );
-  };
-
-  const filteredData = useMemo(() => {
-    return beneficiaries.filter((item) => {
-      const matchesSearch =
-        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.accountNumber.includes(searchQuery);
-
-      if (activeTab === 'Favorit') {
-        return matchesSearch && item.isFavorite;
-      }
-      return matchesSearch;
-    });
-  }, [searchQuery, activeTab, beneficiaries]);
+  const parsedBeneficiaries =
+    beneficiaryData?.pages.flatMap((page) => page?.data?.items ?? []) ?? [];
 
   return (
     <SafeAreaView style={styles.safeAreaContainer}>
@@ -59,49 +59,53 @@ export const Beneficiary = () => {
           </TouchableOpacity>
         </View>
 
-        {beneficiaries?.length > 0 && (
-          <View>
-            <View style={styles.searchContainer}>
-              <SearchBar
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                placeholder={t('beneficiary.search')}
-              />
-            </View>
-
-            <View style={styles.tabContainer}>
-              {['Favorit', 'Semua'].map((tab) => (
-                <TouchableOpacity
-                  key={tab}
-                  style={[styles.tabButton, activeTab === tab && styles.activeTabButton]}
-                  onPress={() => setActiveTab(tab as any)}>
-                  <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
-                    {tab}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-        )}
-
-        <FlatList
-          data={filteredData}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <BeneficiaryItem
-              item={item}
-              onPress={() => console.log('Transfer to:', item.name)}
-              onFavoritePress={() => toggleFavorite(item.id)}
+        <View>
+          <View style={styles.searchContainer}>
+            <SearchBar
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              placeholder={t('beneficiary.search')}
             />
-          )}
+          </View>
+
+          <View style={styles.tabContainer}>
+            {['Favorit', 'Semua'].map((tab) => (
+              <TouchableOpacity
+                key={tab}
+                style={[styles.tabButton, activeTab === tab && styles.activeTabButton]}
+                onPress={() => setActiveTab(tab as any)}>
+                <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
+                  {tab}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        {isLoading ? (
+          <BeneficiaryListSkeleton />
+        ) : (
+        <FlatList
+          data={parsedBeneficiaries}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => <BeneficiaryItemRow item={item} />}
           contentContainerStyle={[
             styles.listContent,
             {
-              backgroundColor: beneficiaries.length == 0 ? '#FFF' : colors.pageBackground,
-              paddingTop: beneficiaries.length > 0 ? 12 : 0,
+              backgroundColor: parsedBeneficiaries.length === 0 ? '#FFF' : colors.pageBackground,
+              paddingTop: parsedBeneficiaries.length > 0 ? 12 : 0,
             },
           ]}
           showsVerticalScrollIndicator={false}
+          onEndReached={() => {
+            if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+          }}
+          onEndReachedThreshold={0.3}
+          ListFooterComponent={
+            isFetchingNextPage ? (
+              <ActivityIndicator size="small" color="#4F84F6" style={{ paddingVertical: 16 }} />
+            ) : null
+          }
           ListEmptyComponent={() => (
             <View style={styles.emptyState}>
               <Image
@@ -113,6 +117,7 @@ export const Beneficiary = () => {
             </View>
           )}
         />
+        )}
       </View>
     </SafeAreaView>
   );

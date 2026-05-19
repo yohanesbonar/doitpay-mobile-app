@@ -68,10 +68,23 @@ export const createStyles = (colors: any) =>
       paddingVertical: 4,
       borderRadius: 8,
     },
+    unverifiedBadge: {
+      backgroundColor: '#F5F5F5',
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 8,
+      borderColor: '#E5E5E5',
+      borderWidth: 1,
+    },
     verifiedText: {
       fontSize: 12,
       fontFamily: 'Switzer-Medium',
       color: '#4CAF50',
+    },
+    unverifiedText: {
+      fontSize: 12,
+      fontFamily: 'Switzer-Medium',
+      color: '#0A0A0A',
     },
     tierCard: {
       padding: 16,
@@ -79,7 +92,7 @@ export const createStyles = (colors: any) =>
       borderWidth: 1,
       borderColor: '#E5E5E5',
       marginBottom: 24,
-      marginHorizontal: 24
+      marginHorizontal: 24,
     },
     tierHeader: {
       flexDirection: 'row',
@@ -93,17 +106,17 @@ export const createStyles = (colors: any) =>
     },
     tierValue: {
       fontSize: 14,
-      fontFamily: 'Switzer-Bold',
+      fontFamily: 'Switzer-Medium',
       color: '#1A1A1A',
     },
     limitValue: {
       fontSize: 14,
-      fontFamily: 'Switzer-Bold',
+      fontFamily: 'Switzer-Medium',
       color: '#4F84F6',
     },
     menuSection: {
       marginTop: 8,
-      marginHorizontal: 24
+      marginHorizontal: 24,
     },
     logoutButton: {
       marginHorizontal: 24,

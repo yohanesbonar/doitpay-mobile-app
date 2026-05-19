@@ -7,11 +7,16 @@ import { Beneficiary } from '../../features/main/beneficiary';
 import { Profile } from '../../features/main/profile';
 import CustomTabBar from '../../components/molecules/CustomTabBar/index';
 import { useTranslation } from 'react-i18next';
+import { useGetProfileMeQuery } from '@/features/user/hooks/useGetProfileMeQuery';
+import { useGetLimitMeQuery } from '@/features/user/hooks/useGetLimitMeQuery';
 
 const Tab = createBottomTabNavigator();
 
 export default function MainTabNavigator() {
   const { t } = useTranslation();
+  useGetProfileMeQuery();
+  useGetLimitMeQuery();
+
   return (
     <Tab.Navigator
       tabBar={(props) => <CustomTabBar {...props} />}

@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Switch, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, ChevronRight, Globe, Clock } from 'lucide-react-native';
+import { ChevronLeft, Globe, Clock } from 'lucide-react-native';
 import { SettingItem } from '@/components/molecules/SettingsItem';
+import DeviceInfo from 'react-native-device-info';
+import { TermsAndConditionContent } from './components/TermsAndConditionContent';
+import { PrivacyAndPolicyContent } from './components/PrivacyAndPolicyContent';
 
 export const Settings = ({ navigation }: any) => {
+  const appVersion = DeviceInfo.getVersion();
+
   const [notifStates, setNotifStates] = useState({
     general: true,
     payment: true,
@@ -12,59 +17,69 @@ export const Settings = ({ navigation }: any) => {
     promo: true,
   });
 
+  const [openTnc, setOpenTnc] = useState<boolean>(false);
+  const [openPnp, setOpenPnp] = useState<boolean>(false);
+
   const toggleSwitch = (key: keyof typeof notifStates) => {
     setNotifStates((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <ChevronLeft size={24} color="#1A1A1A" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Pengaturan</Text>
-      </View>
+      {!openTnc && !openPnp && (
+        <>
+          <View style={styles.header}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+              <ChevronLeft size={24} color="#1A1A1A" />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>Pengaturan</Text>
+          </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
-        <Text style={styles.sectionTitle}>UMUM</Text>
-        <SettingItem title="Bahasa" sub="Bahasa Indonesia" icon={Globe} />
-        <SettingItem title="Zona Waktu" sub="WIB (GMT+7)" icon={Clock} />
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
+            <Text style={styles.sectionTitle}>UMUM</Text>
+            <SettingItem title="Bahasa" sub="Bahasa Indonesia" icon={Globe} />
+            <SettingItem title="Zona Waktu" sub="WIB (GMT+7)" icon={Clock} />
 
-        <Text style={[styles.sectionTitle, { marginTop: 24 }]}>NOTIFIKASI</Text>
-        <SettingItem
-          title="General Notification"
-          sub="Notifikasi transfer & keamanan"
-          type="switch"
-          value={notifStates.general}
-          onPress={() => toggleSwitch('general')}
-        />
-        <SettingItem
-          title="Notifikasi Pembayaran"
-          sub="VA diterima & Transfer selesai"
-          type="switch"
-          value={notifStates.payment}
-          onPress={() => toggleSwitch('payment')}
-        />
-        <SettingItem
-          title="Pengingat Transfer"
-          sub="Reminder jika VA belum dibayar"
-          type="switch"
-          value={notifStates.transfer}
-          onPress={() => toggleSwitch('transfer')}
-        />
-        <SettingItem
-          title="Tips & Promosi"
-          sub="Tips penggunaan & penawaran"
-          type="switch"
-          value={notifStates.promo}
-          onPress={() => toggleSwitch('promo')}
-        />
+            <Text style={[styles.sectionTitle, { marginTop: 24 }]}>NOTIFIKASI</Text>
+            <SettingItem
+              title="General Notification"
+              sub="Notifikasi transfer & keamanan"
+              type="switch"
+              value={notifStates.general}
+              onPress={() => toggleSwitch('general')}
+            />
+            <SettingItem
+              title="Notifikasi Pembayaran"
+              sub="VA diterima & Transfer selesai"
+              type="switch"
+              value={notifStates.payment}
+              onPress={() => toggleSwitch('payment')}
+            />
+            <SettingItem
+              title="Pengingat Transfer"
+              sub="Reminder jika VA belum dibayar"
+              type="switch"
+              value={notifStates.transfer}
+              onPress={() => toggleSwitch('transfer')}
+            />
+            <SettingItem
+              title="Tips & Promosi"
+              sub="Tips penggunaan & penawaran"
+              type="switch"
+              value={notifStates.promo}
+              onPress={() => toggleSwitch('promo')}
+            />
 
-        <Text style={[styles.sectionTitle, { marginTop: 24 }]}>TENTANG</Text>
-        <SettingItem title="Syarat & Ketentuan" />
-        <SettingItem title="Kebijakan Privasi" />
-        <SettingItem title="Versi Aplikasi" sub="1.0" />
-      </ScrollView>
+            <Text style={[styles.sectionTitle, { marginTop: 24 }]}>TENTANG</Text>
+            <SettingItem onPress={() => setOpenTnc(true)} title="Syarat & Ketentuan" />
+            <SettingItem onPress={() => setOpenPnp(true)} title="Kebijakan Privasi" />
+            <SettingItem title="Versi Aplikasi" sub={appVersion} />
+          </ScrollView>
+        </>
+      )}
+
+      {openTnc && <TermsAndConditionContent onClose={() => setOpenTnc(false)} />}
+      {openPnp && <PrivacyAndPolicyContent onClose={() => setOpenPnp(false)} />}
     </SafeAreaView>
   );
 };

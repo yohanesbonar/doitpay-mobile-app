@@ -8,11 +8,23 @@ import ProfileMenuItem from './components/ProfileMenuItem';
 import { useNavigation } from '@react-navigation/native';
 import { handleLogout } from '@/utils/Common';
 import { IconNotification } from '@/assets/icons';
+import { useGetProfileMeQuery } from '@/features/user/hooks/useGetProfileMeQuery';
+import { ProfileCard } from './components/ProfileCard';
+import { KycCard } from './components/KycCard';
+import { ProfileCardSkeleton } from './components/ProfileCardSkeleton';
+import { KycCardSkeleton } from './components/KycCardSkeleton';
+import { useGetLimitMeQuery } from '@/features/user/hooks/useGetLimitMeQuery';
+import { UserLimitType } from '@/features/user/types';
 
 export const Profile = () => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const navigation = useNavigation<any>();
+
+  const { data: profileData, isLoading: loadingProfile } = useGetProfileMeQuery();
+  const { data: limitData, isLoading: loadingLimit } = useGetLimitMeQuery();
+
+  const isLoading = loadingProfile || loadingLimit;
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -23,29 +35,21 @@ export const Profile = () => {
         </TouchableOpacity>
       </View>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        <View style={styles.userCard}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>PS</Text>
-          </View>
-          <View style={styles.userInfo}>
-            <Text style={styles.userName}>Prabu Suwito</Text>
-            <Text style={styles.userPhone}>+62731802312931</Text>
-          </View>
-          <View style={styles.verifiedBadge}>
-            <Text style={styles.verifiedText}>Terverifikasi</Text>
-          </View>
-        </View>
-
-        <View style={styles.tierCard}>
-          <View style={styles.tierHeader}>
-            <Text style={styles.tierLabel}>Tier</Text>
-            <Text style={styles.tierLabel}>Limit Harian</Text>
-          </View>
-          <View style={styles.tierHeader}>
-            <Text style={styles.tierValue}>KYC Verified</Text>
-            <Text style={styles.limitValue}>Rp 25,000,000</Text>
-          </View>
-        </View>
+        {isLoading || !profileData ? (
+          <ProfileCardSkeleton />
+        ) : (
+          <ProfileCard {...profileData.data} />
+        )}
+        {isLoading || !profileData || !limitData ? (
+          <KycCardSkeleton />
+        ) : (
+          <KycCard
+            limitAmount={
+              limitData.data.items?.find((i) => i.type === UserLimitType.TRANSFER)?.amountLimit || 0
+            }
+            kycStatus={profileData.data.kycStatus}
+          />
+        )}
 
         <View style={styles.menuSection}>
           <ProfileMenuItem
