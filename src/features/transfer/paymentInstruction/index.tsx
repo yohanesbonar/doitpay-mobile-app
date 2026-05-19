@@ -125,8 +125,19 @@ const PaymentInstructionView = ({
           Alert.alert('Izin Ditolak', 'Aplikasi butuh izin akses galeri');
           return;
         }
+
         await CameraRoll.saveAsset(targetUri, { type: 'photo' });
-        Alert.alert('Sukses', 'QRIS berhasil disimpan ke galeri');
+
+        Alert.alert('Sukses', 'QRIS berhasil disimpan ke Galeri Foto.', [
+          {
+            text: 'OK',
+            style: 'cancel',
+          },
+          {
+            text: 'Buka Galeri',
+            onPress: () => openGalleryApp(),
+          },
+        ]);
       }
     } catch (error: any) {
       console.error('Download error:', error);
