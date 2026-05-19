@@ -136,7 +136,7 @@ export const BankListView = ({
     setActiveTab('receive');
     setTimeout(() => {
       goToRequestPayment();
-    }, 700);
+    }, 300);
   };
 
   return (
