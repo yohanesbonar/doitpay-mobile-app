@@ -1,8 +1,10 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, ScrollView, Image } from 'react-native';
 import { Inbox, Scan, Send, CheckCircle2 } from 'lucide-react-native';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import { styles } from './styles';
+
+const stepsOrder = ['received', 'verifying', 'sending', 'done'] as const;
 
 interface TransferProcessingViewProps {
   accountData?: {
@@ -37,13 +39,19 @@ const TransferProcessingView = ({
   bankData,
   amount,
   paymentMethod,
-  currentStep = 'received',
+  // currentStep = 'received', temporary comment
   onPressBack,
   onFinish,
 }: TransferProcessingViewProps) => {
   console.log('currentStep:', currentStep);
   console.log('statusTextMap[currentStep]:', statusTextMap[currentStep]);
-  const bankName = bankData?.name;
+
+  // state local for temporary waiting for api ready
+  const [currentStep, setCurrentStep] = useState<'received' | 'verifying' | 'sending' | 'done'>(
+    'received',
+  );
+
+  const bankName = bankData?.name || 'Bank Central Asia';
   const ownerName = accountData?.name || 'Prabu Suwito';
   const formattedAmount = amount;
 
@@ -53,6 +61,33 @@ const TransferProcessingView = ({
   );
   const ActiveIcon = stepLabels[currentStepIndex]?.Icon || Inbox;
 
+  // temporary comment waiting for api ready
+  // useEffect(() => {
+  //   if (currentStep === 'done' && onFinish) {
+  //     const timer = setTimeout(() => {
+  //       onFinish();
+  //     }, 1500);
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [currentStep, onFinish]);
+
+  useEffect(() => {
+    if (currentStepIndex < stepsOrder.length - 1) {
+      const stepTimer = setTimeout(() => {
+        setCurrentStep(stepsOrder[currentStepIndex + 1]);
+      }, 2000);
+
+      return () => clearTimeout(stepTimer);
+    }
+
+    if (currentStep === 'done' && onFinish) {
+      const finishTimer = setTimeout(() => {
+        onFinish();
+      }, 1500);
+      return () => clearTimeout(finishTimer);
+    }
+  }, [currentStep, currentStepIndex, onFinish]);
+
   return (
     <View style={styles.container}>
       <HeaderToolbar title="" titlePosition="left" />
@@ -60,9 +95,7 @@ const TransferProcessingView = ({
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.topInfo}>
           <View style={styles.bankRow}>
-            <View style={styles.bankLogoPlaceholder}>
-              <Text style={styles.bankInitial}>BCA</Text>
-            </View>
+            <Image source={require('../../../assets/images/ic-BCA.png')} style={styles.bankLogo} />
             <Text style={styles.bankNameText}>{bankName}</Text>
           </View>
 
@@ -74,36 +107,41 @@ const TransferProcessingView = ({
 
         <View style={styles.iconVisualContainer}>
           <View style={styles.iconCircle}>
-            <ActiveIcon size={32} color="#FFF" />
+            <ActiveIcon size={32} color="#3B82F6" />
           </View>
         </View>
 
         <View style={styles.stepperWrapper}>
-          <View style={styles.stepperRow}>
+          <View style={styles.progressLineContainer}>
             {stepLabels.map((step, index) => (
-              <View key={step.key} style={styles.stepColumn}>
-                <View
-                  style={[
-                    styles.progressSegment,
-                    index <= currentStepIndex ? styles.segmentActive : styles.segmentInactive,
-                  ]}
-                />
-                <Text
-                  style={[
-                    styles.stepLabel,
-                    index === currentStepIndex ? styles.labelActive : styles.labelInactive,
-                  ]}>
-                  {step.label}
-                </Text>
-              </View>
+              <View
+                key={`line-${step.key}`}
+                style={[
+                  styles.progressSegment,
+                  index <= currentStepIndex ? styles.segmentActive : styles.segmentInactive,
+                ]}
+              />
             ))}
           </View>
-        </View>
 
-        <View style={styles.statusBadgeContainer}>
-          <View style={styles.statusBadge}>
-            <View style={styles.blueDot} />
-            <Text style={styles.statusBadgeText}>{statusTextMap[currentStep]}</Text>
+          <View style={styles.labelContainer}>
+            {stepLabels.map((step, index) => (
+              <Text
+                key={`label-${step.key}`}
+                style={[
+                  styles.stepLabel,
+                  index === currentStepIndex ? styles.labelActive : styles.labelInactive,
+                ]}>
+                {step.label}
+              </Text>
+            ))}
+          </View>
+
+          <View style={styles.statusBadgeContainer}>
+            <View style={styles.statusBadge}>
+              <View style={styles.blueDot} />
+              <Text style={styles.statusBadgeText}>{statusTextMap[currentStep]}</Text>
+            </View>
           </View>
         </View>
       </ScrollView>

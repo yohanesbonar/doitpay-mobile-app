@@ -32,27 +32,25 @@ const PaymentInstructionScreen = () => {
     navigation.goBack();
   };
 
-  // setTimeout(
-  //   () => {
-  //     method !== 'receive'
-  //       ? navigation.navigate('TransferProcessing', {
-  //           accountData,
-  //           bankData,
-  //           amount,
-  //           paymentMethod,
-  //           currentStep: 'received',
-  //         })
-  //       : navigation.navigate('PaymentReceipt', {
-  //           accountData,
-  //           bankData,
-  //           paymentMethod,
-  //           amount: newAmount,
-  //           transactionId: 'TRX0123123',
-  //           dateTime: '12 February 2026 10:30:20',
-  //         });
-  //   },
-  //   method !== 'receive' ? 5000 : 8000,
-  // );
+  const holdTemporary = () => {
+    if (method !== 'receive')
+      navigation.navigate('TransferProcessing', {
+        accountData,
+        bankData,
+        amount,
+        paymentMethod,
+        currentStep: 'received',
+      });
+    else
+      navigation.navigate('PaymentReceipt', {
+        accountData,
+        bankData,
+        paymentMethod,
+        amount: newAmount,
+        transactionId: 'TRX0123123',
+        dateTime: '12 February 2026 10:30:20',
+      });
+  };
 
   return (
     <PaymentInstructionView
@@ -68,6 +66,7 @@ const PaymentInstructionScreen = () => {
       transferData={transferData}
       receiveData={receiveData}
       bankPayment={bankPayment}
+      holdTemporary={holdTemporary}
     />
   );
 };

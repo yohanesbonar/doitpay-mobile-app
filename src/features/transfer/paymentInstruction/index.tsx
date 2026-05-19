@@ -35,6 +35,7 @@ interface PaymentInstructionViewProps {
   transferData?: any;
   receiveData?: any;
   bankPayment?: any;
+  holdTemporary: () => void;
 }
 
 const PaymentInstructionView = ({
@@ -48,6 +49,7 @@ const PaymentInstructionView = ({
   transferData,
   receiveData,
   bankPayment,
+  holdTemporary,
 }: PaymentInstructionViewProps) => {
   const [amount, setAmount] = useState(initialAmount || 0);
 
@@ -248,7 +250,8 @@ const PaymentInstructionView = ({
                 <Text style={styles.vaNumberText}>{transferData?.vaNumber ?? ''}</Text>
                 <TouchableOpacity
                   style={styles.copyBadge}
-                  onPress={() => handleCopy(transferData?.vaNumber)}>
+                  onPress={() => handleCopy(transferData?.vaNumber)}
+                  onLongPress={() => holdTemporary()}>
                   <Copy size={14} color="#FFF" style={{ marginRight: 4 }} />
                   <Text style={styles.copyText}>Salin</Text>
                 </TouchableOpacity>
@@ -272,7 +275,10 @@ const PaymentInstructionView = ({
       </ScrollView>
       {(isQris || method === 'receive') && (
         <View style={styles.footer}>
-          <TouchableOpacity style={styles.outlineButton} onPress={handleDownloadQris}>
+          <TouchableOpacity
+            style={styles.outlineButton}
+            onPress={handleDownloadQris}
+            onLongPress={() => holdTemporary()}>
             <Download size={18} color="#111827" style={{ marginRight: 8 }} />
             <Text style={styles.outlineButtonText}>Unduh Gambar QRIS</Text>
           </TouchableOpacity>
