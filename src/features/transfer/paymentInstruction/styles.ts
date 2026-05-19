@@ -39,7 +39,7 @@ export const styles = StyleSheet.create({
     fontFamily: 'Switzer-Medium',
     fontSize: 16,
     color: '#111827',
-    marginLeft: 10
+    marginLeft: 10,
   },
   vaLabel: {
     fontFamily: 'Switzer-Regular',
@@ -71,7 +71,7 @@ export const styles = StyleSheet.create({
     color: '#FFF',
     fontFamily: 'Switzer-Medium',
     fontSize: 14,
-    marginLeft: 4
+    marginLeft: 4,
   },
   vaAmountText: {
     fontFamily: 'Switzer-Regular',
@@ -102,6 +102,7 @@ export const styles = StyleSheet.create({
   },
   qrisContainer: {
     alignItems: 'center',
+    width: '100%',
   },
   qrisLabel: {
     fontFamily: 'Switzer-Medium',
@@ -145,7 +146,7 @@ export const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
-    paddingTop: 24
+    paddingTop: 24,
   },
   qrImagePlaceholder: {
     width: '100%',
@@ -244,7 +245,14 @@ export const styles = StyleSheet.create({
   },
   footer: {
     paddingHorizontal: 24,
-    paddingBottom: 20, 
-    paddingTop: 16
+    paddingBottom: 20,
+    paddingTop: 16,
+  },
+  viewShotWrapper: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 16,
+    width: '100%',
+    alignItems: 'center',
   },
 });

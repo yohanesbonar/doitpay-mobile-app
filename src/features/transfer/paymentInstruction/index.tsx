@@ -170,7 +170,7 @@ const PaymentInstructionView = ({
             <ViewShot
               ref={viewShotRef}
               options={{ format: 'png', quality: 1.0 }}
-              style={{ backgroundColor: 'white', padding: 20, borderRadius: 16 }}>
+              style={styles.viewShotWrapper}>
               {method !== 'receive' ? (
                 <View
                   style={{
