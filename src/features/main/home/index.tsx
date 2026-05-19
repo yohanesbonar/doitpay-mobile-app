@@ -35,6 +35,7 @@ export const HomeView = (props: HomeViewProps) => {
   const [isSheetMounted, setIsSheetMounted] = useState(false);
   const emailSheetRef = useRef<BottomSheetModal>(null);
   const [isAccountSheetMounted, setIsAccountSheetMounted] = useState(false);
+  const [activities, setActivities] = useState([]);
   const { isNewUser, setIsNewUser } = useAuthStore();
 
   const handleOpenEmailSheet = useCallback(() => {
@@ -93,44 +94,61 @@ export const HomeView = (props: HomeViewProps) => {
         </View>
 
         <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-          <UnprotectedAccount onPress={() => handleOpenEmailSheet()} isShow={true} />
+          <UnprotectedAccount onPress={() => handleOpenEmailSheet()} isShow={false} />
           <View style={styles.dailyLimitWrapper}>
             <Text style={{ fontSize: 22, fontFamily: 'Switzer-Semibold' }}>
               {t('home.dailyLimitTransfer')}
             </Text>
-            <TransferLimitCard usedAmount={500000} maxAmount={25000000} percentage={5} />
+            <TransferLimitCard
+              usedAmount={activities?.length > 0 ? 500000 : 0}
+              maxAmount={25000000}
+              percentage={5}
+            />
           </View>
-          <View style={styles.mainWrapper}>
-            <SearchBar onPress={props.goToSearchAccount} />
-            <SizedBox height={20} />
-            <View style={{ flexDirection: 'row', gap: 12 }}>
-              <BillCard title="Bayar kos" accountInfo="Joni Wahyu  BCA ****3910" />
-              <BillCard title="Tagihan Listrik" accountInfo="PLN  BCA ****3910" />
-            </View>
-            <SizedBox height={24} />
-            <View style={{ marginRight: -24 }}>
-              <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>
-                {t('home.lastSend')}
+          {activities?.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Image
+                source={require('../../../assets/images/ic-empty-home.png')}
+                style={styles.emptyImage}
+              />
+              <Text style={styles.emptyTitle}>Belum ada aktivitas</Text>
+              <Text style={styles.emptySubtitle}>
+                Lakukan transfer, atau terima uang untuk melihat aktivitas terbaru di sini
               </Text>
-              <RecentRecipient />
             </View>
-            <SizedBox height={24} />
-            <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>
-              {t('home.lastActivity')}
-            </Text>
-            <View style={{ paddingBottom: 75 }}>
-              {[{}, {}, {}, {}].map((item, index) => (
-                <RecentActivityItem
-                  key={index}
-                  initial="JW"
-                  name="Joni Wahyu"
-                  bank="BCA"
-                  time="14:00 WIB"
-                  amount="Rp 500,000"
-                />
-              ))}
+          ) : (
+            <View style={styles.mainWrapper}>
+              <SearchBar onPress={props.goToSearchAccount} />
+              <SizedBox height={20} />
+              <View style={{ flexDirection: 'row', gap: 12 }}>
+                <BillCard title="Bayar kos" accountInfo="Joni Wahyu  BCA ****3910" />
+                <BillCard title="Tagihan Listrik" accountInfo="PLN  BCA ****3910" />
+              </View>
+              <SizedBox height={24} />
+              <View style={{ marginRight: -24 }}>
+                <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>
+                  {t('home.lastSend')}
+                </Text>
+                <RecentRecipient />
+              </View>
+              <SizedBox height={24} />
+              <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>
+                {t('home.lastActivity')}
+              </Text>
+              <View style={{ paddingBottom: 75 }}>
+                {[{}, {}, {}, {}].map((item, index) => (
+                  <RecentActivityItem
+                    key={index}
+                    initial="JW"
+                    name="Joni Wahyu"
+                    bank="BCA"
+                    time="14:00 WIB"
+                    amount="Rp 500,000"
+                  />
+                ))}
+              </View>
             </View>
-          </View>
+          )}
         </ScrollView>
       </View>
       {isSheetMounted && (
