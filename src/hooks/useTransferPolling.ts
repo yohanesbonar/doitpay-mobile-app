@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { TransferApiStatus } from './types';
+import { PaymentStatusResponse, transferApi } from '@/api/transfer';
 
 interface TransferStatusResponse {
   status: TransferApiStatus;
@@ -10,17 +11,18 @@ interface TransferStatusResponse {
 }
 
 export const useTransferPolling = (transferId: string | undefined) => {
-  return useQuery<TransferStatusResponse, Error>({
+  return useQuery<PaymentStatusResponse, Error>({
     queryKey: ['transferStatus', transferId],
-    queryFn: async (): Promise<TransferStatusResponse> => {
-      const response = await fetch(`https://your-api.com/api/transfer/${transferId}/status`);
-      if (!response.ok) throw new Error('Failed to fetch transfer status');
-      return response.json();
-    },
-    refetchInterval: (query) => {
-      const data = query.state.data;
+    
 
-      if (data?.status === 'SUCCESS' || data?.status === 'FAILED') {
+    queryFn: () => transferApi.getPaymentStatus({ id: transferId! }),
+    
+    refetchInterval: (query) => {
+
+      const data = query.state.data; 
+      
+
+      if (data?.data?.status === 'SUCCESS' || data?.data?.status === 'FAILED') {
         return false;
       }
       return 2000;

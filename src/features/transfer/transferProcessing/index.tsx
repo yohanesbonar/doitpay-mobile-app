@@ -72,20 +72,18 @@ const TransferProcessingView = ({
   // }, [currentStep, onFinish]);
 
   useEffect(() => {
-    if (currentStepIndex < stepsOrder.length - 1) {
-      const stepTimer = setTimeout(() => {
-        setCurrentStep(stepsOrder[currentStepIndex + 1]);
-      }, 2000);
-
-      return () => clearTimeout(stepTimer);
-    }
-
-    if (currentStep === 'done' && onFinish) {
-      const finishTimer = setTimeout(() => {
-        onFinish();
-      }, 1500);
-      return () => clearTimeout(finishTimer);
-    }
+    // if (currentStepIndex < stepsOrder.length - 1) {
+    //   const stepTimer = setTimeout(() => {
+    //     setCurrentStep(stepsOrder[currentStepIndex + 1]);
+    //   }, 2000);
+    //   return () => clearTimeout(stepTimer);
+    // }
+    // if (currentStep === 'done' && onFinish) {
+    //   const finishTimer = setTimeout(() => {
+    //     onFinish();
+    //   }, 1500);
+    //   return () => clearTimeout(finishTimer);
+    // }
   }, [currentStep, currentStepIndex, onFinish]);
 
   return (

@@ -1,5 +1,5 @@
 import { CreateTransferResponse, transferApi, TransferPayload } from '@/api/transfer';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 type TransferMutationVariables = {
   payload: TransferPayload;
@@ -54,5 +54,26 @@ export const usePaymentInstructionMutation = () => {
     onError: (error) => {
       console.error('usePaymentInstruction error:', error);
     }
+  });
+};
+
+export const usePaymentStatusPolling = (id: string | undefined) => {
+  return useQuery({
+    queryKey: ['paymentStatus', id],
+    queryFn: () => transferApi.getPaymentStatus({ id: id! }),
+    enabled: !!id, 
+    refetchInterval: (query) => {
+      const status = query.state.data?.data?.status;
+      if (status === 'success' || status === 'failed') {
+        return false; 
+      }
+      return 3000; 
+    },
+  });
+};
+
+export const usePaymentStatusMutation = () => {
+  return useMutation({
+    mutationFn: (id: string) => transferApi.getPaymentStatus({ id }),
   });
 };

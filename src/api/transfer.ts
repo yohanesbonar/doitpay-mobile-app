@@ -63,6 +63,18 @@ export interface PaymentInstructionData {
 
 export type PaymentInstructionResponse = BaseResponse<PaymentInstructionData>;
 
+export interface PaymentStatusPayload {
+  id: string;
+}
+
+export interface PaymentStatusData {
+  amount: string;
+  providerReference: string;
+  status: 'success' | 'pending' | 'failed' | string;
+}
+
+export type PaymentStatusResponse = BaseResponse<PaymentStatusData>;
+
 export const transferApi = {
   postTransfers: async (
     payload: TransferPayload,
@@ -95,9 +107,13 @@ export const transferApi = {
   ): Promise<PaymentInstructionResponse> => {
     const { data } = await apiClient.get<PaymentInstructionResponse>('/v1/payment/instruction', {
       params: {
-        paymentCode: payload.paymentCode, 
+        paymentCode: payload.paymentCode,
       },
     });
+    return data;
+  },
+  getPaymentStatus: async (payload: PaymentStatusPayload): Promise<PaymentStatusResponse> => {
+    const { data } = await apiClient.get<PaymentStatusResponse>(`/v1/payment/${payload.id}`);
     return data;
   },
 };

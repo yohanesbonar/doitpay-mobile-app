@@ -48,35 +48,18 @@ const TransferProcessingScreen = () => {
   };
 
   useEffect(() => {
-    if (data?.status === 'SUCCESS') {
-      const finalTimer = setTimeout(() => {
-        handleFinish();
-      }, 2000);
+    // if (data?.status === 'SUCCESS') {
+    //   const finalTimer = setTimeout(() => {
+    //     handleFinish();
+    //   }, 2000);
+    //   return () => clearTimeout(finalTimer);
+    // }
+    // if (data?.status === 'FAILED') {
+    //   navigation.navigate('TransferFailed', { transferId });
+    // }
 
-      return () => clearTimeout(finalTimer);
-    }
-
-    if (data?.status === 'FAILED') {
-      navigation.navigate('TransferFailed', { transferId });
-    }
+    console.log('data useTransferPolling', data);
   }, [data?.status, navigation, transferId]);
-
-  if (isLoading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#3475E8" />
-      </View>
-    );
-  }
-
-  if (error) {
-    Alert.alert('Error', 'Gagal memuat status transaksi');
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="small" color="#3475E8" />
-      </View>
-    );
-  }
 
   return (
     <TransferProcessingView
