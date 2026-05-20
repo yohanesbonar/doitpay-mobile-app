@@ -23,6 +23,7 @@ import PaymentInstruction from '../screens/transfer/paymentInstruction';
 import TransferProcessing from '../screens/transfer/transferProcessing';
 import PaymentReceipt from '../screens/transfer/paymentReceipt';
 import SearchAccountScreen from '../screens/transfer/searchAccount';
+import { ForgotPin } from '@/features/onboarding/forgot-pin';
 
 const Stack = createNativeStackNavigator();
 
@@ -62,6 +63,7 @@ export default function RootNavigator() {
           <Stack.Group>
             <Stack.Screen name="MainApp" component={Onboarding} />
             <Stack.Screen name="AuthEntry" component={AuthEntry} />
+            <Stack.Screen name="ForgotPin" component={ForgotPin} />
           </Stack.Group>
         )}
       </Stack.Navigator>

@@ -38,12 +38,15 @@ export const Beneficiary = () => {
   const {
     data: beneficiaryData,
     isLoading,
+    isRefetching,
+    refetch,
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage,
   } = useGetBeneficiariesQuery({
     isFavorite: activeTab === 'Favorit' ? true : undefined,
     search: debouncedSearch || undefined,
+    limit: 6,
   });
 
   const parsedBeneficiaries =
@@ -85,38 +88,40 @@ export const Beneficiary = () => {
         {isLoading ? (
           <BeneficiaryListSkeleton />
         ) : (
-        <FlatList
-          data={parsedBeneficiaries}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <BeneficiaryItemRow item={item} />}
-          contentContainerStyle={[
-            styles.listContent,
-            {
-              backgroundColor: parsedBeneficiaries.length === 0 ? '#FFF' : colors.pageBackground,
-              paddingTop: parsedBeneficiaries.length > 0 ? 12 : 0,
-            },
-          ]}
-          showsVerticalScrollIndicator={false}
-          onEndReached={() => {
-            if (hasNextPage && !isFetchingNextPage) fetchNextPage();
-          }}
-          onEndReachedThreshold={0.3}
-          ListFooterComponent={
-            isFetchingNextPage ? (
-              <ActivityIndicator size="small" color="#4F84F6" style={{ paddingVertical: 16 }} />
-            ) : null
-          }
-          ListEmptyComponent={() => (
-            <View style={styles.emptyState}>
-              <Image
-                source={require('../../../assets/images/ic-empty-beneficiary.png')}
-                style={{ width: 191, height: 208, resizeMode: 'contain' }}
-              />
-              <Text style={styles.emptyText}>{t('beneficiary.beneficiaryNotFound')}</Text>
-              <Text style={styles.emptyTextDesc}>{t('beneficiary.descBeneficiaryNotFound')}</Text>
-            </View>
-          )}
-        />
+          <FlatList
+            data={parsedBeneficiaries}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => <BeneficiaryItemRow item={item} />}
+            contentContainerStyle={[
+              styles.listContent,
+              {
+                backgroundColor: parsedBeneficiaries.length === 0 ? '#FFF' : colors.pageBackground,
+                paddingTop: parsedBeneficiaries.length > 0 ? 12 : 0,
+              },
+            ]}
+            showsVerticalScrollIndicator={false}
+            refreshing={isRefetching}
+            onRefresh={refetch}
+            onEndReached={() => {
+              if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+            }}
+            onEndReachedThreshold={0.3}
+            ListFooterComponent={
+              isFetchingNextPage ? (
+                <ActivityIndicator size="small" color="#4F84F6" style={{ paddingVertical: 16 }} />
+              ) : null
+            }
+            ListEmptyComponent={() => (
+              <View style={styles.emptyState}>
+                <Image
+                  source={require('../../../assets/images/ic-empty-beneficiary.png')}
+                  style={{ width: 191, height: 208, resizeMode: 'contain' }}
+                />
+                <Text style={styles.emptyText}>{t('beneficiary.beneficiaryNotFound')}</Text>
+                <Text style={styles.emptyTextDesc}>{t('beneficiary.descBeneficiaryNotFound')}</Text>
+              </View>
+            )}
+          />
         )}
       </View>
     </SafeAreaView>
