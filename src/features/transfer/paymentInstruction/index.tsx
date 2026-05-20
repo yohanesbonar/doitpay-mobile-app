@@ -216,7 +216,7 @@ const PaymentInstructionView = ({
                   <Text style={styles.qrisTarget}>
                     Mengirim ke{' '}
                     <Text style={styles.qrisTargetBoldText} numberOfLines={3}>
-                      {transferData?.recipientName ?? ''}
+                      {transferData?.qris?.recipientName ?? ''}
                     </Text>
                   </Text>
                 </View>
