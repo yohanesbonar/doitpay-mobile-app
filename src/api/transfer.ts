@@ -43,6 +43,26 @@ export interface BaseResponse<T> {
 
 export type CreateTransferResponse = BaseResponse<TransferResponseData>;
 
+export interface VAMethodsPayload {}
+
+export type VAMethodsResponse = {
+  status: string;
+  message: string;
+  data: null;
+};
+
+export interface PaymentInstructionPayload {
+  paymentCode: string;
+}
+
+export interface PaymentInstructionData {
+  instructionTitle?: string;
+  steps?: string[];
+  [key: string]: any;
+}
+
+export type PaymentInstructionResponse = BaseResponse<PaymentInstructionData>;
+
 export const transferApi = {
   postTransfers: async (
     payload: TransferPayload,
@@ -55,10 +75,27 @@ export const transferApi = {
     });
     return data;
   },
-  postReceive: async (payload: TransferPayload, idempotencyKey: string): Promise<CreateTransferResponse> => {
+  postReceive: async (
+    payload: TransferPayload,
+    idempotencyKey: string,
+  ): Promise<CreateTransferResponse> => {
     const { data } = await apiClient.post<CreateTransferResponse>('/v1/receive', payload, {
       headers: {
         'X-Idempotency-Key': idempotencyKey,
+      },
+    });
+    return data;
+  },
+  getVAMethods: async (payload: VAMethodsPayload): Promise<VAMethodsResponse> => {
+    const { data } = await apiClient.get<VAMethodsResponse>('/v1/payment/va/methods');
+    return data;
+  },
+  getPaymentInstruction: async (
+    payload: PaymentInstructionPayload,
+  ): Promise<PaymentInstructionResponse> => {
+    const { data } = await apiClient.get<PaymentInstructionResponse>('/v1/payment/instruction', {
+      params: {
+        paymentCode: payload.paymentCode, 
       },
     });
     return data;

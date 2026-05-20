@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput, Image } from 'react-native';
 import { styles } from '../styles';
 import { Search, CreditCard, QrCode, CheckCircle2, Circle } from 'lucide-react-native';
 import { useTheme } from '@/theme/ThemeProvider';
 import { createStyles } from '../../addBankAccount/styles';
+import { useVAMethods } from '@/hooks/useTransferMutation';
 
 interface BankOption {
   id: string;
@@ -39,9 +40,27 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
 }) => {
   const [selectedBank, setSelectedBank] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [banks, setBanks] = useState([]);
+
+  const { mutate: VAMethods, isPending: isLoadingVAMethods } = useVAMethods();
 
   const { colors } = useTheme();
   const styles = createStyles(colors);
+
+  useEffect(() => {
+    VAMethods(
+      {},
+      {
+        onSuccess: (data) => {
+          console.log('VAMethods successfully:', data);
+          setBanks(data?.data?.items ?? []);
+        },
+        onError: (error) => {
+          console.error('Error VAMethods:', error);
+        },
+      },
+    );
+  }, []);
 
   return (
     <View
@@ -141,12 +160,12 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
             />
           </View>
 
-          {BANKS.map((bank) => {
-            const isChosen = selectedBank === bank.id;
+          {banks.map((item) => {
+            const isChosen = selectedBank === item.id;
             return (
               <TouchableOpacity
-                key={bank.id}
-                onPress={() => setSelectedBank(bank.id) + onSelectBank(bank)}
+                key={item.id}
+                onPress={() => setSelectedBank(item.id) + onSelectBank(item)}
                 activeOpacity={0.8}
                 style={{
                   flexDirection: 'row',
@@ -171,7 +190,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
                     borderColor: '#F3F4F6',
                   }}>
                   <Image
-                    source={bank.image}
+                    source={{ uri: item?.logoUrl }}
                     style={{ width: '80%', height: '80%', resizeMode: 'contain' }}
                   />
                 </View>
@@ -183,7 +202,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
                     fontSize: 16,
                     color: '#111827',
                   }}>
-                  {bank.name}
+                  {item.name}
                 </Text>
 
                 {isChosen ? (

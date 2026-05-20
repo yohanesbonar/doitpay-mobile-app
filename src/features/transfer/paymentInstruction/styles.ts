@@ -255,4 +255,40 @@ export const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
   },
+  instructionStepsContainer: {
+    backgroundColor: '#F9FAFB',
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 4,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+  },
+  stepRow: {
+    flexDirection: 'row',
+    alignItems: 'top',
+    marginBottom: 12,
+    width: '100%',
+  },
+  stepNumberBadge: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#3475E8', // Warna primary Doitpay
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+    marginTop: 2,
+  },
+  stepNumberText: {
+    color: '#FFF',
+    fontSize: 11,
+    fontFamily: 'Switzer-Bold',
+  },
+  stepInstructionText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#4B5563',
+    fontFamily: 'Switzer-Regular',
+    lineHeight: 18,
+  },
 });

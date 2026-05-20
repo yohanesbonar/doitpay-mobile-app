@@ -1,6 +1,5 @@
 import { CreateTransferResponse, transferApi, TransferPayload } from '@/api/transfer';
 import { useMutation } from '@tanstack/react-query';
-import Toast from 'react-native-toast-message';
 
 type TransferMutationVariables = {
   payload: TransferPayload;
@@ -32,5 +31,28 @@ export const useReceive = () => {
       console.log('error useReceive', error);
       console.error('useReceive Request failed:', error.message);
     },
+  });
+};
+
+export const useVAMethods = () => {
+    return useMutation({
+        mutationFn: () => transferApi.getVAMethods(),
+        onSuccess: (data) => {
+            console.log('useVAMethods data.message:', data.message);
+            console.log('useVAMethods data', data);
+        },
+    });
+}
+
+export const usePaymentInstructionMutation = () => {
+  return useMutation({
+    mutationFn: (paymentCode: string) => 
+      transferApi.getPaymentInstruction({ paymentCode }),
+    onSuccess: (data) => {
+      console.log('usePaymentInstruction success data:', data);
+    },
+    onError: (error) => {
+      console.error('usePaymentInstruction error:', error);
+    }
   });
 };

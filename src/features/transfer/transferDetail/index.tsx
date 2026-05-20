@@ -72,9 +72,8 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
     let payload = {
       amount: parseInt(amount),
       inquiryId: accountData?.id,
-      payChannel:
-        methodPayment == 'VA' ? bankPayment?.shortName + '_' + methodPayment : methodPayment,
-      payMethod: methodPayment,
+      payChannel: methodPayment == 'VA' ? bankPayment?.code : methodPayment,
+      payMethod: methodPayment == 'VA' ? 'VIRTUAL_ACCOUNT' : methodPayment,
       remark: note,
     };
     let idempotencyKey = new Date().getTime().toString();

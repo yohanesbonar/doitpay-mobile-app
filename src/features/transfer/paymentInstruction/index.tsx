@@ -36,6 +36,18 @@ interface PaymentInstructionViewProps {
   receiveData?: any;
   bankPayment?: any;
   holdTemporary: () => void;
+  instructionData?: {
+    status: string;
+    message: string;
+    data: {
+      payment_code: string;
+      channels: {
+        channel: string;
+        steps: string[];
+      }[];
+    }[];
+  };
+  isPendingPaymentInstruction?: boolean;
 }
 
 const PaymentInstructionView = ({
@@ -50,14 +62,15 @@ const PaymentInstructionView = ({
   receiveData,
   bankPayment,
   holdTemporary,
+  instructionData,
+  isPendingPaymentInstruction,
 }: PaymentInstructionViewProps) => {
   const [amount, setAmount] = useState(initialAmount || 0);
+  const [expandedChannel, setExpandedChannel] = useState<string | null>(null);
 
   const isQris = paymentMethod === 'QRIS';
 
-  console.log('transferData ->>', transferData);
-  console.log('receiveData ->>', receiveData);
-  console.log('bankPayment ->>', bankPayment);
+  console.log('instructionData ->>', instructionData);
 
   const handleCopy = (text) => {
     Clipboard.setString(text);
@@ -168,6 +181,10 @@ const PaymentInstructionView = ({
     }
   };
 
+  const toggleDropdown = (channelName: string) => {
+    setExpandedChannel(expandedChannel === channelName ? null : channelName);
+  };
+
   return (
     <View style={styles.container}>
       <HeaderToolbar
@@ -205,15 +222,17 @@ const PaymentInstructionView = ({
                 </View>
               ) : (
                 <View style={styles.recipientInfo}>
-                  <Text style={styles.recipientName}>{receiveData?.recipientName ?? ''}</Text>
-                  <Text style={styles.recipientId}>{`NMID: ${receiveData?.nmid ?? ''}`}</Text>
+                  <Text style={styles.recipientName}>{receiveData?.qris?.recipientName ?? ''}</Text>
+                  <Text style={styles.recipientId}>{`NMID: ${receiveData?.qris?.nmid ?? ''}`}</Text>
                 </View>
               )}
 
               <View style={styles.qrCard}>
-                {receiveData?.qrString && <QRCode value={receiveData?.qrString ?? ''} size={280} />}
-                {transferData?.qrString && (
-                  <QRCode value={transferData?.qrString ?? ''} size={280} />
+                {receiveData?.qris?.content && (
+                  <QRCode value={receiveData?.qris?.content ?? ''} size={280} />
+                )}
+                {transferData?.qris?.content && (
+                  <QRCode value={transferData?.qris?.content ?? ''} size={280} />
                 )}
                 <Image
                   source={require('../../../assets/images/ic-qris.png')}
@@ -225,7 +244,7 @@ const PaymentInstructionView = ({
               {method === 'receive' && (
                 <View style={styles.inputAmountWrapper}>
                   <Text style={styles.inputCurrencyPrefix}>Rp</Text>
-                  <Text style={[styles.amountText]}>{formatNumber(amount)}</Text>
+                  <Text style={[styles.amountText]}>{formatNumber(receiveData?.amount)}</Text>
                 </View>
               )}
             </ViewShot>
@@ -235,19 +254,15 @@ const PaymentInstructionView = ({
             <View style={styles.vaCard}>
               <View style={styles.vaHeader}>
                 <Image
-                  source={
-                    bankPayment?.shortName == 'BCA'
-                      ? require('../../../assets/images/ic-BCA.png')
-                      : require('../../../assets/images/ic-CIMB.png')
-                  }
+                  source={{ uri: transferData?.va?.logoUrl }}
                   style={{ width: 64, height: 64, resizeMode: 'contain' }}
                 />
-                <Text style={styles.bankNameText}>{bankPayment?.name ?? ''}</Text>
+                <Text style={styles.bankNameText}>{transferData?.va.name ?? ''}</Text>
               </View>
 
               <Text style={styles.vaLabel}>Nomor virtual account</Text>
               <View style={styles.vaNumberRow}>
-                <Text style={styles.vaNumberText}>{transferData?.vaNumber ?? ''}</Text>
+                <Text style={styles.vaNumberText}>{transferData?.va?.number ?? ''}</Text>
                 <TouchableOpacity
                   style={styles.copyBadge}
                   onPress={() => handleCopy(transferData?.vaNumber)}
@@ -259,17 +274,49 @@ const PaymentInstructionView = ({
 
               <Text style={styles.vaLabelWithMargin}>Amount</Text>
               <Text style={styles.vaAmountText}>
-                Rp <Text style={styles.vaAmountBoldText}>{formatNumber(amount)}</Text>
+                Rp <Text style={styles.vaAmountBoldText}>{formatNumber(transferData?.amount)}</Text>
               </Text>
             </View>
 
             <Text style={styles.guideTitle}>Cara Pembayaran</Text>
-            {['Mobile Banking', 'ATM'].map((item) => (
-              <TouchableOpacity key={item} style={styles.dropdownItem}>
-                <Text style={styles.dropdownText}>{item}</Text>
-                <ChevronDown size={20} color="#6B7280" />
-              </TouchableOpacity>
-            ))}
+            {!isPendingPaymentInstruction && instructionData?.data?.[0]?.channels ? (
+              instructionData.data[0].channels.map((item) => {
+                const isExpanded = expandedChannel === item.channel;
+
+                return (
+                  <View key={item.channel} style={{ width: '100%', marginBottom: 8 }}>
+                    <TouchableOpacity
+                      style={styles.dropdownItem}
+                      onPress={() => toggleDropdown(item.channel)}>
+                      <Text style={styles.dropdownText}>{item.channel}</Text>
+
+                      <ChevronDown
+                        size={20}
+                        color="#6B7280"
+                        style={{ transform: [{ rotate: isExpanded ? '180deg' : '0deg' }] }}
+                      />
+                    </TouchableOpacity>
+
+                    {isExpanded && (
+                      <View style={styles.instructionStepsContainer}>
+                        {item.steps.map((stepText, stepIndex) => (
+                          <View key={stepIndex} style={styles.stepRow}>
+                            <View style={styles.stepNumberBadge}>
+                              <Text style={styles.stepNumberText}>{stepIndex + 1}</Text>
+                            </View>
+                            <Text style={styles.stepInstructionText}>{stepText}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    )}
+                  </View>
+                );
+              })
+            ) : (
+              <Text style={{ color: '#9CA3AF', fontFamily: 'Switzer-Regular', paddingLeft: 4 }}>
+                Memuat petunjuk pembayaran...
+              </Text>
+            )}
           </View>
         )}
       </ScrollView>

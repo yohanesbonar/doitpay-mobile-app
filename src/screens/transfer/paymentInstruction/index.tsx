@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import PaymentInstructionView from '@/features/transfer/paymentInstruction';
+import { usePaymentInstructionMutation } from '@/hooks/useTransferMutation';
 
 const PaymentInstructionScreen = () => {
   const navigation = useNavigation<any>();
@@ -40,6 +41,7 @@ const PaymentInstructionScreen = () => {
         amount,
         paymentMethod,
         currentStep: 'received',
+        transferId: transferData?.id,
       });
     else
       navigation.navigate('PaymentReceipt', {
@@ -51,6 +53,20 @@ const PaymentInstructionScreen = () => {
         dateTime: '12 February 2026 10:30:20',
       });
   };
+
+  const paymentCode = transferData?.va?.code;
+
+  useEffect(() => {
+    if (paymentCode) {
+      fetchInstruction(paymentCode);
+    }
+  }, [paymentCode]);
+
+  const {
+    mutate: fetchInstruction,
+    data: instructionData,
+    isPending: isPendingPaymentInstruction,
+  } = usePaymentInstructionMutation();
 
   return (
     <PaymentInstructionView
@@ -67,6 +83,8 @@ const PaymentInstructionScreen = () => {
       receiveData={receiveData}
       bankPayment={bankPayment}
       holdTemporary={holdTemporary}
+      instructionData={instructionData}
+      isPendingPaymentInstruction={isPendingPaymentInstruction}
     />
   );
 };
