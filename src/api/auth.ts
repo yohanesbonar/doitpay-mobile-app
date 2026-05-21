@@ -1,4 +1,5 @@
 import apiClient from './client';
+import { generateUUID } from '@/utils/uuid';
 
 // REGISTER
 export interface RegisterOtpRequestPayload {
@@ -41,12 +42,9 @@ export type RegisterPinSetupResponse = {
   status: string;
   message: string;
   data: {
-    verificationToken: string;
-    session: {
-      accessToken: string;
-      expiredIn: string;
-      refreshToken: string;
-    };
+    accessToken: string;
+    refreshToken: string;
+    expiresAt: string;
   };
 };
 
@@ -90,7 +88,11 @@ export type LoginOtpVerifyResponse = {
 export type LoginResponse = {
   status: string;
   message: string;
-  data: {};
+  data: {
+    accessToken: string;
+    refreshToken: string;
+    expiresAt: string;
+  };
 };
 
 //Refresh Token
@@ -108,6 +110,42 @@ export type RefreshTokenResponse = {
   };
 };
 
+// FORGOT PIN
+export interface ForgotPinOtpRequestPayload {
+  phoneNumber: string;
+  method: 'SMS' | 'WHATSAPP';
+}
+
+export type ForgotPinOtpRequestResponse = {
+  status: string;
+  message: string;
+  data: {
+    retryAfterSeconds: number;
+  };
+};
+
+export interface ForgotPinOtpVerifyPayload {
+  phoneNumber: string;
+  otpCode: string;
+}
+
+export type ForgotPinOtpVerifyResponse = {
+  status: string;
+  message: string;
+  data: {
+    verificationToken: string;
+  };
+};
+
+export interface ForgotPinResetPayload {
+  pin: string;
+}
+
+export type ForgotPinResetResponse = {
+  status: string;
+  message: string;
+  data: {};
+};
 
 export const authApi = {
   registerRequestOtp: async (payload: RegisterOtpRequestPayload): Promise<RegisterOtpResponse> => {
@@ -156,5 +194,31 @@ export const authApi = {
   refreshToken: async (payload: RefreshTokenPayload): Promise<RefreshTokenResponse> => {
     const { data } = await apiClient.post<RefreshTokenResponse>('v1/auth/refresh', payload);
     return data;
-  }
+  },
+  forgotPinRequestOtp: async (
+    payload: ForgotPinOtpRequestPayload,
+  ): Promise<ForgotPinOtpRequestResponse> => {
+    const { data } = await apiClient.post<ForgotPinOtpRequestResponse>(
+      '/v1/pin/forgot/otp/request',
+      payload,
+      { noNeedAuth: true },
+    );
+    return data;
+  },
+  forgotPinVerifyOtp: async (
+    payload: ForgotPinOtpVerifyPayload,
+  ): Promise<ForgotPinOtpVerifyResponse> => {
+    const { data } = await apiClient.post<ForgotPinOtpVerifyResponse>(
+      '/v1/pin/forgot/otp/verify',
+      payload,
+      { noNeedAuth: true },
+    );
+    return data;
+  },
+  forgotPinReset: async (payload: ForgotPinResetPayload): Promise<ForgotPinResetResponse> => {
+    const { data } = await apiClient.post<ForgotPinResetResponse>('/v1/pin/reset', payload, {
+      headers: { 'X-Idempotency-Key': generateUUID() },
+    });
+    return data;
+  },
 };

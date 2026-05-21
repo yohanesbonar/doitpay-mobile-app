@@ -8,14 +8,12 @@ import { AuthEntry } from '../features/onboarding/authEntry';
 import BankList from '../screens/transfer/bankList';
 import AddBankRecipient from '../screens/transfer/addBankAccount';
 import { navigationRef } from './navigationRef';
-import { Home } from '../features/main/home';
 import { useAuthStore } from '../storage/useAuthStore';
 import MainTabNavigator from './page-navigators/MainTabNavigator';
 import { Settings } from '../features/main/profile/Settings';
 import { Security } from '../features/main/profile/Security';
 import { BankAccounts } from '../features/main/profile/BankAccount';
 import { HelpCenter } from '../features/main/profile/HelpCenter';
-import Beneficiary from '../features/main/beneficiary';
 import { History } from '../features/main/history';
 import Profile from '../features/main/profile';
 import TransferDetail from '../screens/transfer/transferDetail';
@@ -23,6 +21,8 @@ import PaymentInstruction from '../screens/transfer/paymentInstruction';
 import TransferProcessing from '../screens/transfer/transferProcessing';
 import PaymentReceipt from '../screens/transfer/paymentReceipt';
 import SearchAccountScreen from '../screens/transfer/searchAccount';
+import { ForgotPin } from '@/features/onboarding/forgot-pin';
+import { BeneficiaryScreen } from '@/screens/main/beneficiary/beneficiary-screen';
 import RequestPaymentScreen from '../screens/transfer/requestPayment';
 
 const Stack = createNativeStackNavigator();
@@ -54,7 +54,7 @@ export default function RootNavigator() {
             <Stack.Screen name="Security" component={Security} />
             <Stack.Screen name="BankAccounts" component={BankAccounts} />
             <Stack.Screen name="HelpCenter" component={HelpCenter} />
-            <Stack.Screen name="Beneficiary" component={Beneficiary} />
+            <Stack.Screen name="Beneficiary" component={BeneficiaryScreen} />
             <Stack.Screen name="History" component={History} />
             <Stack.Screen name="Profile" component={Profile} />
             <Stack.Screen name="SearchAccount" component={SearchAccountScreen} />
@@ -64,6 +64,7 @@ export default function RootNavigator() {
           <Stack.Group>
             <Stack.Screen name="MainApp" component={Onboarding} />
             <Stack.Screen name="AuthEntry" component={AuthEntry} />
+            <Stack.Screen name="ForgotPin" component={ForgotPin} />
           </Stack.Group>
         )}
       </Stack.Navigator>

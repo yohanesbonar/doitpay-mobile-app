@@ -13,6 +13,12 @@ import {
   RegisterOtpVerifyResponse,
   RegisterPinSetupPayload,
   RegisterPinSetupResponse,
+  ForgotPinOtpRequestPayload,
+  ForgotPinOtpRequestResponse,
+  ForgotPinOtpVerifyPayload,
+  ForgotPinOtpVerifyResponse,
+  ForgotPinResetPayload,
+  ForgotPinResetResponse,
 } from '../api/auth';
 import { setStorageItem, storage, StorageKey } from '../storage';
 import { useAuthStore } from '../storage/useAuthStore';
@@ -223,5 +229,29 @@ export const useLogin = () => {
       console.log('error login', error);
       console.error('error login:', error.message);
     },
+  });
+};
+
+export const useForgotPinRequestOtp = () => {
+  return useMutation<ForgotPinOtpRequestResponse, Error, ForgotPinOtpRequestPayload>({
+    mutationFn: (payload) => authApi.forgotPinRequestOtp(payload),
+  });
+};
+
+export const useForgotPinVerifyOtp = () => {
+  return useMutation<ForgotPinOtpVerifyResponse, Error, ForgotPinOtpVerifyPayload>({
+    mutationFn: (payload) => authApi.forgotPinVerifyOtp(payload),
+    onSuccess: (data) => {
+      const session = data?.data;
+      if (session?.verificationToken) {
+        setStorageItem(StorageKey.ACCESS_TOKEN, session.verificationToken);
+      }
+    },
+  });
+};
+
+export const useForgotPinReset = () => {
+  return useMutation<ForgotPinResetResponse, Error, ForgotPinResetPayload>({
+    mutationFn: (payload) => authApi.forgotPinReset(payload),
   });
 };
