@@ -16,6 +16,7 @@ interface PaymentMethodProps {
   selectedMethod: 'VA' | 'QRIS';
   onSelect: (method: 'VA' | 'QRIS') => void;
   onSelectBank: (data: any) => void;
+  styleProps: any;
 }
 
 const BANKS: BankOption[] = [
@@ -37,6 +38,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
   selectedMethod,
   onSelect,
   onSelectBank,
+  styleProps,
 }) => {
   const [selectedBank, setSelectedBank] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -64,12 +66,15 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
 
   return (
     <View
-      style={{
-        paddingTop: 16,
-        marginTop: 16,
-        backgroundColor: colors.pageBackground,
-        paddingHorizontal: 20,
-      }}>
+      style={[
+        {
+          paddingTop: 16,
+          marginTop: 16,
+          backgroundColor: colors.pageBackground,
+          paddingHorizontal: 20,
+        },
+        styleProps,
+      ]}>
       <Text
         style={[styles.label, { fontSize: 20, marginBottom: 16, fontFamily: 'Switzer-Medium' }]}>
         Metode Pembayaran

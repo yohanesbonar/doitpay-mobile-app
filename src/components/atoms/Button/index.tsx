@@ -12,6 +12,7 @@ interface ButtonProps {
   textColor: 'white' | 'black';
   borderColor?: string;
   sourceIcon?: any;
+  iconStyle?: object;
   disable?: boolean;
   loading?: boolean;
 }
@@ -26,6 +27,7 @@ const Button = ({
   textColor,
   borderColor,
   sourceIcon,
+  iconStyle,
   disable,
   loading,
 }: ButtonProps) => {
@@ -71,7 +73,7 @@ const Button = ({
               {sourceIcon && (
                 <Image
                   source={sourceIcon}
-                  style={{ width: 20, height: 20, marginRight: 8 }}
+                  style={[{ width: 20, height: 20, marginRight: 8 }, iconStyle]}
                   resizeMode="contain"
                 />
               )}

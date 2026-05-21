@@ -158,10 +158,6 @@ const PaymentInstructionView = ({
       console.error('Download error:', error);
 
       if (Platform.OS === 'ios') {
-        Alert.alert(
-          'Gagal Menyimpan',
-          'Terjadi kendala pada Simulator iOS. Fitur ini berjalan normal di iPhone fisik dengan Info.plist yang sudah kamu konfigurasi.',
-        );
       } else {
         Alert.alert('Gagal', 'Gagal menyimpan QRIS ke galeri');
       }
@@ -195,7 +191,7 @@ const PaymentInstructionView = ({
       />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {isQris || method === 'receive' ? (
+        {isQris ? (
           <View style={styles.qrisContainer}>
             <ViewShot
               ref={viewShotRef}
@@ -210,13 +206,13 @@ const PaymentInstructionView = ({
                   <View style={styles.qrisAmountWrapper}>
                     <Text style={styles.qrisCurrency}>Rp</Text>
                     <Text style={styles.qrisAmountText}>
-                      {formatNumber(transferData?.amount ?? 0)}
+                      {formatNumber(transferData?.amount ?? receiveData?.amount ?? 0)}
                     </Text>
                   </View>
                   <Text style={styles.qrisTarget}>
                     Mengirim ke{' '}
                     <Text style={styles.qrisTargetBoldText} numberOfLines={3}>
-                      {transferData?.qris?.recipientName ?? ''}
+                      {transferData?.qris?.recipientName ?? receiveData?.qris?.recipientName ?? ''}
                     </Text>
                   </Text>
                 </View>
@@ -254,18 +250,22 @@ const PaymentInstructionView = ({
             <View style={styles.vaCard}>
               <View style={styles.vaHeader}>
                 <Image
-                  source={{ uri: transferData?.va?.logoUrl }}
+                  source={{ uri: transferData?.va?.logoUrl || receiveData?.va?.logoUrl }}
                   style={{ width: 64, height: 64, resizeMode: 'contain' }}
                 />
-                <Text style={styles.bankNameText}>{transferData?.va.name ?? ''}</Text>
+                <Text style={styles.bankNameText}>
+                  {transferData?.va.name ?? receiveData?.va.name ?? ''}
+                </Text>
               </View>
 
               <Text style={styles.vaLabel}>Nomor virtual account</Text>
               <View style={styles.vaNumberRow}>
-                <Text style={styles.vaNumberText}>{transferData?.va?.number ?? ''}</Text>
+                <Text style={styles.vaNumberText}>
+                  {transferData?.va?.number ?? receiveData?.va?.number ?? ''}
+                </Text>
                 <TouchableOpacity
                   style={styles.copyBadge}
-                  onPress={() => handleCopy(transferData?.vaNumber)}
+                  onPress={() => handleCopy(transferData?.vaNumber || receiveData?.vaNumber)}
                   onLongPress={() => holdTemporary()}>
                   <Copy size={14} color="#FFF" style={{ marginRight: 4 }} />
                   <Text style={styles.copyText}>Salin</Text>
@@ -274,7 +274,10 @@ const PaymentInstructionView = ({
 
               <Text style={styles.vaLabelWithMargin}>Amount</Text>
               <Text style={styles.vaAmountText}>
-                Rp <Text style={styles.vaAmountBoldText}>{formatNumber(transferData?.amount)}</Text>
+                Rp{' '}
+                <Text style={styles.vaAmountBoldText}>
+                  {formatNumber(transferData?.amount || receiveData?.amount)}
+                </Text>
               </Text>
             </View>
 
@@ -320,7 +323,7 @@ const PaymentInstructionView = ({
           </View>
         )}
       </ScrollView>
-      {(isQris || method === 'receive') && (
+      {isQris && (
         <View style={styles.footer}>
           <TouchableOpacity
             style={styles.outlineButton}

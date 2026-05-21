@@ -8,7 +8,6 @@ export const createStyles = (colors: any) =>
     },
     content: {
       paddingVertical: 24,
-      paddingHorizontal: 16,
       flex: 1,
     },
     title: {
@@ -46,6 +45,7 @@ export const createStyles = (colors: any) =>
       flexDirection: 'row',
       flexWrap: 'wrap',
       gap: 12,
+      paddingHorizontal: 16,
     },
     chip: {
       paddingHorizontal: 16,
@@ -86,6 +86,7 @@ export const createStyles = (colors: any) =>
       alignItems: 'center',
       width: '100%',
       marginTop: 24,
+      paddingHorizontal: 16,
     },
     inputCurrencyPrefix: {
       fontFamily: 'Switzer-Bold',
@@ -108,6 +109,17 @@ export const createStyles = (colors: any) =>
       fontSize: 12,
       marginBottom: 16,
       fontFamily: 'Switzer-Regular',
-      marginLeft: 34
+      marginLeft: 34,
+      paddingHorizontal: 16,
+    },
+    confirmButton: {
+      backgroundColor: '#2F80ED',
+      paddingVertical: 10,
+      borderRadius: 25,
+      alignItems: 'center',
+      marginTop: 12,
+    },
+    disabledButton: {
+      backgroundColor: '#E0E0E0',
     },
   });

@@ -33,7 +33,10 @@ const PaymentInstructionScreen = () => {
   const { mutate: checkPaymentStatus, data: statusData } = usePaymentStatusMutation();
 
   const paymentCode =
-    transferData?.paymentInstrument?.bankCode || bankData?.bankCode || transferData?.va?.code;
+    transferData?.paymentInstrument?.bankCode ||
+    bankData?.bankCode ||
+    transferData?.va?.code ||
+    receiveData?.va?.code;
   const transferId = transferData?.paymentId ?? transferData?.id;
   const receiveId = receiveData?.paymentId ?? receiveData?.id;
   const activeId = method === 'receive' ? receiveId : transferId;
@@ -63,6 +66,7 @@ const PaymentInstructionScreen = () => {
         amount: newAmount || amount,
         transactionId: receiveId || 'TRX0123123',
         dateTime: new Date().toLocaleString('id-ID'),
+        method,
       });
   };
 
@@ -106,6 +110,7 @@ const PaymentInstructionScreen = () => {
           amount: amount,
           transactionId: receiveId,
           dateTime: new Date().toLocaleString('id-ID'),
+          method,
         });
       }
     } else {

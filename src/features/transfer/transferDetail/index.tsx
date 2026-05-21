@@ -84,7 +84,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
       },
       {
         onSuccess: (data) => {
-          let transferData = data?.data;
+          let transferData = data?.data ?? {};
           console.log('postTransfer onSuccess bankPayment', bankPayment);
           gotoPaymentInstruction(methodPayment, amount, transferData, bankPayment);
         },

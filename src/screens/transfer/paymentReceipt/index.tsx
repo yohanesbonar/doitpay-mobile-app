@@ -5,8 +5,8 @@ import PaymentReceiptView from '../../../features/transfer/paymentReceipt';
 const PaymentReceiptScreen = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
-  const { accountData, bankData, paymentMethod, amount, transactionId, dateTime } = (route.params ||
-    {}) as any;
+  const { accountData, bankData, paymentMethod, amount, transactionId, dateTime, method } =
+    (route.params || {}) as any;
 
   const handleBack = () => {
     navigation.goBack();
@@ -26,6 +26,7 @@ const PaymentReceiptScreen = () => {
       dateTime={dateTime}
       onPressBack={handleBack}
       onPressHome={handleHome}
+      method={method}
     />
   );
 };
