@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable, TextInput } from 'react-native';
+import { View, Text, Pressable, TextInput, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 interface CreateAndConfirmPINProps {
@@ -9,10 +9,11 @@ interface CreateAndConfirmPINProps {
   confirmationPin: string;
   isErrorPIN: boolean;
   styles: any;
-  inputRef: React.RefObject<TextInput>;
+  inputRef: React.RefObject<TextInput | null>;
   handlePressPIN: () => void;
   renderDotsPIN: (code: string, hasError: boolean) => React.ReactNode;
   onChangeText: (text: string) => void;
+  onForgotPinPress?: () => void;
   PIN_LENGTH: number;
 }
 
@@ -27,6 +28,7 @@ const CreateAndConfirmPIN = ({
   handlePressPIN,
   renderDotsPIN,
   onChangeText,
+  onForgotPinPress,
   PIN_LENGTH,
 }: CreateAndConfirmPINProps) => {
   const { t } = useTranslation();
@@ -57,7 +59,7 @@ const CreateAndConfirmPIN = ({
 
       {step === 4 && isErrorPIN && (
         <Text style={styles.errorTextPIN}>
-          PIN yang Anda masukkan tidak cocok. Silakan coba lagi.
+          PIN yang Anda masukan tidak cocok. Silakan coba lagi.
         </Text>
       )}
 
@@ -70,6 +72,20 @@ const CreateAndConfirmPIN = ({
         style={styles.hiddenInput}
         autoFocus={true}
       />
+      {Boolean(onForgotPinPress) && (
+        <View
+          style={{
+            justifyContent: 'center',
+            flexDirection: 'row',
+            marginTop: 18,
+            gap: 4,
+          }}>
+          <Text>Lupa PIN?</Text>
+          <TouchableOpacity onPress={onForgotPinPress}>
+            <Text style={{ color: '#3981FF', fontWeight: '700' }}>Reset PIN</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 };

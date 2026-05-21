@@ -9,6 +9,7 @@ interface SettingItemProps {
   onPress?: () => void;
   type?: 'arrow' | 'switch' | 'none';
   value?: boolean;
+  disabled?: boolean;
 }
 
 export const SettingItem = ({
@@ -18,6 +19,7 @@ export const SettingItem = ({
   onPress,
   type = 'arrow',
   value,
+  disabled,
 }: SettingItemProps) => {
   return (
     <TouchableOpacity
@@ -41,6 +43,7 @@ export const SettingItem = ({
           onValueChange={onPress}
           trackColor={{ false: '#E5E5E5', true: '#4F84F6' }}
           thumbColor="#FFFFFF"
+          disabled={disabled}
           style={{ transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }}
         />
       )}

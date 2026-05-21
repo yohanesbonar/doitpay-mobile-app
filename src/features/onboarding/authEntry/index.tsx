@@ -234,6 +234,7 @@ export const AuthEntry = ({ route }) => {
             onChangeText={(text) => {
               handlePINChange(text);
             }}
+            onForgotPinPress={() => navigation.navigate('ForgotPin')}
           />
         );
       // disable this step because KYC is not ready

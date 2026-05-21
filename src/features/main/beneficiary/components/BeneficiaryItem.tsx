@@ -1,42 +1,37 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Star } from 'lucide-react-native';
+import { Beneficiary } from '../types';
 
 interface BeneficiaryItemProps {
-  item: {
-    id: string;
-    name: string;
-    bank: string;
-    accountNumber: string;
-    isFavorite: boolean;
-  };
+  item: Beneficiary;
   onPress?: () => void;
-  onFavoritePress: () => void;
+  onFavoritePress?: () => void;
 }
 
 const BeneficiaryItem = ({ item, onPress, onFavoritePress }: BeneficiaryItemProps) => {
+  const initials = item.accountHolderName
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
   return (
     <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.leftContent}>
         <View style={styles.avatar}>
-          <Text style={styles.avatarText}>
-            {item.name
-              .split(' ')
-              .map((n) => n[0])
-              .join('')
-              .slice(0, 2)
-              .toUpperCase()}
-          </Text>
+          <Text style={styles.avatarText}>{initials}</Text>
         </View>
         <View style={styles.info}>
-          <Text style={styles.name}>{item.name}</Text>
-          <Text style={styles.bankInfo}>{`${item.bank}  ${item.accountNumber}`}</Text>
+          <Text style={styles.name}>{item.accountHolderName}</Text>
+          <Text style={styles.bankInfo}>{`${item.bankShortName}  ${item.accountNumber}`}</Text>
         </View>
       </View>
       <TouchableOpacity
         onPress={(e) => {
           e.stopPropagation();
-          onFavoritePress();
+          onFavoritePress?.();
         }}
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
         <Star
