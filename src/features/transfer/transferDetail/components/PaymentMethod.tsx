@@ -19,21 +19,6 @@ interface PaymentMethodProps {
   styleProps: any;
 }
 
-const BANKS: BankOption[] = [
-  {
-    id: '1',
-    shortName: 'BCA',
-    name: 'Bank Central Asia',
-    image: require('../../../../assets/images/ic-BCA.png'),
-  },
-  {
-    id: '2',
-    shortName: 'CIMB',
-    name: 'CIMB Digital',
-    image: require('../../../../assets/images/ic-CIMB.png'),
-  },
-];
-
 const PaymentMethod: React.FC<PaymentMethodProps> = ({
   selectedMethod,
   onSelect,
@@ -63,6 +48,42 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
       },
     );
   }, []);
+
+  const filteredBanks = React.useMemo(() => {
+    const currentSearch = searchQuery.toLowerCase().trim();
+    if (!currentSearch) return banks;
+
+    return banks.filter((bank: any) => (bank?.name || '').toLowerCase().includes(currentSearch));
+  }, [searchQuery, banks]);
+
+  const renderHighlightedName = (name: string, search: string) => {
+    if (!search.trim()) {
+      return <Text>{name}</Text>;
+    }
+
+    const escapedSearch = search.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    const regex = new RegExp(`(${escapedSearch})`, 'gi');
+
+    const parts = name.split(regex);
+
+    return (
+      <Text>
+        {parts.map((part, index) => {
+          const isMatch = part.toLowerCase() === search.toLowerCase().trim();
+
+          return (
+            <Text
+              key={index}
+              style={{
+                fontFamily: isMatch ? 'Switzer-Bold' : 'Switzer-Regular',
+              }}>
+              {part}
+            </Text>
+          );
+        })}
+      </Text>
+    );
+  };
 
   return (
     <View
@@ -165,7 +186,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
             />
           </View>
 
-          {banks.map((item) => {
+          {filteredBanks.map((item) => {
             const isChosen = selectedBank === item.id;
             return (
               <TouchableOpacity
@@ -200,15 +221,15 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
                   />
                 </View>
 
-                <Text
-                  style={{
-                    flex: 1,
-                    fontFamily: 'Switzer-Medium',
-                    fontSize: 16,
-                    color: '#111827',
-                  }}>
-                  {item.name}
-                </Text>
+                <View style={{ flex: 1 }}>
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      color: '#111827',
+                    }}>
+                    {renderHighlightedName(item.name, searchQuery)}
+                  </Text>
+                </View>
 
                 {isChosen ? (
                   <CheckCircle2
