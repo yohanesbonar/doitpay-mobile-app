@@ -14,8 +14,11 @@ import {
   RegisterPinSetupPayload,
   RegisterPinSetupResponse,
 } from '../api/auth';
-import { setStorageItem, StorageKey } from '../storage';
+import { setStorageItem, storage, StorageKey } from '../storage';
 import { useAuthStore } from '../storage/useAuthStore';
+import { Platform } from 'react-native';
+import { getMessaging, getToken } from '@react-native-firebase/messaging';
+import { useUpdateDeviceToken } from './useDeviceMutation';
 import Toast from 'react-native-toast-message';
 
 export const useRegisterRequestOtp = () => {
@@ -57,6 +60,40 @@ export const useRegisterVerifyOtp = () => {
 export const useRegisterPinSetup = () => {
   const setToken = useAuthStore((state) => state.setToken);
   const setExpiresAt = useAuthStore((state) => state.setExpiresAt);
+  const { mutate: updateDeviceToken } = useUpdateDeviceToken();
+
+  const requestFcmToken = async () => {
+    const existingToken = storage.getString(StorageKey.FCM_TOKEN);
+    if (existingToken) {
+      return existingToken;
+    }
+
+    try {
+      const token = await getToken(getMessaging());
+      if (token) {
+        setStorageItem(StorageKey.FCM_TOKEN, token);
+        return token;
+      }
+    } catch (error) {
+      console.error('useRegisterPinSetup: failed to request FCM token', error);
+    }
+
+    return null;
+  };
+
+  const sendFcmTokenToBackend = async () => {
+    const fcmToken = await requestFcmToken();
+    if (!fcmToken) {
+      console.log('useRegisterPinSetup: no FCM token available, skipping device update');
+      return;
+    }
+
+    updateDeviceToken({
+      fcmToken,
+      platform: Platform.OS as 'ios' | 'android',
+    });
+  };
+
   return useMutation<RegisterPinSetupResponse, Error, RegisterPinSetupPayload>({
     mutationFn: (payload) => authApi.registerPinSetup(payload),
     onSuccess: (data) => {
@@ -79,6 +116,8 @@ export const useRegisterPinSetup = () => {
       if (session?.expiresAt) {
         setExpiresAt(session.expiresAt);
       }
+
+      sendFcmTokenToBackend();
     },
     onError: (error) => {
       console.log('error useRegisterPinSetup', error);
@@ -126,6 +165,40 @@ export const useLoginVerifyOtp = () => {
 export const useLogin = () => {
   const setToken = useAuthStore((state) => state.setToken);
   const setExpiresAt = useAuthStore((state) => state.setExpiresAt);
+  const { mutate: updateDeviceToken } = useUpdateDeviceToken();
+
+  const requestFcmToken = async () => {
+    const existingToken = storage.getString(StorageKey.FCM_TOKEN);
+    if (existingToken) {
+      return existingToken;
+    }
+
+    try {
+      const token = await getToken(getMessaging());
+      if (token) {
+        setStorageItem(StorageKey.FCM_TOKEN, token);
+        return token;
+      }
+    } catch (error) {
+      console.error('useLogin: failed to request FCM token', error);
+    }
+
+    return null;
+  };
+
+  const sendFcmTokenToBackend = async () => {
+    const fcmToken = await requestFcmToken();
+    if (!fcmToken) {
+      console.log('useLogin: no FCM token available, skipping device update');
+      return;
+    }
+
+    updateDeviceToken({
+      fcmToken,
+      platform: Platform.OS as 'ios' | 'android',
+    });
+  };
+
   return useMutation<LoginResponse, Error, LoginPayload>({
     mutationFn: (payload) => authApi.login(payload),
     onSuccess: (data) => {
@@ -143,6 +216,8 @@ export const useLogin = () => {
       if (session?.expiresAt) {
         setExpiresAt(session.expiresAt);
       }
+
+      sendFcmTokenToBackend();
     },
     onError: (error) => {
       console.log('error login', error);
