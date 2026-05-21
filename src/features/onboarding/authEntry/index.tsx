@@ -120,7 +120,7 @@ export const AuthEntry = ({ route }) => {
             onError: (err: any) => {
               Toast.show({
                 type: 'error',
-                text1: err?.message || 'Kode OTP salah',
+                text1: err?.error?.message ?? '',
               });
             },
           },
@@ -136,9 +136,10 @@ export const AuthEntry = ({ route }) => {
               setCurrentStep(4);
             },
             onError: (err: any) => {
+              console.error('error loginVerifyOTP', err?.error?.message);
               Toast.show({
                 type: 'error',
-                text1: err?.message || 'Kode OTP salah',
+                text1: err?.error?.message ?? '',
               });
             },
           },
@@ -266,10 +267,10 @@ export const AuthEntry = ({ route }) => {
             setCurrentStep(2);
           },
           onError: (err) => {
-            console.error('error OTP request', err);
+            console.error('error registerRequestOTP', err);
             Toast.show({
               type: 'error',
-              text1: err.message,
+              text1: err?.error?.message ?? '',
             });
           },
         },
@@ -286,10 +287,10 @@ export const AuthEntry = ({ route }) => {
             setCurrentStep(2);
           },
           onError: (err) => {
-            console.error('error OTP request', err);
+            console.error('error loginRequestOTP', err);
             Toast.show({
               type: 'error',
-              text1: err.message,
+              text1: err?.error?.message ?? '',
             });
           },
         },
@@ -353,7 +354,7 @@ export const AuthEntry = ({ route }) => {
                   setConfirmationPin('');
                   Toast.show({
                     type: 'error',
-                    text1: err?.message || '',
+                    text1: err?.error?.message ?? '',
                   });
                 },
               },
@@ -386,7 +387,7 @@ export const AuthEntry = ({ route }) => {
                 setConfirmationPin('');
                 Toast.show({
                   type: 'error',
-                  text1: err?.message || 'Gagal mengatur PIN',
+                  text1: err?.error?.message || 'Gagal mengatur PIN',
                 });
               },
             },
@@ -417,10 +418,10 @@ export const AuthEntry = ({ route }) => {
                 setCurrentStep(2);
               },
               onError: (err) => {
-                console.error('error OTP request', err);
+                console.error('error registerRequestOTP', err?.error?.message);
                 Toast.show({
                   type: 'error',
-                  text1: err.message,
+                  text1: err?.error?.message ?? '',
                 });
               },
             },
@@ -437,10 +438,10 @@ export const AuthEntry = ({ route }) => {
                 setCurrentStep(2);
               },
               onError: (err) => {
-                console.error('error OTP request', err);
+                console.error('error registerRequestOTP', err?.error?.message);
                 Toast.show({
                   type: 'error',
-                  text1: err.message,
+                  text1: err?.error?.message ?? '',
                 });
               },
             },

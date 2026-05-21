@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, TextInput, Image } from 'react-native';
 import { createStyles } from './styles.ts';
 import { useTranslation } from 'react-i18next';
@@ -9,6 +9,10 @@ import { Formik } from 'formik';
 import { ArrowDownLeft, ArrowUpRight, Search } from 'lucide-react-native';
 import { useBanks } from '@/hooks/useBankMutation.ts';
 import FastImage from 'react-native-fast-image';
+import { storage, StorageKey } from '@/storage/index.ts';
+import { CompleteAccountPopup } from '@/components/molecules/CompleteAccountPopup/index.tsx';
+import { useFocusEffect } from '@react-navigation/native';
+import { useGetProfile } from '@/hooks/useMeMutation.ts';
 
 interface BankListViewProps {
   onPressBack: () => void;
@@ -17,6 +21,8 @@ interface BankListViewProps {
   isLoginState: boolean;
   fromTabBar: boolean;
   fromProfile: boolean;
+  goToBankAccounts: () => void;
+  goToRequestPayment: () => void;
 }
 
 export const BankListView = ({
@@ -26,6 +32,8 @@ export const BankListView = ({
   isLoginState,
   fromTabBar,
   fromProfile,
+  goToBankAccounts,
+  goToRequestPayment,
 }: BankListViewProps) => {
   console.log('BankListView Props:', {
     onPressBack,
@@ -34,6 +42,8 @@ export const BankListView = ({
     isLoginState,
     fromTabBar,
     fromProfile,
+    goToBankAccounts,
+    goToRequestPayment,
   });
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -42,8 +52,39 @@ export const BankListView = ({
   const [activeTab, setActiveTab] = useState<'send' | 'receive'>('send');
   const [allBanks, setAllBanks] = useState<any[]>([]);
   const [popularBanks, setPopularBanks] = useState<any[]>([]);
+  const [isHasBankAccount, setIsHasBankAccount] = useState(false);
 
   const { mutate: mutateBanks, isPending: isPendingBank } = useBanks();
+  const [isAccountSheetMounted, setIsAccountSheetMounted] = useState(false);
+
+  const { mutate: getProfile, isPending: isLoadingProfile } = useGetProfile();
+
+  useFocusEffect(
+    useCallback(() => {
+      setActiveTab('send');
+    }, []),
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      getProfile(
+        {},
+        {
+          onSuccess: (data) => {
+            console.log('getProfile data', data);
+            if (!data?.data?.hasBankAccount && !fromProfile) {
+              setTimeout(() => {
+                handleOpenAccountSheet();
+              }, 500);
+            }
+          },
+          onError: (error) => {
+            console.log('getProfile error', error);
+          },
+        },
+      );
+    }, []),
+  );
 
   useEffect(() => {
     mutateBanks(
@@ -60,6 +101,60 @@ export const BankListView = ({
     );
   }, [mutateBanks]);
 
+  useEffect(() => {
+    const hasShown = storage.getBoolean(StorageKey.HAS_SHOWN_COMPLETE_ACCOUNT_BANK_LIST);
+    if (!hasShown && !fromProfile) {
+      storage.set(StorageKey.HAS_SHOWN_COMPLETE_ACCOUNT_BANK_LIST, true);
+    }
+  }, []);
+
+  const handleOpenAccountSheet = useCallback(() => {
+    setIsAccountSheetMounted(true);
+  }, []);
+
+  const handleGoToAddBank = () => {
+    setIsAccountSheetMounted(false);
+    goToBankAccounts();
+  };
+
+  const onCloseCompleteModal = () => {
+    setIsAccountSheetMounted(false);
+    onPressBack();
+  };
+
+  const onPressReceive = () => {
+    setActiveTab('receive');
+    setTimeout(() => {
+      goToRequestPayment();
+    }, 300);
+  };
+
+  const renderHighlightedShortName = (shortName: string, search: string) => {
+    if (!search.trim()) return <Text>{shortName}</Text>;
+
+    const escapedSearch = search.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    const regex = new RegExp(`(${escapedSearch})`, 'gi');
+    const parts = shortName.split(regex);
+
+    return (
+      <Text>
+        {parts.map((part, index) => {
+          const isMatch = part.toLowerCase() === search.toLowerCase().trim();
+          return (
+            <Text
+              key={index}
+              style={{
+                fontFamily: isMatch ? 'Switzer-Bold' : 'Switzer-Regular',
+                fontWeight: isMatch ? '700' : '400',
+              }}>
+              {part}
+            </Text>
+          );
+        })}
+      </Text>
+    );
+  };
+
   return (
     <View style={styles.container}>
       <HeaderToolbar
@@ -69,116 +164,141 @@ export const BankListView = ({
         titleStyle="normal"
       />
       <Formik initialValues={{ selectedBank: '', searchQuery: '' }} onSubmit={onPressNext}>
-        {({ values, setFieldValue, handleSubmit }) => (
-          <View style={{ flex: 1 }}>
-            {!fromProfile && (
-              <View style={styles.tabContainer}>
-                <TouchableOpacity
-                  style={[styles.tabButton, activeTab === 'send' && styles.activeTab]}
-                  onPress={() => setActiveTab('send')}>
-                  <ArrowUpRight size={18} color={activeTab === 'send' ? '#FFF' : '#000'} />
-                  <Text style={[styles.tabText, activeTab === 'send' && styles.activeTabText]}>
-                    Kirim
-                  </Text>
-                </TouchableOpacity>
+        {({ values, setFieldValue, handleSubmit }) => {
+          const currentSearch = (values.searchQuery || '').toLowerCase().trim();
 
-                <TouchableOpacity
-                  style={[styles.tabButton, activeTab === 'receive' && styles.activeTab]}
-                  onPress={() => setActiveTab('receive')}>
-                  <ArrowDownLeft size={18} color={activeTab === 'receive' ? '#FFF' : '#000'} />
-                  <Text style={[styles.tabText, activeTab === 'receive' && styles.activeTabText]}>
-                    Terima
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            )}
+          const filteredAllBanks = allBanks.filter((bank: any) => {
+            const bankShortName = (bank?.shortName || '').toLowerCase();
+            return bankShortName.includes(currentSearch);
+          });
 
-            <View style={styles.searchContainer}>
-              <Search size={20} color="#A9A9A9" style={styles.searchIcon} />
-              <TextInput
-                style={styles.searchInput}
-                placeholder={t('bankList.nameBankAccount')}
-                value={values.searchQuery}
-                onChangeText={(text) => setFieldValue('searchQuery', text)}
-              />
-            </View>
-            {!isPendingBank && (
-              <FlatList
-                data={allBanks}
-                keyExtractor={(item, index) => index.toString()}
-                ListHeaderComponent={
-                  <View>
-                    <Text style={[styles.sectionTitle, { marginTop: 10 }]}>
-                      {t('bankList.populerBank')}
-                    </Text>
-                    <View style={styles.gridContainer}>
-                      {popularBanks.map((bank, index) => (
-                        <TouchableOpacity
-                          key={index}
-                          style={[
-                            styles.gridBox,
-                            values.selectedBank === bank.id && styles.selectedBox,
-                          ]}
-                          onPress={() => {
-                            setFieldValue('selectedBank', bank);
-                            onSelectBank(bank, activeTab);
-                          }}>
-                          <FastImage
-                            style={styles.logoGrid}
-                            source={{
-                              uri: bank?.logoUrl,
-                              priority: FastImage.priority.normal,
-                              cache: FastImage.cacheControl.immutable,
-                            }}
-                            resizeMode={FastImage.resizeMode.cover}
-                          />
-                        </TouchableOpacity>
-                      ))}
-                    </View>
-                    <Text style={styles.sectionTitle}>{t('bankList.allBank')}</Text>
-                  </View>
-                }
-                renderItem={({ item }) => (
+          const filteredPopularBanks = popularBanks.filter((bank: any) => {
+            const bankShortName = (bank?.shortName || '').toLowerCase();
+            return bankShortName.includes(currentSearch);
+          });
+
+          return (
+            <View style={{ flex: 1 }}>
+              {!fromProfile && (
+                <View style={styles.tabContainer}>
                   <TouchableOpacity
-                    style={styles.listItem}
-                    onPress={() => {
-                      setFieldValue('selectedBank', item);
-                      onSelectBank(item, activeTab);
-                    }}>
-                    <View style={styles.listLogoContainer}>
-                      <FastImage
-                        style={styles.logoList}
-                        source={{
-                          uri: item?.logoUrl,
-                          priority: FastImage.priority.normal,
-                          cache: FastImage.cacheControl.immutable,
-                        }}
-                        resizeMode={FastImage.resizeMode.cover}
-                      />
-                    </View>
-                    <Text style={styles.listText} numberOfLines={2} ellipsizeMode="tail">
-                      {item?.shortName}
+                    style={[styles.tabButton, activeTab === 'send' && styles.activeTab]}
+                    onPress={() => setActiveTab('send')}>
+                    <ArrowUpRight size={18} color={activeTab === 'send' ? '#FFF' : '#000'} />
+                    <Text style={[styles.tabText, activeTab === 'send' && styles.activeTabText]}>
+                      Kirim
                     </Text>
                   </TouchableOpacity>
-                )}
-                contentContainerStyle={styles.listPadding}
-              />
-            )}
 
-            {!fromTabBar && !fromProfile && (
-              <View style={styles.footer}>
-                <Button
-                  type="regular"
-                  onPress={handleSubmit}
-                  title={t('bankList.next')}
-                  style={{ borderWidth: 1, borderColor: '#D4D4D4' }}
-                  color={colors.white}
-                  textColor="black"
+                  <TouchableOpacity
+                    style={[styles.tabButton, activeTab === 'receive' && styles.activeTab]}
+                    onPress={() => onPressReceive()}>
+                    <ArrowDownLeft size={18} color={activeTab === 'receive' ? '#FFF' : '#000'} />
+                    <Text style={[styles.tabText, activeTab === 'receive' && styles.activeTabText]}>
+                      Terima
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              <View style={styles.searchContainer}>
+                <Search size={20} color="#A9A9A9" style={styles.searchIcon} />
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder={t('bankList.nameBankAccount')}
+                  value={values.searchQuery}
+                  onChangeText={(text) => setFieldValue('searchQuery', text)}
                 />
               </View>
-            )}
-          </View>
-        )}
+              {!isPendingBank && (
+                <FlatList
+                  data={filteredAllBanks}
+                  keyExtractor={(item, index) => index.toString()}
+                  ListHeaderComponent={
+                    <View>
+                      {filteredPopularBanks.length > 0 && (
+                        <Text style={[styles.sectionTitle, { marginTop: 10 }]}>
+                          {t('bankList.populerBank')}
+                        </Text>
+                      )}
+                      <View style={styles.gridContainer}>
+                        {filteredPopularBanks.map((bank, index) => (
+                          <TouchableOpacity
+                            key={index}
+                            style={[
+                              styles.gridBox,
+                              values.selectedBank === bank.id && styles.selectedBox,
+                            ]}
+                            onPress={() => {
+                              setFieldValue('selectedBank', bank);
+                              onSelectBank(bank, activeTab);
+                            }}>
+                            <FastImage
+                              style={styles.logoGrid}
+                              source={{
+                                uri: bank?.logoUrl,
+                                priority: FastImage.priority.normal,
+                                cache: FastImage.cacheControl.immutable,
+                              }}
+                              resizeMode={FastImage.resizeMode.cover}
+                            />
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                      {filteredAllBanks.length > 0 && (
+                        <Text style={styles.sectionTitle}>{t('bankList.allBank')}</Text>
+                      )}
+                    </View>
+                  }
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      style={styles.listItem}
+                      onPress={() => {
+                        setFieldValue('selectedBank', item);
+                        onSelectBank(item, activeTab);
+                      }}>
+                      <View style={styles.listLogoContainer}>
+                        <FastImage
+                          style={styles.logoList}
+                          source={{
+                            uri: item?.logoUrl,
+                            priority: FastImage.priority.normal,
+                            cache: FastImage.cacheControl.immutable,
+                          }}
+                          resizeMode={FastImage.resizeMode.cover}
+                        />
+                      </View>
+                      <Text style={styles.listText} numberOfLines={2} ellipsizeMode="tail">
+                        {renderHighlightedShortName(item?.shortName, values.searchQuery)}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                  contentContainerStyle={styles.listPadding}
+                />
+              )}
+
+              {!fromTabBar && !fromProfile && (
+                <View style={styles.footer}>
+                  <Button
+                    type="regular"
+                    onPress={handleSubmit}
+                    title={t('bankList.next')}
+                    style={{ borderWidth: 1, borderColor: '#D4D4D4' }}
+                    color={colors.white}
+                    textColor="black"
+                  />
+                </View>
+              )}
+              {isAccountSheetMounted && (
+                <CompleteAccountPopup
+                  onClose={onCloseCompleteModal}
+                  onAddAccount={handleGoToAddBank}
+                  withButtonClose={true}
+                />
+              )}
+            </View>
+          );
+        }}
       </Formik>
     </View>
   );

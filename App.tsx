@@ -25,7 +25,7 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 2,
-      staleTime: 1000 * 60 * 5, // 5 minutes
+      staleTime: 1000 * 60 * 5,
     },
   },
 });
@@ -45,11 +45,15 @@ notifee.onBackgroundEvent(async ({ type, detail }) => {
   }
 });
 
-const App = () => {
+const AppInitializer = () => {
   useNotifications();
   useGetFcmToken();
   useNotificationListener();
 
+  return null;
+};
+
+const App = () => {
   return (
     // <GluestackUIProvider mode="dark">
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -59,6 +63,7 @@ const App = () => {
             <SafeAreaProvider>
               <ThemeProvider>
                 <RootNavigator />
+                <AppInitializer />
               </ThemeProvider>
               <Toast config={toastConfig} />
             </SafeAreaProvider>

@@ -33,6 +33,12 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Aplikasi ini membutuhkan akses galeri untuk menyimpan gambar QRIS Pembayaran.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Aplikasi ini membutuhkan akses galeri untuk mendownload QRIS.</string>
+
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>
 	<key>RCTNewArchEnabled</key>

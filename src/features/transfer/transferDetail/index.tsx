@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -14,6 +14,8 @@ import QuickAmount from './components/QuickAmount';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import { formatNumber } from '@/utils/Common';
 import { useReceive, useTransfer } from '../../../hooks/useTransferMutation';
+import _ from 'lodash';
+import Button from '../../../components/atoms/Button/index.tsx';
 
 interface TransferDetailViewProps {
   accountData: {
@@ -27,7 +29,12 @@ interface TransferDetailViewProps {
   isLoginState: boolean;
   method: 'send' | 'receive';
   onPressBack: () => void;
-  gotoPaymentInstruction: (paymentMethod: 'VA' | 'QRIS', amount: string) => void;
+  gotoPaymentInstruction: (
+    paymentMethod: 'VA' | 'QRIS',
+    amount: string,
+    transferData: any,
+    bankPayment: any,
+  ) => void;
 }
 
 const TransferDetailView = (props: TransferDetailViewProps) => {
@@ -52,9 +59,56 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
   const [methodPayment, setMethodPayment] = useState<'VA' | 'QRIS'>('VA');
+  const [bankPayment, setBankPayment] = useState(null);
+  const [isDisableConfirm, setIsDisableConfirm] = useState(true);
 
   const { mutate: postTransfer, isPending: isLoadingTransfer } = useTransfer();
-  const { mutate: postReceive, isPending: isLoadingReceive } = useReceive();
+
+  useEffect(() => {
+    console.log('bankPayment ->>>', bankPayment);
+  }, [bankPayment]);
+
+  const onPressConfirm = () => {
+    let payload = {
+      amount: parseInt(amount),
+      inquiryId: accountData?.id,
+      payChannel: methodPayment == 'VA' ? bankPayment?.code : methodPayment,
+      payMethod: methodPayment == 'VA' ? 'VIRTUAL_ACCOUNT' : methodPayment,
+      remark: note,
+    };
+    let idempotencyKey = new Date().getTime().toString();
+    postTransfer(
+      {
+        payload,
+        idempotencyKey,
+      },
+      {
+        onSuccess: (data) => {
+          let transferData = data?.data ?? {};
+          console.log('postTransfer onSuccess bankPayment', bankPayment);
+          gotoPaymentInstruction(methodPayment, amount, transferData, bankPayment);
+        },
+        onError: (error) => {
+          console.error('Transfer gagal ->>> ', error);
+        },
+      },
+    );
+  };
+
+  useEffect(() => {
+    let isDisable = true;
+
+    if (methodPayment == 'QRIS' && !amount) {
+      isDisable = true;
+      console.log('a');
+    } else if (methodPayment == 'VA' && (_.isEmpty(bankPayment) || !amount)) {
+      isDisable = true;
+      console.log('b');
+    } else {
+      isDisable = false;
+    }
+    setIsDisableConfirm(isDisable);
+  }, [methodPayment, bankPayment, amount]);
 
   return (
     <View style={{ flex: 1, backgroundColor: '#FFF' }}>
@@ -122,7 +176,11 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
           onChangeText={setNote}
         />
 
-        <PaymentMethod selectedMethod={methodPayment} onSelect={(val) => setMethodPayment(val)} />
+        <PaymentMethod
+          selectedMethod={methodPayment}
+          onSelect={(val) => setMethodPayment(val)}
+          onSelectBank={(val) => setBankPayment(val)}
+        />
       </ScrollView>
 
       <View style={styles.footerOverlay}>
@@ -141,14 +199,15 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
             </Text>
             <Text style={styles.totalText}>Rp {amount ? formatNumber(amount) : '0'}</Text>
           </View>
-          <TouchableOpacity
-            style={[styles.confirmButton, !amount && styles.disabledButton]}
-            disabled={!amount}
-            onPress={() => gotoPaymentInstruction(methodPayment, amount)}>
-            <Text style={{ color: '#FFF', fontFamily: 'Switzer-Bold', fontSize: 16 }}>
-              Konfirmasi & Bayar
-            </Text>
-          </TouchableOpacity>
+          <Button
+            type="regular"
+            onPress={() => onPressConfirm()}
+            title="Konfirmasi & Bayar"
+            textStyle={{ color: '#FFF', fontFamily: 'Switzer-Bold', fontSize: 16 }}
+            style={[styles.confirmButton, isDisableConfirm && styles.disabledButton]}
+            disable={isDisableConfirm}
+            loading={isLoadingTransfer}
+          />
         </View>
       </View>
     </View>

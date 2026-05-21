@@ -50,5 +50,33 @@ export const createStyles = (colors: typeof themeColors.light) => {
       justifyContent: 'center',
     },
     headerContainer: { flex: 1, backgroundColor: colors.background },
+    emptyContainer: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 50,
+      paddingHorizontal: 16,
+    },
+    emptyImage: {
+      width: 140,
+      height: 140,
+      resizeMode: 'contain',
+      marginBottom: 16,
+    },
+    emptyTitle: {
+      fontSize: 24,
+      fontFamily: 'Switzer-Semibold', 
+      color: '#111827',
+      textAlign: 'center',
+      marginBottom: 8,
+    },
+    emptySubtitle: {
+      fontSize: 16,
+      fontFamily: 'Switzer-Regular',
+      color: '#000000',
+      textAlign: 'center',
+      lineHeight: 20,
+      paddingHorizontal: 20,
+    },
   });
 };

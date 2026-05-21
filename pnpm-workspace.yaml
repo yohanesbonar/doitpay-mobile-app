@@ -1,0 +1,8 @@
+packages:
+  - '.'
+
+allowBuilds:
+  "@react-native-picker/picker": true
+  "@firebase/util": true
+  "protobufjs": true
+  "sharp": true

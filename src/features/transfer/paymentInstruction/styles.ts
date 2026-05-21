@@ -8,7 +8,6 @@ export const styles = StyleSheet.create({
   scrollContent: {
     padding: 20,
   },
-  /* VA STYLES */
   vaCard: {
     backgroundColor: '#FFF',
     borderRadius: 12,
@@ -40,6 +39,7 @@ export const styles = StyleSheet.create({
     fontFamily: 'Switzer-Medium',
     fontSize: 16,
     color: '#111827',
+    marginLeft: 10,
   },
   vaLabel: {
     fontFamily: 'Switzer-Regular',
@@ -61,16 +61,17 @@ export const styles = StyleSheet.create({
   },
   copyBadge: {
     flexDirection: 'row',
-    backgroundColor: '#3B82F6',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    backgroundColor: '#3475E8',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
     borderRadius: 20,
     alignItems: 'center',
   },
   copyText: {
     color: '#FFF',
     fontFamily: 'Switzer-Medium',
-    fontSize: 12,
+    fontSize: 14,
+    marginLeft: 4,
   },
   vaAmountText: {
     fontFamily: 'Switzer-Regular',
@@ -99,10 +100,9 @@ export const styles = StyleSheet.create({
     fontSize: 15,
     color: '#111827',
   },
-  /* QRIS STYLES */
   qrisContainer: {
     alignItems: 'center',
-    paddingTop: 20,
+    width: '100%',
   },
   qrisLabel: {
     fontFamily: 'Switzer-Medium',
@@ -142,6 +142,11 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    paddingTop: 24,
   },
   qrImagePlaceholder: {
     width: '100%',
@@ -218,30 +223,72 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     width: '100%',
-    marginVertical: 24,
+    marginBottom: 24,
   },
   inputCurrencyPrefix: {
-    fontFamily: 'Switzer-Bold', 
+    fontFamily: 'Switzer-Bold',
     fontSize: 18,
     color: '#111827',
     marginRight: 12,
   },
-  amountInput: {
+  amountText: {
     flex: 1,
-    height: 56,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    fontSize: 24,
+    fontSize: 40,
     fontFamily: 'Switzer-Medium',
-    color: '#111827',
-    backgroundColor: '#FFFFFF',
+    color: '#0A0A0A',
   },
   amountInputPlaceholder: {
-    fontSize: 14, 
+    fontSize: 14,
   },
   amountInputActive: {
     fontSize: 24,
+  },
+  footer: {
+    paddingHorizontal: 24,
+    paddingBottom: 20,
+    paddingTop: 16,
+  },
+  viewShotWrapper: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 16,
+    width: '100%',
+    alignItems: 'center',
+  },
+  instructionStepsContainer: {
+    backgroundColor: '#F9FAFB',
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 4,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+  },
+  stepRow: {
+    flexDirection: 'row',
+    alignItems: 'top',
+    marginBottom: 12,
+    width: '100%',
+  },
+  stepNumberBadge: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#3475E8', // Warna primary Doitpay
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+    marginTop: 2,
+  },
+  stepNumberText: {
+    color: '#FFF',
+    fontSize: 11,
+    fontFamily: 'Switzer-Bold',
+  },
+  stepInstructionText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#4B5563',
+    fontFamily: 'Switzer-Regular',
+    lineHeight: 18,
   },
 });

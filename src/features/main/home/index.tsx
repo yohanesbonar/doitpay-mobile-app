@@ -8,7 +8,6 @@ import { StackActions, useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconNotification } from '../../../assets/icons/index.ts';
 import { handleLogout } from '@/utils/Common/index.ts';
-import { useAuthStore } from '../../../storage/useAuthStore.ts';
 
 import { TransferLimitCard } from './components/TransferLimitCard.tsx';
 import { BillCard } from './components/BillCard.tsx';
@@ -18,28 +17,26 @@ import { SearchBar } from './components/SearchBar.tsx';
 import { UnprotectedAccount } from './components/UnprotectedAccount.tsx';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { EmailBottomsheet } from '@/components/molecules/EmailBottomsheet';
+import { storage, StorageKey } from '../../../storage/index.ts';
+import { CompleteAccountPopup } from '@/components/molecules/CompleteAccountPopup';
+import { useAuthStore } from '@/storage/useAuthStore.ts';
 
 interface HomeViewProps {
   goToSearchAccount: () => void;
   onPressBack: () => void;
+  goToBankAccounts: () => void;
 }
 
 export const HomeView = (props: HomeViewProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const { t } = useTranslation();
-  const navigation = useNavigation();
-  const { isNewUser, setIsNewUser } = useAuthStore();
-
-  // useEffect(() => {
-  //   if (isNewUser) {
-  //     navigation.dispatch(StackActions.replace('BankList'));
-  //     setIsNewUser(false);
-  //   }
-  // }, [isNewUser]);
 
   const [isSheetMounted, setIsSheetMounted] = useState(false);
   const emailSheetRef = useRef<BottomSheetModal>(null);
+  const [isAccountSheetMounted, setIsAccountSheetMounted] = useState(false);
+  const [activities, setActivities] = useState([]);
+  const { isNewUser, setIsNewUser } = useAuthStore();
 
   const handleOpenEmailSheet = useCallback(() => {
     setIsSheetMounted(true);
@@ -48,6 +45,40 @@ export const HomeView = (props: HomeViewProps) => {
       emailSheetRef.current?.present();
     });
   }, []);
+
+  useEffect(() => {
+    console.log('isNewUser', isNewUser);
+    if (isNewUser) {
+      setIsNewUser(false);
+    }
+  }, [isNewUser]);
+
+  useEffect(() => {
+    const hasShown = false;
+
+    if (!hasShown && isNewUser) {
+      setTimeout(() => {
+        handleOpenAccountSheet();
+      }, 500);
+
+      storage.set(StorageKey.HAS_SHOWN_COMPLETE_ACCOUNT_HOME, true);
+    }
+  }, []);
+
+  const handleOpenAccountSheet = useCallback(() => {
+    setIsAccountSheetMounted(true);
+  }, []);
+
+  const handleGoToAddBank = () => {
+    setIsAccountSheetMounted(false);
+    storage.set(StorageKey.HAS_SHOWN_COMPLETE_ACCOUNT_HOME, true);
+    props.goToBankAccounts();
+  };
+
+  const onCloseCompleteModal = () => {
+    setIsAccountSheetMounted(false);
+    storage.set(StorageKey.HAS_SHOWN_COMPLETE_ACCOUNT_HOME, true);
+  };
 
   return (
     <SafeAreaView style={styles.safeAreaContainer}>
@@ -63,48 +94,72 @@ export const HomeView = (props: HomeViewProps) => {
         </View>
 
         <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-          <UnprotectedAccount onPress={() => handleOpenEmailSheet()} isShow={true} />
+          <UnprotectedAccount onPress={() => handleOpenEmailSheet()} isShow={false} />
           <View style={styles.dailyLimitWrapper}>
             <Text style={{ fontSize: 22, fontFamily: 'Switzer-Semibold' }}>
               {t('home.dailyLimitTransfer')}
             </Text>
-            <TransferLimitCard usedAmount={500000} maxAmount={25000000} percentage={5} />
+            <TransferLimitCard
+              usedAmount={activities?.length > 0 ? 500000 : 0}
+              maxAmount={25000000}
+              percentage={5}
+            />
           </View>
-          <View style={styles.mainWrapper}>
-            <SearchBar onPress={props.goToSearchAccount} />
-            <SizedBox height={20} />
-            <View style={{ flexDirection: 'row', gap: 12 }}>
-              <BillCard title="Bayar kos" accountInfo="Joni Wahyu  BCA ****3910" />
-              <BillCard title="Tagihan Listrik" accountInfo="PLN  BCA ****3910" />
-            </View>
-            <SizedBox height={24} />
-            <View style={{ marginRight: -24 }}>
-              <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>
-                {t('home.lastSend')}
+          {activities?.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Image
+                source={require('../../../assets/images/ic-empty-home.png')}
+                style={styles.emptyImage}
+              />
+              <Text style={styles.emptyTitle}>Belum ada aktivitas</Text>
+              <Text style={styles.emptySubtitle}>
+                Lakukan transfer, atau terima uang untuk melihat aktivitas terbaru di sini
               </Text>
-              <RecentRecipient />
             </View>
-            <SizedBox height={24} />
-            <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>
-              {t('home.lastActivity')}
-            </Text>
-            <View style={{ paddingBottom: 75 }}>
-              {[{}, {}, {}, {}].map((item, index) => (
-                <RecentActivityItem
-                  key={index}
-                  initial="JW"
-                  name="Joni Wahyu"
-                  bank="BCA"
-                  time="14:00 WIB"
-                  amount="Rp 500,000"
-                />
-              ))}
+          ) : (
+            <View style={styles.mainWrapper}>
+              <SearchBar onPress={props.goToSearchAccount} />
+              <SizedBox height={20} />
+              <View style={{ flexDirection: 'row', gap: 12 }}>
+                <BillCard title="Bayar kos" accountInfo="Joni Wahyu  BCA ****3910" />
+                <BillCard title="Tagihan Listrik" accountInfo="PLN  BCA ****3910" />
+              </View>
+              <SizedBox height={24} />
+              <View style={{ marginRight: -24 }}>
+                <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>
+                  {t('home.lastSend')}
+                </Text>
+                <RecentRecipient />
+              </View>
+              <SizedBox height={24} />
+              <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>
+                {t('home.lastActivity')}
+              </Text>
+              <View style={{ paddingBottom: 75 }}>
+                {[{}, {}, {}, {}].map((item, index) => (
+                  <RecentActivityItem
+                    key={index}
+                    initial="JW"
+                    name="Joni Wahyu"
+                    bank="BCA"
+                    time="14:00 WIB"
+                    amount="Rp 500,000"
+                  />
+                ))}
+              </View>
             </View>
-          </View>
+          )}
         </ScrollView>
       </View>
       {isSheetMounted && (
         <EmailBottomsheet ref={emailSheetRef} onDismiss={() => setIsSheetMounted(false)} />
+      )}
+      {isAccountSheetMounted && (
+        <CompleteAccountPopup
+          onClose={onCloseCompleteModal}
+          onAddAccount={handleGoToAddBank}
+          withButtonClose={true}
+        />
       )}
     </SafeAreaView>
   );

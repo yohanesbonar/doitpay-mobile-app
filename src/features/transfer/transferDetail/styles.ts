@@ -146,7 +146,7 @@ export const styles = StyleSheet.create({
   },
   confirmButton: {
     backgroundColor: '#2F80ED',
-    paddingVertical: 14,
+    paddingVertical: 10,
     borderRadius: 25,
     alignItems: 'center',
     marginTop: 12,

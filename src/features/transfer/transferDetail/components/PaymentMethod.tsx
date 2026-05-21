@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput, Image } from 'react-native';
 import { styles } from '../styles';
 import { Search, CreditCard, QrCode, CheckCircle2, Circle } from 'lucide-react-native';
 import { useTheme } from '@/theme/ThemeProvider';
 import { createStyles } from '../../addBankAccount/styles';
+import { useVAMethods } from '@/hooks/useTransferMutation';
 
 interface BankOption {
   id: string;
@@ -14,28 +15,87 @@ interface BankOption {
 interface PaymentMethodProps {
   selectedMethod: 'VA' | 'QRIS';
   onSelect: (method: 'VA' | 'QRIS') => void;
+  onSelectBank: (data: any) => void;
+  styleProps: any;
 }
 
-const BANKS: BankOption[] = [
-  { id: 'bca', name: 'Bank Central Asia', image: require('../../../../assets/images/ic-BCA.png') },
-  { id: 'blu', name: 'Blu BCA Digital', image: require('../../../../assets/images/ic-BCA.png') },
-];
-
-const PaymentMethod: React.FC<PaymentMethodProps> = ({ selectedMethod, onSelect }) => {
-  const [selectedBank, setSelectedBank] = useState('bca');
+const PaymentMethod: React.FC<PaymentMethodProps> = ({
+  selectedMethod,
+  onSelect,
+  onSelectBank,
+  styleProps,
+}) => {
+  const [selectedBank, setSelectedBank] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [banks, setBanks] = useState([]);
+
+  const { mutate: VAMethods, isPending: isLoadingVAMethods } = useVAMethods();
 
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
+  useEffect(() => {
+    VAMethods(
+      {},
+      {
+        onSuccess: (data) => {
+          console.log('VAMethods successfully:', data);
+          setBanks(data?.data?.items ?? []);
+        },
+        onError: (error) => {
+          console.error('Error VAMethods:', error);
+        },
+      },
+    );
+  }, []);
+
+  const filteredBanks = React.useMemo(() => {
+    const currentSearch = searchQuery.toLowerCase().trim();
+    if (!currentSearch) return banks;
+
+    return banks.filter((bank: any) => (bank?.name || '').toLowerCase().includes(currentSearch));
+  }, [searchQuery, banks]);
+
+  const renderHighlightedName = (name: string, search: string) => {
+    if (!search.trim()) {
+      return <Text>{name}</Text>;
+    }
+
+    const escapedSearch = search.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    const regex = new RegExp(`(${escapedSearch})`, 'gi');
+
+    const parts = name.split(regex);
+
+    return (
+      <Text>
+        {parts.map((part, index) => {
+          const isMatch = part.toLowerCase() === search.toLowerCase().trim();
+
+          return (
+            <Text
+              key={index}
+              style={{
+                fontFamily: isMatch ? 'Switzer-Bold' : 'Switzer-Regular',
+              }}>
+              {part}
+            </Text>
+          );
+        })}
+      </Text>
+    );
+  };
+
   return (
     <View
-      style={{
-        paddingTop: 16,
-        marginTop: 16,
-        backgroundColor: colors.pageBackground,
-        paddingHorizontal: 20,
-      }}>
+      style={[
+        {
+          paddingTop: 16,
+          marginTop: 16,
+          backgroundColor: colors.pageBackground,
+          paddingHorizontal: 20,
+        },
+        styleProps,
+      ]}>
       <Text
         style={[styles.label, { fontSize: 20, marginBottom: 16, fontFamily: 'Switzer-Medium' }]}>
         Metode Pembayaran
@@ -126,12 +186,12 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({ selectedMethod, onSelect 
             />
           </View>
 
-          {BANKS.map((bank) => {
-            const isChosen = selectedBank === bank.id;
+          {filteredBanks.map((item) => {
+            const isChosen = selectedBank === item.id;
             return (
               <TouchableOpacity
-                key={bank.id}
-                onPress={() => setSelectedBank(bank.id)}
+                key={item.id}
+                onPress={() => setSelectedBank(item.id) + onSelectBank(item)}
                 activeOpacity={0.8}
                 style={{
                   flexDirection: 'row',
@@ -156,20 +216,20 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({ selectedMethod, onSelect 
                     borderColor: '#F3F4F6',
                   }}>
                   <Image
-                    source={bank.image}
+                    source={{ uri: item?.logoUrl }}
                     style={{ width: '80%', height: '80%', resizeMode: 'contain' }}
                   />
                 </View>
 
-                <Text
-                  style={{
-                    flex: 1,
-                    fontFamily: 'Switzer-Medium',
-                    fontSize: 16,
-                    color: '#111827',
-                  }}>
-                  {bank.name}
-                </Text>
+                <View style={{ flex: 1 }}>
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      color: '#111827',
+                    }}>
+                    {renderHighlightedName(item.name, searchQuery)}
+                  </Text>
+                </View>
 
                 {isChosen ? (
                   <CheckCircle2

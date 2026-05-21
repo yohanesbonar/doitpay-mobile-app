@@ -9,6 +9,7 @@ apply from: file("../../node_modules/react-native-vector-icons/fonts.gradle")
  * By default you don't need to apply any configuration, just uncomment the lines you need.
  */
 react {
+    hermesCommand = "$rootDir/../node_modules/hermes-engine/osx-bin/hermesc"
     /* Folders */
     //   The root of your project, i.e. where "package.json" lives. Default is '../..'
     // root = file("../../")

@@ -23,6 +23,7 @@ import PaymentReceipt from '../screens/transfer/paymentReceipt';
 import SearchAccountScreen from '../screens/transfer/searchAccount';
 import { ForgotPin } from '@/features/onboarding/forgot-pin';
 import { BeneficiaryScreen } from '@/screens/main/beneficiary/beneficiary-screen';
+import RequestPaymentScreen from '../screens/transfer/requestPayment';
 
 const Stack = createNativeStackNavigator();
 
@@ -57,6 +58,7 @@ export default function RootNavigator() {
             <Stack.Screen name="History" component={History} />
             <Stack.Screen name="Profile" component={Profile} />
             <Stack.Screen name="SearchAccount" component={SearchAccountScreen} />
+            <Stack.Screen name="RequestPayment" component={RequestPaymentScreen} />
           </Stack.Group>
         ) : (
           <Stack.Group>
