@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { FC, useState } from 'react';
 import { View, Text, TouchableOpacity, FlatList, Image, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../../theme/ThemeProvider';
@@ -14,18 +14,29 @@ import { BeneficiaryListSkeleton } from './components/BeneficiaryItemSkeleton';
 import { useDebounce } from '@/utils/hooks/useDebounce';
 import { Beneficiary as BeneficiaryType } from './types';
 
-const BeneficiaryItemRow = ({ item }: { item: BeneficiaryType }) => {
+const BeneficiaryItemRow = ({
+  item,
+  goToTransferDetail,
+}: {
+  item: BeneficiaryType;
+  goToTransferDetail: () => void;
+}) => {
   const { mutate: updateBeneficiary } = useUpdateBeneficieryMutation(item.id);
 
   return (
     <BeneficiaryItem
       item={item}
       onFavoritePress={() => updateBeneficiary({ isFavorite: !item.isFavorite })}
+      onPress={goToTransferDetail}
     />
   );
 };
 
-export const Beneficiary = () => {
+interface BeneficiaryProps {
+  goToTransferDetail: (params: { bankData: any; accountData: any }) => void;
+}
+
+export const Beneficiary: FC<BeneficiaryProps> = ({ goToTransferDetail }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const { t } = useTranslation();
@@ -91,7 +102,20 @@ export const Beneficiary = () => {
           <FlatList
             data={parsedBeneficiaries}
             keyExtractor={(item) => item.id}
-            renderItem={({ item }) => <BeneficiaryItemRow item={item} />}
+            renderItem={({ item }) => (
+              <BeneficiaryItemRow
+                item={item}
+                goToTransferDetail={() => {
+                  goToTransferDetail({
+                    bankData: { shortName: item.bankCode, logoUrl: null },
+                    accountData: {
+                      accountHolderName: item.accountHolderName,
+                      accountNumber: item.accountNumber,
+                    },
+                  });
+                }}
+              />
+            )}
             contentContainerStyle={[
               styles.listContent,
               {

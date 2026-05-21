@@ -7,6 +7,7 @@ export type ResponseApi<T> = {
 export type ResponseListApi<T> = {
   data: {
     items: T[];
+    nextCursor: string | null;
   };
   message: string;
   status: string;

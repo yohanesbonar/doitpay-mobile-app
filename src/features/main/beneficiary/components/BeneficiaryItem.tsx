@@ -25,7 +25,7 @@ const BeneficiaryItem = ({ item, onPress, onFavoritePress }: BeneficiaryItemProp
         </View>
         <View style={styles.info}>
           <Text style={styles.name}>{item.accountHolderName}</Text>
-          <Text style={styles.bankInfo}>{`${item.bankCode}  ${item.accountNumber}`}</Text>
+          <Text style={styles.bankInfo}>{`${item.bankShortName}  ${item.accountNumber}`}</Text>
         </View>
       </View>
       <TouchableOpacity

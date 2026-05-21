@@ -7,16 +7,8 @@ export type Beneficiary = {
   bankCode: string;
   isFavorite: boolean;
   lastUsedAt: string;
+  bankShortName: string;
 };
-
-export interface GetBeneficiariesResponse {
-  data: {
-    items: Beneficiary[];
-    nextCursor: string | null;
-  };
-  message: string;
-  status: string;
-}
 
 export interface GetBeneficiariesQueries extends PaginationQueries {
   search?: string;

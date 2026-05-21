@@ -1,27 +1,40 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Switch, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, Globe, Clock } from 'lucide-react-native';
 import { SettingItem } from '@/components/molecules/SettingsItem';
 import DeviceInfo from 'react-native-device-info';
 import { TermsAndConditionContent } from './components/TermsAndConditionContent';
 import { PrivacyAndPolicyContent } from './components/PrivacyAndPolicyContent';
+import { useGetNotificationsPreferences } from '@/features/notification/hooks/useGetNotificationsPreferencesQuery';
+import { useUpdateNotificationPreferenceMutation } from '@/features/notification/hooks/useUpdateNotificationPreferenceMutation';
+import { NotifKey } from '@/features/notification/types';
 
 export const Settings = ({ navigation }: any) => {
   const appVersion = DeviceInfo.getVersion();
 
-  const [notifStates, setNotifStates] = useState({
-    general: true,
-    payment: true,
-    transfer: true,
-    promo: true,
-  });
-
   const [openTnc, setOpenTnc] = useState<boolean>(false);
   const [openPnp, setOpenPnp] = useState<boolean>(false);
 
-  const toggleSwitch = (key: keyof typeof notifStates) => {
-    setNotifStates((prev) => ({ ...prev, [key]: !prev[key] }));
+  const { data: notificationsPreferences } = useGetNotificationsPreferences();
+  const { mutate: updatePreference, isPending } = useUpdateNotificationPreferenceMutation('');
+
+  const categories = notificationsPreferences?.data?.categories;
+
+  const toggleSwitch = (key: NotifKey) => {
+    if (!notificationsPreferences?.data) return;
+    const {
+      emailEnabled,
+      locale,
+      pushEnabled,
+      categories: currentCategories,
+    } = notificationsPreferences.data;
+    updatePreference({
+      emailEnabled,
+      locale,
+      pushEnabled,
+      categories: { ...currentCategories, [key]: !currentCategories[key] },
+    });
   };
 
   return (
@@ -45,29 +58,33 @@ export const Settings = ({ navigation }: any) => {
               title="General Notification"
               sub="Notifikasi transfer & keamanan"
               type="switch"
-              value={notifStates.general}
-              onPress={() => toggleSwitch('general')}
+              value={categories?.security ?? false}
+              onPress={() => toggleSwitch('security')}
+              disabled={isPending}
             />
             <SettingItem
               title="Notifikasi Pembayaran"
               sub="VA diterima & Transfer selesai"
               type="switch"
-              value={notifStates.payment}
-              onPress={() => toggleSwitch('payment')}
+              value={categories?.transaction ?? false}
+              onPress={() => toggleSwitch('transaction')}
+              disabled={isPending}
             />
             <SettingItem
               title="Pengingat Transfer"
               sub="Reminder jika VA belum dibayar"
               type="switch"
-              value={notifStates.transfer}
-              onPress={() => toggleSwitch('transfer')}
+              value={categories?.system ?? false}
+              onPress={() => toggleSwitch('system')}
+              disabled={isPending}
             />
             <SettingItem
               title="Tips & Promosi"
               sub="Tips penggunaan & penawaran"
               type="switch"
-              value={notifStates.promo}
-              onPress={() => toggleSwitch('promo')}
+              value={categories?.marketing ?? false}
+              onPress={() => toggleSwitch('marketing')}
+              disabled={isPending}
             />
 
             <Text style={[styles.sectionTitle, { marginTop: 24 }]}>TENTANG</Text>
@@ -90,15 +107,4 @@ const styles = StyleSheet.create({
   headerTitle: { fontFamily: 'Switzer-Semibold', fontSize: 22, color: '#1A1A1A' },
   content: { paddingHorizontal: 20 },
   sectionTitle: { fontSize: 12, fontFamily: 'Switzer-Medium', color: '#737373', marginBottom: 8 },
-  itemContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-  },
-  itemLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  itemTitle: { fontSize: 16, fontFamily: 'Switzer-Medium', color: '#1A1A1A' },
-  itemSub: { fontSize: 12, fontFamily: 'Switzer-Regular', color: '#737373', marginTop: 2 },
 });

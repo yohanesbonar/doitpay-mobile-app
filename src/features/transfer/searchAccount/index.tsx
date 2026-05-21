@@ -46,7 +46,10 @@ const SearchAccountView = ({ onPressBack, goToTransferDetail }: SearchAccountVie
       onPress={() =>
         goToTransferDetail({
           bankData: { shortName: item.bankCode, logoUrl: null },
-          accountData: { accountHolderName: item.accountHolderName, accountNumber: item.accountNumber },
+          accountData: {
+            accountHolderName: item.accountHolderName,
+            accountNumber: item.accountNumber,
+          },
         })
       }>
       <View style={styles.listLogoContainer}>
@@ -59,7 +62,7 @@ const SearchAccountView = ({ onPressBack, goToTransferDetail }: SearchAccountVie
       <View style={styles.textContainer}>
         <Text style={styles.userName}>{item.accountHolderName}</Text>
         <Text style={styles.accountInfo}>
-          {item.bankCode}  {item.accountNumber}
+          {item.bankCode} {item.accountNumber}
         </Text>
       </View>
     </TouchableOpacity>
@@ -96,7 +99,9 @@ const SearchAccountView = ({ onPressBack, goToTransferDetail }: SearchAccountVie
             showsVerticalScrollIndicator={false}
             refreshing={isRefetching}
             onRefresh={refetch}
-            onScrollBeginDrag={() => { hasScrolledRef.current = true; }}
+            onScrollBeginDrag={() => {
+              hasScrolledRef.current = true;
+            }}
             onEndReached={() => {
               if (hasNextPage && !isFetchingNextPage && hasScrolledRef.current) fetchNextPage();
             }}
@@ -107,7 +112,9 @@ const SearchAccountView = ({ onPressBack, goToTransferDetail }: SearchAccountVie
               ) : null
             }
             ListEmptyComponent={
-              <Text style={styles.emptyText}>{t('searchAccount.notFound') || 'Tidak ada hasil'}</Text>
+              <Text style={styles.emptyText}>
+                {t('searchAccount.notFound') || 'Tidak ada hasil'}
+              </Text>
             }
           />
         )}
