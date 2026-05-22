@@ -5,6 +5,7 @@
   "scripts": {
     "setup": "node setup.js",
     "android-staging": "export ENVFILE=.env.staging && npx react-native run-android --mode stagingdebug",
+    "android-staging-release": "export ENVFILE=.env.staging && npx react-native run-android --mode stagingRelease",
     "android-production": "export ENVFILE=.env.production && npx react-native run-android --mode productiondebug",
     "ios-staging": "export ENVFILE=.env.staging && npx react-native run-ios --scheme Staging --simulator=\"iPhone 17 Pro\"",
     "ios-production": "export ENVFILE=.env.production && npx react-native run-ios --scheme Production --simulator=\"iPhone 17 Pro\"",
@@ -32,7 +33,9 @@
     "@react-native-clipboard/clipboard": "^1.16.3",
     "@react-native-community/datetimepicker": "^9.1.0",
     "@react-native-firebase/app": "^24.0.0",
+    "@react-native-firebase/crashlytics": "^24.0.0",
     "@react-native-firebase/messaging": "^24.0.0",
+    "@react-native-firebase/perf": "^24.0.0",
     "@react-native-picker/picker": "react-native-picker/picker",
     "@react-native/new-app-screen": "0.85.3",
     "@react-navigation/bottom-tabs": "^7.3.10",

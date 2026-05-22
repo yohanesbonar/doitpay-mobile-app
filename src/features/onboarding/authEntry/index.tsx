@@ -30,6 +30,7 @@ import InputPhoneNumber from './components/InputPhoneNumber.tsx';
 import InputOTPNumber from './components/InputOTPNumber.tsx';
 import Toast from 'react-native-toast-message';
 import CreateAndConfirmPIN from './components/CreateAndConfirmPIN.tsx';
+import crashlytics from '@react-native-firebase/crashlytics';
 
 export interface PhoneNumberFormValues {
   phoneNumber: string;
@@ -345,6 +346,8 @@ export const AuthEntry = ({ route }) => {
               },
               {
                 onSuccess: (res) => {
+                  crashlytics().log('User register setup pin');
+                  crashlytics().setUserId(formattedPhone);
                   setTimeout(() => {
                     navigation.navigate('MainTabs', { isLoginState });
                   }, 500);
@@ -374,6 +377,8 @@ export const AuthEntry = ({ route }) => {
             },
             {
               onSuccess: (res) => {
+                crashlytics().log('User login success');
+                crashlytics().setUserId(formattedPhone);
                 console.log('Login success:', res);
                 Toast.show({
                   type: 'success',

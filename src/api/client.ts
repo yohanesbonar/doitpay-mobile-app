@@ -6,7 +6,8 @@ import { getStorageItem, setStorageItem, StorageKey } from '../storage/index.ts'
 import { useAuthStore } from '../storage/useAuthStore.ts';
 import Toast from 'react-native-toast-message';
 import { Platform } from 'react-native';
-import { config } from '@/components/ui/gluestack-ui-provider/config.ts';
+import perf, { FirebasePerformanceTypes } from '@react-native-firebase/perf';
+import crashlytics from '@react-native-firebase/crashlytics';
 
 let isRefreshing = false;
 let failedQueue: any[] = [];
@@ -30,9 +31,11 @@ const apiClient = axios.create({
 declare module 'axios' {
   export interface AxiosRequestConfig {
     noNeedAuth?: boolean;
+    _perfMetric?: FirebasePerformanceTypes.HttpMetric;
   }
   export interface InternalAxiosRequestConfig {
     noNeedAuth?: boolean;
+    _perfMetric?: FirebasePerformanceTypes.HttpMetric;
   }
 }
 
@@ -43,6 +46,17 @@ apiClient.interceptors.request.use(
     config.headers['X-Platform'] = Platform.OS;
     config.headers['X-App-Type'] = 'mobile';
     config.headers['X-Device-ID'] = deviceId;
+
+    if (!__DEV__) {
+      try {
+        const url = `${config.baseURL ?? ''}${config.url ?? ''}`;
+        const method = (config.method?.toUpperCase() ??
+          'GET') as FirebasePerformanceTypes.HttpMethod;
+        const metric = await perf().newHttpMetric(url, method);
+        await metric.start();
+        config._perfMetric = metric;
+      } catch (e) {}
+    }
 
     const noNeedAuth = config?.noNeedAuth;
 
@@ -136,7 +150,14 @@ apiClient.interceptors.request.use(
 );
 
 apiClient.interceptors.response.use(
-  (response) => {
+  async (response) => {
+    if (!__DEV__ && response.config._perfMetric) {
+      try {
+        await response.config._perfMetric.setHttpResponseCode(response.status);
+        await response.config._perfMetric.stop();
+      } catch (e) {}
+    }
+
     if (__DEV__) {
       console.log('--- ✅ API RESPONSE ---');
       console.log(`Status: ${response.status}`);
@@ -145,7 +166,20 @@ apiClient.interceptors.response.use(
     }
     return response;
   },
-  (error) => {
+  async (error) => {
+    if (!__DEV__ && error.config?._perfMetric) {
+      try {
+        await error.config._perfMetric.setHttpResponseCode(error.response?.status ?? 0);
+        await error.config._perfMetric.stop();
+      } catch (e) {}
+    }
+
+    if (!__DEV__) {
+      crashlytics().recordError(
+        new Error(`API Error ${error.response?.status}: ${error.config?.url}`),
+      );
+    }
+
     if (__DEV__) {
       console.log('--- ❌ API ERROR ---');
       console.log(`Status: ${error.response?.status}`);
