@@ -176,12 +176,6 @@ export const transferApi = {
     );
     return data;
   },
-  getTransferDetail: async (payload: TransferStatusPayload): Promise<TransferStatusResponse> => {
-    const { data } = await apiClient.get<TransferStatusResponse>(
-      `/v1/transfers/${payload.id}`,
-    );
-    return data;
-  },
   getTransferDetailById: async (payload: { id: string }): Promise<GetTransferDetailResponse> => {
     const { data } = await apiClient.get<GetTransferDetailResponse>(`/v1/transfers/${payload.id}`);
     return data;
