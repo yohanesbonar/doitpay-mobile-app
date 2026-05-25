@@ -73,7 +73,61 @@ export interface PaymentStatusData {
   status: 'success' | 'pending' | 'failed' | string;
 }
 
+export interface TransferStatusPayload {
+  id: string;
+}
+
+export interface BeneficiaryData {
+  accountName: string;
+  accountNumber: string;
+  bankCode: string;
+  bankName: string;
+  logoUrl: string;
+}
+
+export type TransferApiStatus = 
+  | 'WAITING_PAYMENT' 
+  | 'DISBURSING' 
+  | 'DISBURSING_FAILED' 
+  | 'COMPLETED' 
+  | 'CANCELLED';
+export interface TransferStatusData {
+  amount: number;
+  beneficiary: BeneficiaryData;
+  lastUpdatedAt: string; 
+  processedAt: string;
+  status: TransferApiStatus;
+}
+
+export type TransferStatusResponse = BaseResponse<TransferStatusData>;
+
 export type PaymentStatusResponse = BaseResponse<PaymentStatusData>;
+
+export interface QrisDetailData {
+  content: string;
+  nmid: string;
+  recipientName: string;
+}
+
+export interface VaDetailData {
+  code: string;
+  logoUrl: string;
+  name: string;
+  number: string;
+}
+
+export interface GetTransferDetailResponseData {
+  amount: number;
+  createdAt: string;
+  id: string;
+  paymentExpiredAt: string;
+  paymentId: string;
+  qris: QrisDetailData | null;
+  status: 'CREATED' | 'PAID' | 'COMPLETED' | 'CANCELLED' | string;
+  va: VaDetailData | null;
+}
+
+export type GetTransferDetailResponse = BaseResponse<GetTransferDetailResponseData>;
 
 export const transferApi = {
   postTransfers: async (
@@ -114,6 +168,22 @@ export const transferApi = {
   },
   getPaymentStatus: async (payload: PaymentStatusPayload): Promise<PaymentStatusResponse> => {
     const { data } = await apiClient.get<PaymentStatusResponse>(`/v1/payment/${payload.id}`);
+    return data;
+  },
+  getTransferStatus: async (payload: TransferStatusPayload): Promise<TransferStatusResponse> => {
+    const { data } = await apiClient.get<TransferStatusResponse>(
+      `/v1/transfers/status/${payload.id}`,
+    );
+    return data;
+  },
+  getTransferDetail: async (payload: TransferStatusPayload): Promise<TransferStatusResponse> => {
+    const { data } = await apiClient.get<TransferStatusResponse>(
+      `/v1/transfers/${payload.id}`,
+    );
+    return data;
+  },
+  getTransferDetailById: async (payload: { id: string }): Promise<GetTransferDetailResponse> => {
+    const { data } = await apiClient.get<GetTransferDetailResponse>(`/v1/transfers/${payload.id}`);
     return data;
   },
 };

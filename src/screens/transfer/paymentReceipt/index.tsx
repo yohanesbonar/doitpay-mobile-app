@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { BackHandler } from 'react-native'; 
 import { useNavigation, useRoute } from '@react-navigation/native';
 import PaymentReceiptView from '../../../features/transfer/paymentReceipt';
 
@@ -8,13 +9,25 @@ const PaymentReceiptScreen = () => {
   const { accountData, bankData, paymentMethod, amount, transactionId, dateTime, method } =
     (route.params || {}) as any;
 
-  const handleBack = () => {
-    navigation.goBack();
-  };
 
   const handleHome = () => {
-    navigation.navigate('MainTabs');
+    navigation.navigate('MainTabs'); 
   };
+
+
+  useEffect(() => {
+    const backAction = () => {
+      handleHome();
+      return true; 
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction
+    );
+
+    return () => backHandler.remove();
+  }, []);
 
   return (
     <PaymentReceiptView
@@ -24,7 +37,7 @@ const PaymentReceiptScreen = () => {
       amount={amount}
       transactionId={transactionId}
       dateTime={dateTime}
-      onPressBack={handleBack}
+      onPressBack={handleHome} 
       onPressHome={handleHome}
       method={method}
     />

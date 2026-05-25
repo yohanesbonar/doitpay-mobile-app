@@ -1,10 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, ScrollView, Image } from 'react-native';
-import { Inbox, Scan, Send, CheckCircle2 } from 'lucide-react-native';
+// Menggunakan MailOpen (Diterima), Send (Mengirim), dan Check (Selesai) sesuai UI Figma kamu
+import { MailOpen, Send, Check } from 'lucide-react-native';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import { styles } from './styles';
+import { formatNumber } from '@/utils/Common';
 
-const stepsOrder = ['received', 'verifying', 'sending', 'done'] as const;
+// 1. Ubah definisi step order menjadi 3 tahap
+export type TransferStep = 'received' | 'sending' | 'done';
 
 interface TransferProcessingViewProps {
   accountData?: {
@@ -15,21 +18,20 @@ interface TransferProcessingViewProps {
   bankData?: any;
   amount?: string;
   paymentMethod?: 'VA' | 'QRIS';
-  currentStep?: 'received' | 'verifying' | 'sending' | 'done';
+  currentStep?: TransferStep;
   onPressBack: () => void;
   onFinish?: () => void;
 }
 
+// 2. Sesuaikan konfigurasi step menjadi 3 item
 const stepLabels = [
-  { key: 'received', label: 'Diterima', Icon: Inbox },
-  { key: 'verifying', label: 'Verifikasi', Icon: Scan },
+  { key: 'received', label: 'Diterima', Icon: MailOpen },
   { key: 'sending', label: 'Mengirim', Icon: Send },
-  { key: 'done', label: 'Selesai', Icon: CheckCircle2 },
+  { key: 'done', label: 'Selesai', Icon: Check },
 ] as const;
 
 const statusTextMap = {
   received: 'Transfer diterima',
-  verifying: 'Memverifikasi transfer',
   sending: 'Mengirim Dana',
   done: 'Transfer Berhasil',
 };
@@ -39,52 +41,28 @@ const TransferProcessingView = ({
   bankData,
   amount,
   paymentMethod,
-  // currentStep = 'received', temporary comment
+  currentStep = 'received', 
   onPressBack,
   onFinish,
 }: TransferProcessingViewProps) => {
-  console.log('currentStep:', currentStep);
-  console.log('statusTextMap[currentStep]:', statusTextMap[currentStep]);
-
-  // state local for temporary waiting for api ready
-  const [currentStep, setCurrentStep] = useState<'received' | 'verifying' | 'sending' | 'done'>(
-    'received',
-  );
-
-  const bankName = bankData?.name || 'Bank Central Asia';
-  const ownerName = accountData?.name || 'Prabu Suwito';
-  const formattedAmount = amount;
+  console.log('TransferProcessingView - Props:', {
+    accountData,
+    bankData,
+    amount,
+    paymentMethod,
+    currentStep,
+  });
+  const bankName = bankData?.name || '-';
+  const logoUrl = bankData?.logoUrl || accountData?.bankLogo || null;
+  const ownerName = accountData?.accountHolderName || accountData?.accountName || '-';
+  const formattedAmount = formatNumber(amount || '0');
 
   const currentStepIndex = Math.max(
     0,
     stepLabels.findIndex((s) => s.key === currentStep),
   );
-  const ActiveIcon = stepLabels[currentStepIndex]?.Icon || Inbox;
-
-  // temporary comment waiting for api ready
-  // useEffect(() => {
-  //   if (currentStep === 'done' && onFinish) {
-  //     const timer = setTimeout(() => {
-  //       onFinish();
-  //     }, 1500);
-  //     return () => clearTimeout(timer);
-  //   }
-  // }, [currentStep, onFinish]);
-
-  useEffect(() => {
-    // if (currentStepIndex < stepsOrder.length - 1) {
-    //   const stepTimer = setTimeout(() => {
-    //     setCurrentStep(stepsOrder[currentStepIndex + 1]);
-    //   }, 2000);
-    //   return () => clearTimeout(stepTimer);
-    // }
-    // if (currentStep === 'done' && onFinish) {
-    //   const finishTimer = setTimeout(() => {
-    //     onFinish();
-    //   }, 1500);
-    //   return () => clearTimeout(finishTimer);
-    // }
-  }, [currentStep, currentStepIndex, onFinish]);
+  
+  const ActiveIcon = stepLabels[currentStepIndex]?.Icon || MailOpen;
 
   return (
     <View style={styles.container}>
@@ -93,7 +71,7 @@ const TransferProcessingView = ({
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.topInfo}>
           <View style={styles.bankRow}>
-            <Image source={require('../../../assets/images/ic-BCA.png')} style={styles.bankLogo} />
+            <Image source={{ uri: logoUrl }} style={styles.bankLogo} />
             <Text style={styles.bankNameText}>{bankName}</Text>
           </View>
 
@@ -105,7 +83,7 @@ const TransferProcessingView = ({
 
         <View style={styles.iconVisualContainer}>
           <View style={styles.iconCircle}>
-            <ActiveIcon size={32} color="#3B82F6" />
+            <ActiveIcon size={32} color="#FFFFFF" />
           </View>
         </View>
 
@@ -128,7 +106,7 @@ const TransferProcessingView = ({
                 key={`label-${step.key}`}
                 style={[
                   styles.stepLabel,
-                  index === currentStepIndex ? styles.labelActive : styles.labelInactive,
+                  index <= currentStepIndex ? styles.labelActive : styles.labelInactive,
                 ]}>
                 {step.label}
               </Text>

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -10,7 +10,7 @@ import {
   Platform,
   Linking,
 } from 'react-native';
-import { ChevronDown, Copy, Download, Share2 } from 'lucide-react-native';
+import { ChevronDown, Clock, Copy, Download, Share2 } from 'lucide-react-native';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import { styles } from './styles';
 import { formatNumber } from '@/utils/Common';
@@ -35,7 +35,6 @@ interface PaymentInstructionViewProps {
   transferData?: any;
   receiveData?: any;
   bankPayment?: any;
-  holdTemporary: () => void;
   instructionData?: {
     status: string;
     message: string;
@@ -61,14 +60,69 @@ const PaymentInstructionView = ({
   transferData,
   receiveData,
   bankPayment,
-  holdTemporary,
   instructionData,
   isPendingPaymentInstruction,
 }: PaymentInstructionViewProps) => {
   const [amount, setAmount] = useState(initialAmount || 0);
   const [expandedChannel, setExpandedChannel] = useState<string | null>(null);
 
+  const [countdownText, setCountdownText] = useState('00:00');
+
   const isQris = paymentMethod === 'QRIS';
+
+  const expiredAtRaw =
+    transferData?.paymentExpiredAt ||
+    receiveData?.paymentExpiredAt ||
+    transferData?.paymentInstrument?.expiredAt;
+
+  const formattedExpiryDate = expiredAtRaw
+    ? new Date(expiredAtRaw).toLocaleString('id-ID', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }) + ' WIB'
+    : '';
+
+  useEffect(() => {
+    if (!expiredAtRaw) {
+      setCountdownText('00:00');
+      return;
+    }
+
+    const targetTime = new Date(expiredAtRaw).getTime();
+
+    const updateCountdown = () => {
+      const now = new Date().getTime();
+      const difference = targetTime - now;
+
+      if (difference <= 0) {
+        setCountdownText('00:00');
+        clearInterval(intervalId);
+        return;
+      }
+
+      const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+      const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+      const formattedSeconds = seconds < 10 ? `0${seconds}` : seconds;
+
+      if (hours > 0) {
+        const formattedHours = hours < 10 ? `0${hours}` : hours;
+        setCountdownText(`${formattedHours}:${formattedMinutes}:${formattedSeconds}`);
+      } else {
+        setCountdownText(`${formattedMinutes}:${formattedSeconds}`);
+      }
+    };
+
+    updateCountdown();
+    const intervalId = setInterval(updateCountdown, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [expiredAtRaw]);
 
   console.log('instructionData ->>', instructionData);
 
@@ -191,6 +245,19 @@ const PaymentInstructionView = ({
       />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.payBeforeCard}>
+          <View style={styles.payBeforeLeft}>
+            <Clock size={18} color="#6B7280" style={{ marginRight: 8, marginTop: 1 }} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.payBeforeLabel}>Pay before:</Text>
+              <Text style={styles.payBeforeDate} numberOfLines={1}>
+                {formattedExpiryDate}
+              </Text>
+            </View>
+          </View>
+          <Text style={styles.payBeforeCountdown}>{countdownText}</Text>
+        </View>
+
         {isQris ? (
           <View style={styles.qrisContainer}>
             <ViewShot
@@ -250,7 +317,12 @@ const PaymentInstructionView = ({
             <View style={styles.vaCard}>
               <View style={styles.vaHeader}>
                 <Image
-                  source={{ uri: transferData?.va?.logoUrl || receiveData?.va?.logoUrl }}
+                  source={{
+                    uri:
+                      transferData?.va?.logoUrl ||
+                      receiveData?.va?.logoUrl ||
+                      'https://placeholder.com',
+                  }}
                   style={{ width: 64, height: 64, resizeMode: 'contain' }}
                 />
                 <Text style={styles.bankNameText}>
@@ -265,8 +337,7 @@ const PaymentInstructionView = ({
                 </Text>
                 <TouchableOpacity
                   style={styles.copyBadge}
-                  onPress={() => handleCopy(transferData?.vaNumber || receiveData?.vaNumber)}
-                  onLongPress={() => holdTemporary()}>
+                  onPress={() => handleCopy(transferData?.vaNumber || receiveData?.vaNumber)}>
                   <Copy size={14} color="#FFF" style={{ marginRight: 4 }} />
                   <Text style={styles.copyText}>Salin</Text>
                 </TouchableOpacity>
@@ -281,54 +352,54 @@ const PaymentInstructionView = ({
               </Text>
             </View>
 
-            <Text style={styles.guideTitle}>Cara Pembayaran</Text>
-            {!isPendingPaymentInstruction && instructionData?.data?.[0]?.channels ? (
-              instructionData.data[0].channels.map((item) => {
-                const isExpanded = expandedChannel === item.channel;
+            <View
+              style={{ backgroundColor: '#F9FAFB', paddingVertical: 12, paddingHorizontal: 20 }}>
+              <Text style={styles.guideTitle}>Cara Pembayaran</Text>
+              {!isPendingPaymentInstruction && instructionData?.data?.[0]?.channels ? (
+                instructionData.data[0].channels.map((item) => {
+                  const isExpanded = expandedChannel === item.channel;
 
-                return (
-                  <View key={item.channel} style={{ width: '100%', marginBottom: 8 }}>
-                    <TouchableOpacity
-                      style={styles.dropdownItem}
-                      onPress={() => toggleDropdown(item.channel)}>
-                      <Text style={styles.dropdownText}>{item.channel}</Text>
+                  return (
+                    <View key={item.channel} style={{ width: '100%', marginBottom: 8 }}>
+                      <TouchableOpacity
+                        style={styles.dropdownItem}
+                        onPress={() => toggleDropdown(item.channel)}>
+                        <Text style={styles.dropdownText}>{item.channel}</Text>
 
-                      <ChevronDown
-                        size={20}
-                        color="#6B7280"
-                        style={{ transform: [{ rotate: isExpanded ? '180deg' : '0deg' }] }}
-                      />
-                    </TouchableOpacity>
+                        <ChevronDown
+                          size={20}
+                          color="#6B7280"
+                          style={{ transform: [{ rotate: isExpanded ? '180deg' : '0deg' }] }}
+                        />
+                      </TouchableOpacity>
 
-                    {isExpanded && (
-                      <View style={styles.instructionStepsContainer}>
-                        {item.steps.map((stepText, stepIndex) => (
-                          <View key={stepIndex} style={styles.stepRow}>
-                            <View style={styles.stepNumberBadge}>
-                              <Text style={styles.stepNumberText}>{stepIndex + 1}</Text>
+                      {isExpanded && (
+                        <View style={styles.instructionStepsContainer}>
+                          {item.steps.map((stepText, stepIndex) => (
+                            <View key={stepIndex} style={styles.stepRow}>
+                              <View style={styles.stepNumberBadge}>
+                                <Text style={styles.stepNumberText}>{stepIndex + 1}</Text>
+                              </View>
+                              <Text style={styles.stepInstructionText}>{stepText}</Text>
                             </View>
-                            <Text style={styles.stepInstructionText}>{stepText}</Text>
-                          </View>
-                        ))}
-                      </View>
-                    )}
-                  </View>
-                );
-              })
-            ) : (
-              <Text style={{ color: '#9CA3AF', fontFamily: 'Switzer-Regular', paddingLeft: 4 }}>
-                Memuat petunjuk pembayaran...
-              </Text>
-            )}
+                          ))}
+                        </View>
+                      )}
+                    </View>
+                  );
+                })
+              ) : (
+                <Text style={{ color: '#9CA3AF', fontFamily: 'Switzer-Regular', paddingLeft: 4 }}>
+                  Memuat petunjuk pembayaran...
+                </Text>
+              )}
+            </View>
           </View>
         )}
       </ScrollView>
       {isQris && (
         <View style={styles.footer}>
-          <TouchableOpacity
-            style={styles.outlineButton}
-            onPress={handleDownloadQris}
-            onLongPress={() => holdTemporary()}>
+          <TouchableOpacity style={styles.outlineButton} onPress={handleDownloadQris}>
             <Download size={18} color="#111827" style={{ marginRight: 8 }} />
             <Text style={styles.outlineButtonText}>Unduh Gambar QRIS</Text>
           </TouchableOpacity>

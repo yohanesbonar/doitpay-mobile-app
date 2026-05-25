@@ -48,8 +48,22 @@ export default function RootNavigator() {
             <Stack.Screen name="AddBankRecipient" component={AddBankRecipient} />
             <Stack.Screen name="TransferDetail" component={TransferDetail} />
             <Stack.Screen name="PaymentInstruction" component={PaymentInstruction} />
-            <Stack.Screen name="TransferProcessing" component={TransferProcessing} />
-            <Stack.Screen name="PaymentReceipt" component={PaymentReceipt} />
+            <Stack.Screen
+              name="TransferProcessing"
+              component={TransferProcessing}
+              options={{
+                gestureEnabled: false, 
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name="PaymentReceipt"
+              component={PaymentReceipt}
+              options={{
+                gestureEnabled: false,
+                headerShown: false,
+              }}
+            />
             <Stack.Screen name="Settings" component={Settings} />
             <Stack.Screen name="Security" component={Security} />
             <Stack.Screen name="BankAccounts" component={BankAccounts} />

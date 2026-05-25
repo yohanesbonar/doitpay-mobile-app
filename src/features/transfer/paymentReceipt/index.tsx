@@ -45,7 +45,7 @@ const PaymentReceiptView = ({
   method,
 }: PaymentReceiptViewProps) => {
   const bankName = bankData?.name || accountData?.bankName || '-';
-  const ownerName = accountData?.name || '-';
+  const ownerName = accountData?.accountHolderName || accountData?.accountName || '-';
   const methodLabel = paymentMethod === 'QRIS' ? 'QRIS' : 'Virtual Account';
   console.log('PaymentReceiptView - Props:', {
     accountData,
@@ -158,28 +158,32 @@ const PaymentReceiptView = ({
 
   return (
     <View style={styles.container}>
-      <HeaderToolbar title="" titlePosition="left" titleStyle="regular" />
+      {/* <HeaderToolbar title="" titlePosition="left" titleStyle="regular" /> */}
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <ViewShot ref={viewShotRef} options={{ format: 'png', quality: 1.0 }}>
           <View style={styles.resultCard}>
             <View style={styles.resultIcon}>
-              <CheckCircle2 size={40} color="#FFFFFF" />
+              <CheckCircle2 size={80} color="#FFFFFF" />
             </View>
             <Text style={styles.resultTitle}>
               {method == 'receive' ? 'Dana Berhasil Diterima' : 'Transfer Berhasil'}
             </Text>
             <Text style={styles.resultAmount}>Rp {formattedAmount}</Text>
+
+            <View style={styles.curveCutout} />
           </View>
 
           <View style={styles.detailsCard}>
+            <Text style={styles.sectionTitle}>Detail Transaksi</Text>
+
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>ID Transaksi</Text>
-              <Text style={styles.detailValue}>{transactionId || 'TRX0123123'}</Text>
+              <Text style={styles.detailValue}>{transactionId}</Text>
             </View>
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Tanggal & Waktu</Text>
-              <Text style={styles.detailValue}>{dateTime || '12 February 2026 10:30:20'}</Text>
+              <Text style={styles.detailValue}>{dateTime}</Text>
             </View>
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Metode Pembayaran</Text>

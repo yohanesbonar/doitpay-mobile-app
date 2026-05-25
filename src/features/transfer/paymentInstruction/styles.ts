@@ -3,10 +3,10 @@ import { StyleSheet } from 'react-native';
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#FFF',
   },
   scrollContent: {
-    padding: 20,
+    paddingVertical: 20,
   },
   vaCard: {
     backgroundColor: '#FFF',
@@ -14,7 +14,9 @@ export const styles = StyleSheet.create({
     padding: 20,
     borderWidth: 1,
     borderColor: '#F3F4F6',
-    marginBottom: 32,
+    marginBottom: 20,
+    marginHorizontal: 20,
+    marginTop: 10,
   },
   vaHeader: {
     flexDirection: 'row',
@@ -102,7 +104,7 @@ export const styles = StyleSheet.create({
   },
   qrisContainer: {
     alignItems: 'center',
-    width: '100%',
+    marginBottom: 20,
   },
   qrisLabel: {
     fontFamily: 'Switzer-Medium',
@@ -273,7 +275,7 @@ export const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: '#3475E8', // Warna primary Doitpay
+    backgroundColor: '#3475E8', 
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -290,5 +292,39 @@ export const styles = StyleSheet.create({
     color: '#4B5563',
     fontFamily: 'Switzer-Regular',
     lineHeight: 18,
+  },
+  payBeforeCard: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E5E7EB', 
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginHorizontal: 20,
+  },
+  payBeforeLeft: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    flex: 1,
+  },
+  payBeforeLabel: {
+    fontFamily: 'Switzer-Regular',
+    fontSize: 14,
+    color: '#000',
+    marginBottom: 4,
+  },
+  payBeforeDate: {
+    fontFamily: 'Switzer-Medium',
+    fontSize: 14,
+    color: '#000000',
+  },
+  payBeforeCountdown: {
+    fontFamily: 'Switzer-Bold',
+    fontSize: 24,
+    color: '#EF4444', 
+    marginLeft: 8,
   },
 });

@@ -5,6 +5,7 @@ import {
   usePaymentInstructionMutation,
   usePaymentStatusMutation,
 } from '@/hooks/useTransferMutation';
+import { formatApiDateToLocal } from '@/utils/Common';
 
 const PaymentInstructionScreen = () => {
   const navigation = useNavigation<any>();
@@ -23,6 +24,19 @@ const PaymentInstructionScreen = () => {
     receiveData,
     bankPayment,
   } = (route.params || {}) as any;
+
+  console.log('PaymentInstructionScreen - Route Params:', {
+    accountData,
+    bankData,
+    fromTabBar,
+    isLoginState,
+    method,
+    paymentMethod,
+    amount,
+    transferData,
+    receiveData,
+    bankPayment,
+  });
 
   const {
     mutate: fetchInstruction,
@@ -46,36 +60,15 @@ const PaymentInstructionScreen = () => {
     navigation.goBack();
   };
 
-  const holdTemporary = () => {
-    if (pollingTimerRef.current) clearTimeout(pollingTimerRef.current);
-
-    if (method !== 'receive')
-      navigation.navigate('TransferProcessing', {
-        accountData,
-        bankData,
-        amount,
-        paymentMethod,
-        currentStep: 'received',
-        transferId: transferId,
-      });
-    else
-      navigation.navigate('PaymentReceipt', {
-        accountData,
-        bankData,
-        paymentMethod,
-        amount: newAmount || amount,
-        transactionId: receiveId || 'TRX0123123',
-        dateTime: new Date().toLocaleString('id-ID'),
-        method,
-      });
-  };
+  const hasFetchedInstruction = useRef(false);
 
   useEffect(() => {
-    if (paymentCode) {
+    if (paymentCode && !hasFetchedInstruction.current) {
       fetchInstruction(paymentCode);
+      hasFetchedInstruction.current = true;
     }
 
-    if (activeId) {
+    if (activeId && !statusData) {
       checkPaymentStatus(activeId);
     }
 
@@ -86,12 +79,15 @@ const PaymentInstructionScreen = () => {
 
   useEffect(() => {
     if (!statusData) return;
-
+    console.log('DEBUG - Payment Status Data Updated:', statusData);
     const currentServerStatus = statusData?.data?.status;
     console.log('DEBUG - Current Polling Status From Server:', currentServerStatus);
 
     if (currentServerStatus === 'PAID') {
       if (pollingTimerRef.current) clearTimeout(pollingTimerRef.current);
+
+      const serverTransactionTime = statusData?.data?.updatedAt || statusData?.data?.paidAt;
+      const formattedDateTime = formatApiDateToLocal(serverTransactionTime);
 
       if (method !== 'receive') {
         navigation.navigate('TransferProcessing', {
@@ -100,20 +96,23 @@ const PaymentInstructionScreen = () => {
           amount,
           paymentMethod,
           transferId: transferId,
+          transferData: transferData,
           currentStep: 'received',
         });
       } else {
-        navigation.navigate('PaymentReceipt', {
+        navigation.replace('PaymentReceipt', {
           accountData,
           bankData,
           paymentMethod,
           amount: amount,
           transactionId: receiveId,
-          dateTime: new Date().toLocaleString('id-ID'),
+          dateTime: formattedDateTime,
           method,
         });
       }
     } else {
+      if (pollingTimerRef.current) clearTimeout(pollingTimerRef.current);
+
       pollingTimerRef.current = setTimeout(() => {
         if (activeId) {
           console.log('DEBUG - Re-triggering checkPaymentStatus untuk ID:', activeId);
@@ -121,7 +120,7 @@ const PaymentInstructionScreen = () => {
         }
       }, 3000);
     }
-  }, [statusData, activeId, method]);
+  }, [statusData?.data?.status, activeId, method]);
 
   return (
     <PaymentInstructionView
@@ -137,7 +136,6 @@ const PaymentInstructionScreen = () => {
       transferData={transferData}
       receiveData={receiveData}
       bankPayment={bankPayment}
-      holdTemporary={holdTemporary}
       instructionData={instructionData}
       isPendingPaymentInstruction={isPendingPaymentInstruction}
     />

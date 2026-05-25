@@ -1,21 +1,19 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import TransferProcessingView from '../../../features/transfer/transferProcessing';
-import { useTransferPolling } from '@/hooks/useTransferPolling';
-import { StyleSheet, View, ActivityIndicator, Alert } from 'react-native';
+import TransferProcessingView, {
+  TransferStep,
+} from '../../../features/transfer/transferProcessing';
+import { BackHandler, StyleSheet } from 'react-native';
+import { useTransferStatus } from '@/hooks/useTransferStatus';
+import { formatApiDateToLocal } from '@/utils/Common';
 
-type ApiStatus = 'DITERIMA' | 'VERIFIKASI' | 'MENGIRIM' | 'SUCCESS' | 'FAILED';
-type ViewStep = 'received' | 'verifying' | 'sending' | 'done';
-
-const mapApiStatusToViewStep = (status: ApiStatus | undefined): ViewStep => {
+const mapApiStatusToViewStep = (status: string | undefined): TransferStep => {
   switch (status) {
-    case 'DITERIMA':
+    case 'WAITING_PAYMENT':
       return 'received';
-    case 'VERIFIKASI':
-      return 'verifying';
-    case 'MENGIRIM':
-      return 'sending';
-    case 'SUCCESS':
+    case 'DISBURSING':
+      return 'sending'; 
+    case 'COMPLETED':
       return 'done';
     default:
       return 'received';
@@ -26,40 +24,88 @@ const TransferProcessingScreen = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
 
-  const { accountData, bankData, amount, paymentMethod, transferId } = (route.params || {}) as any;
+  const { accountData, bankData, amount, paymentMethod, transferId, transferData } =
+    (route.params || {}) as any;
 
-  const { data, isLoading, error } = useTransferPolling(transferId);
+  const activeTransferId = transferData?.id || transferId;
+
+  console.log('TransferProcessingScreen params', {
+    accountData,
+    bankData,
+    amount,
+    paymentMethod,
+    activeTransferId,
+    transferData,
+  });
+
+  const [isDelayOver, setIsDelayOver] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsDelayOver(true);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const backAction = () => {
+
+      return true; 
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction
+    );
+
+
+    return () => backHandler.remove();
+  }, []);
+
+
+  const { data, isLoading, error } = useTransferStatus(activeTransferId, isDelayOver);
 
   const currentStep = mapApiStatusToViewStep(data?.status);
 
   const handleBack = () => {
-    navigation.goBack();
+
   };
 
   const handleFinish = () => {
-    navigation.navigate('PaymentReceipt', {
-      accountData,
+    const beneficiaryApi = data?.data?.beneficiary;
+    const transactionTime = data?.data?.processedAt || new Date().toISOString();
+
+    navigation.replace('PaymentReceipt', {
+      accountData: {
+        ...accountData,
+        name: beneficiaryApi?.accountName || accountData?.name || '-',
+        accountNumber: beneficiaryApi?.accountNumber || accountData?.accountNumber || '-',
+        bankName: beneficiaryApi?.bankName || bankData?.name || '-',
+      },
       bankData,
-      amount,
+      amount: data?.data?.amount || amount,
       paymentMethod,
-      transactionId: transferId || 'TRX0123123',
-      dateTime: new Date().toLocaleString('id-ID'),
+      transactionId: activeTransferId,
+      dateTime: formatApiDateToLocal(transactionTime),
+      method: 'pay',
     });
   };
 
   useEffect(() => {
-    // if (data?.status === 'SUCCESS') {
-    //   const finalTimer = setTimeout(() => {
-    //     handleFinish();
-    //   }, 2000);
-    //   return () => clearTimeout(finalTimer);
-    // }
-    // if (data?.status === 'FAILED') {
-    //   navigation.navigate('TransferFailed', { transferId });
-    // }
+    if (data?.status === 'COMPLETED') {
+      const finalTimer = setTimeout(() => {
+        handleFinish();
+      }, 2000);
+      return () => clearTimeout(finalTimer);
+    }
+
+    if (data?.status === 'DISBURSING_FAILED' || data?.status === 'CANCELLED') {
+      navigation.navigate('TransferFailed', { transferId: activeTransferId });
+    }
 
     console.log('data useTransferPolling', data);
-  }, [data?.status, navigation, transferId]);
+  }, [data, navigation, activeTransferId]);
 
   return (
     <TransferProcessingView
