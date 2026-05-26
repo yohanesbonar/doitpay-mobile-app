@@ -154,11 +154,11 @@ export const AuthEntry = ({ route }) => {
     const showEvt = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
     const hideEvt = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
     const keyboardDidShowListener = Keyboard.addListener(showEvt, () => {
-      setBottomSpacing(Platform.OS === 'ios' ? 16 : 16);
+      setBottomSpacing(16);
     });
 
     const keyboardDidHideListener = Keyboard.addListener(hideEvt, () => {
-      setBottomSpacing(Platform.OS === 'ios' ? 32 : -35);
+      setBottomSpacing(24);
     });
 
     return () => {
@@ -488,7 +488,7 @@ export const AuthEntry = ({ route }) => {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined} 
         style={{ flex: 1, backgroundColor: colors.pageBackground }}
         enabled={true}>
         <View style={{ flex: 1 }}>

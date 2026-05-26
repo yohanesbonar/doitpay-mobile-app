@@ -33,14 +33,12 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
-	
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string></string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Aplikasi ini membutuhkan akses galeri untuk menyimpan gambar QRIS Pembayaran.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Aplikasi ini membutuhkan akses galeri untuk mendownload QRIS.</string>
-
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UIAppFonts</key>
@@ -92,8 +90,8 @@
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>
-		<string>remote-notification</string>
 		<string>fetch</string>
+		<string>remote-notification</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
