@@ -78,5 +78,21 @@ export const createStyles = (colors: typeof themeColors.light) => {
       lineHeight: 20,
       paddingHorizontal: 20,
     },
+    sectionEmptyContainer: {
+      alignItems: 'center',
+      paddingVertical: 24,
+    },
+    sectionEmptyImage: {
+      width: 80,
+      height: 80,
+      resizeMode: 'contain',
+      marginBottom: 8,
+    },
+    sectionEmptyText: {
+      fontSize: 14,
+      fontFamily: 'Switzer-Regular',
+      color: '#9CA3AF',
+      textAlign: 'center',
+    },
   });
 };

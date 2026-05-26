@@ -1,7 +1,6 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, LayoutChangeEvent } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient'; // Import library ini
-import metrics from '../../../../theme/metrics';
 import { useTheme } from '../../../../theme/ThemeProvider';
 
 interface Props {
@@ -13,6 +12,14 @@ interface Props {
 export const TransferLimitCard = ({ usedAmount, maxAmount, percentage }: Props) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
+  const [trackWidth, setTrackWidth] = useState(0);
+
+  const handleLayout = (e: LayoutChangeEvent) => {
+    setTrackWidth(e.nativeEvent.layout.width);
+  };
+
+  const fillWidth = trackWidth * (Math.min(Math.max(percentage, 0), 100) / 100);
+
   return (
     <LinearGradient
       colors={['#0D1B3E', '#29339B', '#4C66D6']}
@@ -24,11 +31,11 @@ export const TransferLimitCard = ({ usedAmount, maxAmount, percentage }: Props) 
 
         <View style={styles.rowBetween}>
           <Text style={styles.amount}>Rp {usedAmount.toLocaleString()}</Text>
-          <Text style={styles.percentageText}>{percentage}%</Text>
+          <Text style={styles.percentageText}>{percentage.toFixed(2)}%</Text>
         </View>
 
-        <View style={styles.progressBg}>
-          <View style={[styles.progressFill, { width: `${percentage}%` }]} />
+        <View style={styles.progressBg} onLayout={handleLayout}>
+          <View style={[styles.progressFill, { width: fillWidth }]} />
         </View>
 
         <View style={styles.rowBetween}>
@@ -81,6 +88,7 @@ const createStyles = (colors: any) =>
       borderRadius: 4,
       marginTop: 12,
       marginBottom: 8,
+      overflow: 'hidden',
     },
     progressFill: {
       height: 8,

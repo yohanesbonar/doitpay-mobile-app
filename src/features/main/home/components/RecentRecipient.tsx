@@ -1,29 +1,35 @@
 import React from 'react';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
 import metrics from '../../../../theme/metrics';
+import { RecentBeneficiary } from '../types';
 
-const DATA = [
-  { id: '1', name: 'Joni', initial: 'JW', color: '#1A1A1A' },
-  { id: '2', name: 'Prabu', initial: 'PS', color: '#4285F4' },
-  { id: '3', name: 'Gibson', initial: 'GR', color: '#8E24AA' },
-  { id: '4', name: 'Burhan', initial: 'BK', color: '#1A1A1A' },
-  { id: '5', name: 'Gordon', initial: 'GP', color: '#4285F4' },
-  { id: '6', name: 'Reza', initial: 'RA', color: '#8E24AA' },
-];
+const AVATAR_COLORS = ['#1A1A1A', '#4285F4', '#8E24AA', '#0F9D58', '#F4B400'];
 
-export const RecentRecipient = () => {
+const getInitials = (name: string) =>
+  name
+    .split(' ')
+    .slice(0, 2)
+    .map((w) => w.charAt(0))
+    .join('')
+    .toUpperCase();
+
+interface Props {
+  data?: RecentBeneficiary[];
+}
+
+export const RecentRecipient = ({ data = [] }: Props) => {
   return (
     <FlatList
       horizontal
-      data={DATA}
+      data={data}
       keyExtractor={(item) => item.id}
       showsHorizontalScrollIndicator={false}
-      renderItem={({ item }) => (
+      renderItem={({ item, index }) => (
         <View style={styles.container}>
-          <View style={[styles.avatar, { backgroundColor: item.color }]}>
-            <Text style={styles.initial}>{item.initial}</Text>
+          <View style={[styles.avatar, { backgroundColor: AVATAR_COLORS[index % AVATAR_COLORS.length] }]}>
+            <Text style={styles.initial}>{getInitials(item.name)}</Text>
           </View>
-          <Text style={styles.name}>{item.name}</Text>
+          <Text style={styles.name}>{item.name.split(' ')[0]}</Text>
         </View>
       )}
     />

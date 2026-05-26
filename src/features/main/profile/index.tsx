@@ -7,7 +7,7 @@ import { createStyles } from './styles';
 import ProfileMenuItem from './components/ProfileMenuItem';
 import { useNavigation } from '@react-navigation/native';
 import { handleLogout } from '@/utils/Common';
-import { IconNotification } from '@/assets/icons';
+import { NotificationIconWithBadge } from '@/components/molecules/NotificationIconWithBadge';
 import { useGetProfileMeQuery } from '@/features/user/hooks/useGetProfileMeQuery';
 import { ProfileCard } from './components/ProfileCard';
 import { KycCard } from './components/KycCard';
@@ -33,9 +33,7 @@ export const Profile = () => {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Profil</Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Notification')}>
-          <IconNotification />
-        </TouchableOpacity>
+        <NotificationIconWithBadge onPress={() => navigation.navigate('Notification')} />
       </View>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         {isLoading || !profileData ? (

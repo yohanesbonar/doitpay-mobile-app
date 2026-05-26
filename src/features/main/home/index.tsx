@@ -1,24 +1,41 @@
-import { Image, Text, TouchableOpacity, View, ScrollView } from 'react-native';
+import { Image, Text, View, ScrollView } from 'react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTheme } from '../../../theme/ThemeProvider.tsx';
 import { createStyles } from './styles.ts';
 import { useTranslation } from 'react-i18next';
 import SizedBox from '../../../components/SizedBox';
-import { StackActions, useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { IconNotification } from '../../../assets/icons/index.ts';
-
 import { TransferLimitCard } from './components/TransferLimitCard.tsx';
-import { BillCard } from './components/BillCard.tsx';
 import { RecentActivityItem } from './components/RecentActivityItem.tsx';
 import { RecentRecipient } from './components/RecentRecipient.tsx';
 import { SearchBar } from './components/SearchBar.tsx';
 import { UnprotectedAccount } from './components/UnprotectedAccount.tsx';
+import { RecentActivitySkeleton, RecentBeneficiarySkeleton } from './components/HomeSkeletons.tsx';
+import { NotificationIconWithBadge } from '@/components/molecules/NotificationIconWithBadge';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { EmailBottomsheet } from '@/components/molecules/EmailBottomsheet';
 import { storage, StorageKey } from '../../../storage/index.ts';
 import { CompleteAccountPopup } from '@/components/molecules/CompleteAccountPopup';
 import { useAuthStore } from '@/storage/useAuthStore.ts';
+import { useGetHomeAggregateQuery } from './hooks/useGetHomeAggregateQuery.ts';
+
+const getInitials = (name: string) =>
+  name
+    .split(' ')
+    .slice(0, 2)
+    .map((w) => w.charAt(0))
+    .join('')
+    .toUpperCase();
+
+const formatRupiah = (amount: number) =>
+  'Rp ' + amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+
+const formatTime = (dateStr: string) => {
+  const date = new Date(dateStr);
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  return `${hours}:${minutes} WIB`;
+};
 
 interface HomeViewProps {
   goToSearchAccount: () => void;
@@ -35,19 +52,24 @@ export const HomeView = (props: HomeViewProps) => {
   const [isSheetMounted, setIsSheetMounted] = useState(false);
   const emailSheetRef = useRef<BottomSheetModal>(null);
   const [isAccountSheetMounted, setIsAccountSheetMounted] = useState(false);
-  const [activities, setActivities] = useState([]);
   const { isNewUser, setIsNewUser } = useAuthStore();
+
+  const { data: homeAggregate, isLoading } = useGetHomeAggregateQuery();
+
+  const homeData = homeAggregate?.data;
+  const transferLimit = homeData?.transferLimit;
+  const recentTransactions = homeData?.recentTransactions ?? [];
+  const recentBeneficiaries = homeData?.recentBeneficiaries ?? [];
+const hasKycPending = homeData?.pendingActions.some((a) => a.code === 'KYC_INCOMPLETE') ?? false;
 
   const handleOpenEmailSheet = useCallback(() => {
     setIsSheetMounted(true);
-
     requestAnimationFrame(() => {
       emailSheetRef.current?.present();
     });
   }, []);
 
   useEffect(() => {
-    console.log('isNewUser', isNewUser);
     if (isNewUser) {
       setIsNewUser(false);
     }
@@ -55,12 +77,10 @@ export const HomeView = (props: HomeViewProps) => {
 
   useEffect(() => {
     const hasShown = false;
-
     if (!hasShown && isNewUser) {
       setTimeout(() => {
         handleOpenAccountSheet();
       }, 500);
-
       storage.set(StorageKey.HAS_SHOWN_COMPLETE_ACCOUNT_HOME, true);
     }
   }, []);
@@ -88,67 +108,73 @@ export const HomeView = (props: HomeViewProps) => {
             source={require('../../../assets/images/ic-doitpay-home.png')}
             style={{ width: 100, height: 30, resizeMode: 'contain' }}
           />
-          <TouchableOpacity onPress={props.goToNotification}>
-            <IconNotification />
-          </TouchableOpacity>
+          <NotificationIconWithBadge onPress={props.goToNotification} />
         </View>
 
         <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-          <UnprotectedAccount onPress={() => handleOpenEmailSheet()} isShow={false} />
+          <UnprotectedAccount onPress={() => handleOpenEmailSheet()} isShow={hasKycPending} />
           <View style={styles.dailyLimitWrapper}>
             <Text style={{ fontSize: 22, fontFamily: 'Switzer-Semibold' }}>
               {t('home.dailyLimitTransfer')}
             </Text>
             <TransferLimitCard
-              usedAmount={activities?.length > 0 ? 500000 : 0}
-              maxAmount={25000000}
-              percentage={5}
+              usedAmount={transferLimit?.usage ?? 0}
+              maxAmount={transferLimit?.maxAmount ?? 0}
+              percentage={transferLimit?.usagePercentage ?? 0}
             />
           </View>
-          {activities?.length === 0 ? (
-            <View style={styles.emptyContainer}>
-              <Image
-                source={require('../../../assets/images/ic-empty-home.png')}
-                style={styles.emptyImage}
-              />
-              <Text style={styles.emptyTitle}>Belum ada aktivitas</Text>
-              <Text style={styles.emptySubtitle}>
-                Lakukan transfer, atau terima uang untuk melihat aktivitas terbaru di sini
-              </Text>
-            </View>
-          ) : (
-            <View style={styles.mainWrapper}>
-              <SearchBar onPress={props.goToSearchAccount} />
-              <SizedBox height={20} />
-              <View style={{ flexDirection: 'row', gap: 12 }}>
-                <BillCard title="Bayar kos" accountInfo="Joni Wahyu  BCA ****3910" />
-                <BillCard title="Tagihan Listrik" accountInfo="PLN  BCA ****3910" />
-              </View>
-              <SizedBox height={24} />
-              <View style={{ marginRight: -24 }}>
-                <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>
-                  {t('home.lastSend')}
-                </Text>
-                <RecentRecipient />
-              </View>
-              <SizedBox height={24} />
+          <View style={styles.mainWrapper}>
+            <SearchBar onPress={props.goToSearchAccount} />
+            <SizedBox height={24} />
+
+            <View style={{ marginRight: -24 }}>
               <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>
-                {t('home.lastActivity')}
+                {t('home.lastSend')}
               </Text>
-              <View style={{ paddingBottom: 75 }}>
-                {[{}, {}, {}, {}].map((item, index) => (
-                  <RecentActivityItem
-                    key={index}
-                    initial="JW"
-                    name="Joni Wahyu"
-                    bank="BCA"
-                    time="14:00 WIB"
-                    amount="Rp 500,000"
+              {isLoading ? (
+                <RecentBeneficiarySkeleton />
+              ) : recentBeneficiaries.length === 0 ? (
+                <View style={styles.sectionEmptyContainer}>
+                  <Image
+                    source={require('../../../assets/images/ic-empty-beneficiary.png')}
+                    style={styles.sectionEmptyImage}
                   />
-                ))}
-              </View>
+                  <Text style={styles.sectionEmptyText}>Belum ada penerima terakhir</Text>
+                </View>
+              ) : (
+                <RecentRecipient data={recentBeneficiaries} />
+              )}
             </View>
-          )}
+
+            <SizedBox height={24} />
+            <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>
+              {t('home.lastActivity')}
+            </Text>
+            <View style={{ paddingBottom: 75 }}>
+              {isLoading ? (
+                <RecentActivitySkeleton />
+              ) : recentTransactions.length === 0 ? (
+                <View style={styles.sectionEmptyContainer}>
+                  <Image
+                    source={require('../../../assets/images/ic-empty-history.png')}
+                    style={styles.sectionEmptyImage}
+                  />
+                  <Text style={styles.sectionEmptyText}>Belum ada aktivitas transaksi</Text>
+                </View>
+              ) : (
+                recentTransactions.map((item) => (
+                  <RecentActivityItem
+                    key={item.id}
+                    initial={getInitials(item.beneficiaryAccountHolderName)}
+                    name={item.beneficiaryAccountHolderName}
+                    bank={item.beneficiaryBankShortName}
+                    time={formatTime(item.createdAt)}
+                    amount={formatRupiah(item.amount)}
+                  />
+                ))
+              )}
+            </View>
+          </View>
         </ScrollView>
       </View>
       {isSheetMounted && (
@@ -156,6 +182,7 @@ export const HomeView = (props: HomeViewProps) => {
       )}
       {isAccountSheetMounted && (
         <CompleteAccountPopup
+          isVisible={false}
           onClose={onCloseCompleteModal}
           onAddAccount={handleGoToAddBank}
           withButtonClose={true}
