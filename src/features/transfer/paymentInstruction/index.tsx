@@ -292,10 +292,10 @@ const PaymentInstructionView = ({
 
               <View style={styles.qrCard}>
                 {receiveData?.qris?.content && (
-                  <QRCode value={receiveData?.qris?.content ?? ''} size={280} />
+                  <QRCode value={receiveData?.qris?.content ?? ''} size={250} />
                 )}
                 {transferData?.qris?.content && (
-                  <QRCode value={transferData?.qris?.content ?? ''} size={280} />
+                  <QRCode value={transferData?.qris?.content ?? ''} size={250} />
                 )}
                 <Image
                   source={require('../../../assets/images/ic-qris.png')}

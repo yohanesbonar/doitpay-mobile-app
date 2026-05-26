@@ -137,18 +137,17 @@ export const styles = StyleSheet.create({
   },
   qrCard: {
     backgroundColor: '#FFF',
-    padding: 16,
+    padding: 24,
     borderRadius: 24,
     borderWidth: 1,
     borderColor: '#E5E7EB',
     alignItems: 'center',
-    width: '100%',
-    marginBottom: 24,
+    width: '95%',
+    marginBottom: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
-    paddingTop: 24,
   },
   qrImagePlaceholder: {
     width: '100%',
@@ -226,6 +225,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     marginBottom: 24,
+    marginLeft: 12,
   },
   inputCurrencyPrefix: {
     fontFamily: 'Switzer-Bold',
@@ -252,10 +252,12 @@ export const styles = StyleSheet.create({
   },
   viewShotWrapper: {
     backgroundColor: 'white',
-    padding: 20,
+    paddingBottom: 20,
+    paddingTop: 8,
     borderRadius: 16,
     width: '100%',
     alignItems: 'center',
+    paddingHorizontal: 20,
   },
   instructionStepsContainer: {
     backgroundColor: '#F9FAFB',
