@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../../theme/ThemeProvider';
 import { createStyles } from './styles';
 import HistoryItem from './components/HistoryItem';
-import { IconNotification } from '@/assets/icons';
+import { NotificationIconWithBadge } from '@/components/molecules/NotificationIconWithBadge';
 import { SearchBar } from '@/components/molecules/SearchBar';
 import { FilterButton } from '@/components/molecules/FilterButton';
 import { FilterBottomSheet } from '@/components/molecules/FilterBottomsheet';
@@ -185,9 +185,7 @@ export const History = () => {
       <View style={styles.container}>
         <View style={styles.headerWrapper}>
           <Text style={styles.headerTitle}>{t('history.title')}</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Notification')}>
-            <IconNotification />
-          </TouchableOpacity>
+          <NotificationIconWithBadge onPress={() => navigation.navigate('Notification')} />
         </View>
 
         {data?.length > 0 && (

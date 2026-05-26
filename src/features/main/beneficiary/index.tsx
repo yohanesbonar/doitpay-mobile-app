@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, FlatList, Image, ActivityIndicator } from
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../../theme/ThemeProvider';
 import { createStyles } from './styles';
-import { IconNotification } from '@/assets/icons';
+import { NotificationIconWithBadge } from '@/components/molecules/NotificationIconWithBadge';
 import { SearchBar } from '@/components/molecules/SearchBar';
 import BeneficiaryItem from './components/BeneficiaryItem';
 import { useTranslation } from 'react-i18next';
@@ -68,9 +68,7 @@ export const Beneficiary: FC<BeneficiaryProps> = ({ goToTransferDetail, goToNoti
       <View style={styles.container}>
         <View style={styles.headerWrapper}>
           <Text style={styles.headerTitle}>{t('beneficiary.title')}</Text>
-          <TouchableOpacity onPress={goToNotification}>
-            <IconNotification />
-          </TouchableOpacity>
+          <NotificationIconWithBadge onPress={goToNotification} />
         </View>
 
         <View>
