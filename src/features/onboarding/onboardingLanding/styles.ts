@@ -5,19 +5,29 @@ export const createStyles = (colors: any) => {
   return StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: '#FFFFFF',
+      backgroundColor: "#FFFFFF",
     },
-    text: {
-      color: colors.textBlack,
+    scrollContent: {
+      flexGrow: 1,
+      justifyContent: 'space-between', 
+      paddingBottom: 42,
     },
     bankOnboardingContainer: {
-      paddingTop: 120,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingTop: screenHeight * 0.08, 
+      flex: 1,
+    },
+    iconBankOnboarding: { 
+      width: screenWidth * 0.85, 
+      height: screenHeight * 0.35, 
     },
     freeTransferText: {
       fontSize: 30,
       fontFamily: 'Switzer-Semibold',
       color: colors.textBlack,
       textAlign: 'center',
+      marginTop: 24,
     },
     descriptionText: {
       fontSize: 14,
@@ -25,10 +35,13 @@ export const createStyles = (colors: any) => {
       color: colors.textBlack,
       textAlign: 'center',
       marginTop: 8,
-      paddingHorizontal: 16,
+      paddingHorizontal: 32,
       lineHeight: 20,
     },
-    iconBankOnboarding: { width: screenWidth, maxHeight: 400 },
+    buttonContainer: {
+      paddingHorizontal: 16,
+      marginTop: 24, 
+    },
     accountQuestionText: {
       marginTop: 16,
       fontSize: 13,
