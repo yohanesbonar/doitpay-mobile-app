@@ -126,7 +126,6 @@ export const createStyles = (colors: any) =>
       borderWidth: 1,
       borderColor: '#E5E5E5',
       alignItems: 'center',
-      marginBottom: 100,
     },
     logoutText: {
       fontSize: 16,
