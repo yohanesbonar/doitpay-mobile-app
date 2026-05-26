@@ -1,4 +1,10 @@
-import { CreateTransferResponse, transferApi, TransferPayload } from '@/api/transfer';
+import {
+  CreateTransferResponse,
+  transferApi,
+  TransferPayload,
+  GetTransferDetailResponse,
+  PaymentStatusResponse,
+} from '@/api/transfer';
 import { useMutation, useQuery } from '@tanstack/react-query';
 
 type TransferMutationVariables = {
@@ -8,7 +14,8 @@ type TransferMutationVariables = {
 
 export const useTransfer = () => {
   return useMutation<CreateTransferResponse, Error, TransferMutationVariables>({
-    mutationFn: ({ payload, idempotencyKey }) => transferApi.postTransfers(payload, idempotencyKey),
+    mutationFn: ({ payload, idempotencyKey }) =>
+      transferApi.postTransfers(payload, idempotencyKey!),
     onSuccess: (data) => {
       console.log('useTransfer data.message:', data.message);
       console.log('useTransfer data', data);
@@ -22,7 +29,8 @@ export const useTransfer = () => {
 
 export const useReceive = () => {
   return useMutation<CreateTransferResponse, Error, TransferMutationVariables>({
-    mutationFn: ({ payload, idempotencyKey }) => transferApi.postReceive(payload, idempotencyKey),
+    mutationFn: ({ payload, idempotencyKey }) =>
+      transferApi.postReceive(payload, idempotencyKey!),
     onSuccess: (data) => {
       console.log('useReceive data.message:', data.message);
       console.log('useReceive data', data);
@@ -75,5 +83,23 @@ export const usePaymentStatusPolling = (id: string | undefined) => {
 export const usePaymentStatusMutation = () => {
   return useMutation({
     mutationFn: (id: string) => transferApi.getPaymentStatus({ id }),
+  });
+};
+
+export const useTransferDetailQuery = (id: string | undefined) => {
+  return useQuery<GetTransferDetailResponse>({
+    queryKey: ['transfer-detail', id],
+    queryFn: () => transferApi.getTransferReceipt({ id: id! }),
+    enabled: !!id,
+    refetchOnWindowFocus: true,
+  });
+};
+
+export const useReceiveStatusQuery = (id: string | undefined) => {
+  return useQuery<PaymentStatusResponse>({
+    queryKey: ['receive-status', id],
+    queryFn: () => transferApi.getReceiveReceipt({ id: id! }),
+    enabled: !!id,
+    refetchOnWindowFocus: true,
   });
 };

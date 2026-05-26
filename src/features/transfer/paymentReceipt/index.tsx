@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -12,16 +12,19 @@ import {
 import { CheckCircle2, Download, Share2 } from 'lucide-react-native';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import { styles } from './styles';
-import { formatNumber } from '@/utils/Common';
+import { formatApiDateToLocal, formatNumber } from '@/utils/Common';
 import ViewShot from 'react-native-view-shot';
 import { CameraRoll } from '@react-native-camera-roll/camera-roll';
 import Share from 'react-native-share';
+import { useReceiveStatusQuery, useTransferDetailQuery } from '@/hooks/useTransferMutation';
 
 interface PaymentReceiptViewProps {
   accountData?: {
     accountNumber: string;
     bankName: string;
-    name: string;
+    name?: string;
+    accountHolderName?: string;
+    accountName?: string;
   };
   bankData?: any;
   paymentMethod?: 'VA' | 'QRIS';
@@ -44,23 +47,73 @@ const PaymentReceiptView = ({
   onPressHome,
   method,
 }: PaymentReceiptViewProps) => {
-  const bankName = bankData?.name || accountData?.bankName || '-';
-  const ownerName = accountData?.accountHolderName || accountData?.accountName || '-';
   const methodLabel = paymentMethod === 'QRIS' ? 'QRIS' : 'Virtual Account';
-  console.log('PaymentReceiptView - Props:', {
-    accountData,
-    bankData,
-    paymentMethod,
-    amount,
-    transactionId,
-    dateTime,
-  });
-  const formattedAmount = formatNumber(amount || '0');
+  const { data: transferDetailData, isLoading: isTransferDetailLoading } = useTransferDetailQuery(
+    method !== 'receive' ? transactionId : undefined,
+  );
+  const { data: receiveStatusData, isLoading: isReceiveStatusLoading } = useReceiveStatusQuery(
+    method === 'receive' ? transactionId : undefined,
+  );
+
+  const receiptInfo = useMemo(() => {
+    const baseAmount = amount || '0';
+    const baseDateTime = dateTime || '';
+
+    if (method === 'receive' && receiveStatusData?.data) {
+      const statusData = receiveStatusData.data as any;
+      return {
+        amount: statusData.amount?.toString() || baseAmount,
+        dateTime:
+          formatApiDateToLocal(statusData.paidAt || statusData.updatedAt || '') || baseDateTime,
+      };
+    }
+
+    if (method !== 'receive' && transferDetailData?.data) {
+      const detail = transferDetailData.data as any;
+      return {
+        amount: detail.amount?.toString() || baseAmount,
+        dateTime: formatApiDateToLocal(detail.createdAt) || baseDateTime,
+      };
+    }
+
+    return {
+      amount: baseAmount,
+      dateTime: baseDateTime,
+    };
+  }, [method, receiveStatusData, transferDetailData, amount, dateTime]);
+
+  const effectiveAmount = receiptInfo.amount || amount || '0';
+  const formattedAmount = formatNumber(effectiveAmount);
+  const effectiveDateTime = receiptInfo.dateTime || dateTime || '-';
   const viewShotRef = useRef<any>(null);
+  
+  // derive transaction id, recipient and payment method from API responses when available
+  const effectiveTransactionId = useMemo(() => {
+    if (method === 'receive') {
+      return (receiveStatusData as any)?.data?.id || transactionId || '-';
+    }
+    return (transferDetailData as any)?.data?.id || transactionId || '-';
+  }, [method, receiveStatusData, transferDetailData, transactionId]);
+
+  const effectiveRecipient = useMemo(() => {
+    if (method === 'receive') {
+      return (receiveStatusData as any)?.data?.beneficiaryName;
+    }
+    return (transferDetailData as any)?.data?.beneficiaryName;
+  }, [method, receiveStatusData, transferDetailData]);
+
+  const effectivePaymentMethodLabel = useMemo(() => {
+    const pm = (method === 'receive'
+      ? (receiveStatusData as any)?.data?.paymentMethod
+      : (transferDetailData as any)?.data?.paymentMethod) || paymentMethod;
+
+    if (pm) return String(pm);
+    return methodLabel;
+  }, [method, receiveStatusData, transferDetailData, paymentMethod, methodLabel]);
 
   const hasAndroidPermission = async () => {
     const getCheckPermission =
-      Platform.Version >= 33
+      Number(Platform.Version) >= 33
         ? PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES
         : PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE;
 
@@ -179,19 +232,19 @@ const PaymentReceiptView = ({
 
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>ID Transaksi</Text>
-              <Text style={styles.detailValue}>{transactionId}</Text>
+              <Text style={styles.detailValue}>{effectiveTransactionId}</Text>
             </View>
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Tanggal & Waktu</Text>
-              <Text style={styles.detailValue}>{dateTime}</Text>
+              <Text style={styles.detailValue}>{effectiveDateTime}</Text>
             </View>
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Metode Pembayaran</Text>
-              <Text style={styles.detailValue}>{methodLabel}</Text>
+              <Text style={styles.detailValue}>{effectivePaymentMethodLabel}</Text>
             </View>
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Penerima</Text>
-              <Text style={styles.detailValue}>{ownerName}</Text>
+              <Text style={styles.detailValue}>{effectiveRecipient}</Text>
             </View>
           </View>
         </ViewShot>

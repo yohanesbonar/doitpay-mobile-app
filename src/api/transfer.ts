@@ -172,12 +172,20 @@ export const transferApi = {
   },
   getTransferStatus: async (payload: TransferStatusPayload): Promise<TransferStatusResponse> => {
     const { data } = await apiClient.get<TransferStatusResponse>(
-      `/v1/transfers/status/${payload.id}`,
+      `/v1/transfers/${payload.id}/status`,
     );
     return data;
   },
   getTransferDetailById: async (payload: { id: string }): Promise<GetTransferDetailResponse> => {
     const { data } = await apiClient.get<GetTransferDetailResponse>(`/v1/transfers/${payload.id}`);
+    return data;
+  },
+  getTransferReceipt: async (payload: { id: string }): Promise<GetTransferDetailResponse> => {
+    const { data } = await apiClient.get<GetTransferDetailResponse>(`/v1/transfers/${payload.id}/receipt`);
+    return data;
+  },
+  getReceiveReceipt: async (payload: PaymentStatusPayload): Promise<PaymentStatusResponse> => {
+    const { data } = await apiClient.get<PaymentStatusResponse>(`/v1/receive/${payload.id}/receipt`);
     return data;
   },
 };

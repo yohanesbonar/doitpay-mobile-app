@@ -95,10 +95,16 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
     );
   };
 
+  const numericAmount = amount ? parseInt(amount, 10) : 0;
+  const showMinAmountError = amount !== '' && numericAmount > 0 && numericAmount < 10000;
+
   useEffect(() => {
     let isDisable = true;
 
-    if (methodPayment == 'QRIS' && !amount) {
+    // if numeric amount less than minimum, disable
+    if (numericAmount < 10000) {
+      isDisable = true;
+    } else if (methodPayment == 'QRIS' && !amount) {
       isDisable = true;
       console.log('a');
     } else if (methodPayment == 'VA' && (_.isEmpty(bankPayment) || !amount)) {
@@ -108,7 +114,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
       isDisable = false;
     }
     setIsDisableConfirm(isDisable);
-  }, [methodPayment, bankPayment, amount]);
+  }, [methodPayment, bankPayment, amount, numericAmount]);
 
   return (
     <View style={{ flex: 1, backgroundColor: '#FFF' }}>
@@ -152,9 +158,22 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
               />
             </View>
           </TouchableWithoutFeedback>
-        </View>
+          </View>
 
-        <QuickAmount currentAmount={amount} onAmountPress={(val) => setAmount(val)} />
+          {showMinAmountError ? (
+            <Text
+              style={{
+                color: '#D32F2F',
+                marginLeft: 20,
+                marginTop: 8,
+                fontFamily: 'Switzer-Regular',
+              }}
+            >
+              Minimal transfer Rp 10.000
+            </Text>
+          ) : null}
+
+          <QuickAmount currentAmount={amount} onAmountPress={(val) => setAmount(val)} />
 
         <Text style={[styles.label, { marginTop: 10, paddingHorizontal: 20 }]}>
           Catatan (Opsional)
@@ -180,6 +199,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
           selectedMethod={methodPayment}
           onSelect={(val) => setMethodPayment(val)}
           onSelectBank={(val) => setBankPayment(val)}
+          styleProps={{}}
         />
       </ScrollView>
 
@@ -203,6 +223,8 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
             type="regular"
             onPress={() => onPressConfirm()}
             title="Konfirmasi & Bayar"
+            color="#1F2937"
+            textColor="white"
             textStyle={{ color: '#FFF', fontFamily: 'Switzer-Bold', fontSize: 16 }}
             style={[styles.confirmButton, isDisableConfirm && styles.disabledButton]}
             disable={isDisableConfirm}

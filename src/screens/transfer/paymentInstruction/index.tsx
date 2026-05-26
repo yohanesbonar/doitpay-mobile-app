@@ -105,7 +105,7 @@ const PaymentInstructionScreen = () => {
           bankData,
           paymentMethod,
           amount: amount,
-          transactionId: receiveId,
+          transactionId: receiveData?.id,
           dateTime: formattedDateTime,
           method,
         });

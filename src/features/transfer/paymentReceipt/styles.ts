@@ -73,13 +73,21 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6B7280',
     flex: 1,
+    width: '50%',
+    flexShrink: 0,
+    // ensure label stays on single line and doesn't shrink when value wraps
+    includeFontPadding: false,
   },
   detailValue: {
     fontFamily: 'Switzer-Medium',
     fontSize: 14,
     color: '#111827',
     textAlign: 'right',
-    flex: 2,
+    flex: 1,
+    width: '50%',
+    flexShrink: 1,
+    // allow wrapping of long values within the right column
+    flexWrap: 'wrap',
   },
 
   actionsRow: {
