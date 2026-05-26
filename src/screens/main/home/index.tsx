@@ -17,11 +17,16 @@ const HomeScreen = () => {
     navigation.navigate('BankAccounts');
   };
 
+  const goToNotifications = () => {
+    navigation.navigate('Notification');
+  };
+
   return (
     <HomeView
       goToSearchAccount={goToSearchAccount}
       onPressBack={onPressBack}
       goToBankAccounts={goToBankAccounts}
+      goToNotification={goToNotifications}
     />
   );
 };

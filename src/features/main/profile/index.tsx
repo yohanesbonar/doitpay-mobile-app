@@ -30,7 +30,7 @@ export const Profile = () => {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Profil</Text>
-        <TouchableOpacity onPress={() => handleLogout()}>
+        <TouchableOpacity onPress={() => navigation.navigate('Notification')}>
           <IconNotification />
         </TouchableOpacity>
       </View>

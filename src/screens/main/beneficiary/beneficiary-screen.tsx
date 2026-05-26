@@ -9,5 +9,13 @@ export const BeneficiaryScreen = () => {
     const { bankData, accountData } = params;
     navigation.navigate('TransferDetail', { bankData, accountData });
   };
-  return <Beneficiary goToTransferDetail={goToTransferDetail} />;
+
+  return (
+    <Beneficiary
+      goToTransferDetail={goToTransferDetail}
+      goToNotification={() => {
+        navigation.navigate('Notification');
+      }}
+    />
+  );
 };
