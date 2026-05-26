@@ -5,7 +5,6 @@ import { useTheme } from '../../../theme/ThemeProvider';
 import { createStyles } from './styles';
 import HistoryItem from './components/HistoryItem';
 import { IconNotification } from '@/assets/icons';
-import { handleLogout } from '@/utils/Common';
 import { SearchBar } from '@/components/molecules/SearchBar';
 import { FilterButton } from '@/components/molecules/FilterButton';
 import { FilterBottomSheet } from '@/components/molecules/FilterBottomsheet';
@@ -186,7 +185,7 @@ export const History = () => {
       <View style={styles.container}>
         <View style={styles.headerWrapper}>
           <Text style={styles.headerTitle}>{t('history.title')}</Text>
-          <TouchableOpacity onPress={() => handleLogout()}>
+          <TouchableOpacity onPress={() => navigation.navigate('Notification')}>
             <IconNotification />
           </TouchableOpacity>
         </View>

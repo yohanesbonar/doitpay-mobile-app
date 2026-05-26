@@ -6,7 +6,6 @@ import { createStyles } from './styles';
 import { IconNotification } from '@/assets/icons';
 import { SearchBar } from '@/components/molecules/SearchBar';
 import BeneficiaryItem from './components/BeneficiaryItem';
-import { handleLogout } from '@/utils/Common';
 import { useTranslation } from 'react-i18next';
 import { useGetBeneficiariesQuery } from './hooks/useGetBeneficiariesQuery';
 import { useUpdateBeneficieryMutation } from './hooks/useUpdateBeneficieryMutation';
@@ -34,9 +33,10 @@ const BeneficiaryItemRow = ({
 
 interface BeneficiaryProps {
   goToTransferDetail: (params: { bankData: any; accountData: any }) => void;
+  goToNotification: () => void;
 }
 
-export const Beneficiary: FC<BeneficiaryProps> = ({ goToTransferDetail }) => {
+export const Beneficiary: FC<BeneficiaryProps> = ({ goToTransferDetail, goToNotification }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const { t } = useTranslation();
@@ -68,7 +68,7 @@ export const Beneficiary: FC<BeneficiaryProps> = ({ goToTransferDetail }) => {
       <View style={styles.container}>
         <View style={styles.headerWrapper}>
           <Text style={styles.headerTitle}>{t('beneficiary.title')}</Text>
-          <TouchableOpacity onPress={() => handleLogout()}>
+          <TouchableOpacity onPress={goToNotification}>
             <IconNotification />
           </TouchableOpacity>
         </View>

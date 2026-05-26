@@ -7,7 +7,6 @@ import SizedBox from '../../../components/SizedBox';
 import { StackActions, useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconNotification } from '../../../assets/icons/index.ts';
-import { handleLogout } from '@/utils/Common/index.ts';
 
 import { TransferLimitCard } from './components/TransferLimitCard.tsx';
 import { BillCard } from './components/BillCard.tsx';
@@ -25,6 +24,7 @@ interface HomeViewProps {
   goToSearchAccount: () => void;
   onPressBack: () => void;
   goToBankAccounts: () => void;
+  goToNotification: () => void;
 }
 
 export const HomeView = (props: HomeViewProps) => {
@@ -88,7 +88,7 @@ export const HomeView = (props: HomeViewProps) => {
             source={require('../../../assets/images/ic-doitpay-home.png')}
             style={{ width: 100, height: 30, resizeMode: 'contain' }}
           />
-          <TouchableOpacity onPress={() => handleLogout()}>
+          <TouchableOpacity onPress={props.goToNotification}>
             <IconNotification />
           </TouchableOpacity>
         </View>

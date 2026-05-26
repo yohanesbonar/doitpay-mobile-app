@@ -15,8 +15,11 @@ import { ProfileCardSkeleton } from './components/ProfileCardSkeleton';
 import { KycCardSkeleton } from './components/KycCardSkeleton';
 import { useGetLimitMeQuery } from '@/features/user/hooks/useGetLimitMeQuery';
 import { UserLimitType } from '@/features/user/types';
+import DeviceInfo from 'react-native-device-info';
 
 export const Profile = () => {
+  const appVersion = DeviceInfo.getVersion();
+
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const navigation = useNavigation<any>();
@@ -30,7 +33,7 @@ export const Profile = () => {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Profil</Text>
-        <TouchableOpacity onPress={() => handleLogout()}>
+        <TouchableOpacity onPress={() => navigation.navigate('Notification')}>
           <IconNotification />
         </TouchableOpacity>
       </View>
@@ -81,6 +84,9 @@ export const Profile = () => {
           onPress={() => handleLogout()}>
           <Text style={styles.logoutText}>Keluar</Text>
         </TouchableOpacity>
+        <View style={{ alignItems: 'center', marginTop: 20 }}>
+          <Text style={{ fontSize: 14 }}>Versi {appVersion}</Text>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
