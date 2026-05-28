@@ -108,7 +108,7 @@ export const AddBankRecipientView = ({
           console.log('error fetchBanks', error);
           Toast.show({
             type: 'error',
-            text1: error?.error?.message,
+            text1: error?.error?.message ?? 'Gagal memeriksa rekening',
           });
         },
       },
