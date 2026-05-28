@@ -28,7 +28,7 @@ export const useTransferStatus = (transferId: string | undefined, enabled = true
 
       const currentStatus = rawApiData?.data?.status;
 
-      console.log('DEBUG POLLING STATUS:', currentStatus); // Pasang ini untuk cek di log
+      console.log('DEBUG POLLING STATUS:', currentStatus);
 
       const isFinalStatus =
         currentStatus === 'COMPLETED' ||

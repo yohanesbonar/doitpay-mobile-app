@@ -26,5 +26,8 @@ export const useBankInquiry = () => {
       console.log('useBankInquiry data.message:', data.message);
       console.log('useBankInquiry data', data);
     },
+    onError: (error) => {
+      console.error('Error useBankInquiry:', error);
+    },
   });
 };
