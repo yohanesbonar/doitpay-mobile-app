@@ -12,6 +12,7 @@ import Button from '../../../components/atoms/Button/index.tsx';
 import { storage, StorageKey } from '@/storage';
 import { useBankInquiry, useBanks } from '@/hooks/useBankMutation.ts';
 import { useAddBankAccount } from '@/hooks/useMeMutation.ts';
+import Toast from 'react-native-toast-message';
 
 interface AddBankRecipientViewProps {
   onPressBack: () => void;
@@ -101,17 +102,14 @@ export const AddBankRecipientView = ({
           if (data.data) {
             setResultData(data?.data);
             setShowResult(true);
-          } else {
-            Alert.alert('Gagal', 'Akun tidak ditemukan. Silakan periksa kembali nomor rekening.');
           }
         },
         onError: (error) => {
-          console.log('error', error?.message);
-          if (error.message.includes('404')) {
-            Alert.alert('Gagal', 'Akun tidak ditemukan. Silakan periksa kembali nomor rekening.');
-          } else {
-            Alert.alert('Gagal', 'Error pencarian akun. Silakan coba lagi.');
-          }
+          console.log('error fetchBanks', error);
+          Toast.show({
+            type: 'error',
+            text1: error?.error?.message,
+          });
         },
       },
     );
