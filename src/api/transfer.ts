@@ -43,7 +43,9 @@ export interface BaseResponse<T> {
 
 export type CreateTransferResponse = BaseResponse<TransferResponseData>;
 
-export interface VAMethodsPayload {}
+export interface VAMethodsPayload {
+  name?: string;
+}
 
 export type VAMethodsResponse = {
   status: string;
@@ -152,8 +154,10 @@ export const transferApi = {
     });
     return data;
   },
-  getVAMethods: async (payload: VAMethodsPayload): Promise<VAMethodsResponse> => {
-    const { data } = await apiClient.get<VAMethodsResponse>('/v1/payment/va/methods');
+  getVAMethods: async (payload?: VAMethodsPayload): Promise<VAMethodsResponse> => {
+    const { data } = await apiClient.get<VAMethodsResponse>('/v1/payment/va/methods', {
+      params: payload 
+    });
     return data;
   },
   getPaymentInstruction: async (

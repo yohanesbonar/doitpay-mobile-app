@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput, Image } from 'react-native';
 import { styles } from '../styles';
 import { Search, CreditCard, QrCode, CheckCircle2, Circle } from 'lucide-react-native';
 import { useTheme } from '@/theme/ThemeProvider';
 import { createStyles } from '../../addBankAccount/styles';
 import { useVAMethods } from '@/hooks/useTransferMutation';
+import _ from 'lodash';
 
 interface BankOption {
   id: string;
@@ -34,9 +35,9 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
-  useEffect(() => {
+  const fetchVAMethodsFromApi = (search: string) => {
     VAMethods(
-      {},
+      { name: search.trim() },
       {
         onSuccess: (data) => {
           console.log('VAMethods successfully:', data);
@@ -47,14 +48,22 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
         },
       },
     );
+  };
+
+  const debouncedSearch = useCallback(
+    _.debounce((text: string) => {
+      fetchVAMethodsFromApi(text);
+    }, 500),
+    [VAMethods],
+  );
+
+  useEffect(() => {
+    fetchVAMethodsFromApi('');
+
+    return () => {
+      debouncedSearch.cancel();
+    };
   }, []);
-
-  const filteredBanks = React.useMemo(() => {
-    const currentSearch = searchQuery.toLowerCase().trim();
-    if (!currentSearch) return banks;
-
-    return banks.filter((bank: any) => (bank?.name || '').toLowerCase().includes(currentSearch));
-  }, [searchQuery, banks]);
 
   const renderHighlightedName = (name: string, search: string) => {
     if (!search.trim()) {
@@ -182,11 +191,14 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
               placeholderTextColor="#9CA3AF"
               style={{ flex: 1, marginLeft: 10, fontFamily: 'Switzer-Regular', fontSize: 15 }}
               value={searchQuery}
-              onChangeText={setSearchQuery}
+              onChangeText={(text) => {
+                setSearchQuery(text);
+                debouncedSearch(text);
+              }}
             />
           </View>
 
-          {filteredBanks.map((item) => {
+          {banks.map((item) => {
             const isChosen = selectedBank === item.id;
             return (
               <TouchableOpacity
@@ -227,7 +239,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
                       fontSize: 16,
                       color: '#111827',
                     }}>
-                    {renderHighlightedName(item.name, searchQuery)}
+                    {item?.name}
                   </Text>
                 </View>
 

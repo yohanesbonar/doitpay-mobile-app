@@ -1,6 +1,8 @@
 import apiClient from './client';
 
-export interface BankTransferPayload {}
+export interface BankTransferPayload {
+  name?: string;
+}
 
 export type BankTransferResponse = {
   status: string;
@@ -53,8 +55,10 @@ export type BankInquiryResponse = {
 };
 
 export const bankApi = {
-    getBanks: async (): Promise<BankTransferResponse> => {
-        const { data } = await apiClient.get<BankTransferResponse>('/v1/banks');
+    getBanks: async (payload?: BankTransferPayload): Promise<BankTransferResponse> => {
+        const { data } = await apiClient.get<BankTransferResponse>('/v1/banks', {
+            params: payload
+        });
         return data;
     },
     postBankInquiry: async (payload: BankInquiryPayload): Promise<BankInquiryResponse> => {

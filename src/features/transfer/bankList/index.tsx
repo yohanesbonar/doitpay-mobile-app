@@ -13,6 +13,7 @@ import { storage, StorageKey } from '@/storage/index.ts';
 import { CompleteAccountPopup } from '@/components/molecules/CompleteAccountPopup/index.tsx';
 import { useFocusEffect } from '@react-navigation/native';
 import { useGetProfile } from '@/hooks/useMeMutation.ts';
+import _ from 'lodash';
 
 interface BankListViewProps {
   onPressBack: () => void;
@@ -64,6 +65,36 @@ export const BankListView = ({
       setActiveTab('send');
     }, []),
   );
+
+  const fetchBanksFromApi = (searchQuery: string) => {
+    mutateBanks(
+      { name: searchQuery.trim() },
+      {
+        onSuccess: (data) => {
+          setAllBanks(data?.data?.all || []);
+          setPopularBanks(data?.data?.popular || []);
+        },
+        onError: (error) => {
+          console.error('Error fetching banks:', error);
+        },
+      },
+    );
+  };
+
+  const debouncedSearch = useCallback(
+    _.debounce((text: string) => {
+      fetchBanksFromApi(text);
+    }, 500),
+    [mutateBanks],
+  );
+
+  useEffect(() => {
+    fetchBanksFromApi('');
+
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -165,18 +196,6 @@ export const BankListView = ({
       />
       <Formik initialValues={{ selectedBank: '', searchQuery: '' }} onSubmit={onPressNext}>
         {({ values, setFieldValue, handleSubmit }) => {
-          const currentSearch = (values.searchQuery || '').toLowerCase().trim();
-
-          const filteredAllBanks = allBanks.filter((bank: any) => {
-            const bankShortName = (bank?.shortName || '').toLowerCase();
-            return bankShortName.includes(currentSearch);
-          });
-
-          const filteredPopularBanks = popularBanks.filter((bank: any) => {
-            const bankShortName = (bank?.shortName || '').toLowerCase();
-            return bankShortName.includes(currentSearch);
-          });
-
           return (
             <View style={{ flex: 1 }}>
               {!fromProfile && (
@@ -207,22 +226,25 @@ export const BankListView = ({
                   style={styles.searchInput}
                   placeholder={t('bankList.nameBankAccount')}
                   value={values.searchQuery}
-                  onChangeText={(text) => setFieldValue('searchQuery', text)}
+                  onChangeText={(text) => {
+                    setFieldValue('searchQuery', text);
+                    debouncedSearch(text);
+                  }}
                 />
               </View>
               {!isPendingBank && (
                 <FlatList
-                  data={filteredAllBanks}
+                  data={allBanks}
                   keyExtractor={(item, index) => index.toString()}
                   ListHeaderComponent={
                     <View>
-                      {filteredPopularBanks.length > 0 && (
+                      {popularBanks.length > 0 && (
                         <Text style={[styles.sectionTitle, { marginTop: 10 }]}>
                           {t('bankList.populerBank')}
                         </Text>
                       )}
                       <View style={styles.gridContainer}>
-                        {filteredPopularBanks.map((bank, index) => (
+                        {popularBanks.map((bank, index) => (
                           <TouchableOpacity
                             key={index}
                             style={[
@@ -245,7 +267,7 @@ export const BankListView = ({
                           </TouchableOpacity>
                         ))}
                       </View>
-                      {filteredAllBanks.length > 0 && (
+                      {allBanks.length > 0 && (
                         <Text style={styles.sectionTitle}>{t('bankList.allBank')}</Text>
                       )}
                     </View>
@@ -269,7 +291,7 @@ export const BankListView = ({
                         />
                       </View>
                       <Text style={styles.listText} numberOfLines={2} ellipsizeMode="tail">
-                        {renderHighlightedShortName(item?.shortName, values.searchQuery)}
+                        {item?.shortName}
                       </Text>
                     </TouchableOpacity>
                   )}
