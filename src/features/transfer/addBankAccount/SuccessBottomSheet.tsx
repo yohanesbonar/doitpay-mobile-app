@@ -31,7 +31,10 @@ const SuccessBottomSheet = ({
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const { t } = useTranslation();
-
+  console.log('SuccessBottomSheet - Props:', {
+    isVisible,
+    accountData,
+  });
   return (
     <Modal visible={isVisible} transparent animationType="slide" onRequestClose={onClose}>
       <TouchableWithoutFeedback onPress={() => {}}>
@@ -47,7 +50,7 @@ const SuccessBottomSheet = ({
               <View style={styles.cardRecipientSuccess}>
                 <View style={styles.bankLogoContainer}>
                   <Image
-                    source={require('../../../assets/images/ic-BCA.png')}
+                    source={{ uri: accountData?.bank?.logoUrl }}
                     style={styles.logo}
                     resizeMode="contain"
                   />

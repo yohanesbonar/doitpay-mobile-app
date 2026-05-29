@@ -50,15 +50,15 @@ export const createStyles = (colors: any) => {
       marginBottom: 18,
     },
     bankLogoContainer: {
-      width: 40,
-      height: 40,
+      width: 80,
+      height: 80,
       marginRight: 12,
       justifyContent: 'center',
       alignItems: 'center',
     },
     logo: {
-      width: '100%',
-      height: '100%',
+      width: 80,
+      height: 80,
     },
     recipientName: {
       fontSize: 16,
@@ -169,20 +169,20 @@ export const createStyles = (colors: any) => {
       marginBottom: 32,
     },
     bankNameText: {
-      fontSize: 14,
+      fontSize: 16,
       fontFamily: 'Switzer-Bold',
-      color: '#1A1A1A',
+      color: '#000000',
     },
     recipientNameText: {
-      fontSize: 12,
+      fontSize: 14,
       fontFamily: 'Switzer-Regular',
-      color: '#1A1A1A',
+      color: '#000000',
       marginTop: 2,
     },
     accountNumberText: {
-      fontSize: 12,
+      fontSize: 14,
       fontFamily: 'Switzer-Regular',
-      color: '#1A1A1A',
+      color: '#000000',
       marginTop: 2,
     },
     footerButtons: {
