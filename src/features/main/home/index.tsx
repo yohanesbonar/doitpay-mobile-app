@@ -1,4 +1,4 @@
-import { Image, Text, View, ScrollView } from 'react-native';
+import { Image, Text, View, ScrollView, RefreshControl } from 'react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTheme } from '../../../theme/ThemeProvider.tsx';
 import { createStyles } from './styles.ts';
@@ -54,7 +54,7 @@ export const HomeView = (props: HomeViewProps) => {
   const [isAccountSheetMounted, setIsAccountSheetMounted] = useState(false);
   const { isNewUser, setIsNewUser } = useAuthStore();
 
-  const { data: homeAggregate, isLoading } = useGetHomeAggregateQuery();
+  const { data: homeAggregate, isLoading, isRefetching, refetch } = useGetHomeAggregateQuery();
 
   const homeData = homeAggregate?.data;
   const transferLimit = homeData?.transferLimit;
@@ -111,7 +111,11 @@ const hasKycPending = homeData?.pendingActions.some((a) => a.code === 'KYC_INCOM
           <NotificationIconWithBadge onPress={props.goToNotification} />
         </View>
 
-        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          style={{ flex: 1 }}
+          showsVerticalScrollIndicator={false}
+          refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
+        >
           <UnprotectedAccount onPress={() => handleOpenEmailSheet()} isShow={hasKycPending} />
           <View style={styles.dailyLimitWrapper}>
             <Text style={{ fontSize: 22, fontFamily: 'Switzer-Semibold' }}>

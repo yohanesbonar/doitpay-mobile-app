@@ -1,19 +1,13 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-
-interface TransactionItem {
-  name: string;
-  type: string;
-  time: string;
-  amount: number;
-}
+import type { TransactionItem } from '../types';
 
 interface Props {
   item: TransactionItem;
 }
 
 const HistoryItem = ({ item }: Props) => {
-  const isExpense = item.amount < 0;
+  const isExpense = !item.isCredit;
 
   const formatCurrency = (amount: number) => {
     const formatted = Math.abs(amount).toLocaleString('id-ID');
@@ -29,15 +23,24 @@ const HistoryItem = ({ item }: Props) => {
       .slice(0, 2);
   };
 
+  const formatTime = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes} WIB`;
+  };
+
+  const subtitle = `${item.bankShortName} ${item.transactionMethod}  ${formatTime(item.createdAt)}`;
+
   return (
     <View style={styles.container}>
       <View style={styles.leftSection}>
         <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{getInitial(item.name)}</Text>
+          <Text style={styles.avatarText}>{getInitial(item.accountHolderName)}</Text>
         </View>
         <View style={styles.details}>
-          <Text style={styles.name}>{item.name}</Text>
-          <Text style={styles.subText}>{`${item.type}  ${item.time}`}</Text>
+          <Text style={styles.name} numberOfLines={1}>{item.accountHolderName}</Text>
+          <Text style={styles.subText}>{subtitle}</Text>
         </View>
       </View>
 
@@ -67,6 +70,8 @@ const styles = StyleSheet.create({
   leftSection: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
+    marginRight: 8,
   },
   avatar: {
     width: 44,
@@ -83,6 +88,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   details: {
+    flex: 1,
     justifyContent: 'center',
   },
   name: {
