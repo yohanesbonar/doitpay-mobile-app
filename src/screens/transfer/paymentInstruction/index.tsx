@@ -12,6 +12,9 @@ const PaymentInstructionScreen = () => {
   const route = useRoute<any>();
   const [newAmount, setAmount] = React.useState('');
   const pollingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  
+  const lastUpdatedRef = useRef<string | number>('');
+
   const {
     accountData,
     bankData,
@@ -44,7 +47,12 @@ const PaymentInstructionScreen = () => {
     isPending: isPendingPaymentInstruction,
   } = usePaymentInstructionMutation();
 
-  const { mutate: checkPaymentStatus, data: statusData } = usePaymentStatusMutation();
+  const { 
+    mutate: checkPaymentStatus, 
+    data: statusData,
+    isPending: isCheckingStatus,
+    reset: resetStatusMutation
+  } = usePaymentStatusMutation();
 
   const paymentCode =
     transferData?.paymentInstrument?.bankCode ||
@@ -79,9 +87,15 @@ const PaymentInstructionScreen = () => {
 
   useEffect(() => {
     if (!statusData) return;
+    
     console.log('DEBUG - Payment Status Data Updated:', statusData);
     const currentServerStatus = statusData?.data?.status;
+    
+    const serverTimestamp = statusData?.data?.updatedAt || statusData?.data?.paidAt || new Date().getTime();
     console.log('DEBUG - Current Polling Status From Server:', currentServerStatus);
+
+    if (lastUpdatedRef.current === serverTimestamp) return;
+    lastUpdatedRef.current = serverTimestamp;
 
     if (currentServerStatus === 'PAID') {
       if (pollingTimerRef.current) clearTimeout(pollingTimerRef.current);
@@ -114,13 +128,13 @@ const PaymentInstructionScreen = () => {
       if (pollingTimerRef.current) clearTimeout(pollingTimerRef.current);
 
       pollingTimerRef.current = setTimeout(() => {
-        if (activeId) {
+        if (activeId && !isCheckingStatus) {
           console.log('DEBUG - Re-triggering checkPaymentStatus untuk ID:', activeId);
           checkPaymentStatus(activeId);
         }
       }, 3000);
     }
-  }, [statusData?.data?.status, activeId, method]);
+  }, [statusData, activeId, method, isCheckingStatus]);
 
   return (
     <PaymentInstructionView

@@ -16,6 +16,7 @@ import { formatNumber } from '@/utils/Common';
 import { useReceive, useTransfer } from '../../../hooks/useTransferMutation';
 import _ from 'lodash';
 import Button from '../../../components/atoms/Button/index.tsx';
+import Toast from 'react-native-toast-message';
 
 interface TransferDetailViewProps {
   accountData: {
@@ -89,7 +90,11 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
           gotoPaymentInstruction(methodPayment, amount, transferData, bankPayment);
         },
         onError: (error) => {
-          console.error('Transfer gagal ->>> ', error);
+          console.log('postTransfer onError', error);
+          Toast.show({
+            type: 'error',
+            text1: error?.error?.message,
+          });
         },
       },
     );
@@ -158,22 +163,21 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
               />
             </View>
           </TouchableWithoutFeedback>
-          </View>
+        </View>
 
-          {showMinAmountError ? (
-            <Text
-              style={{
-                color: '#D32F2F',
-                marginLeft: 20,
-                marginTop: 8,
-                fontFamily: 'Switzer-Regular',
-              }}
-            >
-              Minimal transfer Rp 10.000
-            </Text>
-          ) : null}
+        {showMinAmountError ? (
+          <Text
+            style={{
+              color: '#D32F2F',
+              marginLeft: 20,
+              marginTop: 8,
+              fontFamily: 'Switzer-Regular',
+            }}>
+            Minimal transfer Rp 10.000
+          </Text>
+        ) : null}
 
-          <QuickAmount currentAmount={amount} onAmountPress={(val) => setAmount(val)} />
+        <QuickAmount currentAmount={amount} onAmountPress={(val) => setAmount(val)} />
 
         <Text style={[styles.label, { marginTop: 10, paddingHorizontal: 20 }]}>
           Catatan (Opsional)
