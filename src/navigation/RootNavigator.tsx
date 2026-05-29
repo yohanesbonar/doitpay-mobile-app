@@ -25,6 +25,7 @@ import { ForgotPin } from '@/features/onboarding/forgot-pin';
 import { BeneficiaryScreen } from '@/screens/main/beneficiary/beneficiary-screen';
 import RequestPaymentScreen from '../screens/transfer/requestPayment';
 import { NotificationListScreen } from '@/screens/notification/NotificationListScreen';
+import TransferFailedScreen from '../screens/transfer/transferFailed';
 
 const Stack = createNativeStackNavigator();
 
@@ -75,6 +76,7 @@ export default function RootNavigator() {
             <Stack.Screen name="SearchAccount" component={SearchAccountScreen} />
             <Stack.Screen name="RequestPayment" component={RequestPaymentScreen} />
             <Stack.Screen name="Notification" component={NotificationListScreen} />
+            <Stack.Screen name="TransferFailed" component={TransferFailedScreen} />
           </Stack.Group>
         ) : (
           <Stack.Group>

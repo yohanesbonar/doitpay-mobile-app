@@ -1,2 +1,2 @@
-API_URL=https:/$()/mobi.doitpay.co
-APP_NAME=DoitPay-Production
+API_URL=https:/$()/mobi.doitpay.dev
+APP_NAME=DoitPay-Staging

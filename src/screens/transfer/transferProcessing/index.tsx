@@ -12,7 +12,7 @@ const mapApiStatusToViewStep = (status: string | undefined): TransferStep => {
     case 'WAITING_PAYMENT':
       return 'received';
     case 'DISBURSING':
-      return 'sending'; 
+      return 'sending';
     case 'COMPLETED':
       return 'done';
     default:
@@ -50,27 +50,19 @@ const TransferProcessingScreen = () => {
 
   useEffect(() => {
     const backAction = () => {
-
-      return true; 
+      return true;
     };
 
-    const backHandler = BackHandler.addEventListener(
-      'hardwareBackPress',
-      backAction
-    );
-
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
 
     return () => backHandler.remove();
   }, []);
-
 
   const { data, isLoading, error } = useTransferStatus(activeTransferId, isDelayOver);
 
   const currentStep = mapApiStatusToViewStep(data?.status);
 
-  const handleBack = () => {
-
-  };
+  const handleBack = () => {};
 
   const handleFinish = () => {
     const beneficiaryApi = data?.data?.beneficiary;
@@ -100,12 +92,32 @@ const TransferProcessingScreen = () => {
       return () => clearTimeout(finalTimer);
     }
 
-    if (data?.status === 'DISBURSING_FAILED' || data?.status === 'CANCELLED') {
-      navigation.navigate('TransferFailed', { transferId: activeTransferId });
+    if (data?.status === 'CANCELLED' || data?.status === 'DISBURSING_FAILED') {
+      const transactionTime = data?.lastUpdatedAt || new Date().toISOString();
+
+      const errorTitle = 'Transfer Gagal';
+      const errorNote =  'Dana akan dikembalikan ke saldo kamu maksimal 1x24 jam.';
+      const infoLabel =  'Refund diproses';
+
+      const errorTimer = setTimeout(() => {
+        navigation.replace('TransferFailed', {
+          title: errorTitle,
+          infoLabel: infoLabel,
+          note: errorNote,
+          accountData,
+          bankData,
+          amount: data?.amount || amount,
+          paymentMethod,
+          transactionId: activeTransferId,
+          dateTime: formatApiDateToLocal(transactionTime),
+        });
+      }, 1500);
+
+      return () => clearTimeout(errorTimer);
     }
 
     console.log('data useTransferPolling', data);
-  }, [data, navigation, activeTransferId]);
+  }, [data, navigation, activeTransferId, paymentMethod, accountData, bankData, amount]);
 
   return (
     <TransferProcessingView
