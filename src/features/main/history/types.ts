@@ -1,22 +1,37 @@
-import { PaginationQueries } from '@/types/pagination';
-
-export type Transaction = {
+export type TransactionItem = {
+  accountHolderName: string;
   amount: number;
+  bankShortName: string;
   createdAt: string;
   fee: number;
   id: string;
+  isCredit: boolean;
+  paidAt: string;
   referenceId: string;
-  statusUser: string;
+  status: string;
   totalAmount: number;
-  type: TransactionType;
+  transactionMethod: string;
+  type: string;
 };
+
+export type Transaction = TransactionItem;
 
 export enum TransactionType {
   TRANSFER_OUT = 'TRANSFER_OUT',
-  RECEIVE_IN = ' RECEIVE_IN',
+  RECEIVE_IN = 'RECEIVE_IN',
   REFUND = 'REFUND',
   ADJUSTMENT = 'ADJUSTMENT',
   WITHDRAWAL = 'WITHDRAWAL',
 }
 
-export interface GetTransactionHistoryQueries extends PaginationQueries {}
+export interface GetTransactionHistoryQueries {
+  limit?: number;
+  cursor?: string;
+  search?: string;
+  month?: number;
+  year?: number;
+  payment_type?: string;
+  transaction_type?: string;
+  type?: string;
+  isAscending?: boolean;
+}

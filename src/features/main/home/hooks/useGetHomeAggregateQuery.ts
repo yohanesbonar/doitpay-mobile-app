@@ -11,6 +11,7 @@ export const useGetHomeAggregateQuery = (
   return useQuery({
     queryKey: HOME_AGGREGATE_QUERY_KEY,
     queryFn: () => homeApi.getHomeAggregate(),
+    staleTime: 0,
     ...options,
   });
 };
