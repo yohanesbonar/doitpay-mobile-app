@@ -19,7 +19,7 @@ export const TermsAndConditionContent: FC<TermsAndConditionContentProps> = ({ on
           <Text style={styles.headerTitle}>Terms and Condition</Text>
         </View>
       }
-      source="https://google.com"
+      source="https://app.doitpay.co/syarat-ketentuan/"
     />
   );
 };

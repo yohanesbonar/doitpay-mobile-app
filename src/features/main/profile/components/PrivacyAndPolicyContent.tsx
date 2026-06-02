@@ -19,7 +19,7 @@ export const PrivacyAndPolicyContent: FC<PrivacyAndPolicyContentProps> = ({ onCl
           <Text style={styles.headerTitle}>Privacy and Policy</Text>
         </View>
       }
-      source="https://google.com"
+      source="https://app.doitpay.co/kebijakan-privasi/"
     />
   );
 };

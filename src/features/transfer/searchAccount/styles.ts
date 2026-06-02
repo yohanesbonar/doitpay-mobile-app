@@ -50,11 +50,26 @@ export const createStyles = (colors: any) =>
     listPadding: {
       paddingBottom: 20,
     },
+    emptyState: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingTop: 60,
+      paddingHorizontal: 24,
+    },
     emptyText: {
+      fontFamily: 'Switzer-Semibold',
+      color: '#000000',
+      fontSize: 24,
       textAlign: 'center',
-      marginTop: 40,
-      color: '#999',
+      marginTop: 24,
+    },
+    emptyTextDesc: {
       fontFamily: 'Switzer-Regular',
+      color: '#000000',
+      fontSize: 16,
+      textAlign: 'center',
+      marginTop: 12,
     },
     labelInput: {
       fontSize: 14,

@@ -65,7 +65,7 @@ export const createStyles = (colors: typeof themeColors.light) => {
     },
     emptyTitle: {
       fontSize: 24,
-      fontFamily: 'Switzer-Semibold', 
+      fontFamily: 'Switzer-Semibold',
       color: '#111827',
       textAlign: 'center',
       marginBottom: 8,
@@ -83,8 +83,8 @@ export const createStyles = (colors: typeof themeColors.light) => {
       paddingVertical: 24,
     },
     sectionEmptyImage: {
-      width: 80,
-      height: 80,
+      width: 100,
+      height: 100,
       resizeMode: 'contain',
       marginBottom: 8,
     },
