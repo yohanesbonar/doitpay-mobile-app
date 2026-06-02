@@ -77,8 +77,7 @@ export const TransferFailedView: React.FC<TransferFailedViewProps> = ({
 
       <View style={styles.footer}>
         <TouchableOpacity style={styles.btnRetry} onPress={onRetry} activeOpacity={0.8}>
-          <RefreshCw size={16} color="#FFF" style={{ marginRight: 8 }} />
-          <Text style={styles.btnRetryText}>Coba Lagi</Text>
+          <Text style={styles.btnRetryText}>Kembali ke Beranda</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.btnSupport} onPress={onContactSupport} activeOpacity={0.8}>

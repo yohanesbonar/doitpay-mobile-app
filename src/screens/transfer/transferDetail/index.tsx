@@ -5,10 +5,27 @@ import TransferDetailView from '../../../features/transfer/transferDetail';
 const TransferDetailScreen = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
-  const { accountData, bankData, fromTabBar, isLoginState, method, bankPayment } = (route.params ||
-    {}) as any;
+  const {
+    accountData,
+    bankData,
+    fromTabBar,
+    isLoginState,
+    method,
+    bankPayment,
+    amount,
+    paymentMethod,
+    isExpiredRetry,
+  } = (route.params || {}) as any;
 
   const handleBack = () => {
+    if (isExpiredRetry) {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'BankList' }],
+      });
+      return;
+    }
+
     navigation.goBack();
   };
 
@@ -52,6 +69,9 @@ const TransferDetailScreen = () => {
       onPressBack={handleBack}
       gotoPaymentInstruction={gotoPaymentInstruction}
       bankPayment={bankPayment}
+      initialAmount={amount}
+      initialPaymentMethod={paymentMethod}
+      initialBankPayment={bankPayment}
     />
   );
 };

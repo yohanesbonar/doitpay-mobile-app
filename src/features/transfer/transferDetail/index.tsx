@@ -36,6 +36,9 @@ interface TransferDetailViewProps {
     transferData: any,
     bankPayment: any,
   ) => void;
+  initialAmount?: string;
+  initialPaymentMethod?: 'VA' | 'QRIS';
+  initialBankPayment?: any;
 }
 
 const TransferDetailView = (props: TransferDetailViewProps) => {
@@ -54,13 +57,16 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
     method,
     gotoPaymentInstruction,
     accountData,
+    initialAmount,
+    initialPaymentMethod,
+    initialBankPayment,
   } = props;
   const { accountNumber, bankName, accountHolderName } = accountData || {};
 
-  const [amount, setAmount] = useState('');
+  const [amount, setAmount] = useState(initialAmount || '');
   const [note, setNote] = useState('');
-  const [methodPayment, setMethodPayment] = useState<'VA' | 'QRIS'>('VA');
-  const [bankPayment, setBankPayment] = useState(null);
+  const [methodPayment, setMethodPayment] = useState<'VA' | 'QRIS'>(initialPaymentMethod || 'VA');
+  const [bankPayment, setBankPayment] = useState(initialBankPayment || null);
   const [isDisableConfirm, setIsDisableConfirm] = useState(true);
 
   const { mutate: postTransfer, isPending: isLoadingTransfer } = useTransfer();
@@ -205,6 +211,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
           selectedMethod={methodPayment}
           onSelect={(val) => setMethodPayment(val)}
           onSelectBank={(val) => setBankPayment(val)}
+          initialBankPayment={initialBankPayment}
           styleProps={{}}
         />
       </ScrollView>

@@ -26,6 +26,7 @@ import { BeneficiaryScreen } from '@/screens/main/beneficiary/beneficiary-screen
 import RequestPaymentScreen from '../screens/transfer/requestPayment';
 import { NotificationListScreen } from '@/screens/notification/NotificationListScreen';
 import TransferFailedScreen from '../screens/transfer/transferFailed';
+import PaymentExpired from '../screens/transfer/paymentExpired';
 
 const Stack = createNativeStackNavigator();
 
@@ -77,6 +78,7 @@ export default function RootNavigator() {
             <Stack.Screen name="RequestPayment" component={RequestPaymentScreen} />
             <Stack.Screen name="Notification" component={NotificationListScreen} />
             <Stack.Screen name="TransferFailed" component={TransferFailedScreen} />
+            <Stack.Screen name="PaymentExpired" component={PaymentExpired} />
           </Stack.Group>
         ) : (
           <Stack.Group>

@@ -12,7 +12,7 @@ const PaymentInstructionScreen = () => {
   const route = useRoute<any>();
   const [newAmount, setAmount] = React.useState('');
   const pollingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  
+
   const lastUpdatedRef = useRef<string | number>('');
 
   const {
@@ -47,11 +47,11 @@ const PaymentInstructionScreen = () => {
     isPending: isPendingPaymentInstruction,
   } = usePaymentInstructionMutation();
 
-  const { 
-    mutate: checkPaymentStatus, 
+  const {
+    mutate: checkPaymentStatus,
     data: statusData,
     isPending: isCheckingStatus,
-    reset: resetStatusMutation
+    reset: resetStatusMutation,
   } = usePaymentStatusMutation();
 
   const paymentCode =
@@ -87,11 +87,12 @@ const PaymentInstructionScreen = () => {
 
   useEffect(() => {
     if (!statusData) return;
-    
+
     console.log('DEBUG - Payment Status Data Updated:', statusData);
     const currentServerStatus = statusData?.data?.status;
-    
-    const serverTimestamp = statusData?.data?.updatedAt || statusData?.data?.paidAt || new Date().getTime();
+
+    const serverTimestamp =
+      statusData?.data?.updatedAt || statusData?.data?.paidAt || new Date().getTime();
     console.log('DEBUG - Current Polling Status From Server:', currentServerStatus);
 
     if (lastUpdatedRef.current === serverTimestamp) return;
@@ -124,6 +125,29 @@ const PaymentInstructionScreen = () => {
           method,
         });
       }
+    } else if (currentServerStatus === 'EXPIRED' || currentServerStatus === 'FAILED') {
+      if (pollingTimerRef.current) clearTimeout(pollingTimerRef.current);
+
+      const serverTransactionTime = statusData?.data?.updatedAt || new Date().toISOString();
+
+      console.log('DEBUG - Navigating to PaymentExpired with:', {
+        bankPayment,
+        bankPaymentId: bankPayment?.id,
+        bankPaymentCode: bankPayment?.code,
+        bankPaymentName: bankPayment?.name,
+      });
+
+      navigation.replace('PaymentExpired', {
+        method,
+        accountData,
+        bankData,
+        amount,
+        paymentMethod,
+        bankPayment,
+        note: '',
+        transactionId: activeId,
+        dateTime: formatApiDateToLocal(serverTransactionTime),
+      });
     } else {
       if (pollingTimerRef.current) clearTimeout(pollingTimerRef.current);
 

@@ -25,26 +25,32 @@ const QUICK_AMOUNTS = ['50000', '100000', '200000', '500000', '1000000', '200000
 
 interface RequestPaymentViewProps {
   onPressBack: () => void;
-  onGenerateQR: (amount: string, receiveData: any) => void;
+  onGenerateQR: (methodPayment: string, amount: string, receiveData: any, bankPayment?: any) => void;
   gotoPaymentInstruction: (
     paymentMethod: 'VA' | 'QRIS',
     amount: string,
     transferData: any,
     bankPayment: any,
   ) => void;
+  initialAmount?: string;
+  initialPaymentMethod?: 'VA' | 'QRIS';
+  initialBankPayment?: any;
 }
 
 export const RequestPaymentView = ({
   onPressBack,
   onGenerateQR,
   gotoPaymentInstruction,
+  initialAmount,
+  initialPaymentMethod,
+  initialBankPayment,
 }: RequestPaymentViewProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
-  const [amount, setAmount] = useState('');
+  const [amount, setAmount] = useState(initialAmount || '');
   const { t } = useTranslation();
-  const [methodPayment, setMethodPayment] = useState<'VA' | 'QRIS'>('VA');
-  const [bankPayment, setBankPayment] = useState(null);
+  const [methodPayment, setMethodPayment] = useState<'VA' | 'QRIS'>(initialPaymentMethod || 'VA');
+  const [bankPayment, setBankPayment] = useState(initialBankPayment || null);
   const [isDisableConfirm, setIsDisableConfirm] = useState(false);
   const [isErrorMinimumReached, setIsErrorMinimumReached] = useState(false);
 
@@ -67,7 +73,7 @@ export const RequestPaymentView = ({
       {
         onSuccess: (data) => {
           let receiveData = data?.data ?? {};
-          if (methodPayment == 'QRIS') onGenerateQR(methodPayment, amount, receiveData);
+          if (methodPayment == 'QRIS') onGenerateQR(methodPayment, amount, receiveData, bankPayment);
           else gotoPaymentInstruction(methodPayment, amount, receiveData, bankPayment);
         },
         onError: (error) => {
@@ -162,6 +168,7 @@ export const RequestPaymentView = ({
               styleProps={{ backgroundColor: '#FFF' }}
               onSelect={(val) => setMethodPayment(val)}
               onSelectBank={(val) => setBankPayment(val)}
+              initialBankPayment={initialBankPayment}
             />
           </ScrollView>
 

@@ -17,6 +17,7 @@ interface PaymentMethodProps {
   selectedMethod: 'VA' | 'QRIS';
   onSelect: (method: 'VA' | 'QRIS') => void;
   onSelectBank: (data: any) => void;
+  initialBankPayment?: any;
   styleProps: any;
 }
 
@@ -24,9 +25,10 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
   selectedMethod,
   onSelect,
   onSelectBank,
+  initialBankPayment,
   styleProps,
 }) => {
-  const [selectedBank, setSelectedBank] = useState('');
+  const [selectedBank, setSelectedBank] = useState(initialBankPayment?.id || '');
   const [searchQuery, setSearchQuery] = useState('');
   const [banks, setBanks] = useState([]);
 
@@ -64,6 +66,12 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
       debouncedSearch.cancel();
     };
   }, []);
+
+  useEffect(() => {
+    if (initialBankPayment?.id) {
+      setSelectedBank(initialBankPayment.id);
+    }
+  }, [initialBankPayment]);
 
   const renderHighlightedName = (name: string, search: string) => {
     if (!search.trim()) {
@@ -203,7 +211,10 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
             return (
               <TouchableOpacity
                 key={item.id}
-                onPress={() => setSelectedBank(item.id) + onSelectBank(item)}
+                onPress={() => {
+                  setSelectedBank(item.id);
+                  onSelectBank(item);
+                }}
                 activeOpacity={0.8}
                 style={{
                   flexDirection: 'row',
