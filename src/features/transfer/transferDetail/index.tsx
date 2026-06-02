@@ -91,10 +91,12 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
         },
         onError: (error) => {
           console.log('postTransfer onError', error);
-          Toast.show({
-            type: 'error',
-            text1: error?.error?.message,
-          });
+          if (error?.error?.message) {
+            Toast.show({
+              type: 'error',
+              text1: error?.error?.message,
+            });
+          }
         },
       },
     );

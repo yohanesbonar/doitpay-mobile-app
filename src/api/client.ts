@@ -22,7 +22,7 @@ const processQueue = (error: any, token: string | null = null) => {
 
 const apiClient = axios.create({
   baseURL: Config.API_URL,
-  timeout: 10000,
+  timeout: 20000,
   headers: {
     'Content-Type': 'application/json',
   },
