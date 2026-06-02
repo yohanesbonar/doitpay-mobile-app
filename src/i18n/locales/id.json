@@ -74,9 +74,11 @@
     "skip": "Lewati"
   },
   "searchAccount": {
-    "searchName": "Cari Nama", 
+    "searchName": "Cari Nama",
     "accountName": "Nama Akun",
-    "labelName": "Nama"
+    "labelName": "Nama",
+    "notFound": "Akun Tidak Ditemukan",
+    "descNotFound": "Coba cari dengan nama atau nomor rekening yang berbeda."
   },
   "successBottomSheet": {
     "readyToTransfer": "Siap untuk transfer kapan saja",

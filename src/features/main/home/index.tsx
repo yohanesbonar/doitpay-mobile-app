@@ -60,7 +60,7 @@ export const HomeView = (props: HomeViewProps) => {
   const transferLimit = homeData?.transferLimit;
   const recentTransactions = homeData?.recentTransactions ?? [];
   const recentBeneficiaries = homeData?.recentBeneficiaries ?? [];
-const hasKycPending = homeData?.pendingActions.some((a) => a.code === 'KYC_INCOMPLETE') ?? false;
+  const hasKycPending = homeData?.pendingActions.some((a) => a.code === 'KYC_INCOMPLETE') ?? false;
 
   const handleOpenEmailSheet = useCallback(() => {
     setIsSheetMounted(true);
@@ -114,8 +114,7 @@ const hasKycPending = homeData?.pendingActions.some((a) => a.code === 'KYC_INCOM
         <ScrollView
           style={{ flex: 1 }}
           showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
-        >
+          refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}>
           <UnprotectedAccount onPress={() => handleOpenEmailSheet()} isShow={hasKycPending} />
           <View style={styles.dailyLimitWrapper}>
             <Text style={{ fontSize: 22, fontFamily: 'Switzer-Semibold' }}>
@@ -131,7 +130,7 @@ const hasKycPending = homeData?.pendingActions.some((a) => a.code === 'KYC_INCOM
             <SearchBar onPress={props.goToSearchAccount} />
             <SizedBox height={24} />
 
-            <View style={{ marginRight: -24 }}>
+            <View>
               <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>
                 {t('home.lastSend')}
               </Text>
@@ -146,7 +145,9 @@ const hasKycPending = homeData?.pendingActions.some((a) => a.code === 'KYC_INCOM
                   <Text style={styles.sectionEmptyText}>Belum ada penerima terakhir</Text>
                 </View>
               ) : (
-                <RecentRecipient data={recentBeneficiaries} />
+                <View style={{ marginRight: -24 }}>
+                  <RecentRecipient data={recentBeneficiaries} />
+                </View>
               )}
             </View>
 

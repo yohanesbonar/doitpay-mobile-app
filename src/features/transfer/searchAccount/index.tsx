@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { View, FlatList, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, FlatList, Text, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../theme/ThemeProvider';
 import { createStyles } from './styles';
@@ -55,7 +55,7 @@ const SearchAccountView = ({ onPressBack, goToTransferDetail }: SearchAccountVie
       <View style={styles.listLogoContainer}>
         <FastImage
           style={styles.logo}
-          source={require('../../../assets/images/ic-BCA.png')}
+          source={{ uri: item.bankLogo }}
           resizeMode={FastImage.resizeMode.contain}
         />
       </View>
@@ -111,11 +111,16 @@ const SearchAccountView = ({ onPressBack, goToTransferDetail }: SearchAccountVie
                 <ActivityIndicator size="small" color="#4F84F6" style={{ paddingVertical: 16 }} />
               ) : null
             }
-            ListEmptyComponent={
-              <Text style={styles.emptyText}>
-                {t('searchAccount.notFound') || 'Tidak ada hasil'}
-              </Text>
-            }
+            ListEmptyComponent={() => (
+              <View style={styles.emptyState}>
+                <Image
+                  source={require('../../../assets/images/ic-empty-beneficiary.png')}
+                  style={{ width: 191, height: 208, resizeMode: 'contain' }}
+                />
+                <Text style={styles.emptyText}>{t('searchAccount.notFound')}</Text>
+                <Text style={styles.emptyTextDesc}>{t('searchAccount.descNotFound')}</Text>
+              </View>
+            )}
           />
         )}
       </View>

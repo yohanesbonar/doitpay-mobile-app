@@ -8,6 +8,7 @@ export type Beneficiary = {
   isFavorite: boolean;
   lastUsedAt: string;
   bankShortName: string;
+  bankLogo: string;
 };
 
 export interface GetBeneficiariesQueries extends PaginationQueries {
