@@ -124,6 +124,7 @@ export const HomeView = (props: HomeViewProps) => {
               usedAmount={transferLimit?.usage ?? 0}
               maxAmount={transferLimit?.maxAmount ?? 0}
               percentage={transferLimit?.usagePercentage ?? 0}
+              amountReceived={transferLimit?.amountReceived ?? 0}
             />
           </View>
           <View style={styles.mainWrapper}>

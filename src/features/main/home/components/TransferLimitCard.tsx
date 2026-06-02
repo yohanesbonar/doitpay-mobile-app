@@ -7,9 +7,10 @@ interface Props {
   usedAmount: number;
   maxAmount: number;
   percentage: number;
+  amountReceived: number;
 }
 
-export const TransferLimitCard = ({ usedAmount, maxAmount, percentage }: Props) => {
+export const TransferLimitCard = ({ usedAmount, maxAmount, percentage, amountReceived }: Props) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const [trackWidth, setTrackWidth] = useState(0);
@@ -42,6 +43,9 @@ export const TransferLimitCard = ({ usedAmount, maxAmount, percentage }: Props) 
           <Text style={styles.limitText}>Rp 0</Text>
           <Text style={styles.limitText}>Rp {maxAmount.toLocaleString()}</Text>
         </View>
+        <View style={{ borderWidth: 0.5, borderColor: '#FFF', marginTop: 10 }} />
+        <Text style={styles.labelReceived}>Uang diterima hari ini</Text>
+        <Text style={styles.amountReceived}>Rp {amountReceived.toLocaleString()}</Text>
       </View>
     </LinearGradient>
   );
@@ -65,6 +69,13 @@ const createStyles = (colors: any) =>
       opacity: 0.9,
       marginTop: 6,
     },
+    labelReceived: {
+      color: colors.textWhite,
+      fontSize: 16,
+      fontFamily: 'Switzer-Regular',
+      opacity: 0.9,
+      marginTop: 10,
+    },
     rowBetween: {
       flexDirection: 'row',
       justifyContent: 'space-between',
@@ -73,6 +84,12 @@ const createStyles = (colors: any) =>
     amount: {
       color: colors.textWhite,
       fontSize: 28,
+      fontFamily: 'Switzer-Semibold',
+      marginTop: 2,
+    },
+    amountReceived: {
+      color: colors.textWhite,
+      fontSize: 20,
       fontFamily: 'Switzer-Semibold',
       marginTop: 2,
     },
