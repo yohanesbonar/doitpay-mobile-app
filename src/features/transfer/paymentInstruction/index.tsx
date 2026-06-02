@@ -124,8 +124,6 @@ const PaymentInstructionView = ({
     return () => clearInterval(intervalId);
   }, [expiredAtRaw]);
 
-  console.log('instructionData ->>', instructionData);
-
   const handleCopy = (text) => {
     Clipboard.setString(text);
     Alert.alert('Sukses', 'Nomor VA berhasil disalin');
@@ -337,7 +335,7 @@ const PaymentInstructionView = ({
                 </Text>
                 <TouchableOpacity
                   style={styles.copyBadge}
-                  onPress={() => handleCopy(transferData?.vaNumber || receiveData?.vaNumber)}>
+                  onPress={() => handleCopy(transferData?.va?.number || receiveData?.va?.number)}>
                   <Copy size={14} color="#FFF" style={{ marginRight: 4 }} />
                   <Text style={styles.copyText}>Salin</Text>
                 </TouchableOpacity>
