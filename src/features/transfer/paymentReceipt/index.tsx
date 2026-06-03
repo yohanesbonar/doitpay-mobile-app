@@ -230,7 +230,7 @@ const PaymentReceiptView = ({
           <View style={styles.recipientBox}>
             <View style={styles.recipientLeft}>
               <View style={styles.bankLogoWrapper}>
-                <Text style={styles.bankText}>{accountData?.bankName || 'BCA'}</Text>
+                <Text style={styles.bankText}>{accountData?.bankName || '-'}</Text>
               </View>
 
               <View style={styles.recipientInfo}>
