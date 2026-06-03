@@ -86,8 +86,7 @@ const PaymentReceiptView = ({
   const formattedAmount = formatNumber(effectiveAmount);
   const effectiveDateTime = receiptInfo.dateTime || dateTime || '-';
   const viewShotRef = useRef<any>(null);
-  
-  // derive transaction id, recipient and payment method from API responses when available
+
   const effectiveTransactionId = useMemo(() => {
     if (method === 'receive') {
       return (receiveStatusData as any)?.data?.id || transactionId || '-';
@@ -103,9 +102,10 @@ const PaymentReceiptView = ({
   }, [method, receiveStatusData, transferDetailData]);
 
   const effectivePaymentMethodLabel = useMemo(() => {
-    const pm = (method === 'receive'
-      ? (receiveStatusData as any)?.data?.paymentMethod
-      : (transferDetailData as any)?.data?.paymentMethod) || paymentMethod;
+    const pm =
+      (method === 'receive'
+        ? (receiveStatusData as any)?.data?.paymentMethod
+        : (transferDetailData as any)?.data?.paymentMethod) || paymentMethod;
 
     if (pm) return String(pm);
     return methodLabel;
@@ -220,11 +220,26 @@ const PaymentReceiptView = ({
               <CheckCircle2 size={80} color="#FFFFFF" />
             </View>
             <Text style={styles.resultTitle}>
-              {method == 'receive' ? 'Dana Berhasil Diterima' : 'Transfer Berhasil'}
+              {method === 'receive' ? 'Dana Berhasil Diterima' : 'Transfer Berhasil'}
             </Text>
             <Text style={styles.resultAmount}>Rp {formattedAmount}</Text>
 
             <View style={styles.curveCutout} />
+          </View>
+
+          <View style={styles.recipientBox}>
+            <View style={styles.recipientLeft}>
+              <View style={styles.bankLogoWrapper}>
+                <Text style={styles.bankText}>{accountData?.bankName || 'BCA'}</Text>
+              </View>
+
+              <View style={styles.recipientInfo}>
+                <Text style={styles.recipientName} numberOfLines={1}>
+                  {effectiveRecipient || '-'}
+                </Text>
+                <Text style={styles.recipientMethod}>{effectivePaymentMethodLabel}</Text>
+              </View>
+            </View>
           </View>
 
           <View style={styles.detailsCard}>
@@ -242,13 +257,11 @@ const PaymentReceiptView = ({
               <Text style={styles.detailLabel}>Metode Pembayaran</Text>
               <Text style={styles.detailValue}>{effectivePaymentMethodLabel}</Text>
             </View>
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Penerima</Text>
-              <Text style={styles.detailValue}>{effectiveRecipient}</Text>
-            </View>
           </View>
         </ViewShot>
+      </ScrollView>
 
+      <View style={styles.footerContainer}>
         <View style={styles.actionsRow}>
           <TouchableOpacity style={styles.actionButton} onPress={handleDownload}>
             <Download size={18} color="#111827" style={{ marginRight: 8 }} />
@@ -265,7 +278,7 @@ const PaymentReceiptView = ({
             <Text style={styles.homeButtonText}>Kembali ke Beranda</Text>
           </TouchableOpacity>
         ) : null}
-      </ScrollView>
+      </View>
     </View>
   );
 };
