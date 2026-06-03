@@ -14,6 +14,7 @@ import { CompleteAccountPopup } from '@/components/molecules/CompleteAccountPopu
 import { useFocusEffect } from '@react-navigation/native';
 import { useGetProfile } from '@/hooks/useMeMutation.ts';
 import _ from 'lodash';
+import { BankListSkeleton } from './BankListSkeleton.tsx';
 
 interface BankListViewProps {
   onPressBack: () => void;
@@ -232,7 +233,10 @@ export const BankListView = ({
                   }}
                 />
               </View>
-              {!isPendingBank && (
+
+              {isPendingBank ? (
+                <BankListSkeleton styles={styles} t={t} />
+              ) : (
                 <FlatList
                   data={allBanks}
                   keyExtractor={(item, index) => index.toString()}
