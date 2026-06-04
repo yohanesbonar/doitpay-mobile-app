@@ -115,7 +115,7 @@ export const HomeView = (props: HomeViewProps) => {
           style={{ flex: 1 }}
           showsVerticalScrollIndicator={false}
           refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}>
-          <UnprotectedAccount onPress={() => handleOpenEmailSheet()} isShow={hasKycPending} />
+          {/* <UnprotectedAccount onPress={() => handleOpenEmailSheet()} isShow={hasKycPending} /> */}
           <View style={styles.dailyLimitWrapper}>
             <Text style={{ fontSize: 22, fontFamily: 'Switzer-Semibold' }}>
               {t('home.dailyLimitTransfer')}
