@@ -21,6 +21,7 @@ import { useNotificationListener } from './src/hooks/useNotificationListener.ts'
 import { QueryClientProvider } from '@tanstack/react-query';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { queryClient } from './src/api/queryClient';
+import { navigationRef } from '@/navigation/navigationRef.ts';
 
 // Start i18n
 initI18next();
