@@ -243,7 +243,7 @@ export const BankListView = ({
                   ListHeaderComponent={
                     <View>
                       {popularBanks.length > 0 && (
-                        <Text style={[styles.sectionTitle, { marginTop: 10 }]}>
+                        <Text style={[styles.sectionTitle, { marginTop: 2 }]}>
                           {t('bankList.populerBank')}
                         </Text>
                       )}
@@ -266,7 +266,7 @@ export const BankListView = ({
                                 priority: FastImage.priority.normal,
                                 cache: FastImage.cacheControl.immutable,
                               }}
-                              resizeMode={FastImage.resizeMode.cover}
+                              resizeMode={FastImage.resizeMode.contain}
                             />
                           </TouchableOpacity>
                         ))}
@@ -291,7 +291,7 @@ export const BankListView = ({
                             priority: FastImage.priority.normal,
                             cache: FastImage.cacheControl.immutable,
                           }}
-                          resizeMode={FastImage.resizeMode.cover}
+                          resizeMode={FastImage.resizeMode.contain}
                         />
                       </View>
                       <Text style={styles.listText} numberOfLines={2} ellipsizeMode="tail">
