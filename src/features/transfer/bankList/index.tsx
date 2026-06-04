@@ -14,6 +14,7 @@ import { CompleteAccountPopup } from '@/components/molecules/CompleteAccountPopu
 import { useFocusEffect } from '@react-navigation/native';
 import { useGetProfile } from '@/hooks/useMeMutation.ts';
 import _ from 'lodash';
+import { BankListSkeleton } from './BankListSkeleton.tsx';
 
 interface BankListViewProps {
   onPressBack: () => void;
@@ -232,14 +233,17 @@ export const BankListView = ({
                   }}
                 />
               </View>
-              {!isPendingBank && (
+
+              {isPendingBank ? (
+                <BankListSkeleton styles={styles} t={t} />
+              ) : (
                 <FlatList
                   data={allBanks}
                   keyExtractor={(item, index) => index.toString()}
                   ListHeaderComponent={
                     <View>
                       {popularBanks.length > 0 && (
-                        <Text style={[styles.sectionTitle, { marginTop: 10 }]}>
+                        <Text style={[styles.sectionTitle, { marginTop: 2 }]}>
                           {t('bankList.populerBank')}
                         </Text>
                       )}
@@ -262,7 +266,7 @@ export const BankListView = ({
                                 priority: FastImage.priority.normal,
                                 cache: FastImage.cacheControl.immutable,
                               }}
-                              resizeMode={FastImage.resizeMode.cover}
+                              resizeMode={FastImage.resizeMode.contain}
                             />
                           </TouchableOpacity>
                         ))}
@@ -287,7 +291,7 @@ export const BankListView = ({
                             priority: FastImage.priority.normal,
                             cache: FastImage.cacheControl.immutable,
                           }}
-                          resizeMode={FastImage.resizeMode.cover}
+                          resizeMode={FastImage.resizeMode.contain}
                         />
                       </View>
                       <Text style={styles.listText} numberOfLines={2} ellipsizeMode="tail">

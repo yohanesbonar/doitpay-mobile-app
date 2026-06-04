@@ -10,7 +10,7 @@ export const toastConfig = {
       {...props}
       style={{
         borderLeftWidth: 0,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: '#DCFCE7',
         borderRadius: 100,
         height: 'auto',
         minHeight: 50,
@@ -33,14 +33,22 @@ export const toastConfig = {
         justifyContent: 'center',
       }}
       text1Style={{
-        fontSize: 15,
+        fontSize: 16,
         fontFamily: 'Switzer-Regular',
         fontWeight: '400',
-        color: '#1A1A1A',
+        color: '#16A34A',
         textAlign: 'center',
         width: '100%',
       }}
       text1NumberOfLines={3}
+      text2Style={{
+        fontSize: 14,
+        color: '#000',
+        textAlign: 'center',
+        fontFamily: 'Switzer-Regular',
+        fontWeight: '400',
+        width: '100%',
+      }}
     />
   ),
   /*
@@ -66,7 +74,7 @@ export const toastConfig = {
         shadowRadius: 10,
         elevation: 5,
         marginTop: 45,
-        backgroundColor: '#e63946',
+        backgroundColor: '#FFE2E2',
       }}
       contentContainerStyle={{
         paddingHorizontal: 24,
@@ -75,16 +83,21 @@ export const toastConfig = {
         justifyContent: 'center',
       }}
       text1Style={{
-        fontSize: 15,
+        fontSize: 16,
         fontFamily: 'Switzer-Regular',
-        color: '#FFFFFF',
+        color: '#DC2626',
         fontWeight: '400',
         textAlign: 'center',
         width: '100%',
       }}
       text1NumberOfLines={3}
       text2Style={{
-        fontSize: 12,
+        fontSize: 14,
+        color: '#000',
+        textAlign: 'center',
+        fontFamily: 'Switzer-Regular',
+        fontWeight: '400',
+        width: '100%',
       }}
     />
   ),

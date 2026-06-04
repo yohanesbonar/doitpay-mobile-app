@@ -18,9 +18,9 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
           const { options } = descriptors[route.key];
           const isFocused = state.index === index;
 
-          if (route.name === t('mainTabNav.transfer')) {
-            return <View key={index} style={styles.placeholder} />;
-          }
+          // if (route.name === t('mainTabNav.transfer')) {
+          //   return <View key={index} style={styles.placeholder} />;
+          // }
 
           const onPress = () => {
             const event = navigation.emit({
@@ -59,14 +59,24 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
               onPress={onPress}
               style={styles.tabItem}
               activeOpacity={0.7}>
-              <Icon
-                name={
-                  isFocused ? `${getIcon(route.name)}-outline` : `${getIcon(route.name)}-outline`
-                }
-                size={24}
-                color={isFocused ? '#2F6BFF' : '#000'}
-              />
-              <Text style={[styles.label, { color: isFocused ? '#2F6BFF' : colors.text }]}>
+              {route.name != 'Transfer' && (
+                <Icon
+                  name={
+                    isFocused ? `${getIcon(route.name)}-outline` : `${getIcon(route.name)}-outline`
+                  }
+                  size={24}
+                  color={isFocused ? '#2F6BFF' : '#000'}
+                />
+              )}
+              <Text
+                style={[
+                  styles.label,
+                  {
+                    color: isFocused ? '#2F6BFF' : colors.text,
+                    fontFamily: route.name == 'Transfer' ? 'Switzer-Medium' : 'Switzer-Regular',
+                    marginTop: route.name == 'Transfer' ? 28 : 4,
+                  },
+                ]}>
                 {route.name}
               </Text>
             </TouchableOpacity>
@@ -85,8 +95,8 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
         }
         activeOpacity={0.9}>
         <View style={styles.fabInner}>
-          <Icon name="paper-plane-outline" size={26} color={colors.textWhite} />
-          <Text style={styles.fabText}>Transfer</Text>
+          <Icon name="paper-plane-outline" size={32} color={colors.textWhite} />
+          {/* <Text style={styles.fabText}>Transfer</Text> */}
         </View>
       </TouchableOpacity>
     </View>

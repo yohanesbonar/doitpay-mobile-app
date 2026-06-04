@@ -180,7 +180,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
       </View>
 
       {selectedMethod === 'VA' ? (
-        <View>
+        <View style={{ paddingBottom: 32 }}>
           <View
             style={{
               flexDirection: 'row',
@@ -220,7 +220,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
                   flexDirection: 'row',
                   alignItems: 'center',
                   padding: 8,
-                  backgroundColor: isChosen ? '#EFF6FF' : '#FFF',
+                  backgroundColor: isChosen ? '#C2D8FF' : '#FFF',
                   borderRadius: 8,
                   borderWidth: 1.5,
                   borderColor: isChosen ? '#3B82F6' : '#F3F4F6',
@@ -228,19 +228,17 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
                 }}>
                 <View
                   style={{
-                    width: 56,
-                    height: 56,
+                    width: 48,
+                    height: 48,
                     backgroundColor: '#FFF',
                     borderRadius: 8,
                     justifyContent: 'center',
                     alignItems: 'center',
                     marginRight: 16,
-                    borderWidth: 1,
-                    borderColor: '#F3F4F6',
                   }}>
                   <Image
                     source={{ uri: item?.logoUrl }}
-                    style={{ width: '80%', height: '80%', resizeMode: 'contain' }}
+                    style={{ width: '100%', height: '100%', resizeMode: 'contain', borderRadius: 8 }}
                   />
                 </View>
 
@@ -256,14 +254,14 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
 
                 {isChosen ? (
                   <CheckCircle2
-                    size={30}
+                    size={24}
                     color="#FFF"
                     fill="#3B82F6"
                     strokeWidth={1}
                     colorSecondary="#FFF"
                   />
                 ) : (
-                  <Circle size={30} color="#D1D5DB" />
+                  <Circle size={24} color="#525252" />
                 )}
               </TouchableOpacity>
             );

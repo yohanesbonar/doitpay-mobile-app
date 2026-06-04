@@ -1,4 +1,4 @@
-import { StyleSheet, Dimensions } from 'react-native';
+import { StyleSheet, Dimensions, Platform } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -22,7 +22,7 @@ export const styles = StyleSheet.create({
     backgroundColor: '#3B82F6',
     alignItems: 'center',
     paddingTop: 60,
-    paddingBottom: 80,
+    paddingBottom: 70,
     position: 'relative',
     overflow: 'hidden',
   },
@@ -36,16 +36,66 @@ export const styles = StyleSheet.create({
     marginBottom: 20,
   },
   resultTitle: {
-    fontFamily: 'Switzer-Medium',
-    fontSize: 20,
+    fontFamily: 'Switzer-Regular',
+    fontSize: 16,
     color: '#FFFFFF',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   resultAmount: {
     fontFamily: 'Switzer-Bold',
-    fontSize: 32,
+    fontSize: 48,
     color: '#FFFFFF',
     zIndex: 1,
+  },
+  recipientBox: {
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 24,
+    borderRadius: 8,
+    padding: 16,
+    marginTop: -55,
+    zIndex: 10,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  recipientLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  bankLogoWrapper: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    marginRight: 14,
+  },
+  bankText: {
+    fontSize: 12,
+    fontFamily: 'Switzer-Bold',
+    color: '#005E9F',
+  },
+  recipientInfo: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  recipientName: {
+    fontFamily: 'Switzer-Bold',
+    fontSize: 16,
+    color: '#111827',
+    marginBottom: 2,
+  },
+  recipientMethod: {
+    fontFamily: 'Switzer-Regular',
+    fontSize: 13,
+    color: '#6B7280',
   },
   detailsCard: {
     backgroundColor: '#FFFFFF',
@@ -75,7 +125,6 @@ export const styles = StyleSheet.create({
     flex: 1,
     width: '50%',
     flexShrink: 0,
-    // ensure label stays on single line and doesn't shrink when value wraps
     includeFontPadding: false,
   },
   detailValue: {
@@ -86,15 +135,19 @@ export const styles = StyleSheet.create({
     flex: 1,
     width: '50%',
     flexShrink: 1,
-    // allow wrapping of long values within the right column
+
     flexWrap: 'wrap',
   },
-
+  footerContainer: {
+    backgroundColor: '#FFFFFF',
+    paddingTop: 12,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 24,
+  },
   actionsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 24,
-    marginBottom: 20,
+    marginBottom: 8,
     gap: 12,
   },
   actionButton: {
@@ -103,8 +156,8 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 100,
+    borderColor: '#D4D4D4',
+    borderRadius: 40,
     paddingVertical: 14,
     backgroundColor: '#FFFFFF',
   },
@@ -115,7 +168,7 @@ export const styles = StyleSheet.create({
   },
   homeButton: {
     backgroundColor: '#3B82F6',
-    borderRadius: 12,
+    borderRadius: 40,
     paddingVertical: 16,
     marginHorizontal: 24,
     alignItems: 'center',
