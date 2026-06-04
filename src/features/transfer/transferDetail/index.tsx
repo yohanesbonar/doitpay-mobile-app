@@ -137,7 +137,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
         titleStyle="regular"
         titlePosition={'left'}
       />
-      <ScrollView contentContainerStyle={{ paddingBottom: 190 }} style={styles.container}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 165 }} style={styles.container}>
         <View style={styles.recipientCard}>
           <View style={styles.avatar}>
             <Text style={styles.avatarText}>

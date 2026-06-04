@@ -180,7 +180,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
       </View>
 
       {selectedMethod === 'VA' ? (
-        <View>
+        <View style={{ paddingBottom: 32 }}>
           <View
             style={{
               flexDirection: 'row',
