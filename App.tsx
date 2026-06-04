@@ -18,17 +18,9 @@ import './global.css';
 import { useGetFcmToken } from './src/hooks/useGetFcmToken.ts';
 import { useNotificationListener } from './src/hooks/useNotificationListener.ts';
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 2,
-      staleTime: 1000 * 60 * 5,
-    },
-  },
-});
+import { queryClient } from './src/api/queryClient';
 
 // Start i18n
 initI18next();

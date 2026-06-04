@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, Pressable, Animated } from 'react-native';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
 import { ChevronDown, ChevronUp } from 'lucide-react-native';
 
 interface FilterBottomSheetProps {
@@ -15,6 +16,9 @@ export const FilterBottomSheet = ({
   filters,
   setFilters,
 }: FilterBottomSheetProps) => {
+  const bottomSheetRef = useRef<BottomSheetModal>(null);
+  const snapPoints = useMemo(() => ['75%'], []);
+  const [isMounted, setIsMounted] = useState(false);
   const [tempFilters, setTempFilters] = useState(filters);
   const [showPaymentOptions, setShowPaymentOptions] = useState(false);
   const [showTransactionOptions, setShowTransactionOptions] = useState(false);
@@ -24,8 +28,29 @@ export const FilterBottomSheet = ({
       setTempFilters(filters);
       setShowPaymentOptions(false);
       setShowTransactionOptions(false);
+      setIsMounted(true);
     }
-  }, [isVisible, filters]);
+  }, [isVisible]);
+
+  useEffect(() => {
+    if (isMounted) {
+      requestAnimationFrame(() => {
+        bottomSheetRef.current?.present();
+      });
+    }
+  }, [isMounted]);
+
+  const handleDismiss = () => {
+    setIsMounted(false);
+    onClose();
+  };
+
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} opacity={0.5} />
+    ),
+    [],
+  );
 
   const paymentOptions = ['Semua', 'QRIS', 'Virtual Account'];
   const transactionOptions = ['Semua', 'Pengeluaran', 'Pemasukan'];
@@ -79,64 +104,50 @@ export const FilterBottomSheet = ({
     </View>
   );
 
-  return (
-    <Modal visible={isVisible} transparent animationType="slide">
-      <Pressable style={styles.overlay} onPress={onClose}>
-        <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
-          <View style={styles.handleBar} />
+  return isMounted ? (
+    <BottomSheetModal
+      ref={bottomSheetRef}
+      snapPoints={snapPoints}
+      enablePanDownToClose
+      backdropComponent={renderBackdrop}
+      onDismiss={handleDismiss}
+      handleIndicatorStyle={{ backgroundColor: '#E5E5E5', width: 40 }}>
+      <BottomSheetView style={styles.sheet}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Filter</Text>
+        </View>
 
-          <View style={styles.header}>
-            <Text style={styles.title}>Filter</Text>
-          </View>
+        {renderDropdown(
+          'Tipe Pembayaran',
+          paymentOptions,
+          tempFilters.paymentType,
+          showPaymentOptions,
+          () => setShowPaymentOptions(!showPaymentOptions),
+          (val) => setTempFilters({ ...tempFilters, paymentType: val }),
+        )}
 
-          {renderDropdown(
-            'Tipe Pembayaran',
-            paymentOptions,
-            tempFilters.paymentType,
-            showPaymentOptions,
-            () => setShowPaymentOptions(!showPaymentOptions),
-            (val) => setTempFilters({ ...tempFilters, paymentType: val }),
-          )}
+        {renderDropdown(
+          'Tipe Transaksi',
+          transactionOptions,
+          tempFilters.transactionType,
+          showTransactionOptions,
+          () => setShowTransactionOptions(!showTransactionOptions),
+          (val) => setTempFilters({ ...tempFilters, transactionType: val }),
+        )}
 
-          {renderDropdown(
-            'Tipe Transaksi',
-            transactionOptions,
-            tempFilters.transactionType,
-            showTransactionOptions,
-            () => setShowTransactionOptions(!showTransactionOptions),
-            (val) => setTempFilters({ ...tempFilters, transactionType: val }),
-          )}
-
-          <TouchableOpacity style={styles.applyButton} onPress={handleApply}>
-            <Text style={styles.applyText}>Terapkan Filter</Text>
-          </TouchableOpacity>
-        </Pressable>
-      </Pressable>
-    </Modal>
-  );
+        <TouchableOpacity style={styles.applyButton} onPress={handleApply}>
+          <Text style={styles.applyText}>Terapkan Filter</Text>
+        </TouchableOpacity>
+      </BottomSheetView>
+    </BottomSheetModal>
+  ) : null;
 };
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-end',
-  },
   sheet: {
-    backgroundColor: '#FFF',
     paddingHorizontal: 20,
     paddingBottom: 40,
     paddingTop: 10,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-  },
-  handleBar: {
-    width: 60,
-    height: 4,
-    backgroundColor: '#E5E5E5',
-    borderRadius: 2,
-    alignSelf: 'center',
-    marginBottom: 20,
   },
   header: {
     marginBottom: 20,

@@ -1,52 +1,34 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { FC } from 'react';
+import { Pressable } from 'react-native';
+import type { RecentTransaction } from '../types';
+import HistoryItem from '@/features/main/history/components/HistoryItem';
+import { TransactionStatus } from '@/features/transaction/types';
 
 interface Props {
-  name: string;
-  bank: string;
-  time: string;
-  amount: string;
-  initial: string;
+  item: RecentTransaction;
+  onPress?: () => void;
 }
 
-export const RecentActivityItem = ({ name, bank, time, amount, initial }: Props) => {
+export const RecentActivityItem: FC<Props> = ({ item, onPress }) => {
   return (
-    <View style={styles.container}>
-      <View style={styles.avatar}>
-        <Text style={styles.avatarText}>{initial}</Text>
-      </View>
-      <View style={styles.info}>
-        <Text style={styles.name}>{name}</Text>
-        <Text style={styles.details}>
-          {bank} {time}
-        </Text>
-      </View>
-      <Text style={styles.amount}>-{amount}</Text>
-    </View>
+    <Pressable onPress={onPress}>
+      <HistoryItem
+        item={{
+          id: item.id,
+          accountHolderName: item.beneficiaryAccountHolderName,
+          bankShortName: item.beneficiaryBankShortName,
+          amount: item.amount,
+          isCredit: false,
+          paidAt: item.createdAt,
+          createdAt: item.createdAt,
+          status: TransactionStatus.SUCCESS_TRANSFER,
+          transactionMethod: 'TRANSFER',
+          fee: 0,
+          referenceId: '',
+          totalAmount: item.amount,
+          type: 'TRANSFER_OUT',
+        }}
+      />
+    </Pressable>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    marginBottom: 10,
-  },
-  avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#3B82F6',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarText: { color: 'white', fontWeight: 'bold', fontSize: 16 },
-  info: { flex: 1, marginLeft: 12 },
-  name: { fontSize: 15, fontWeight: '600', color: '#333' },
-  details: { fontSize: 12, color: '#999', marginTop: 2 },
-  amount: { fontSize: 15, fontWeight: 'bold', color: '#EF4444' },
-});

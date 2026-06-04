@@ -19,6 +19,12 @@ import {
   ForgotPinOtpVerifyResponse,
   ForgotPinResetPayload,
   ForgotPinResetResponse,
+  DeleteAccountOtpRequestPayload,
+  DeleteAccountOtpRequestResponse,
+  DeleteAccountOtpVerifyPayload,
+  DeleteAccountOtpVerifyResponse,
+  DeleteAccountPayload,
+  DeleteAccountResponse,
 } from '../api/auth';
 import { setStorageItem, storage, StorageKey } from '../storage';
 import { useAuthStore } from '../storage/useAuthStore';
@@ -253,5 +259,23 @@ export const useForgotPinVerifyOtp = () => {
 export const useForgotPinReset = () => {
   return useMutation<ForgotPinResetResponse, Error, ForgotPinResetPayload>({
     mutationFn: (payload) => authApi.forgotPinReset(payload),
+  });
+};
+
+export const useDeleteAccountRequestOtp = () => {
+  return useMutation<DeleteAccountOtpRequestResponse, Error, DeleteAccountOtpRequestPayload>({
+    mutationFn: (payload) => authApi.deleteAccountRequestOtp(payload),
+  });
+};
+
+export const useDeleteAccountVerifyOtp = () => {
+  return useMutation<DeleteAccountOtpVerifyResponse, Error, DeleteAccountOtpVerifyPayload>({
+    mutationFn: (payload) => authApi.deleteAccountVerifyOtp(payload),
+  });
+};
+
+export const useDeleteAccount = () => {
+  return useMutation<DeleteAccountResponse, Error, DeleteAccountPayload>({
+    mutationFn: (payload) => authApi.deleteAccount(payload),
   });
 };

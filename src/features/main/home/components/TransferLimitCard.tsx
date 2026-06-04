@@ -31,21 +31,25 @@ export const TransferLimitCard = ({ usedAmount, maxAmount, percentage, amountRec
         <Text style={styles.label}>Sudah terpakai</Text>
 
         <View style={styles.rowBetween}>
-          <Text style={styles.amount}>Rp {usedAmount.toLocaleString()}</Text>
-          <Text style={styles.percentageText}>{percentage.toFixed(2)}%</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <Text style={styles.amount}>Rp {usedAmount.toLocaleString()}</Text>
+            <Text style={styles.percentageText}>({percentage.toFixed(1)}%)</Text>
+          </View>
+
+          <Text style={styles.limitText}>Rp {maxAmount.toLocaleString()}</Text>
         </View>
 
         <View style={styles.progressBg} onLayout={handleLayout}>
           <View style={[styles.progressFill, { width: fillWidth }]} />
         </View>
 
-        <View style={styles.rowBetween}>
-          <Text style={styles.limitText}>Rp 0</Text>
-          <Text style={styles.limitText}>Rp {maxAmount.toLocaleString()}</Text>
+        <View style={{}}>
+          <Text style={styles.label}>Uang diterima hari ini</Text>
+          <Text style={styles.amount}>Rp {maxAmount.toLocaleString()}</Text>
         </View>
-        <View style={{ borderWidth: 0.5, borderColor: '#FFF', marginTop: 10 }} />
+        {/* <View style={{ borderWidth: 0.5, borderColor: '#FFF', marginTop: 10 }} />
         <Text style={styles.labelReceived}>Uang diterima hari ini</Text>
-        <Text style={styles.amountReceived}>Rp {amountReceived.toLocaleString()}</Text>
+        <Text style={styles.amountReceived}>Rp {amountReceived.toLocaleString()}</Text> */}
       </View>
     </LinearGradient>
   );
@@ -64,10 +68,10 @@ const createStyles = (colors: any) =>
     },
     label: {
       color: colors.textWhite,
-      fontSize: 18,
+      fontSize: 15,
       fontFamily: 'Switzer-Regular',
       opacity: 0.9,
-      marginTop: 6,
+      marginBottom: 4,
     },
     labelReceived: {
       color: colors.textWhite,
@@ -79,11 +83,11 @@ const createStyles = (colors: any) =>
     rowBetween: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      alignItems: 'flex-end',
+      alignItems: 'center',
     },
     amount: {
       color: colors.textWhite,
-      fontSize: 28,
+      fontSize: 20,
       fontFamily: 'Switzer-Semibold',
       marginTop: 2,
     },
@@ -95,9 +99,8 @@ const createStyles = (colors: any) =>
     },
     percentageText: {
       color: colors.textWhite,
-      fontSize: 20,
-      fontFamily: 'Switzer-Semibold',
-      marginBottom: 4,
+      fontSize: 14,
+      fontFamily: 'Switzer-Regular',
     },
     progressBg: {
       height: 8,
@@ -114,7 +117,7 @@ const createStyles = (colors: any) =>
     },
     limitText: {
       color: colors.textWhite,
-      fontSize: 16,
+      fontSize: 14,
       fontFamily: 'Switzer-Regular',
       opacity: 0.9,
     },

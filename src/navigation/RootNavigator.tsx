@@ -14,7 +14,6 @@ import { Settings } from '../features/main/profile/Settings';
 import { Security } from '../features/main/profile/Security';
 import { BankAccounts } from '../features/main/profile/BankAccount';
 import { HelpCenter } from '../features/main/profile/HelpCenter';
-import { History } from '../features/main/history';
 import Profile from '../features/main/profile';
 import TransferDetail from '../screens/transfer/transferDetail';
 import PaymentInstruction from '../screens/transfer/paymentInstruction';
@@ -27,6 +26,9 @@ import RequestPaymentScreen from '../screens/transfer/requestPayment';
 import { NotificationListScreen } from '@/screens/notification/NotificationListScreen';
 import TransferFailedScreen from '../screens/transfer/transferFailed';
 import PaymentExpired from '../screens/transfer/paymentExpired';
+import { TransactionDetailScreen } from '@/screens/transaction/transaction-detail';
+import { TransactionHistoryScreen } from '@/screens/main/transaction-history/transaction-history';
+import { DeleteAccount } from '@/features/main/profile/DeleteAccount';
 
 const Stack = createNativeStackNavigator();
 
@@ -72,13 +74,15 @@ export default function RootNavigator() {
             <Stack.Screen name="BankAccounts" component={BankAccounts} />
             <Stack.Screen name="HelpCenter" component={HelpCenter} />
             <Stack.Screen name="Beneficiary" component={BeneficiaryScreen} />
-            <Stack.Screen name="History" component={History} />
+            <Stack.Screen name="History" component={TransactionHistoryScreen} />
             <Stack.Screen name="Profile" component={Profile} />
             <Stack.Screen name="SearchAccount" component={SearchAccountScreen} />
             <Stack.Screen name="RequestPayment" component={RequestPaymentScreen} />
             <Stack.Screen name="Notification" component={NotificationListScreen} />
             <Stack.Screen name="TransferFailed" component={TransferFailedScreen} />
             <Stack.Screen name="PaymentExpired" component={PaymentExpired} />
+            <Stack.Screen name="TransactionDetail" component={TransactionDetailScreen} />
+            <Stack.Screen name="DeleteAccount" component={DeleteAccount} />
           </Stack.Group>
         ) : (
           <Stack.Group>

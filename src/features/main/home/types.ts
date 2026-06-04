@@ -7,6 +7,9 @@ export interface RecentBeneficiary {
   id: string;
   imageUrl: string;
   name: string;
+  accountNumber: string;
+  bankCode: string;
+  bankShortName: string;
 }
 
 export interface RecentTransaction {

@@ -2,9 +2,9 @@ import { PaginationQueries } from '@/types/pagination';
 
 export type NotificationPreference = {
   categories: {
+    general: boolean;
     marketing: boolean;
-    security: boolean;
-    system: boolean;
+    reminder: boolean;
     transaction: boolean;
   };
   emailEnabled: boolean;
@@ -21,8 +21,8 @@ export type GetNotificationPreferencesResponse = {
 export type UpdateNotificationPreferencePayload = {
   categories: {
     marketing: boolean;
-    security: boolean;
-    system: boolean;
+    general: boolean;
+    reminder: boolean;
     transaction: boolean;
   };
   emailEnabled: boolean;
@@ -30,7 +30,7 @@ export type UpdateNotificationPreferencePayload = {
   pushEnabled: boolean;
 };
 
-export type NotifKey = 'security' | 'transaction' | 'system' | 'marketing';
+export type NotifKey = 'general' | 'transaction' | 'reminder' | 'marketing';
 
 export type Notification = {
   body: string;
@@ -47,7 +47,7 @@ export interface GetNotificationsQueries extends PaginationQueries {
   unreadOnly?: boolean;
 }
 
-export type NotificationCategory = 'transaction' | 'security' | 'marketing' | 'system';
+export type NotificationCategory = 'transaction' | 'general' | 'marketing' | 'reminder';
 
 export type NotificationIconType =
   | 'incoming_money'
