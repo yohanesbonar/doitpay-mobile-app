@@ -52,7 +52,7 @@ export const createStyles = (colors: any) => {
       backgroundColor: '#3981FF',
       justifyContent: 'center',
       alignItems: 'center',
-      elevation: 8,
+      // elevation: 1,
       // shadowColor: '#2F6BFF',
       // shadowOffset: { width: 0, height: 4 },
       // shadowOpacity: 0.3,
