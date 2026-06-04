@@ -54,20 +54,13 @@ export const BankListView = ({
   const [activeTab, setActiveTab] = useState<'send' | 'receive'>('send');
   const [allBanks, setAllBanks] = useState<any[]>([]);
   const [popularBanks, setPopularBanks] = useState<any[]>([]);
-  const [isHasBankAccount, setIsHasBankAccount] = useState(false);
 
   const { mutate: mutateBanks, isPending: isPendingBank } = useBanks();
   const [isAccountSheetMounted, setIsAccountSheetMounted] = useState(false);
 
   const { mutate: getProfile, isPending: isLoadingProfile } = useGetProfile();
 
-  useFocusEffect(
-    useCallback(() => {
-      setActiveTab('send');
-    }, []),
-  );
-
-  const fetchBanksFromApi = (searchQuery: string) => {
+  const fetchBanksFromApi = useCallback((searchQuery: string) => {
     mutateBanks(
       { name: searchQuery.trim() },
       {
@@ -80,25 +73,26 @@ export const BankListView = ({
         },
       },
     );
-  };
+  }, [mutateBanks]);
 
   const debouncedSearch = useCallback(
     _.debounce((text: string) => {
       fetchBanksFromApi(text);
     }, 500),
-    [mutateBanks],
+    [fetchBanksFromApi],
   );
 
   useEffect(() => {
-    fetchBanksFromApi('');
-
     return () => {
       debouncedSearch.cancel();
     };
-  }, []);
+  }, [debouncedSearch]);
 
   useFocusEffect(
     useCallback(() => {
+      setActiveTab('send');
+      fetchBanksFromApi('');
+
       getProfile(
         {},
         {
@@ -115,30 +109,15 @@ export const BankListView = ({
           },
         },
       );
-    }, []),
+    }, [fetchBanksFromApi, getProfile, fromProfile]),
   );
-
-  useEffect(() => {
-    mutateBanks(
-      {},
-      {
-        onSuccess: (data) => {
-          setAllBanks(data?.data?.all || []);
-          setPopularBanks(data?.data?.popular || []);
-        },
-        onError: (error) => {
-          console.error('Error fetching banks:', error);
-        },
-      },
-    );
-  }, [mutateBanks]);
 
   useEffect(() => {
     const hasShown = storage.getBoolean(StorageKey.HAS_SHOWN_COMPLETE_ACCOUNT_BANK_LIST);
     if (!hasShown && !fromProfile) {
       storage.set(StorageKey.HAS_SHOWN_COMPLETE_ACCOUNT_BANK_LIST, true);
     }
-  }, []);
+  }, [fromProfile]);
 
   const handleOpenAccountSheet = useCallback(() => {
     setIsAccountSheetMounted(true);
@@ -159,32 +138,6 @@ export const BankListView = ({
     setTimeout(() => {
       goToRequestPayment();
     }, 300);
-  };
-
-  const renderHighlightedShortName = (shortName: string, search: string) => {
-    if (!search.trim()) return <Text>{shortName}</Text>;
-
-    const escapedSearch = search.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-    const regex = new RegExp(`(${escapedSearch})`, 'gi');
-    const parts = shortName.split(regex);
-
-    return (
-      <Text>
-        {parts.map((part, index) => {
-          const isMatch = part.toLowerCase() === search.toLowerCase().trim();
-          return (
-            <Text
-              key={index}
-              style={{
-                fontFamily: isMatch ? 'Switzer-Bold' : 'Switzer-Regular',
-                fontWeight: isMatch ? '700' : '400',
-              }}>
-              {part}
-            </Text>
-          );
-        })}
-      </Text>
-    );
   };
 
   return (
@@ -329,3 +282,5 @@ export const BankListView = ({
     </View>
   );
 };
+
+export default BankListView;

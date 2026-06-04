@@ -47,15 +47,17 @@ apiClient.interceptors.request.use(
     config.headers['X-App-Type'] = 'mobile';
     config.headers['X-Device-ID'] = deviceId;
 
+    // --- Firebase Performance Start ---
     if (!__DEV__) {
       try {
         const url = `${config.baseURL ?? ''}${config.url ?? ''}`;
-        const method = (config.method?.toUpperCase() ??
-          'GET') as FirebasePerformanceTypes.HttpMethod;
+        const method = (config.method?.toUpperCase() ?? 'GET') as FirebasePerformanceTypes.HttpMethod;
         const metric = await perf().newHttpMetric(url, method);
         await metric.start();
         config._perfMetric = metric;
-      } catch (e) {}
+      } catch (e) {
+        console.error('Firebase Perf Start Error:', e);
+      }
     }
 
     const noNeedAuth = config?.noNeedAuth;
@@ -65,17 +67,13 @@ apiClient.interceptors.request.use(
       const expiresAt = getStorageItem(StorageKey.EXPIRES_AT);
 
       if (accessToken && expiresAt) {
-        console.log('Access token found, checking expiration... expiresAt', expiresAt);
         const expirationDate = new Date(expiresAt);
         const isTokenExpired = isBefore(subSeconds(expirationDate, 10), new Date());
-        console.log('Is token expired?', isTokenExpired);
+        
         if (isTokenExpired && !isRefreshing) {
-          console.log('Token expired, refreshing token...');
           isRefreshing = true;
-
           try {
             const refreshToken = getStorageItem(StorageKey.REFRESH_TOKEN);
-
             const response = await axios.post(
               `${Config.API_URL}/v1/auth/refresh`,
               { refreshToken },
@@ -90,24 +88,13 @@ apiClient.interceptors.request.use(
               },
             );
 
-            const {
-              accessToken: newAccessToken,
-              refreshToken: newRefreshToken,
-              expiresAt: newExpiresAt,
-            } = response?.data?.data;
+            const { accessToken: newAccessToken, refreshToken: newRefreshToken, expiresAt: newExpiresAt } = response?.data?.data;
 
-            if (newAccessToken) {
-              setStorageItem(StorageKey.ACCESS_TOKEN, newAccessToken);
-            }
-            if (newRefreshToken) {
-              setStorageItem(StorageKey.REFRESH_TOKEN, newRefreshToken);
-            }
-            if (newExpiresAt) {
-              setStorageItem(StorageKey.EXPIRES_AT, newExpiresAt);
-            }
+            if (newAccessToken) setStorageItem(StorageKey.ACCESS_TOKEN, newAccessToken);
+            if (newRefreshToken) setStorageItem(StorageKey.REFRESH_TOKEN, newRefreshToken);
+            if (newExpiresAt) setStorageItem(StorageKey.EXPIRES_AT, newExpiresAt);
 
             config.headers.Authorization = `Bearer ${newAccessToken}`;
-
             processQueue(null, newAccessToken);
             return config;
           } catch (refreshError) {
@@ -151,6 +138,7 @@ apiClient.interceptors.request.use(
 
 apiClient.interceptors.response.use(
   async (response) => {
+    // --- Firebase Performance Stop (Success) ---
     if (!__DEV__ && response.config._perfMetric) {
       try {
         await response.config._perfMetric.setHttpResponseCode(response.status);
@@ -164,42 +152,26 @@ apiClient.interceptors.response.use(
       console.log('Data:', JSON.stringify(response.data, null, 2));
       console.log('-----------------------');
     }
+
     return response;
   },
   async (error) => {
-    if (!__DEV__ && error.config?._perfMetric) {
+    const originalRequest = error.config;
+    const status = error.response?.status;
+
+    // --- Firebase Performance Stop (Error) ---
+    if (!__DEV__ && originalRequest?._perfMetric) {
       try {
-        await error.config._perfMetric.setHttpResponseCode(error.response?.status ?? 0);
-        await error.config._perfMetric.stop();
+        await originalRequest._perfMetric.setHttpResponseCode(status ?? 0);
+        if (error.response?.headers['content-length']) {
+          await originalRequest._perfMetric.setResponseContentType(error.response.headers['content-type']);
+        }
+        await originalRequest._perfMetric.stop();
       } catch (e) {}
     }
 
-    if (!__DEV__) {
-      crashlytics().recordError(
-        new Error(`API Error ${error.response?.status}: ${error.config?.url}`),
-      );
-    }
-
-    if (__DEV__) {
-      console.log('--- ❌ API ERROR ---');
-      console.log(`Status: ${error.response?.status}`);
-      console.log('Message:', error.message);
-      console.log('Error Data:', JSON.stringify(error.response?.data, null, 2));
-      console.log('---------------------');
-    }
-    return Promise.reject(error?.response?.data ?? error);
-  },
-);
-
-apiClient.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-
-    if (
-      (error.response?.status === 400 || error.response?.status === 401) &&
-      !originalRequest._retry
-    ) {
+    // --- Auto Refresh Token Logic (Handling 401 / 400) ---
+    if ((status === 401 || status === 400) && !originalRequest?._retry) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
@@ -211,12 +183,11 @@ apiClient.interceptors.response.use(
           .catch((err) => Promise.reject(err));
       }
 
-      console.log('Token expired, attempting to refresh token... with error 400 or 401');
       originalRequest._retry = true;
       isRefreshing = true;
 
       try {
-        const refreshToken = await getStorageItem(StorageKey.REFRESH_TOKEN);
+        const refreshToken = getStorageItem(StorageKey.REFRESH_TOKEN);
         const deviceId = await getDeviceFingerprint();
 
         const response = await axios.post(
@@ -233,11 +204,7 @@ apiClient.interceptors.response.use(
           },
         );
 
-        const {
-          accessToken: newAccessToken,
-          refreshToken: newRefreshToken,
-          expiresAt: newExpiresAt,
-        } = response?.data?.data;
+        const { accessToken: newAccessToken, refreshToken: newRefreshToken, expiresAt: newExpiresAt } = response?.data?.data;
 
         if (__DEV__) {
           console.log('--- 🔄 TOKEN REFRESHED ---');
@@ -251,18 +218,18 @@ apiClient.interceptors.response.use(
         setStorageItem(StorageKey.REFRESH_TOKEN, newRefreshToken);
         setStorageItem(StorageKey.EXPIRES_AT, newExpiresAt);
 
-        apiClient.defaults.headers.common.Authorization = `Bearer ${newAccessToken}`;
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-
         processQueue(null, newAccessToken);
         return apiClient(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
+
         if (__DEV__) {
           console.log('--- ❌ TOKEN REFRESH FAILED ---');
           console.log(`Error: ${refreshError}`);
           console.log('-------------------------------');
         }
+
         useAuthStore.getState().logout();
         Toast.show({
           type: 'error',
@@ -275,7 +242,30 @@ apiClient.interceptors.response.use(
       }
     }
 
-    return Promise.reject(error);
+    // --- Firebase Crashlytics Logging (Filter Noise) ---
+    if (!__DEV__) {
+      // Only log server errors (5xx) and network errors (no status) to Crashlytics to avoid noise from client errors (4xx)
+      if (!status || status >= 500) {
+        crashlytics().setAttribute('api_url', originalRequest?.url ?? 'unknown');
+        crashlytics().setAttribute('api_method', originalRequest?.method ?? 'unknown');
+        crashlytics().setAttribute('api_status', String(status ?? 'NETWORK_ERROR'));
+        
+        crashlytics().recordError(
+          new Error(`API Failure [${status ?? 'NET_ERR'}]: ${originalRequest?.url}`),
+        );
+      }
+    }
+
+    if (__DEV__) {
+      console.log('--- ❌ API ERROR ---');
+      console.log(`Status: ${status}`);
+      console.log('Message:', error.message);
+      console.log('Error Data:', JSON.stringify(error.response?.data, null, 2));
+      console.log('---------------------');
+    }
+
+    // Consistently return the error response data if available, otherwise return the original error
+    return Promise.reject(error?.response?.data ?? error);
   },
 );
 
