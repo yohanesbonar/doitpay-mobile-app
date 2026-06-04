@@ -9,6 +9,7 @@ import CustomTabBar from '../../components/molecules/CustomTabBar/index';
 import { useTranslation } from 'react-i18next';
 import { useGetProfileMeQuery } from '@/features/user/hooks/useGetProfileMeQuery';
 import { useGetLimitMeQuery } from '@/features/user/hooks/useGetLimitMeQuery';
+import { TransactionHistoryScreen } from '@/screens/main/transaction-history/transaction-history';
 
 const Tab = createBottomTabNavigator();
 
@@ -22,7 +23,7 @@ export default function MainTabNavigator() {
       tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{ headerShown: false }}>
       <Tab.Screen name={t(`mainTabNav.homepage`)} component={HomeScreen} />
-      <Tab.Screen name={t(`mainTabNav.history`)} component={History} />
+      <Tab.Screen name={t(`mainTabNav.history`)} component={TransactionHistoryScreen} />
       <Tab.Screen name={t(`mainTabNav.transfer`)} component={BankList} />
       <Tab.Screen name={t(`mainTabNav.beneficiary`)} component={BeneficiaryScreen} />
       <Tab.Screen name={t(`mainTabNav.profile`)} component={Profile} />

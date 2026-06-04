@@ -147,6 +147,44 @@ export type ForgotPinResetResponse = {
   data: {};
 };
 
+// DELETE ACCOUNT
+export interface DeleteAccountOtpRequestPayload {
+  method: 'SMS' | 'WHATSAPP';
+}
+
+export type DeleteAccountOtpRequestResponse = {
+  status: string;
+  message: string;
+  data: {
+    retryAfterSeconds: number;
+  };
+};
+
+export interface DeleteAccountOtpVerifyPayload {
+  otpCode: string;
+}
+
+export type DeleteAccountOtpVerifyResponse = {
+  status: string;
+  message: string;
+  data: {
+    expiresAt: string;
+    verificationToken: string;
+  };
+};
+
+export interface DeleteAccountPayload {
+  pin: string;
+  reason: string;
+  verifyToken: string;
+}
+
+export type DeleteAccountResponse = {
+  status: string;
+  message: string;
+  data: {};
+};
+
 export const authApi = {
   registerRequestOtp: async (payload: RegisterOtpRequestPayload): Promise<RegisterOtpResponse> => {
     const { data } = await apiClient.post<RegisterOtpResponse>(
@@ -218,6 +256,33 @@ export const authApi = {
   forgotPinReset: async (payload: ForgotPinResetPayload): Promise<ForgotPinResetResponse> => {
     const { data } = await apiClient.post<ForgotPinResetResponse>('/v1/pin/reset', payload, {
       headers: { 'X-Idempotency-Key': generateUUID() },
+    });
+    return data;
+  },
+  deleteAccountRequestOtp: async (
+    payload: DeleteAccountOtpRequestPayload,
+  ): Promise<DeleteAccountOtpRequestResponse> => {
+    const { data } = await apiClient.post<DeleteAccountOtpRequestResponse>(
+      '/v1/account/delete/otp/request',
+      payload,
+    );
+    return data;
+  },
+  deleteAccountVerifyOtp: async (
+    payload: DeleteAccountOtpVerifyPayload,
+  ): Promise<DeleteAccountOtpVerifyResponse> => {
+    const { data } = await apiClient.post<DeleteAccountOtpVerifyResponse>(
+      '/v1/account/delete/otp/verify',
+      payload,
+    );
+    return data;
+  },
+  deleteAccount: async ({
+    verifyToken,
+    ...body
+  }: DeleteAccountPayload): Promise<DeleteAccountResponse> => {
+    const { data } = await apiClient.post<DeleteAccountResponse>('/v1/account/delete', body, {
+      headers: { 'Verify-Token': verifyToken },
     });
     return data;
   },

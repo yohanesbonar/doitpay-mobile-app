@@ -24,7 +24,7 @@ const lightColors = {
   warning: '#FFA500',
   textSecondary: '#6C757D',
   headerBackground: '#FAFAFA',
-  pageBackground: '#FAFAFA',
+  pageBackground: '#F5F5F5',
   buttonBlue: '#3981FF',
   buttonWhite: '#FFFFFF',
   disableButton: '#D4D4D4',

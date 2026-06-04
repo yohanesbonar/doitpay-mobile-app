@@ -1,14 +1,12 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
-import type { GetTransactionHistoryQueries, TransactionItem } from '../types';
-import { transactionHistoryApi } from '../api/transaction-history';
+import type { GetTransactionsQueries, Transaction } from '../types';
+import { transactionApi } from '../api/transaction';
 
-export const useGetTransactionHistoriesQuery = (
-  queries?: Omit<GetTransactionHistoryQueries, 'cursor'>,
-) => {
+export const useGetTransactionsQuery = (queries?: Omit<GetTransactionsQueries, 'cursor'>) => {
   return useInfiniteQuery({
-    queryKey: ['transaction-histories', queries],
+    queryKey: ['transactions', queries],
     queryFn: async ({ pageParam }) => {
-      const result = await transactionHistoryApi.getTransactionHistories({
+      const result = await transactionApi.getTransactions({
         ...queries,
         cursor: pageParam,
       });
@@ -16,7 +14,7 @@ export const useGetTransactionHistoriesQuery = (
     },
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => {
-      const items: TransactionItem[] = lastPage?.data?.items ?? [];
+      const items: Transaction[] = lastPage?.data?.items ?? [];
       const nextCursor: string | null = lastPage?.data?.nextCursor ?? null;
       if (!nextCursor || items.length === 0) return undefined;
       return nextCursor;

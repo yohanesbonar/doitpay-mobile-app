@@ -21,12 +21,22 @@ const HomeScreen = () => {
     navigation.navigate('Notification');
   };
 
+  const goToTransactionDetail = (transactionId: string) => {
+    navigation.navigate('TransactionDetail', { transactionId });
+  };
+
+  const goToTransferDetail = (params: { bankData: any; accountData: any }) => {
+    navigation.navigate('TransferDetail', params);
+  };
+
   return (
     <HomeView
       goToSearchAccount={goToSearchAccount}
       onPressBack={onPressBack}
       goToBankAccounts={goToBankAccounts}
       goToNotification={goToNotifications}
+      goToTransactionDetail={goToTransactionDetail}
+      goToTransferDetail={goToTransferDetail}
     />
   );
 };

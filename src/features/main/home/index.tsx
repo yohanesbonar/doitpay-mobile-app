@@ -19,29 +19,13 @@ import { CompleteAccountPopup } from '@/components/molecules/CompleteAccountPopu
 import { useAuthStore } from '@/storage/useAuthStore.ts';
 import { useGetHomeAggregateQuery } from './hooks/useGetHomeAggregateQuery.ts';
 
-const getInitials = (name: string) =>
-  name
-    .split(' ')
-    .slice(0, 2)
-    .map((w) => w.charAt(0))
-    .join('')
-    .toUpperCase();
-
-const formatRupiah = (amount: number) =>
-  'Rp ' + amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-
-const formatTime = (dateStr: string) => {
-  const date = new Date(dateStr);
-  const hours = date.getHours().toString().padStart(2, '0');
-  const minutes = date.getMinutes().toString().padStart(2, '0');
-  return `${hours}:${minutes} WIB`;
-};
-
 interface HomeViewProps {
   goToSearchAccount: () => void;
   onPressBack: () => void;
   goToBankAccounts: () => void;
   goToNotification: () => void;
+  goToTransactionDetail: (transactionId: string) => void;
+  goToTransferDetail: (params: { bankData: any; accountData: any }) => void;
 }
 
 export const HomeView = (props: HomeViewProps) => {
@@ -61,6 +45,8 @@ export const HomeView = (props: HomeViewProps) => {
   const recentTransactions = homeData?.recentTransactions ?? [];
   const recentBeneficiaries = homeData?.recentBeneficiaries ?? [];
   const hasKycPending = homeData?.pendingActions.some((a) => a.code === 'KYC_INCOMPLETE') ?? false;
+
+  console.log(homeData, 'HOME');
 
   const handleOpenEmailSheet = useCallback(() => {
     setIsSheetMounted(true);
@@ -113,11 +99,12 @@ export const HomeView = (props: HomeViewProps) => {
 
         <ScrollView
           style={{ flex: 1 }}
+          contentContainerStyle={{ paddingBottom: 30 }}
           showsVerticalScrollIndicator={false}
           refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}>
           {/* <UnprotectedAccount onPress={() => handleOpenEmailSheet()} isShow={hasKycPending} /> */}
           <View style={styles.dailyLimitWrapper}>
-            <Text style={{ fontSize: 22, fontFamily: 'Switzer-Semibold' }}>
+            <Text style={{ fontSize: 20, marginBottom: 4, fontFamily: 'Switzer-Semibold' }}>
               {t('home.dailyLimitTransfer')}
             </Text>
             <TransferLimitCard
@@ -147,7 +134,15 @@ export const HomeView = (props: HomeViewProps) => {
                 </View>
               ) : (
                 <View style={{ marginRight: -24 }}>
-                  <RecentRecipient data={recentBeneficiaries} />
+                  <RecentRecipient
+                    data={recentBeneficiaries}
+                    onPressItem={(b) =>
+                      props.goToTransferDetail({
+                        bankData: { shortName: b.bankCode, logoUrl: null },
+                        accountData: { accountHolderName: b.name, accountNumber: b.accountNumber },
+                      })
+                    }
+                  />
                 </View>
               )}
             </View>
@@ -171,11 +166,8 @@ export const HomeView = (props: HomeViewProps) => {
                 recentTransactions.map((item) => (
                   <RecentActivityItem
                     key={item.id}
-                    initial={getInitials(item.beneficiaryAccountHolderName)}
-                    name={item.beneficiaryAccountHolderName}
-                    bank={item.beneficiaryBankShortName}
-                    time={formatTime(item.createdAt)}
-                    amount={formatRupiah(item.amount)}
+                    item={item}
+                    onPress={() => props.goToTransactionDetail(item.id)}
                   />
                 ))
               )}

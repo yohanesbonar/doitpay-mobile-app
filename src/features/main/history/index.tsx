@@ -1,5 +1,13 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { View, Text, SectionList, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import React, { useState, useMemo, FC } from 'react';
+import {
+  View,
+  Text,
+  SectionList,
+  TouchableOpacity,
+  Image,
+  ActivityIndicator,
+  Pressable,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../../theme/ThemeProvider';
 import { createStyles } from './styles';
@@ -12,17 +20,29 @@ import { DateBottomSheet } from '@/components/molecules/DateBottomsheet';
 import { Calendar, X } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
-import { useGetTransactionHistoriesQuery } from './hooks/useGetTransactionHistoriesQuery';
+import { useDebounce } from '@/hooks/useDebounce';
 import { HistoryListSkeleton } from './components/HistoryItemSkeleton';
-import type { GetTransactionHistoryQueries, TransactionItem } from './types';
+import type { Transaction } from './types';
+import { GetTransactionsQueries } from '@/features/transaction/types';
+import { useGetTransactionsQuery } from '@/features/transaction/hooks/useGetTransactionHistoriesQuery';
 
 const monthsLabel = [
-  'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+  'Januari',
+  'Februari',
+  'Maret',
+  'April',
+  'Mei',
+  'Juni',
+  'Juli',
+  'Agustus',
+  'September',
+  'Oktober',
+  'November',
+  'Desember',
 ];
 
-const groupByMonth = (transactions: TransactionItem[]) => {
-  const groups: Record<string, { title: string; data: TransactionItem[] }> = {};
+const groupByMonth = (transactions: Transaction[]) => {
+  const groups: Record<string, { title: string; data: Transaction[] }> = {};
   const order: string[] = [];
 
   for (const tx of transactions) {
@@ -45,26 +65,25 @@ const currentYear = new Date().getFullYear();
 const initialFilters = { paymentType: 'Semua', transactionType: 'Semua' };
 const initialDate = { month: undefined as number | undefined, year: currentYear };
 
-export const History = () => {
+interface HistoryProps {
+  navigateToDetail: (transactionId: string) => void;
+}
+
+export const History: FC<HistoryProps> = ({ navigateToDetail }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const navigation = useNavigation<any>();
   const { t } = useTranslation();
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const debouncedSearch = useDebounce(searchQuery);
   const [showFilter, setShowFilter] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [activeFilters, setActiveFilters] = useState(initialFilters);
   const [selectedDate, setSelectedDate] = useState(initialDate);
 
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 500);
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
-
-  const queryParams = useMemo<Omit<GetTransactionHistoryQueries, 'cursor'>>(() => {
-    const params: Omit<GetTransactionHistoryQueries, 'cursor'> = {
+  const queryParams = useMemo<Omit<GetTransactionsQueries, 'cursor'>>(() => {
+    const params: Omit<GetTransactionsQueries, 'cursor'> = {
       limit: 20,
       year: selectedDate.year,
     };
@@ -73,7 +92,9 @@ export const History = () => {
     if (selectedDate.month !== undefined) params.month = selectedDate.month + 1;
     if (activeFilters.paymentType !== 'Semua') {
       params.payment_type =
-        activeFilters.paymentType === 'Virtual Account' ? 'VIRTUAL_ACCOUNT' : activeFilters.paymentType;
+        activeFilters.paymentType === 'Virtual Account'
+          ? 'VIRTUAL_ACCOUNT'
+          : activeFilters.paymentType;
     }
     if (activeFilters.transactionType !== 'Semua') {
       params.transaction_type =
@@ -91,12 +112,14 @@ export const History = () => {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useGetTransactionHistoriesQuery(queryParams);
+  } = useGetTransactionsQuery(queryParams);
 
   const transactions = useMemo(
     () => transactionHistoriesData?.pages.flatMap((page) => page?.data?.items ?? []) ?? [],
     [transactionHistoriesData],
   );
+
+  console.log(transactions, 'TRANSACTIONS');
 
   const sections = useMemo(() => groupByMonth(transactions), [transactions]);
 
@@ -160,7 +183,11 @@ export const History = () => {
           <SectionList
             sections={sections}
             keyExtractor={(item) => item.id}
-            renderItem={({ item }) => <HistoryItem item={item} />}
+            renderItem={({ item }) => (
+              <Pressable style={{ marginHorizontal: 24 }} onPress={() => navigateToDetail(item.id)}>
+                <HistoryItem item={item} />
+              </Pressable>
+            )}
             renderSectionHeader={({ section: { title } }) => (
               <Text style={styles.sectionHeader}>{title}</Text>
             )}

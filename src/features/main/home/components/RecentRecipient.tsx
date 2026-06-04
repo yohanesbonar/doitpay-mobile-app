@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import metrics from '../../../../theme/metrics';
 import { RecentBeneficiary } from '../types';
 
@@ -15,9 +15,10 @@ const getInitials = (name: string) =>
 
 interface Props {
   data?: RecentBeneficiary[];
+  onPressItem?: (item: RecentBeneficiary) => void;
 }
 
-export const RecentRecipient = ({ data = [] }: Props) => {
+export const RecentRecipient = ({ data = [], onPressItem }: Props) => {
   return (
     <FlatList
       horizontal
@@ -25,12 +26,16 @@ export const RecentRecipient = ({ data = [] }: Props) => {
       keyExtractor={(item) => item.id}
       showsHorizontalScrollIndicator={false}
       renderItem={({ item, index }) => (
-        <View style={styles.container}>
-          <View style={[styles.avatar, { backgroundColor: AVATAR_COLORS[index % AVATAR_COLORS.length] }]}>
+        <TouchableOpacity style={styles.container} onPress={() => onPressItem?.(item)}>
+          <View
+            style={[
+              styles.avatar,
+              { backgroundColor: AVATAR_COLORS[index % AVATAR_COLORS.length] },
+            ]}>
             <Text style={styles.initial}>{getInitials(item.name)}</Text>
           </View>
           <Text style={styles.name}>{item.name.split(' ')[0]}</Text>
-        </View>
+        </TouchableOpacity>
       )}
     />
   );

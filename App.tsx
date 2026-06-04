@@ -18,18 +18,9 @@ import './global.css';
 import { useGetFcmToken } from './src/hooks/useGetFcmToken.ts';
 import { useNotificationListener } from './src/hooks/useNotificationListener.ts';
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
-import { navigationRef } from './src/navigation/navigationRef.ts';
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 2,
-      staleTime: 1000 * 60 * 5,
-    },
-  },
-});
+import { queryClient } from './src/api/queryClient';
 
 // Start i18n
 initI18next();
@@ -100,25 +91,25 @@ const App = () => {
   };
 
   return (
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <BottomSheetModalProvider>
-          <QueryClientProvider client={queryClient}>
-            <I18nextProvider i18n={i18next}>
-              <SafeAreaProvider>
-                <ThemeProvider>
-                  <RootNavigator
-                    navigationRef={navigationRef}
-                    onReady={onNavigationReady}
-                    onStateChange={onNavigationStateChange}
-                  />
-                  <AppInitializer />
-                </ThemeProvider>
-                <Toast config={toastConfig} />
-              </SafeAreaProvider>
-            </I18nextProvider>
-          </QueryClientProvider>
-        </BottomSheetModalProvider>
-      </GestureHandlerRootView>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <BottomSheetModalProvider>
+        <QueryClientProvider client={queryClient}>
+          <I18nextProvider i18n={i18next}>
+            <SafeAreaProvider>
+              <ThemeProvider>
+                <RootNavigator
+                  navigationRef={navigationRef}
+                  onReady={onNavigationReady}
+                  onStateChange={onNavigationStateChange}
+                />
+                <AppInitializer />
+              </ThemeProvider>
+              <Toast config={toastConfig} />
+            </SafeAreaProvider>
+          </I18nextProvider>
+        </QueryClientProvider>
+      </BottomSheetModalProvider>
+    </GestureHandlerRootView>
   );
 };
 
