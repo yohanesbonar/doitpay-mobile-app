@@ -39,10 +39,6 @@ export const createStyles = (colors: any) => {
       top: -34,
       alignSelf: 'center',
       elevation: Platform.OS === 'ios' ? 8 : 0,
-      // shadowColor: '#2F6BFF',
-      // shadowOffset: { width: 0, height: 4 },
-      // shadowOpacity: 0.3,
-      // shadowRadius: 6,
       zIndex: 99,
     },
     fabInner: {
@@ -52,11 +48,6 @@ export const createStyles = (colors: any) => {
       backgroundColor: '#3981FF',
       justifyContent: 'center',
       alignItems: 'center',
-      // elevation: 1,
-      // shadowColor: '#2F6BFF',
-      // shadowOffset: { width: 0, height: 4 },
-      // shadowOpacity: 0.3,
-      // shadowRadius: 6,
     },
     fabText: {
       color: '#FFF',
