@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'; // React 19 doesn't strictly need this, but good for TS
+import React, { useEffect, useRef } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { I18nextProvider } from 'react-i18next';
@@ -6,13 +6,13 @@ import i18next from 'i18next';
 import Toast from 'react-native-toast-message';
 import { getMessaging, setBackgroundMessageHandler } from '@react-native-firebase/messaging';
 import notifee, { EventType } from '@notifee/react-native';
+import perf from '@react-native-firebase/perf';
 
 import { initI18next } from './src/i18n/initI18next.ts';
 import { ThemeProvider } from './src/theme/ThemeProvider.tsx';
 import RootNavigator from './src/navigation/RootNavigator.tsx';
-import { GluestackUIProvider } from '@/src/components/ui/gluestack-ui-provider';
 import { toastConfig } from './src/utils/ToastConfig/index.tsx';
-import { useNotifications } from './src/hooks/useNotifications'; // Import your hook
+import { useNotifications } from './src/hooks/useNotifications';
 
 import './global.css';
 import { useGetFcmToken } from './src/hooks/useGetFcmToken.ts';
@@ -46,15 +46,62 @@ const AppInitializer = () => {
 };
 
 const App = () => {
+  const routeNameRef = useRef<string | undefined>(undefined);
+  const traceRef = useRef<any>(null);
+
+  const onNavigationReady = () => {
+    routeNameRef.current = navigationRef.getCurrentRoute()?.name;
+  };
+
+  const onNavigationStateChange = async () => {
+    const previousRouteName = routeNameRef.current;
+    const currentRouteName = navigationRef.getCurrentRoute()?.name;
+
+    if (previousRouteName !== currentRouteName) {
+      if (__DEV__ && currentRouteName) {
+        console.log('--------------------------------------------------');
+        console.log(`📱 CURRENT SCREEN : ${currentRouteName}`);
+        if (previousRouteName) {
+          console.log(`⬅️ FROM SCREEN    : ${previousRouteName}`);
+        }
+        console.log('--------------------------------------------------');
+      }
+
+      if (traceRef.current) {
+        try {
+          await traceRef.current.stop();
+        } catch (e) {
+          console.error('Failed to stop performance trace:', e);
+        }
+      }
+
+      if (!__DEV__ && currentRouteName) {
+        try {
+          routeNameRef.current = currentRouteName;
+          traceRef.current = await perf().newTrace(`screen_${currentRouteName}`);
+          await traceRef.current.start();
+        } catch (e) {
+          console.error('Failed to start performance trace:', e);
+        }
+      } else if (__DEV__ && currentRouteName) {
+        routeNameRef.current = currentRouteName;
+        console.log(`🎬 [Firebase Perf Dev] Tracking Screen: screen_${currentRouteName}`);
+      }
+    }
+  };
+
   return (
-    // <GluestackUIProvider mode="dark">
     <GestureHandlerRootView style={{ flex: 1 }}>
       <BottomSheetModalProvider>
         <QueryClientProvider client={queryClient}>
           <I18nextProvider i18n={i18next}>
             <SafeAreaProvider>
               <ThemeProvider>
-                <RootNavigator />
+                <RootNavigator
+                  navigationRef={navigationRef}
+                  onReady={onNavigationReady}
+                  onStateChange={onNavigationStateChange}
+                />
                 <AppInitializer />
               </ThemeProvider>
               <Toast config={toastConfig} />
@@ -63,7 +110,6 @@ const App = () => {
         </QueryClientProvider>
       </BottomSheetModalProvider>
     </GestureHandlerRootView>
-    // </GluestackUIProvider>
   );
 };
 

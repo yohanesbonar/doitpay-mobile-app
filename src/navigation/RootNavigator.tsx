@@ -7,7 +7,6 @@ import Onboarding from '../screens/onboarding/onboardingLanding';
 import { AuthEntry } from '../features/onboarding/authEntry';
 import BankList from '../screens/transfer/bankList';
 import AddBankRecipient from '../screens/transfer/addBankAccount';
-import { navigationRef } from './navigationRef';
 import { useAuthStore } from '../storage/useAuthStore';
 import MainTabNavigator from './page-navigators/MainTabNavigator';
 import { Settings } from '../features/main/profile/Settings';
@@ -31,8 +30,13 @@ import { TransactionHistoryScreen } from '@/screens/main/transaction-history/tra
 import { DeleteAccount } from '@/features/main/profile/DeleteAccount';
 
 const Stack = createNativeStackNavigator();
+interface RootNavigatorProps {
+  navigationRef: any;
+  onReady: () => void;
+  onStateChange: () => void;
+}
 
-export default function RootNavigator() {
+export default function RootNavigator({ navigationRef, onReady, onStateChange }: RootNavigatorProps) {
   const { colors, theme } = useTheme();
   const navigationTheme = theme === 'light' ? DefaultTheme : DarkTheme;
 
@@ -40,7 +44,12 @@ export default function RootNavigator() {
   const isAuthenticated = !!accessToken;
 
   return (
-    <NavigationContainer theme={navigationTheme} ref={navigationRef}>
+    <NavigationContainer 
+      theme={navigationTheme} 
+      ref={navigationRef}
+      onReady={onReady}
+      onStateChange={onStateChange}
+    >
       <StatusBar
         backgroundColor={colors.background}
         barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
