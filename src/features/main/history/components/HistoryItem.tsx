@@ -81,7 +81,9 @@ const HistoryItem: FC<HistoryItemProps> = ({ item }) => {
             <Text style={styles.subText}>{item.bankShortName}</Text>
             <Text style={styles.subText}>({formatTitle(item.transactionMethod)})</Text>
           </View>
-          <Text style={[styles.subText, { marginTop: 3 }]}>{formatTime(item.paidAt)}</Text>
+          <Text style={[styles.subText, { marginTop: 3 }]}>
+            {formatTime(item.paidAt ?? item.createdAt)}
+          </Text>
         </View>
       </View>
 

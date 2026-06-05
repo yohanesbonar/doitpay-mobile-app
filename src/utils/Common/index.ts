@@ -1,6 +1,7 @@
 import Toast from 'react-native-toast-message';
 import { useAuthStore } from '../../storage/useAuthStore';
 import { queryClient } from '../../api/queryClient';
+import { authApi } from '../../api/auth';
 
 export const formatOTPTimer = (seconds: number): string => {
   if (seconds <= 0) return '0s';
@@ -20,7 +21,10 @@ export const formatOTPTimer = (seconds: number): string => {
 };
 
 export const handleLogout = () => {
-  const logout = useAuthStore.getState().logout;
+  const { logout, accessToken } = useAuthStore.getState();
+  if (accessToken) {
+    authApi.logout(accessToken).catch(() => {});
+  }
   logout();
   queryClient.clear();
   Toast.show({

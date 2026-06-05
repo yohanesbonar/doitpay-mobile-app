@@ -25,6 +25,7 @@ import {
   DeleteAccountOtpVerifyResponse,
   DeleteAccountPayload,
   DeleteAccountResponse,
+  CancelAccountDeletionResponse,
 } from '../api/auth';
 import { setStorageItem, storage, StorageKey } from '../storage';
 import { useAuthStore } from '../storage/useAuthStore';
@@ -277,5 +278,11 @@ export const useDeleteAccountVerifyOtp = () => {
 export const useDeleteAccount = () => {
   return useMutation<DeleteAccountResponse, Error, DeleteAccountPayload>({
     mutationFn: (payload) => authApi.deleteAccount(payload),
+  });
+};
+
+export const useCancelAccountDeletion = () => {
+  return useMutation<CancelAccountDeletionResponse, Error, void>({
+    mutationFn: () => authApi.cancelAccountDeletion(),
   });
 };

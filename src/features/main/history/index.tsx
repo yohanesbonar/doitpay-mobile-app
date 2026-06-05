@@ -84,7 +84,7 @@ export const History: FC<HistoryProps> = ({ navigateToDetail }) => {
 
   const queryParams = useMemo<Omit<GetTransactionsQueries, 'cursor'>>(() => {
     const params: Omit<GetTransactionsQueries, 'cursor'> = {
-      limit: 20,
+      limit: 5,
       year: selectedDate.year,
     };
 
@@ -118,8 +118,6 @@ export const History: FC<HistoryProps> = ({ navigateToDetail }) => {
     () => transactionHistoriesData?.pages.flatMap((page) => page?.data?.items ?? []) ?? [],
     [transactionHistoriesData],
   );
-
-  console.log(transactions, 'TRANSACTIONS');
 
   const sections = useMemo(() => groupByMonth(transactions), [transactions]);
 

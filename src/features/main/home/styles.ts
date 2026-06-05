@@ -22,6 +22,7 @@ export const createStyles = (colors: typeof themeColors.light) => {
       paddingTop: 16,
       borderTopWidth: 0.2,
       borderTopColor: '#737373',
+      height: '100%',
     },
     safeAreaContainer: {
       flex: 1,

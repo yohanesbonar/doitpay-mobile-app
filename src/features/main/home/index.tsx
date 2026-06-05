@@ -10,6 +10,7 @@ import { RecentActivityItem } from './components/RecentActivityItem.tsx';
 import { RecentRecipient } from './components/RecentRecipient.tsx';
 import { SearchBar } from './components/SearchBar.tsx';
 import { UnprotectedAccount } from './components/UnprotectedAccount.tsx';
+import { DeletionInProgressBanner } from './components/DeletionInProgressBanner.tsx';
 import { RecentActivitySkeleton, RecentBeneficiarySkeleton } from './components/HomeSkeletons.tsx';
 import { NotificationIconWithBadge } from '@/components/molecules/NotificationIconWithBadge';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
@@ -18,6 +19,10 @@ import { storage, StorageKey } from '../../../storage/index.ts';
 import { CompleteAccountPopup } from '@/components/molecules/CompleteAccountPopup';
 import { useAuthStore } from '@/storage/useAuthStore.ts';
 import { useGetHomeAggregateQuery } from './hooks/useGetHomeAggregateQuery.ts';
+import { useGetProfile } from '@/hooks/useMeMutation.ts';
+import { useGetProfileMeQuery } from '@/features/user/hooks/useGetProfileMeQuery.ts';
+import LogoDoitpay from '@/assets/icons/ic-logo.svg';
+import EmptyHomeIcon from '@/assets/icons/ic-empty-home.svg';
 
 interface HomeViewProps {
   goToSearchAccount: () => void;
@@ -39,6 +44,7 @@ export const HomeView = (props: HomeViewProps) => {
   const { isNewUser, setIsNewUser } = useAuthStore();
 
   const { data: homeAggregate, isLoading, isRefetching, refetch } = useGetHomeAggregateQuery();
+  const { data: profile } = useGetProfileMeQuery();
 
   const homeData = homeAggregate?.data;
   const transferLimit = homeData?.transferLimit;
@@ -90,10 +96,7 @@ export const HomeView = (props: HomeViewProps) => {
     <SafeAreaView style={styles.safeAreaContainer}>
       <View style={[styles.headerContainer, { flex: 1 }]}>
         <View style={styles.headerWrapper}>
-          <Image
-            source={require('../../../assets/images/ic-doitpay-home.png')}
-            style={{ width: 100, height: 30, resizeMode: 'contain' }}
-          />
+          <LogoDoitpay />
           <NotificationIconWithBadge onPress={props.goToNotification} />
         </View>
 
@@ -103,6 +106,7 @@ export const HomeView = (props: HomeViewProps) => {
           showsVerticalScrollIndicator={false}
           refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}>
           {/* <UnprotectedAccount onPress={() => handleOpenEmailSheet()} isShow={hasKycPending} /> */}
+          <DeletionInProgressBanner isShow={profile?.data?.isRequestDeleteAccount ?? false} />
           <View style={styles.dailyLimitWrapper}>
             <Text style={{ fontSize: 20, marginBottom: 4, fontFamily: 'Switzer-Semibold' }}>
               {t('home.dailyLimitTransfer')}
@@ -115,63 +119,88 @@ export const HomeView = (props: HomeViewProps) => {
             />
           </View>
           <View style={styles.mainWrapper}>
-            <SearchBar onPress={props.goToSearchAccount} />
-            <SizedBox height={24} />
+            {recentBeneficiaries.length > 0 || recentTransactions.length > 0 ? (
+              <View style={{ flex: 1 }}>
+                <SearchBar onPress={props.goToSearchAccount} />
+                <SizedBox height={24} />
+                <View>
+                  <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>
+                    {t('home.lastSend')}
+                  </Text>
+                  {isLoading ? (
+                    <RecentBeneficiarySkeleton />
+                  ) : recentBeneficiaries.length === 0 ? (
+                    <View style={styles.sectionEmptyContainer}>
+                      <Image
+                        source={require('../../../assets/images/ic-empty-beneficiary.png')}
+                        style={styles.sectionEmptyImage}
+                      />
+                      <Text style={styles.sectionEmptyText}>Belum ada penerima terakhir</Text>
+                    </View>
+                  ) : (
+                    <View style={{ marginRight: -24 }}>
+                      <RecentRecipient
+                        data={recentBeneficiaries}
+                        onPressItem={(b) =>
+                          props.goToTransferDetail({
+                            bankData: { shortName: b.bankCode, logoUrl: null },
+                            accountData: {
+                              accountHolderName: b.name,
+                              accountNumber: b.accountNumber,
+                            },
+                          })
+                        }
+                      />
+                    </View>
+                  )}
+                </View>
 
-            <View>
-              <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>
-                {t('home.lastSend')}
-              </Text>
-              {isLoading ? (
-                <RecentBeneficiarySkeleton />
-              ) : recentBeneficiaries.length === 0 ? (
-                <View style={styles.sectionEmptyContainer}>
-                  <Image
-                    source={require('../../../assets/images/ic-empty-beneficiary.png')}
-                    style={styles.sectionEmptyImage}
-                  />
-                  <Text style={styles.sectionEmptyText}>Belum ada penerima terakhir</Text>
+                <SizedBox height={24} />
+                <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>
+                  {t('home.lastActivity')}
+                </Text>
+                <View style={{ paddingBottom: 75 }}>
+                  {isLoading ? (
+                    <RecentActivitySkeleton />
+                  ) : recentTransactions.length === 0 ? (
+                    <View style={styles.sectionEmptyContainer}>
+                      <Text style={styles.sectionEmptyText}>Belum ada aktivitas transaksi</Text>
+                    </View>
+                  ) : (
+                    recentTransactions.map((item) => (
+                      <RecentActivityItem
+                        key={item.id}
+                        item={item}
+                        onPress={() => props.goToTransactionDetail(item.id)}
+                      />
+                    ))
+                  )}
                 </View>
-              ) : (
-                <View style={{ marginRight: -24 }}>
-                  <RecentRecipient
-                    data={recentBeneficiaries}
-                    onPressItem={(b) =>
-                      props.goToTransferDetail({
-                        bankData: { shortName: b.bankCode, logoUrl: null },
-                        accountData: { accountHolderName: b.name, accountNumber: b.accountNumber },
-                      })
-                    }
-                  />
-                </View>
-              )}
-            </View>
-
-            <SizedBox height={24} />
-            <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>
-              {t('home.lastActivity')}
-            </Text>
-            <View style={{ paddingBottom: 75 }}>
-              {isLoading ? (
-                <RecentActivitySkeleton />
-              ) : recentTransactions.length === 0 ? (
-                <View style={styles.sectionEmptyContainer}>
-                  <Image
-                    source={require('../../../assets/images/ic-empty-history.png')}
-                    style={styles.sectionEmptyImage}
-                  />
-                  <Text style={styles.sectionEmptyText}>Belum ada aktivitas transaksi</Text>
-                </View>
-              ) : (
-                recentTransactions.map((item) => (
-                  <RecentActivityItem
-                    key={item.id}
-                    item={item}
-                    onPress={() => props.goToTransactionDetail(item.id)}
-                  />
-                ))
-              )}
-            </View>
+              </View>
+            ) : (
+              <View style={styles.sectionEmptyContainer}>
+                <EmptyHomeIcon />
+                <Text
+                  style={{
+                    color: colors.text,
+                    fontFamily: 'Switzer-Semibold',
+                    fontSize: 22,
+                  }}>
+                  Belum ada aktivitas
+                </Text>
+                <Text
+                  style={{
+                    textAlign: 'center',
+                    color: colors.text,
+                    fontFamily: 'Switzer-Regular',
+                    fontSize: 14,
+                    marginTop: 6,
+                    lineHeight: 20,
+                  }}>
+                  Lakukan transfer, atau terima uang untuk melihat aktivitas terbaru di sini
+                </Text>
+              </View>
+            )}
           </View>
         </ScrollView>
       </View>

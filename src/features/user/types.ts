@@ -11,6 +11,7 @@ export type User = {
   phoneNumber: string;
   status: UserStatus;
   tier: number;
+  isRequestDeleteAccount: boolean;
 };
 
 export type UserLimit = {
