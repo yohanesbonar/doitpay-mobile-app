@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { Home, History, Users, User, HelpCircle, Send } from 'lucide-react-native';
 import { useTheme } from '../../../theme/ThemeProvider';
 import { createStyles } from './styles';
 import { useTranslation } from 'react-i18next';
@@ -17,10 +17,6 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
           const isFocused = state.index === index;
-
-          // if (route.name === t('mainTabNav.transfer')) {
-          //   return <View key={index} style={styles.placeholder} />;
-          // }
 
           const onPress = () => {
             const event = navigation.emit({
@@ -38,20 +34,30 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
             }
           };
 
-          const getIcon = (name: string) => {
+          // Mengembalikan komponen Icon Lucide secara dinamis beserta tipenya
+          const renderIcon = (name: string, color: string, focused: boolean) => {
+            const iconProps = {
+              color: color,
+              size: 24,
+              // Memberikan stroke sedikit lebih tebal saat focused agar lebih menonjol
+              strokeWidth: focused ? 2.5 : 2, 
+            };
+
             switch (name) {
               case 'Beranda':
-                return 'home';
+                return <Home {...iconProps} />;
               case 'Riwayat':
-                return 'time';
+                return <History {...iconProps} />;
               case 'Penerima':
-                return 'people';
+                return <Users {...iconProps} />;
               case 'Profil':
-                return 'person';
+                return <User {...iconProps} />;
               default:
-                return 'help-circle';
+                return <HelpCircle {...iconProps} />;
             }
           };
+
+          const iconColor = isFocused ? '#2F6BFF' : '#000';
 
           return (
             <TouchableOpacity
@@ -59,22 +65,14 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
               onPress={onPress}
               style={styles.tabItem}
               activeOpacity={0.7}>
-              {route.name != 'Transfer' && (
-                <Icon
-                  name={
-                    isFocused ? `${getIcon(route.name)}-outline` : `${getIcon(route.name)}-outline`
-                  }
-                  size={24}
-                  color={isFocused ? '#2F6BFF' : '#000'}
-                />
-              )}
+              {route.name !== 'Transfer' && renderIcon(route.name, iconColor, isFocused)}
               <Text
                 style={[
                   styles.label,
                   {
                     color: isFocused ? '#2F6BFF' : colors.text,
-                    fontFamily: route.name == 'Transfer' ? 'Switzer-Medium' : 'Switzer-Regular',
-                    marginTop: route.name == 'Transfer' ? 28 : 4,
+                    fontFamily: route.name === 'Transfer' ? 'Switzer-Medium' : 'Switzer-Regular',
+                    marginTop: route.name === 'Transfer' ? 28 : 4,
                   },
                 ]}>
                 {route.name}
@@ -95,8 +93,7 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
         }
         activeOpacity={0.9}>
         <View style={styles.fabInner}>
-          <Icon name="paper-plane-outline" size={32} color={colors.textWhite} />
-          {/* <Text style={styles.fabText}>Transfer</Text> */}
+          <Send name="paper-plane" size={28} color={colors.textWhite} strokeWidth={2} />
         </View>
       </TouchableOpacity>
     </View>

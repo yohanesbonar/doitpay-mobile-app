@@ -10,10 +10,11 @@ export const createStyles = (colors: typeof themeColors.light) => {
       justifyContent: 'space-between',
       alignItems: 'center',
       paddingHorizontal: 24,
+      marginBottom: 8,
     },
     dailyLimitWrapper: {
       paddingHorizontal: 24,
-      paddingTop: 20,
+      paddingTop: 10,
       paddingBottom: 12,
     },
     mainWrapper: {
