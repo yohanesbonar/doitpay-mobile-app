@@ -161,8 +161,12 @@ export const DeleteAccount = () => {
               <AccountDeletionIcon />
             </View>
 
-            <Text style={styles.stepTitle}>Hapus Akun Permanen</Text>
-            <Text style={styles.stepDesc}>Akun doitpay dan seluruh data berikut akan dihapus</Text>
+            <View style={{ alignItems: 'center' }}>
+              <Text style={styles.stepTitle}>Hapus Akun Permanen</Text>
+              <Text style={styles.stepDesc}>
+                Akun doitpay dan seluruh data berikut akan dihapus
+              </Text>
+            </View>
 
             <View style={styles.itemsList}>
               <View style={styles.listItem}>
@@ -273,7 +277,7 @@ export const DeleteAccount = () => {
         <HeaderToolbar
           title={titleMap[currentStep] ?? 'Hapus Akun'}
           onPressBack={handleBack}
-          titlePosition="center"
+          titlePosition="left"
           titleStyle="regular"
         />
 
@@ -340,11 +344,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   itemsList: {
-    borderWidth: 1,
-    borderColor: '#F0F0F0',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
     marginBottom: 20,
     gap: 4,
   },
@@ -353,8 +352,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
   },
   listItemText: {
     fontSize: 14,

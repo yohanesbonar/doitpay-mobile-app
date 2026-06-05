@@ -185,6 +185,18 @@ export type DeleteAccountResponse = {
   data: {};
 };
 
+export type CancelAccountDeletionResponse = {
+  status: string;
+  message: string;
+  data: {};
+};
+
+export type LogoutResponse = {
+  status: string;
+  message: string;
+  data: {};
+};
+
 export const authApi = {
   registerRequestOtp: async (payload: RegisterOtpRequestPayload): Promise<RegisterOtpResponse> => {
     const { data } = await apiClient.post<RegisterOtpResponse>(
@@ -283,6 +295,18 @@ export const authApi = {
   }: DeleteAccountPayload): Promise<DeleteAccountResponse> => {
     const { data } = await apiClient.post<DeleteAccountResponse>('/v1/account/delete', body, {
       headers: { 'Verify-Token': verifyToken },
+    });
+    return data;
+  },
+  cancelAccountDeletion: async (): Promise<CancelAccountDeletionResponse> => {
+    const { data } = await apiClient.post<CancelAccountDeletionResponse>(
+      '/v1/account/delete/cancel',
+    );
+    return data;
+  },
+  logout: async (accessToken: string): Promise<LogoutResponse> => {
+    const { data } = await apiClient.post<LogoutResponse>('/v1/auth/logout', undefined, {
+      headers: { Authorization: `Bearer ${accessToken}` },
     });
     return data;
   },

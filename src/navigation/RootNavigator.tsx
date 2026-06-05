@@ -28,6 +28,7 @@ import PaymentExpired from '../screens/transfer/paymentExpired';
 import { TransactionDetailScreen } from '@/screens/transaction/transaction-detail';
 import { TransactionHistoryScreen } from '@/screens/main/transaction-history/transaction-history';
 import { DeleteAccount } from '@/features/main/profile/DeleteAccount';
+import { DeleteAccountStatus } from '@/features/main/profile/DeleteAccountStatus';
 
 const Stack = createNativeStackNavigator();
 interface RootNavigatorProps {
@@ -92,6 +93,7 @@ export default function RootNavigator({ navigationRef, onReady, onStateChange }:
             <Stack.Screen name="PaymentExpired" component={PaymentExpired} />
             <Stack.Screen name="TransactionDetail" component={TransactionDetailScreen} />
             <Stack.Screen name="DeleteAccount" component={DeleteAccount} />
+            <Stack.Screen name="DeleteAccountStatus" component={DeleteAccountStatus} />
           </Stack.Group>
         ) : (
           <Stack.Group>
