@@ -26,8 +26,8 @@ export const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   statusIcon: {
-    width: 90,
-    height: 90,
+    width: 80,
+    height: 80,
     borderRadius: 45,
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',
@@ -38,7 +38,7 @@ export const styles = StyleSheet.create({
     fontFamily: 'Switzer-Regular',
     fontSize: 16,
     color: '#FFFFFF',
-    marginBottom: 8,
+    marginBottom: 2,
   },
   statusAmount: {
     fontFamily: 'Switzer-Semibold',

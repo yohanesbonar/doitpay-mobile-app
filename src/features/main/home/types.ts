@@ -20,6 +20,9 @@ export interface RecentTransaction {
   createdAt: string;
   id: string;
   remark: string;
+  referenceId?: string;
+  type?: string;
+  status?: string;
 }
 
 export interface TransferLimit {

@@ -8,6 +8,7 @@ import {
   Platform,
   Linking,
   PermissionsAndroid,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CheckCircle2, Clock, XCircle, Download, Share2 } from 'lucide-react-native';
@@ -17,21 +18,9 @@ import { formatNumber } from '@/utils/Common';
 import ViewShot from 'react-native-view-shot';
 import { CameraRoll } from '@react-native-camera-roll/camera-roll';
 import Share from 'react-native-share';
-import { TransactionStatus } from '@/features/transaction/types';
-
-const DUMMY_TRANSACTION = {
-  accountHolderName: 'Ahmad Fauzan',
-  bankShortName: 'BCA',
-  transactionMethod: 'VIRTUAL_ACCOUNT',
-  amount: 1500000,
-  fee: 2500,
-  totalAmount: 1502500,
-  createdAt: '2025-01-15T10:30:00Z',
-  status: TransactionStatus.SUCCESS_TRANSFER,
-  isCredit: false,
-  referenceId: 'REF-202501150001',
-  accountNumber: '1234567890',
-};
+import { TransactionStatus, TransactionType } from '@/features/transaction/types';
+import { useTransactionReceiptQuery } from '@/features/transaction/hooks/useTransactionReceiptQuery';
+import FastImage from 'react-native-fast-image';
 
 const STATUS_CONFIG: Record<
   string,
@@ -64,6 +53,12 @@ const STATUS_CONFIG: Record<
   },
 };
 
+const deriveStatus = (type: string, status?: string): string => {
+  if (status && STATUS_CONFIG[status]) return status;
+  if (type === TransactionType.RECEIVE_IN) return TransactionStatus.SUCCESS_RECEIVE;
+  return TransactionStatus.SUCCESS_TRANSFER;
+};
+
 const formatDateTime = (dateStr: string) => {
   const date = new Date(dateStr);
   const day = date.getDate().toString().padStart(2, '0');
@@ -81,39 +76,50 @@ const formatMethodLabel = (method: string) =>
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(' ');
 
-interface TransactionDetailProps {
+export interface TransactionDetailProps {
   transactionId: string;
+  referenceId: string;
+  type: string;
+  status?: string;
   onPressBack: () => void;
 }
 
-export const TransactionDetail = ({ transactionId, onPressBack }: TransactionDetailProps) => {
+export const TransactionDetail = ({
+  transactionId,
+  referenceId,
+  type,
+  status,
+  onPressBack,
+}: TransactionDetailProps) => {
   const viewShotRef = useRef<any>(null);
-  const tx = DUMMY_TRANSACTION;
 
-  const statusConfig =
-    STATUS_CONFIG[tx.status] ?? STATUS_CONFIG[TransactionStatus.SUCCESS_TRANSFER];
-  const { label: statusLabel, color: statusColor, Icon: StatusIcon } = statusConfig;
-  const isExpense = !tx.isCredit;
+  const { data: receiptResponse, isLoading } = useTransactionReceiptQuery(referenceId, type);
+  const receipt = receiptResponse?.data;
+
+  const resolvedStatus = deriveStatus(type, status);
+  const {
+    label: statusLabel,
+    color: statusColor,
+    Icon: StatusIcon,
+  } = STATUS_CONFIG[resolvedStatus] ?? STATUS_CONFIG[TransactionStatus.SUCCESS_TRANSFER];
 
   const hasAndroidPermission = async () => {
     const permission =
       Number(Platform.Version) >= 33
         ? PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES
         : PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE;
-
     const hasPermission = await PermissionsAndroid.check(permission);
     if (hasPermission) return true;
-
-    const status = await PermissionsAndroid.request(permission);
-    return status === 'granted';
+    const result = await PermissionsAndroid.request(permission);
+    return result === 'granted';
   };
 
   const openGallery = async () => {
     try {
       if (Platform.OS === 'ios') {
-        const iosPhotosUrl = 'photos-redirect://';
-        const canOpen = await Linking.canOpenURL(iosPhotosUrl);
-        await Linking.openURL(canOpen ? iosPhotosUrl : 'calshow://');
+        const url = 'photos-redirect://';
+        const canOpen = await Linking.canOpenURL(url);
+        await Linking.openURL(canOpen ? url : 'calshow://');
       } else {
         await Linking.openURL('content://media/internal/images/media');
       }
@@ -126,7 +132,6 @@ export const TransactionDetail = ({ transactionId, onPressBack }: TransactionDet
     try {
       const uri = await viewShotRef.current.capture();
       let targetUri = uri;
-
       if (Platform.OS === 'ios') {
         if (uri.startsWith('file://')) targetUri = uri.replace('file://', '');
         await CameraRoll.saveAsset(targetUri, { type: 'photo' });
@@ -160,66 +165,82 @@ export const TransactionDetail = ({ transactionId, onPressBack }: TransactionDet
       await Share.open({
         url: uri,
         title: 'Bagikan Bukti',
-        message: `Bukti Transaksi sebesar Rp ${formatNumber(tx.amount.toString())}`,
+        message: `Bukti Transaksi sebesar Rp ${formatNumber((receipt?.amount ?? 0).toString())}`,
       });
     } catch (error) {
       console.log('Share error:', error);
     }
   };
 
+  console.log(receipt?.paymentMethod);
+
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <HeaderToolbar title="Detail Transaksi" onPressBack={onPressBack} titlePosition="left" />
 
       <View style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-          <ViewShot ref={viewShotRef} options={{ format: 'png', quality: 1.0 }}>
-            <View style={[styles.statusCard, { backgroundColor: statusColor }]}>
-              <View style={styles.statusIcon}>
-                <StatusIcon size={80} color="#FFFFFF" />
-              </View>
-              <Text style={styles.statusTitle}>{statusLabel}</Text>
-              <Text style={styles.statusAmount}>
-                {isExpense ? '-' : ''}Rp {formatNumber(tx.amount.toString())}
-              </Text>
-              <View style={styles.curveCutout} />
-            </View>
-
-            <View style={styles.recipientBox}>
-              <View style={styles.recipientLeft}>
-                <View style={styles.bankLogoWrapper}>
-                  <Text style={styles.bankText}>{tx.bankShortName}</Text>
+        {isLoading ? (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <ActivityIndicator size="large" color="#3B82F6" />
+          </View>
+        ) : (
+          <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+            <ViewShot ref={viewShotRef} options={{ format: 'png', quality: 1.0 }}>
+              <View style={[styles.statusCard, { backgroundColor: statusColor }]}>
+                <View style={styles.statusIcon}>
+                  <StatusIcon size={65} color="#FFFFFF" />
                 </View>
-                <View style={styles.recipientInfo}>
-                  <Text style={styles.recipientName} numberOfLines={1}>
-                    {tx.accountHolderName}
+                <Text style={styles.statusTitle}>{statusLabel}</Text>
+                <Text style={styles.statusAmount}>
+                  Rp {formatNumber((receipt?.amount ?? 0).toString())}
+                </Text>
+                <View style={styles.curveCutout} />
+              </View>
+
+              <View style={styles.recipientBox}>
+                <View style={styles.recipientLeft}>
+                  <View style={styles.bankLogoWrapper}>
+                    <FastImage
+                      source={{ uri: receipt?.paymentMethodLogoUrl }}
+                      style={{ width: 30, height: 30 }}
+                      resizeMode={FastImage.resizeMode.contain}
+                    />
+                  </View>
+                  <View style={styles.recipientInfo}>
+                    <Text style={styles.recipientName} numberOfLines={1}>
+                      {receipt?.beneficiaryName ?? '-'}
+                    </Text>
+                    <Text style={styles.recipientMethod}>
+                      {receipt?.paymentMethod ? receipt.paymentMethod : '-'}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+
+              <View style={styles.detailsCard}>
+                <Text style={styles.sectionTitle}>Detail Transaksi</Text>
+
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>ID Transaksi</Text>
+                  <Text style={styles.detailValue}>{transactionId}</Text>
+                </View>
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Tanggal & Waktu</Text>
+                  <Text style={styles.detailValue}>
+                    {receipt?.createdAt ? formatDateTime(receipt.createdAt) : '-'}
                   </Text>
-                  <Text style={styles.recipientMethod}>
-                    {formatMethodLabel(tx.transactionMethod)}
+                </View>
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Metode Pembayaran</Text>
+                  <Text style={styles.detailValue}>
+                    {receipt?.paymentMethod ? receipt.paymentMethod : '-'}
                   </Text>
                 </View>
               </View>
-            </View>
+            </ViewShot>
+          </ScrollView>
+        )}
 
-            <View style={styles.detailsCard}>
-              <Text style={styles.sectionTitle}>Detail Transaksi</Text>
-
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>ID Transaksi</Text>
-                <Text style={styles.detailValue}>{transactionId}</Text>
-              </View>
-
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Tanggal & Waktu</Text>
-                <Text style={styles.detailValue}>{formatDateTime(tx.createdAt)}</Text>
-              </View>
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Metode Pembayaran</Text>
-                <Text style={styles.detailValue}>{formatMethodLabel(tx.transactionMethod)}</Text>
-              </View>
-            </View>
-          </ViewShot>
-        </ScrollView>
         <View style={styles.footerContainer}>
           <View style={styles.actionsRow}>
             <TouchableOpacity style={styles.actionButton} onPress={handleDownload}>

@@ -5,11 +5,14 @@ import React from 'react';
 export const TransactionDetailScreen = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
-  const transactionId: string = route.params?.transactionId ?? '';
+  const { transactionId = '', referenceId = '', type = '', status } = route.params ?? {};
 
   return (
     <TransactionDetail
       transactionId={transactionId}
+      referenceId={referenceId}
+      type={type}
+      status={status}
       onPressBack={() => navigation.goBack()}
     />
   );

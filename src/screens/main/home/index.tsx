@@ -21,8 +21,18 @@ const HomeScreen = () => {
     navigation.navigate('Notification');
   };
 
-  const goToTransactionDetail = (transactionId: string) => {
-    navigation.navigate('TransactionDetail', { transactionId });
+  const goToTransactionDetail = (params: {
+    id: string;
+    referenceId?: string;
+    type?: string;
+    status?: string;
+  }) => {
+    navigation.navigate('TransactionDetail', {
+      transactionId: params.id,
+      referenceId: params.referenceId ?? '',
+      type: params.type ?? '',
+      status: params.status,
+    });
   };
 
   const goToTransferDetail = (params: { bankData: any; accountData: any }) => {

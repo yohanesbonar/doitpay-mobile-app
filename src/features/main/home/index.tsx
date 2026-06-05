@@ -29,7 +29,12 @@ interface HomeViewProps {
   onPressBack: () => void;
   goToBankAccounts: () => void;
   goToNotification: () => void;
-  goToTransactionDetail: (transactionId: string) => void;
+  goToTransactionDetail: (params: {
+    id: string;
+    referenceId?: string;
+    type?: string;
+    status?: string;
+  }) => void;
   goToTransferDetail: (params: { bankData: any; accountData: any }) => void;
 }
 
@@ -171,7 +176,14 @@ export const HomeView = (props: HomeViewProps) => {
                       <RecentActivityItem
                         key={item.id}
                         item={item}
-                        onPress={() => props.goToTransactionDetail(item.id)}
+                        onPress={() =>
+                          props.goToTransactionDetail({
+                            id: item.id,
+                            referenceId: item.referenceId,
+                            type: item.type,
+                            status: item.status,
+                          })
+                        }
                       />
                     ))
                   )}

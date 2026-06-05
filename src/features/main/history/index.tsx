@@ -65,8 +65,15 @@ const currentYear = new Date().getFullYear();
 const initialFilters = { paymentType: 'Semua', transactionType: 'Semua' };
 const initialDate = { month: undefined as number | undefined, year: currentYear };
 
+interface NavigateToDetailParams {
+  id: string;
+  referenceId: string;
+  type: string;
+  status: string;
+}
+
 interface HistoryProps {
-  navigateToDetail: (transactionId: string) => void;
+  navigateToDetail: (params: NavigateToDetailParams) => void;
 }
 
 export const History: FC<HistoryProps> = ({ navigateToDetail }) => {
@@ -182,7 +189,17 @@ export const History: FC<HistoryProps> = ({ navigateToDetail }) => {
             sections={sections}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
-              <Pressable style={{ marginHorizontal: 24 }} onPress={() => navigateToDetail(item.id)}>
+              <Pressable
+                style={{ marginHorizontal: 24 }}
+                onPress={() =>
+                  navigateToDetail({
+                    id: item.id,
+                    referenceId: item.referenceId,
+                    type: item.type,
+                    status: item.status,
+                  })
+                }
+              >
                 <HistoryItem item={item} />
               </Pressable>
             )}
