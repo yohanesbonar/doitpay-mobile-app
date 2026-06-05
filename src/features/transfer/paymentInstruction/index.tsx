@@ -324,7 +324,7 @@ const PaymentInstructionView = ({
                   style={{ width: 64, height: 64, resizeMode: 'contain' }}
                 />
                 <Text style={styles.bankNameText}>
-                  {transferData?.va.name ?? receiveData?.va.name ?? ''}
+                  {transferData?.va?.name ?? receiveData?.va?.name ?? ''}
                 </Text>
               </View>
 
