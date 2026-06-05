@@ -35,9 +35,9 @@ export const handleLogout = () => {
   });
 };
 
-export const formatNumber = (val: string) => {
+export const formatNumber = (val: string | number | null | undefined) => {
   if (typeof val !== 'string') {
-    val = val.toString();
+    val = val?.toString();
   }
   const cleanNumber = val.replace(/[^0-9]/g, '');
   if (cleanNumber === '') return '';

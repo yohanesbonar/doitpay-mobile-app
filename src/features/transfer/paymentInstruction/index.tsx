@@ -316,10 +316,7 @@ const PaymentInstructionView = ({
               <View style={styles.vaHeader}>
                 <Image
                   source={{
-                    uri:
-                      transferData?.va?.logoUrl ||
-                      receiveData?.va?.logoUrl ||
-                      'https://placeholder.com',
+                    uri: transferData?.va?.logoUrl || receiveData?.va?.logoUrl,
                   }}
                   style={{ width: 64, height: 64, resizeMode: 'contain' }}
                 />
