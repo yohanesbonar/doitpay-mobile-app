@@ -3,8 +3,8 @@ import { View, Text, StyleSheet } from 'react-native';
 import type { TransactionItem } from '../types';
 import ReceiveInIcon from '@/assets/icons/ic-cash-in.svg';
 import TransferOutIcon from '@/assets/icons/ic-cash-out.svg';
-import PendingIcon from '@/assets/icons/ic-pending-warning.svg';
-import CanceledIcon from '@/assets/icons/ic-pending.svg';
+import PendingIcon from '@/assets/icons/ic-pending.svg';
+import CanceledIcon from '@/assets/icons/ic-pending-warning.svg';
 import FailedIcon from '@/assets/icons/ic-failed.svg';
 import { TransactionStatus } from '@/features/transaction/types';
 
