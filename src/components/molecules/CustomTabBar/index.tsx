@@ -34,12 +34,10 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
             }
           };
 
-          // Mengembalikan komponen Icon Lucide secara dinamis beserta tipenya
           const renderIcon = (name: string, color: string, focused: boolean) => {
             const iconProps = {
               color: color,
               size: 24,
-              // Memberikan stroke sedikit lebih tebal saat focused agar lebih menonjol
               strokeWidth: focused ? 2.5 : 2, 
             };
 
