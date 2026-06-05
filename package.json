@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "setup": "node setup.js",
-    "android-staging": "export ENVFILE=.env.staging && cd android && ./gradlew clean && npx react-native run-android --mode stagingdebug",
-    "android-staging-release": "export ENVFILE=.env.staging && cd android && ./gradlew clean && npx react-native run-android --mode stagingrelease",
-    "android-production": "export ENVFILE=.env.production && cd android && ./gradlew clean && npx react-native run-android --mode productiondebug",
-    "android-production-release": "export ENVFILE=.env.production && cd android && ./gradlew clean && npx react-native run-android --mode productionrelease",
+    "android-staging": "export ENVFILE=.env.staging && rm -rf android/.gradle android/app/build android/build && cd android && ./gradlew clean && npx react-native run-android --mode stagingdebug",
+    "android-staging-release": "export ENVFILE=.env.staging && rm -rf android/.gradle android/app/build android/build && cd android && ./gradlew clean && npx react-native run-android --mode stagingrelease",
+    "android-production": "export ENVFILE=.env.production && rm -rf android/.gradle android/app/build android/build && cd android && ./gradlew clean && npx react-native run-android --mode productiondebug",
+    "android-production-release": "export ENVFILE=.env.production && rm -rf android/.gradle android/app/build android/build && cd android && ./gradlew clean && npx react-native run-android --mode productionrelease",
     "ios-staging": "export ENVFILE=.env.staging  && npx react-native run-ios --scheme Staging --simulator=\"iPhone 17 Pro\"",
     "ios-production": "export ENVFILE=.env.production  && npx react-native run-ios --scheme Production --simulator=\"iPhone 17 Pro\"",
     "lint": "eslint .",
@@ -16,8 +16,8 @@
     "start": "react-native start",
     "test": "jest",
     "clean-run-android": "rm -rf pnpm-lock.yaml && rm -rf node_modules && pnpm install && cd android && ./gradlew clean && cd .. && pnpm android-staging",
-    "build:android-staging": "export ENVFILE=.env.staging && cd android && ./gradlew clean && ./gradlew assembleStagingRelease && cd ..",
-    "build:android-production": "export ENVFILE=.env.production && cd android && ./gradlew clean && ./gradlew assembleProductionRelease && cd ..",
+    "build:android-staging": "export ENVFILE=.env.staging && rm -rf android/.gradle android/app/build android/build && cd android && ./gradlew clean && ./gradlew assembleStagingRelease && cd ..",
+    "build:android-production": "export ENVFILE=.env.production && rm -rf android/.gradle android/app/build android/build && cd android && ./gradlew clean && ./gradlew assembleProductionRelease && cd ..",
     "clean:android": "cd android && ./gradlew clean && cd .."
   },
   "dependencies": {
