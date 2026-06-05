@@ -8,6 +8,7 @@ import {
   Platform,
   Linking,
   PermissionsAndroid,
+  Image,
 } from 'react-native';
 import { CheckCircle2, Download, Share2 } from 'lucide-react-native';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
@@ -100,6 +101,14 @@ const PaymentReceiptView = ({
     }
     return (transferDetailData as any)?.data?.beneficiaryName;
   }, [method, receiveStatusData, transferDetailData]);
+
+  const effectivePaymentMethodLogoUrl = useMemo(() => {
+    const pm =
+      method === 'receive'
+        ? (receiveStatusData as any)?.data?.paymentMethodLogoUrl
+        : (transferDetailData as any)?.data?.paymentMethodLogoUrl;
+    return pm;
+  }, [method, receiveStatusData, transferDetailData, paymentMethod]);
 
   const effectivePaymentMethodLabel = useMemo(() => {
     const pm =
@@ -229,9 +238,11 @@ const PaymentReceiptView = ({
 
           <View style={styles.recipientBox}>
             <View style={styles.recipientLeft}>
-              <View style={styles.bankLogoWrapper}>
-                <Text style={styles.bankText}>{accountData?.bankName || '-'}</Text>
-              </View>
+              <Image
+                source={{ uri: effectivePaymentMethodLogoUrl }}
+                style={[styles.bankLogo, { paddingHorizontal: effectivePaymentMethodLabel == "QRIS" ? 5 : 0 } ]}
+                resizeMode="contain"
+              />
 
               <View style={styles.recipientInfo}>
                 <Text style={styles.recipientName} numberOfLines={1}>
