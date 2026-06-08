@@ -6,6 +6,7 @@ import {
   Platform,
   ScrollView,
   TextInput,
+  TouchableWithoutFeedback,
   View,
 } from 'react-native';
 import { Formik } from 'formik';
@@ -140,85 +141,87 @@ export const AddBankRecipientView = ({
   const insets = useSafeAreaInsets();
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: colors.white }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}>
-      <View style={styles.container}>
-        <HeaderToolbar
-          title={bankData?.shortName ? `${bankData?.shortName}` : t('addBankAccount.rekening')}
-          onPressBack={onPressBack}
-          titleStyle="normal"
-          titlePosition={fromTabBar ? 'left' : 'center'}
-        />
-        <Formik
-          initialValues={{ accountNumber: '' }}
-          validationSchema={BankAccountSchema}
-          onSubmit={(values) => {
-            searchInquiry(values.accountNumber);
-          }}>
-          {(formikProps) => (
-            <View style={{ flex: 1, justifyContent: 'space-between' }}>
-              <View style={{ flex: 1 }}>
-                <BankAccountForm
-                  {...formikProps}
-                  showResult={showResult}
-                  searchData={resultData ? [resultData] : []}
-                  onSelectItem={handleAccountSelect}
-                  selectedId={selectedId}
-                  setShowResult={setShowResult}
-                  setResultData={setResultData}
-                  inputRef={accountNumberInputRef}
-                />
-              </View>
-
-              {!showResult && formikProps.values.accountNumber ? (
-                <View
-                  style={[
-                    styles.footer,
-                    {
-                      paddingBottom: Platform.OS === 'android' ? 24 : 24,
-                    },
-                  ]}>
-                  <Button
-                    type="regular"
-                    onPress={() => formikProps.handleSubmit()}
-                    title={
-                      showResult
-                        ? t('addBankAccount.continue')
-                        : formikProps.values.accountNumber
-                          ? t('addBankAccount.checkAccount')
-                          : t('addBankAccount.skip')
-                    }
-                    style={{ borderWidth: 1, borderColor: '#D4D4D4', width: '100%' }}
-                    textStyle={{
-                      color:
-                        showResult || formikProps.values.accountNumber
-                          ? colors.white
-                          : colors.black,
-                    }}
-                    color={
-                      formikProps.values.accountNumber ? colors.buttonBlue : colors.buttonWhite
-                    }
-                    loading={isFetchingBanks}
+    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()} accessible={false}>
+      <KeyboardAvoidingView
+        style={{ flex: 1, backgroundColor: colors.white }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}>
+        <View style={styles.container}>
+          <HeaderToolbar
+            title={bankData?.shortName ? `${bankData?.shortName}` : t('addBankAccount.rekening')}
+            onPressBack={onPressBack}
+            titleStyle="normal"
+            titlePosition={fromTabBar ? 'left' : 'center'}
+          />
+          <Formik
+            initialValues={{ accountNumber: '' }}
+            validationSchema={BankAccountSchema}
+            onSubmit={(values) => {
+              searchInquiry(values.accountNumber);
+            }}>
+            {(formikProps) => (
+              <View style={{ flex: 1, justifyContent: 'space-between' }}>
+                <View style={{ flex: 1 }}>
+                  <BankAccountForm
+                    {...formikProps}
+                    showResult={showResult}
+                    searchData={resultData ? [resultData] : []}
+                    onSelectItem={handleAccountSelect}
+                    selectedId={selectedId}
+                    setShowResult={setShowResult}
+                    setResultData={setResultData}
+                    inputRef={accountNumberInputRef}
                   />
                 </View>
-              ) : null}
 
-              <SuccessBottomSheet
-                isVisible={showModal}
-                onClose={() => setShowModal(false)}
-                onContinue={onNavigateHome}
-                onGoToBankList={() => {
-                  setShowModal(false);
-                  onBackToBankAccount();
-                }}
-                accountData={selectedAccount}
-              />
-            </View>
-          )}
-        </Formik>
-      </View>
-    </KeyboardAvoidingView>
+                {!showResult && formikProps.values.accountNumber ? (
+                  <View
+                    style={[
+                      styles.footer,
+                      {
+                        paddingBottom: Platform.OS === 'android' ? 24 : 24,
+                      },
+                    ]}>
+                    <Button
+                      type="regular"
+                      onPress={() => formikProps.handleSubmit()}
+                      title={
+                        showResult
+                          ? t('addBankAccount.continue')
+                          : formikProps.values.accountNumber
+                            ? t('addBankAccount.checkAccount')
+                            : t('addBankAccount.skip')
+                      }
+                      style={{ borderWidth: 1, borderColor: '#D4D4D4', width: '100%' }}
+                      textStyle={{
+                        color:
+                          showResult || formikProps.values.accountNumber
+                            ? colors.white
+                            : colors.black,
+                      }}
+                      color={
+                        formikProps.values.accountNumber ? colors.buttonBlue : colors.buttonWhite
+                      }
+                      loading={isFetchingBanks}
+                    />
+                  </View>
+                ) : null}
+
+                <SuccessBottomSheet
+                  isVisible={showModal}
+                  onClose={() => setShowModal(false)}
+                  onContinue={onNavigateHome}
+                  onGoToBankList={() => {
+                    setShowModal(false);
+                    onBackToBankAccount();
+                  }}
+                  accountData={selectedAccount}
+                />
+              </View>
+            )}
+          </Formik>
+        </View>
+      </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
   );
 };
