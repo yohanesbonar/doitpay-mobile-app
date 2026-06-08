@@ -1,5 +1,13 @@
-import React, { useState, useMemo } from 'react';
-import { Alert, View } from 'react-native';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import {
+  Alert,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  TextInput,
+  View,
+} from 'react-native';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import BankAccountForm from './BankAccountForm.tsx';
@@ -13,6 +21,7 @@ import { storage, StorageKey } from '@/storage';
 import { useBankInquiry, useBanks } from '@/hooks/useBankMutation.ts';
 import { useAddBankAccount } from '@/hooks/useMeMutation.ts';
 import Toast from 'react-native-toast-message';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface AddBankRecipientViewProps {
   onPressBack: () => void;
@@ -64,6 +73,15 @@ export const AddBankRecipientView = ({
   const [resultData, setResultData] = useState<any>(null);
   const { mutate: postBankAccount, isPending: isPostingBankAccount } = useAddBankAccount();
 
+  const accountNumberInputRef = useRef<TextInput>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      accountNumberInputRef.current?.focus();
+    }, 150);
+    return () => clearTimeout(timer);
+  }, []);
+
   const handleAccountSelect = (item: any) => {
     console.log('Selected item:', item);
     setSelectedId(item.id);
@@ -93,6 +111,7 @@ export const AddBankRecipientView = ({
   };
 
   const searchInquiry = (accountNumber: string) => {
+    Keyboard.dismiss();
     console.log('Initiating bank inquiry with:', { accountNumber, bankData: bankData });
     fetchBanks(
       { accountNumber, bankId: bankData?.id },
@@ -105,6 +124,9 @@ export const AddBankRecipientView = ({
           }
         },
         onError: (error) => {
+          const timer = setTimeout(() => {
+            accountNumberInputRef.current?.focus();
+          }, 150);
           console.log('error fetchBanks', error);
           Toast.show({
             type: 'error',
@@ -115,68 +137,88 @@ export const AddBankRecipientView = ({
     );
   };
 
+  const insets = useSafeAreaInsets();
+
   return (
-    <View style={styles.container}>
-      <HeaderToolbar
-        title={bankData?.shortName ? `${bankData?.shortName}` : t('addBankAccount.rekening')}
-        onPressBack={onPressBack}
-        titleStyle="normal"
-        titlePosition={fromTabBar ? 'left' : 'center'}
-      />
-      <Formik
-        initialValues={{ accountNumber: '' }}
-        validationSchema={BankAccountSchema}
-        onSubmit={(values) => {
-          searchInquiry(values.accountNumber);
-        }}>
-        {(formikProps) => (
-          <View style={{ flex: 1 }}>
-            <BankAccountForm
-              {...formikProps}
-              showResult={showResult}
-              searchData={resultData ? [resultData] : []}
-              onSelectItem={handleAccountSelect}
-              selectedId={selectedId}
-              setShowResult={setShowResult}
-              setResultData={setResultData}
-            />
-
-            <View style={styles.footer}>
-              {!showResult && formikProps.values.accountNumber ? (
-                <Button
-                  type="regular"
-                  onPress={() => formikProps.handleSubmit()}
-                  title={
-                    showResult
-                      ? t('addBankAccount.continue')
-                      : formikProps.values.accountNumber
-                        ? t('addBankAccount.checkAccount')
-                        : t('addBankAccount.skip')
-                  }
-                  style={{ borderWidth: 1, borderColor: '#D4D4D4' }}
-                  textStyle={{
-                    color:
-                      showResult || formikProps.values.accountNumber ? colors.white : colors.black,
-                  }}
-                  color={formikProps.values.accountNumber ? colors.buttonBlue : colors.buttonWhite}
-                  loading={isFetchingBanks}
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: colors.white }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}>
+      <View style={styles.container}>
+        <HeaderToolbar
+          title={bankData?.shortName ? `${bankData?.shortName}` : t('addBankAccount.rekening')}
+          onPressBack={onPressBack}
+          titleStyle="normal"
+          titlePosition={fromTabBar ? 'left' : 'center'}
+        />
+        <Formik
+          initialValues={{ accountNumber: '' }}
+          validationSchema={BankAccountSchema}
+          onSubmit={(values) => {
+            searchInquiry(values.accountNumber);
+          }}>
+          {(formikProps) => (
+            <View style={{ flex: 1, justifyContent: 'space-between' }}>
+              <View style={{ flex: 1 }}>
+                <BankAccountForm
+                  {...formikProps}
+                  showResult={showResult}
+                  searchData={resultData ? [resultData] : []}
+                  onSelectItem={handleAccountSelect}
+                  selectedId={selectedId}
+                  setShowResult={setShowResult}
+                  setResultData={setResultData}
+                  inputRef={accountNumberInputRef}
                 />
-              ) : null}
-            </View>
+              </View>
 
-            <SuccessBottomSheet
-              isVisible={showModal}
-              onClose={() => setShowModal(false)}
-              onContinue={onNavigateHome}
-              onGoToBankList={() => {
-                setShowModal(false);
-                onBackToBankAccount();
-              }}
-              accountData={selectedAccount}
-            />
-          </View>
-        )}
-      </Formik>
-    </View>
+              {!showResult && formikProps.values.accountNumber ? (
+                <View
+                  style={[
+                    styles.footer,
+                    {
+                      paddingBottom: Platform.OS === 'android' ? 24 : 24,
+                    },
+                  ]}>
+                  <Button
+                    type="regular"
+                    onPress={() => formikProps.handleSubmit()}
+                    title={
+                      showResult
+                        ? t('addBankAccount.continue')
+                        : formikProps.values.accountNumber
+                          ? t('addBankAccount.checkAccount')
+                          : t('addBankAccount.skip')
+                    }
+                    style={{ borderWidth: 1, borderColor: '#D4D4D4', width: '100%' }}
+                    textStyle={{
+                      color:
+                        showResult || formikProps.values.accountNumber
+                          ? colors.white
+                          : colors.black,
+                    }}
+                    color={
+                      formikProps.values.accountNumber ? colors.buttonBlue : colors.buttonWhite
+                    }
+                    loading={isFetchingBanks}
+                  />
+                </View>
+              ) : null}
+
+              <SuccessBottomSheet
+                isVisible={showModal}
+                onClose={() => setShowModal(false)}
+                onContinue={onNavigateHome}
+                onGoToBankList={() => {
+                  setShowModal(false);
+                  onBackToBankAccount();
+                }}
+                accountData={selectedAccount}
+              />
+            </View>
+          )}
+        </Formik>
+      </View>
+    </KeyboardAvoidingView>
   );
 };

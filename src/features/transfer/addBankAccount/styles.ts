@@ -73,9 +73,9 @@ export const createStyles = (colors: any) => {
       fontFamily: 'Switzer-Regular',
     },
     footer: {
-      padding: 16,
-      backgroundColor: '#FFF',
-      bottom: 10,
+      paddingHorizontal: 16,
+      paddingTop: 12,
+      backgroundColor: '#FFFFFF',
     },
     button: {
       height: 55,

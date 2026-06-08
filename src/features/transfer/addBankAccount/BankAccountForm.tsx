@@ -17,6 +17,7 @@ interface BankAccountFormProps {
   selectedId: string | null;
   setShowResult: (val: boolean) => void;
   setResultData: (data: any) => void;
+  inputRef?: React.RefObject<any>;
 }
 
 const BankAccountForm = ({
@@ -32,6 +33,7 @@ const BankAccountForm = ({
   selectedId,
   setShowResult,
   setResultData,
+  inputRef
 }: BankAccountFormProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -80,6 +82,7 @@ const BankAccountForm = ({
       <View style={styles.content}>
         <Text style={styles.label}>{t('bankAccountForm.accountNumber')}</Text>
         <TextInput
+          ref={inputRef}
           style={[styles.input, touched.accountNumber && errors.accountNumber && styles.inputError]}
           placeholder={t('bankAccountForm.8DigitAccountNumber')}
           keyboardType="number-pad"
