@@ -1,5 +1,6 @@
 import React, { FC } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { format, isToday } from 'date-fns';
 import type { TransactionItem } from '../types';
 import ReceiveInIcon from '@/assets/icons/ic-cash-in.svg';
 import TransferOutIcon from '@/assets/icons/ic-cash-out.svg';
@@ -38,9 +39,17 @@ const IconMap = [
 
 interface HistoryItemProps {
   item: TransactionItem;
+  showDate?: boolean;
 }
 
-const HistoryItem: FC<HistoryItemProps> = ({ item }) => {
+
+const formatTime = (dateStr: string) =>
+  `${format(new Date(dateStr), 'HH:mm')} WIB`;
+
+const formatDateTime = (dateStr: string) =>
+  format(new Date(dateStr), 'dd/MM/yyyy | HH:mm');
+
+const HistoryItem: FC<HistoryItemProps> = ({ item, showDate = false }) => {
   const isExpense = !item.isCredit;
 
   const formatCurrency = (amount: number) => {
@@ -56,12 +65,9 @@ const HistoryItem: FC<HistoryItemProps> = ({ item }) => {
       .join(' ');
   };
 
-  const formatTime = (dateStr: string) => {
-    const date = new Date(dateStr);
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    return `${hours}:${minutes} WIB`;
-  };
+  const dateStr = item.paidAt ?? item.createdAt;
+  const timeLabel =
+    showDate || !isToday(dateStr) ? formatDateTime(dateStr) : formatTime(dateStr);
 
   const iconEntry = IconMap.find((entry) => entry.status === item.status);
   const IconComponent = iconEntry?.icon ?? ReceiveInIcon;
@@ -81,9 +87,7 @@ const HistoryItem: FC<HistoryItemProps> = ({ item }) => {
             <Text style={styles.subText}>{item.bankShortName}</Text>
             <Text style={styles.subText}>({formatTitle(item.transactionMethod)})</Text>
           </View>
-          <Text style={[styles.subText, { marginTop: 3 }]}>
-            {formatTime(item.paidAt ?? item.createdAt)}
-          </Text>
+          <Text style={[styles.subText, { marginTop: 3 }]}>{timeLabel}</Text>
         </View>
       </View>
 
