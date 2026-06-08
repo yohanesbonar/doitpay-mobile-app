@@ -15,7 +15,7 @@
     "format": "prettier --write .",
     "start": "react-native start",
     "test": "jest",
-    "clean-run-android": "rm -rf pnpm-lock.yaml && rm -rf node_modules && pnpm install && cd android && ./gradlew clean && cd .. && pnpm android-staging",
+    "clean-run-android": "rm -rf yarn.lock && rm -rf node_modules && yarn install && cd android && ./gradlew clean && cd .. && yarn android-staging",
     "build:android-staging": "export ENVFILE=.env.staging && rm -rf android/.gradle android/app/build android/build && cd android && ./gradlew clean && ./gradlew assembleStagingRelease && cd ..",
     "build:android-production": "export ENVFILE=.env.production && rm -rf android/.gradle android/app/build android/build && cd android && ./gradlew clean && ./gradlew assembleProductionRelease && cd ..",
     "clean:android": "cd android && ./gradlew clean && cd .."

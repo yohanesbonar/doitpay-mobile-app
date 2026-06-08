@@ -26,7 +26,7 @@ export const SecurityBlocker = () => {
         ExitModule.exitApp();
       } else {
         if (__DEV__) {
-          console.warn('Native ExitModule tidak ditemukan di environment ini.');
+          console.warn('Native ExitModule is not found in this environment.');
         }
       }
     }
