@@ -5,9 +5,17 @@ import React from 'react';
 export const BeneficiaryScreen = () => {
   const navigation = useNavigation<any>();
 
-  const goToTransferDetail = (params: { bankData: any; accountData: any }) => {
-    const { bankData, accountData } = params;
-    navigation.navigate('TransferDetail', { bankData, accountData });
+  const goToTransferDetail = (params: {
+    bankData: any;
+    accountData: any;
+    beneficiaryId: string;
+  }) => {
+    const { bankData, accountData, beneficiaryId } = params;
+    navigation.navigate('TransferDetail', {
+      bankData,
+      accountData,
+      beneficiaryId,
+    });
   };
 
   return (

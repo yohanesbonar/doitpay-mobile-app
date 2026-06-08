@@ -28,6 +28,7 @@ interface TransferDetailViewProps {
   bankData: any;
   fromTabBar: boolean;
   isLoginState: boolean;
+  beneficiaryId?: string;
   method: 'send' | 'receive';
   onPressBack: () => void;
   gotoPaymentInstruction: (
@@ -79,11 +80,13 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
     let payload = {
       amount: parseInt(amount),
       inquiryId: accountData?.id,
+      beneficiaryId: props.beneficiaryId,
       payChannel: methodPayment == 'VA' ? bankPayment?.code : methodPayment,
       payMethod: methodPayment == 'VA' ? 'VIRTUAL_ACCOUNT' : methodPayment,
       remark: note,
     };
     let idempotencyKey = new Date().getTime().toString();
+
     postTransfer(
       {
         payload,
