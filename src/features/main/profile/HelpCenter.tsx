@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, TextInput } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  TextInput,
+  ActivityIndicator,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   ChevronLeft,
@@ -9,25 +17,36 @@ import {
   ChevronDown,
   ChevronUp,
 } from 'lucide-react-native';
+import { useGetFaqsQuery } from './hooks/useGetFaqsQuery';
+import { FaqItem as FaqItemType } from './api/faq-api';
+
+const FAQItem = ({
+  item,
+  expanded,
+  onPress,
+}: {
+  item: FaqItemType;
+  expanded: boolean;
+  onPress: () => void;
+}) => (
+  <TouchableOpacity style={styles.faqItem} onPress={onPress}>
+    <View style={styles.faqHeader}>
+      <Text style={styles.faqQuestion}>{item.question}</Text>
+      {expanded ? (
+        <ChevronUp size={20} color="#1A1A1A" />
+      ) : (
+        <ChevronDown size={20} color="#1A1A1A" />
+      )}
+    </View>
+    {expanded && <Text style={styles.faqAnswer}>{item.answer}</Text>}
+  </TouchableOpacity>
+);
 
 export const HelpCenter = ({ navigation }: any) => {
-  const [expandedId, setExpandedId] = useState<number | null>(0);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const { data, isLoading } = useGetFaqsQuery();
 
-  const FAQItem = ({ id, question, answer }: any) => (
-    <TouchableOpacity
-      style={styles.faqItem}
-      onPress={() => setExpandedId(expandedId === id ? null : id)}>
-      <View style={styles.faqHeader}>
-        <Text style={styles.faqQuestion}>{question}</Text>
-        {expandedId === id ? (
-          <ChevronUp size={20} color="#1A1A1A" />
-        ) : (
-          <ChevronDown size={20} color="#1A1A1A" />
-        )}
-      </View>
-      {expandedId === id && <Text style={styles.faqAnswer}>{answer}</Text>}
-    </TouchableOpacity>
-  );
+  const faqs = data?.data?.items ?? [];
 
   return (
     <SafeAreaView style={styles.container}>
@@ -58,21 +77,19 @@ export const HelpCenter = ({ navigation }: any) => {
         </View>
 
         <Text style={styles.sectionTitle}>PERTANYAAN UMUM</Text>
-        <FAQItem
-          id={0}
-          question="Apakah transfer benar-benar gratis?"
-          answer="Ya, gratis untuk transfer hingga Rp5,000,000 per hari. Di atas itu dikenakan biaya Rp2,500 per transaksi."
-        />
-        <FAQItem
-          id={1}
-          question="Berapa lama transfer sampai?"
-          answer="Sebagian besar transfer diproses secara instan."
-        />
-        <FAQItem
-          id={2}
-          question="Bagaimana jika transfer gagal?"
-          answer="Dana akan dikembalikan ke saldo Anda dalam waktu 1x24 jam."
-        />
+
+        {isLoading ? (
+          <ActivityIndicator size="small" color="#4F84F6" style={styles.loader} />
+        ) : (
+          faqs.map((item) => (
+            <FAQItem
+              key={item.id}
+              item={item}
+              expanded={expandedId === item.id}
+              onPress={() => setExpandedId(expandedId === item.id ? null : item.id)}
+            />
+          ))
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -117,4 +134,5 @@ const styles = StyleSheet.create({
     marginTop: 12,
     lineHeight: 22,
   },
+  loader: { marginTop: 24 },
 });
