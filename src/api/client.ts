@@ -8,6 +8,7 @@ import Toast from 'react-native-toast-message';
 import { Platform } from 'react-native';
 import perf, { FirebasePerformanceTypes } from '@react-native-firebase/perf';
 import crashlytics from '@react-native-firebase/crashlytics';
+import NetInfo from '@react-native-community/netinfo';
 
 let isRefreshing = false;
 let failedQueue: any[] = [];
@@ -41,6 +42,23 @@ declare module 'axios' {
 
 apiClient.interceptors.request.use(
   async (config) => {
+    const netState = await NetInfo.fetch();
+
+    if (!netState.isConnected && !netState.isInternetReachable) {
+      Toast.show({
+        type: 'error',
+        position: 'top',
+        topOffset: 70,
+        text1: 'No Internet Connection',
+        text2: 'Please check your network and try again.',
+      });
+
+      const controller = new AbortController();
+      config.signal = controller.signal;
+      controller.abort('No internet connection available.');
+      return config;
+    }
+
     const deviceId = await getDeviceFingerprint();
 
     config.headers['X-Platform'] = Platform.OS;
@@ -51,7 +69,8 @@ apiClient.interceptors.request.use(
     if (!__DEV__) {
       try {
         const url = `${config.baseURL ?? ''}${config.url ?? ''}`;
-        const method = (config.method?.toUpperCase() ?? 'GET') as FirebasePerformanceTypes.HttpMethod;
+        const method = (config.method?.toUpperCase() ??
+          'GET') as FirebasePerformanceTypes.HttpMethod;
         const metric = await perf().newHttpMetric(url, method);
         await metric.start();
         config._perfMetric = metric;
@@ -69,7 +88,7 @@ apiClient.interceptors.request.use(
       if (accessToken && expiresAt) {
         const expirationDate = new Date(expiresAt);
         const isTokenExpired = isBefore(subSeconds(expirationDate, 10), new Date());
-        
+
         if (isTokenExpired && !isRefreshing) {
           isRefreshing = true;
           try {
@@ -88,7 +107,11 @@ apiClient.interceptors.request.use(
               },
             );
 
-            const { accessToken: newAccessToken, refreshToken: newRefreshToken, expiresAt: newExpiresAt } = response?.data?.data;
+            const {
+              accessToken: newAccessToken,
+              refreshToken: newRefreshToken,
+              expiresAt: newExpiresAt,
+            } = response?.data?.data;
 
             if (newAccessToken) setStorageItem(StorageKey.ACCESS_TOKEN, newAccessToken);
             if (newRefreshToken) setStorageItem(StorageKey.REFRESH_TOKEN, newRefreshToken);
@@ -164,7 +187,9 @@ apiClient.interceptors.response.use(
       try {
         await originalRequest._perfMetric.setHttpResponseCode(status ?? 0);
         if (error.response?.headers['content-length']) {
-          await originalRequest._perfMetric.setResponseContentType(error.response.headers['content-type']);
+          await originalRequest._perfMetric.setResponseContentType(
+            error.response.headers['content-type'],
+          );
         }
         await originalRequest._perfMetric.stop();
       } catch (e) {}
@@ -204,7 +229,11 @@ apiClient.interceptors.response.use(
           },
         );
 
-        const { accessToken: newAccessToken, refreshToken: newRefreshToken, expiresAt: newExpiresAt } = response?.data?.data;
+        const {
+          accessToken: newAccessToken,
+          refreshToken: newRefreshToken,
+          expiresAt: newExpiresAt,
+        } = response?.data?.data;
 
         if (__DEV__) {
           console.log('--- 🔄 TOKEN REFRESHED ---');
@@ -249,7 +278,7 @@ apiClient.interceptors.response.use(
         crashlytics().setAttribute('api_url', originalRequest?.url ?? 'unknown');
         crashlytics().setAttribute('api_method', originalRequest?.method ?? 'unknown');
         crashlytics().setAttribute('api_status', String(status ?? 'NETWORK_ERROR'));
-        
+
         crashlytics().recordError(
           new Error(`API Failure [${status ?? 'NET_ERR'}]: ${originalRequest?.url}`),
         );

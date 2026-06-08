@@ -1,4 +1,5 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { I18nextProvider } from 'react-i18next';
@@ -7,6 +8,9 @@ import Toast from 'react-native-toast-message';
 import { getMessaging, setBackgroundMessageHandler } from '@react-native-firebase/messaging';
 import notifee, { EventType } from '@notifee/react-native';
 import perf from '@react-native-firebase/perf';
+import crashlytics from '@react-native-firebase/crashlytics';
+import JailMonkey from 'jail-monkey'; // Import JailMonkey
+import NetInfo from '@react-native-community/netinfo';
 
 import { initI18next } from './src/i18n/initI18next.ts';
 import { ThemeProvider } from './src/theme/ThemeProvider.tsx';
@@ -22,6 +26,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { queryClient } from './src/api/queryClient';
 import { navigationRef } from '@/navigation/navigationRef.ts';
+import { SecurityBlocker } from '@/components/organisms/SecurityBlocker/index.tsx';
 
 // Start i18n
 initI18next();
@@ -47,8 +52,43 @@ const AppInitializer = () => {
 };
 
 const App = () => {
+  const [isDeviceCompromised, setIsDeviceCompromised] = useState<boolean | null>(null);
+  const [isInternetConnected, setIsInternetConnected] = useState<boolean>(true);
   const routeNameRef = useRef<string | undefined>(undefined);
   const traceRef = useRef<any>(null);
+
+  useEffect(() => {
+  const unsubscribe = NetInfo.addEventListener((state) => {
+    const isOK = state.isConnected && state.isInternetReachable;
+    
+    setIsInternetConnected(isOK ?? true);
+  });
+
+  return () => unsubscribe();
+}, []);
+
+  useEffect(() => {
+    try {
+      const isJailBrokenOrRooted = JailMonkey.isJailBroken();
+      const isHookedWithFakeGPS = JailMonkey.canMockLocation();
+
+      if ((isJailBrokenOrRooted || isHookedWithFakeGPS) && !__DEV__) {
+        setIsDeviceCompromised(true);
+
+        if (!__DEV__) {
+          crashlytics().setAttribute('device_security_status', 'COMPROMISED');
+          crashlytics().log(
+            `Security Breach -> Root/Jailbreak: ${isJailBrokenOrRooted}, FakeGPS: ${isHookedWithFakeGPS}`,
+          );
+          crashlytics().recordError(new Error('Security Block: Compromised platform integrity.'));
+        }
+      } else {
+        setIsDeviceCompromised(false);
+      }
+    } catch (error) {
+      setIsDeviceCompromised(false);
+    }
+  }, []);
 
   const onNavigationReady = () => {
     routeNameRef.current = navigationRef.getCurrentRoute()?.name;
@@ -91,6 +131,18 @@ const App = () => {
     }
   };
 
+  if (isDeviceCompromised === null) {
+    return null;
+  }
+
+  if (isDeviceCompromised) {
+    return (
+      <ThemeProvider>
+        <SecurityBlocker />
+      </ThemeProvider>
+    );
+  }
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <BottomSheetModalProvider>
@@ -105,6 +157,13 @@ const App = () => {
                 />
                 <AppInitializer />
               </ThemeProvider>
+              {!isInternetConnected && (
+                <View style={styles.noInternetBanner}>
+                  <Text style={styles.noInternetText}>
+                    Connection lost. Checking your network...
+                  </Text>
+                </View>
+              )}
               <Toast config={toastConfig} />
             </SafeAreaProvider>
           </I18nextProvider>
@@ -113,5 +172,33 @@ const App = () => {
     </GestureHandlerRootView>
   );
 };
+
+const styles = StyleSheet.create({
+  noInternetBanner: {
+    position: 'absolute',
+    top: 55,
+    left: 16,
+    right: 16,
+    backgroundColor: '#FF3B30',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 9999,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  noInternetText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+});
 
 export default App;
