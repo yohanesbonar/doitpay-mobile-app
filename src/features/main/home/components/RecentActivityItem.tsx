@@ -13,6 +13,7 @@ export const RecentActivityItem: FC<Props> = ({ item, onPress }) => {
   return (
     <Pressable onPress={onPress}>
       <HistoryItem
+        showDate
         item={{
           id: item.id,
           accountHolderName: item.beneficiaryAccountHolderName,

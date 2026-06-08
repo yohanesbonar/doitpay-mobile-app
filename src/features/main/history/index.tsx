@@ -25,6 +25,8 @@ import { HistoryListSkeleton } from './components/HistoryItemSkeleton';
 import type { Transaction } from './types';
 import { GetTransactionsQueries } from '@/features/transaction/types';
 import { useGetTransactionsQuery } from '@/features/transaction/hooks/useGetTransactionHistoriesQuery';
+import { format } from 'date-fns';
+import { id } from 'date-fns/locale';
 
 const monthsLabel = [
   'Januari',
@@ -41,18 +43,27 @@ const monthsLabel = [
   'Desember',
 ];
 
-const groupByMonth = (transactions: Transaction[]) => {
+const getDateLabel = (dateStr: string): string => {
+  const date = new Date(dateStr);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  if (date.toDateString() === today.toDateString()) return 'Hari ini';
+  if (date.toDateString() === yesterday.toDateString()) return 'Kemarin';
+  return format(date, 'd MMMM yyyy', { locale: id });
+};
+
+const groupByDay = (transactions: Transaction[]) => {
   const groups: Record<string, { title: string; data: Transaction[] }> = {};
   const order: string[] = [];
 
   for (const tx of transactions) {
     const date = new Date(tx.createdAt);
-    const monthIndex = date.getMonth();
-    const year = date.getFullYear();
-    const key = `${year}-${monthIndex}`;
+    const key = date.toDateString();
 
     if (!groups[key]) {
-      groups[key] = { title: `${monthsLabel[monthIndex]} ${year}`, data: [] };
+      groups[key] = { title: getDateLabel(tx.createdAt), data: [] };
       order.push(key);
     }
     groups[key].data.push(tx);
@@ -126,7 +137,7 @@ export const History: FC<HistoryProps> = ({ navigateToDetail }) => {
     [transactionHistoriesData],
   );
 
-  const sections = useMemo(() => groupByMonth(transactions), [transactions]);
+  const sections = useMemo(() => groupByDay(transactions), [transactions]);
 
   const filterCounter = useMemo(() => {
     let count = 0;
