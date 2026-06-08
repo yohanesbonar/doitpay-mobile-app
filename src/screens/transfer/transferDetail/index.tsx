@@ -15,6 +15,7 @@ const TransferDetailScreen = () => {
     amount,
     paymentMethod,
     isExpiredRetry,
+    beneficiaryId,
   } = (route.params || {}) as any;
 
   const handleBack = () => {
@@ -69,6 +70,7 @@ const TransferDetailScreen = () => {
       onPressBack={handleBack}
       gotoPaymentInstruction={gotoPaymentInstruction}
       bankPayment={bankPayment}
+      beneficiaryId={beneficiaryId}
       initialAmount={amount}
       initialPaymentMethod={paymentMethod}
       initialBankPayment={bankPayment}

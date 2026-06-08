@@ -35,7 +35,11 @@ const HomeScreen = () => {
     });
   };
 
-  const goToTransferDetail = (params: { bankData: any; accountData: any }) => {
+  const goToTransferDetail = (params: {
+    bankData: any;
+    accountData: any;
+    beneficiaryId: string;
+  }) => {
     navigation.navigate('TransferDetail', params);
   };
 

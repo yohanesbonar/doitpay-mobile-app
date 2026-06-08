@@ -35,7 +35,7 @@ interface HomeViewProps {
     type?: string;
     status?: string;
   }) => void;
-  goToTransferDetail: (params: { bankData: any; accountData: any }) => void;
+  goToTransferDetail: (params: { bankData: any; accountData: any; beneficiaryId: string }) => void;
 }
 
 export const HomeView = (props: HomeViewProps) => {
@@ -56,8 +56,6 @@ export const HomeView = (props: HomeViewProps) => {
   const recentTransactions = homeData?.recentTransactions ?? [];
   const recentBeneficiaries = homeData?.recentBeneficiaries ?? [];
   const hasKycPending = homeData?.pendingActions.some((a) => a.code === 'KYC_INCOMPLETE') ?? false;
-
-  console.log(homeData, 'HOME');
 
   const handleOpenEmailSheet = useCallback(() => {
     setIsSheetMounted(true);
@@ -153,6 +151,7 @@ export const HomeView = (props: HomeViewProps) => {
                               accountHolderName: b.name,
                               accountNumber: b.accountNumber,
                             },
+                            beneficiaryId: b.id,
                           })
                         }
                       />

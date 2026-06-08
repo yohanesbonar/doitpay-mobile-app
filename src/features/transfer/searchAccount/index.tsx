@@ -13,7 +13,7 @@ import { SearchAccountListSkeleton } from './SearchAccountSkeleton';
 
 interface SearchAccountViewProps {
   onPressBack: () => void;
-  goToTransferDetail: (params: { bankData: any; accountData: any }) => void;
+  goToTransferDetail: (params: { bankData: any; accountData: any; beneficiaryId: string }) => void;
 }
 
 const SearchAccountView = ({ onPressBack, goToTransferDetail }: SearchAccountViewProps) => {
@@ -50,6 +50,7 @@ const SearchAccountView = ({ onPressBack, goToTransferDetail }: SearchAccountVie
             accountHolderName: item.accountHolderName,
             accountNumber: item.accountNumber,
           },
+          beneficiaryId: item.id,
         })
       }>
       <View style={styles.listLogoContainer}>

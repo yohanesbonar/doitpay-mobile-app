@@ -32,7 +32,7 @@ const BeneficiaryItemRow = ({
 };
 
 interface BeneficiaryProps {
-  goToTransferDetail: (params: { bankData: any; accountData: any }) => void;
+  goToTransferDetail: (params: { bankData: any; accountData: any; beneficiaryId: string }) => void;
   goToNotification: () => void;
 }
 
@@ -110,6 +110,7 @@ export const Beneficiary: FC<BeneficiaryProps> = ({ goToTransferDetail, goToNoti
                       accountHolderName: item.accountHolderName,
                       accountNumber: item.accountNumber,
                     },
+                    beneficiaryId: item.id,
                   });
                 }}
               />
