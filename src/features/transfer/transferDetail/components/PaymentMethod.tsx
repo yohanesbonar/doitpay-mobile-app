@@ -180,7 +180,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
       </View>
 
       {selectedMethod === 'VA' ? (
-        <View style={{ paddingBottom: 32 }}>
+        <View style={{ paddingBottom: 70 }}>
           <View
             style={{
               flexDirection: 'row',
@@ -278,6 +278,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
             borderColor: '#3B82F6',
             flexDirection: 'row',
             alignItems: 'center',
+            marginBottom: 80
           }}>
           <QrCode size={24} color="#3B82F6" style={{ marginRight: 12 }} />
           <Text
