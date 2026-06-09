@@ -165,7 +165,7 @@ export const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 20,
     paddingTop: 16,
-    paddingBottom: 32, 
+    paddingBottom: 30, 
     borderTopWidth: 1,
     borderTopColor: '#F2F2F2',
     shadowColor: '#000',

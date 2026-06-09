@@ -363,7 +363,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
             disable={isDisableConfirm}
             loading={isLoadingTransfer}
           />
-          <View style={{ marginTop: 12, marginBottom: 8 }}>
+          <View style={{ marginTop: 12 }}>
             {isLoadingCalculate ? (
               <ActivityIndicator
                 size="small"
