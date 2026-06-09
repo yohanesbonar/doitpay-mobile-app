@@ -195,8 +195,8 @@ apiClient.interceptors.response.use(
       } catch (e) {}
     }
 
-    // --- Auto Refresh Token Logic (Handling 401 / 400) ---
-    if ((status === 401 || status === 400) && !originalRequest?._retry) {
+    // --- Auto Refresh Token Logic (Handling 401) ---
+    if ((status === 401) && !originalRequest?._retry) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
