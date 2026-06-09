@@ -35,11 +35,12 @@ export const handleLogout = () => {
   });
 };
 
-export const formatNumber = (val: string | number | null | undefined) => {
-  if (typeof val !== 'string') {
-    val = val?.toString();
-  }
-  const cleanNumber = val.replace(/[^0-9]/g, '');
+export const formatNumber = (val: string | number | null | undefined): string => {
+  if (val === null || val === undefined || val === '') return '';
+
+  const stringVal = typeof val === 'string' ? val : val.toString();
+
+  const cleanNumber = stringVal.replace(/[^0-9]/g, '');
   if (cleanNumber === '') return '';
 
   return cleanNumber.replace(/\B(?=(\d{3})+(?!\d))/g, ',');

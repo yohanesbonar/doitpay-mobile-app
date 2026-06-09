@@ -140,8 +140,8 @@ export const styles = StyleSheet.create({
     marginBottom: 4,
   },
   totalText: {
-    fontFamily: 'Switzer-Medium',
-    fontSize: 18,
+    fontFamily: 'Switzer-Semibold',
+    fontSize: 24,
     color: '#2F80ED',
   },
   confirmButton: {
