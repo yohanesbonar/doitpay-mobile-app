@@ -98,8 +98,8 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
       return {
         amount: amt,
         productType: 'TRANSFER',
-        paymentMethod: methodPayment,
-        paymentChannel: methodPayment === 'VA' ? bankPayment?.code || '' : 'QRIS',
+        payMethod: methodPayment === 'VA' ? 'VIRTUAL_ACCOUNT' : methodPayment,
+        payChannel: methodPayment === 'VA' ? bankPayment?.code || '' : 'QRIS',
       };
     };
 
@@ -132,7 +132,11 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
       return;
     }
 
-    if (numericAmt >= 10000) {
+    const isQrisReady = methodPayment === 'QRIS';
+    const isVaReady = methodPayment === 'VA' && !!bankPayment?.code;
+    const isPaymentMethodReady = isQrisReady || isVaReady;
+
+    if (numericAmt >= 10000 && isPaymentMethodReady) {
       setIsLoadingCalculate(true);
 
       const delayDebounceFn = setTimeout(() => {
@@ -140,9 +144,6 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
       }, 500);
 
       return () => clearTimeout(delayDebounceFn);
-    } else {
-      setCalculateData(null);
-      setIsLoadingCalculate(false);
     }
   }, [amount, methodPayment, bankPayment, isFocused]);
 
@@ -346,7 +347,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
                 Total Bayar
               </Text>
               <Text style={styles.totalText}>
-                {`Rp ${calculateData?.totalAmount ? formatNumber(calculateData.totalAmount) : amount ? formatNumber(amount) : '0'}`}
+                {`Rp ${calculateData?.totalAmount ? formatNumber(calculateData.totalAmount) : '-'}`}
               </Text>
             </View>
           )}
