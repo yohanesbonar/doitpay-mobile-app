@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Modal, Button } from 'react-native';
+import { View, Text, StyleSheet, Modal, Button, Pressable, Alert } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { I18nextProvider } from 'react-i18next';
@@ -60,6 +60,7 @@ const App = () => {
   const [isInternetConnected, setIsInternetConnected] = useState<boolean>(true);
 
   const [loggerVisible, setLoggerVisible] = useState<boolean>(false);
+  const [isButtonVisible, setIsButtonVisible] = useState<boolean>(false);
   const isLoggerEnabled =
     Config.ENABLE_NETWORK_LOGGER === 'true' || Config.ENABLE_NETWORK_LOGGER === true;
 
@@ -80,7 +81,7 @@ const App = () => {
     if (!isLoggerEnabled) return;
 
     const subscription = RNShake.addListener(() => {
-      setLoggerVisible(true);
+      setIsButtonVisible(true);
     });
 
     return () => {
@@ -186,10 +187,16 @@ const App = () => {
                 </View>
               )}
               <Toast config={toastConfig} />
-              {__DEV__ && (
-                <View style={styles.floatingDebugButton} onTouchEnd={() => setLoggerVisible(true)}>
+              {isLoggerEnabled && isButtonVisible && (
+                <Pressable
+                  style={styles.floatingDebugButton}
+                  onPress={() => setLoggerVisible(true)}
+                  onLongPress={() => {
+                    setIsButtonVisible(false);
+                    Alert.alert('Tombol log disembunyikan. Shake kembali untuk memunculkan.');
+                  }}>
                   <Text style={styles.floatingDebugText}>🌐 Log</Text>
-                </View>
+                </Pressable>
               )}
 
               <Modal
