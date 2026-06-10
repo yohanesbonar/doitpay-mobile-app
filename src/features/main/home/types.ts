@@ -23,6 +23,8 @@ export interface RecentTransaction {
   referenceId?: string;
   type?: string;
   status?: string;
+  isCredit?: boolean;
+  transactionMethod?: string;
 }
 
 export interface TransferLimit {
@@ -32,10 +34,18 @@ export interface TransferLimit {
   usagePercentage: number;
 }
 
+export interface TransferQuota {
+  freeTransferQuotaRemaining: number;
+  freeTransferQuotaTotal: number;
+  freeTransferQuotaUsed: number;
+  transferFee: number;
+}
+
 export interface HomeAggregate {
   pendingActions: PendingAction[];
   recentBeneficiaries: RecentBeneficiary[];
   recentTransactions: RecentTransaction[];
   transferLimit: TransferLimit;
   unreadNotificationCount: number;
+  transferQuota: TransferQuota;
 }
