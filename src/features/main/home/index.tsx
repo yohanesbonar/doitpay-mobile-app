@@ -58,8 +58,6 @@ export const HomeView = (props: HomeViewProps) => {
   const transferQuota = homeData?.transferQuota;
   const hasKycPending = homeData?.pendingActions.some((a) => a.code === 'KYC_INCOMPLETE') ?? false;
 
-  console.log(homeData);
-
   const handleOpenEmailSheet = useCallback(() => {
     setIsSheetMounted(true);
     requestAnimationFrame(() => {
