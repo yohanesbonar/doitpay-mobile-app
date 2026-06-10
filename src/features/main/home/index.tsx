@@ -55,7 +55,10 @@ export const HomeView = (props: HomeViewProps) => {
   const transferLimit = homeData?.transferLimit;
   const recentTransactions = homeData?.recentTransactions ?? [];
   const recentBeneficiaries = homeData?.recentBeneficiaries ?? [];
+  const transferQuota = homeData?.transferQuota;
   const hasKycPending = homeData?.pendingActions.some((a) => a.code === 'KYC_INCOMPLETE') ?? false;
+
+  console.log(homeData);
 
   const handleOpenEmailSheet = useCallback(() => {
     setIsSheetMounted(true);
@@ -115,10 +118,12 @@ export const HomeView = (props: HomeViewProps) => {
               {t('home.dailyLimitTransfer')}
             </Text>
             <TransferLimitCard
-              usedAmount={transferLimit?.usage ?? 0}
-              maxAmount={transferLimit?.maxAmount ?? 0}
-              percentage={transferLimit?.usagePercentage ?? 0}
-              amountReceived={transferLimit?.amountReceived ?? 0}
+              freeTransferQuotaRemaining={transferQuota?.freeTransferQuotaRemaining || 0}
+              freeTransferQuotaTotal={transferQuota?.freeTransferQuotaTotal || 0}
+              freeTransferQuotaUsed={transferQuota?.freeTransferQuotaUsed || 0}
+              transferFee={transferQuota?.transferFee || 0}
+              maxLimit={transferLimit?.maxAmount || 0}
+              isKycVerified={!hasKycPending}
             />
           </View>
           <View style={styles.mainWrapper}>

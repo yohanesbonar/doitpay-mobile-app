@@ -3,6 +3,7 @@ import { Pressable } from 'react-native';
 import type { RecentTransaction } from '../types';
 import HistoryItem from '@/features/main/history/components/HistoryItem';
 import { TransactionStatus } from '@/features/transaction/types';
+import { TransactionType } from '../../history/types';
 
 interface Props {
   item: RecentTransaction;
@@ -19,15 +20,15 @@ export const RecentActivityItem: FC<Props> = ({ item, onPress }) => {
           accountHolderName: item.beneficiaryAccountHolderName,
           bankShortName: item.beneficiaryBankShortName,
           amount: item.amount,
-          isCredit: false,
+          isCredit: item.isCredit as boolean,
           paidAt: item.createdAt,
           createdAt: item.createdAt,
-          status: TransactionStatus.SUCCESS_TRANSFER,
-          transactionMethod: 'TRANSFER',
+          status: item.status as TransactionStatus,
+          transactionMethod: item.transactionMethod || '',
           fee: 0,
           referenceId: '',
           totalAmount: item.amount,
-          type: 'TRANSFER_OUT',
+          type: item.type as TransactionType,
         }}
       />
     </Pressable>

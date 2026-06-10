@@ -1,16 +1,26 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, LayoutChangeEvent } from 'react-native';
+import { View, Text, StyleSheet, LayoutChangeEvent, TouchableOpacity } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient'; // Import library ini
 import { useTheme } from '../../../../theme/ThemeProvider';
+import { TransferQuota } from '../types';
 
 interface Props {
-  usedAmount: number;
-  maxAmount: number;
-  percentage: number;
-  amountReceived: number;
+  freeTransferQuotaRemaining: number;
+  freeTransferQuotaTotal: number;
+  freeTransferQuotaUsed: number;
+  transferFee: number;
+  maxLimit: number;
+  isKycVerified?: boolean;
 }
 
-export const TransferLimitCard = ({ usedAmount, maxAmount, percentage, amountReceived }: Props) => {
+export const TransferLimitCard = ({
+  freeTransferQuotaTotal,
+  freeTransferQuotaUsed,
+  maxLimit,
+  isKycVerified = false,
+}: Props) => {
+  const percentage = (freeTransferQuotaUsed / freeTransferQuotaTotal) * 100;
+
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const [trackWidth, setTrackWidth] = useState(0);
@@ -28,28 +38,55 @@ export const TransferLimitCard = ({ usedAmount, maxAmount, percentage, amountRec
       end={{ x: 1, y: 0 }}
       style={styles.card}>
       <View style={{ padding: 16 }}>
-        <Text style={styles.label}>Sudah terpakai</Text>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginBottom: 5,
+            justifyContent: 'space-between',
+          }}>
+          <Text style={styles.label}>Kuota Transfer Gratis</Text>
+          {!isKycVerified && (
+            <View
+              style={{
+                backgroundColor: '#E5E5E5',
+                paddingVertical: 5,
+                paddingHorizontal: 8,
+                borderRadius: 8,
+              }}>
+              <Text style={{ color: '#737373', fontSize: 12 }}>Belum Verifikasi</Text>
+            </View>
+          )}
+        </View>
 
-        <View style={styles.rowBetween}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-            <Text style={styles.amount}>Rp {usedAmount.toLocaleString()}</Text>
-            <Text style={styles.percentageText}>({percentage.toFixed(1)}%)</Text>
-          </View>
-
-          <Text style={styles.limitText}>Rp {maxAmount.toLocaleString()}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <Text style={styles.quotaAmount}>
+            {freeTransferQuotaUsed}/{freeTransferQuotaTotal}
+          </Text>
+          <Text style={styles.percentageText}>per hari</Text>
         </View>
 
         <View style={styles.progressBg} onLayout={handleLayout}>
           <View style={[styles.progressFill, { width: fillWidth }]} />
         </View>
 
-        <View style={{}}>
-          <Text style={styles.label}>Uang diterima hari ini</Text>
-          <Text style={styles.amount}>Rp {maxAmount.toLocaleString()}</Text>
+        <View style={styles.rowBetween}>
+          <View style={{}}>
+            <Text style={styles.labelLimit}>Limit Harian</Text>
+            <Text style={styles.amount}>Rp {maxLimit.toLocaleString()}</Text>
+          </View>
+          {!isKycVerified && (
+            <TouchableOpacity
+              style={{
+                backgroundColor: '#FFFFFF',
+                paddingVertical: 5,
+                paddingHorizontal: 8,
+                borderRadius: 8,
+              }}>
+              <Text style={{ color: '#0A0A0A', fontSize: 12 }}>Verifikasi KYC</Text>
+            </TouchableOpacity>
+          )}
         </View>
-        {/* <View style={{ borderWidth: 0.5, borderColor: '#FFF', marginTop: 10 }} />
-        <Text style={styles.labelReceived}>Uang diterima hari ini</Text>
-        <Text style={styles.amountReceived}>Rp {amountReceived.toLocaleString()}</Text> */}
       </View>
     </LinearGradient>
   );
@@ -68,14 +105,13 @@ const createStyles = (colors: any) =>
     },
     label: {
       color: colors.textWhite,
-      fontSize: 15,
+      fontSize: 14,
       fontFamily: 'Switzer-Regular',
       opacity: 0.9,
-      marginBottom: 4,
     },
     labelReceived: {
       color: colors.textWhite,
-      fontSize: 16,
+      fontSize: 14,
       fontFamily: 'Switzer-Regular',
       opacity: 0.9,
       marginTop: 10,
@@ -85,17 +121,22 @@ const createStyles = (colors: any) =>
       justifyContent: 'space-between',
       alignItems: 'center',
     },
+    quotaAmount: {
+      color: colors.textWhite,
+      fontSize: 28,
+      fontFamily: 'Switzer-Semibold',
+    },
     amount: {
       color: colors.textWhite,
-      fontSize: 20,
-      fontFamily: 'Switzer-Semibold',
-      marginTop: 2,
+      fontSize: 16,
+      fontFamily: 'Switzer-Regular',
     },
-    amountReceived: {
+    labelLimit: {
       color: colors.textWhite,
-      fontSize: 20,
-      fontFamily: 'Switzer-Semibold',
-      marginTop: 2,
+      fontSize: 14,
+      fontFamily: 'Switzer-Regular',
+      opacity: 0.9,
+      marginBottom: 4,
     },
     percentageText: {
       color: colors.textWhite,
