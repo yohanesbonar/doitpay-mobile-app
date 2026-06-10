@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Settings, CreditCard, ShieldCheck, HelpCircle, Bell } from 'lucide-react-native';
+import { Settings, CreditCard, ShieldCheck, HelpCircle } from 'lucide-react-native';
 import { useTheme } from '../../../theme/ThemeProvider';
 import { createStyles } from './styles';
 import ProfileMenuItem from './components/ProfileMenuItem';
@@ -34,13 +34,6 @@ export const Profile = () => {
   const isLoading = loadingProfile || loadingLimit;
 
   console.log(profileData, 'PROFILE');
-
-  useEffect(() => {
-    if (isLoggingOut && !isModalVisible) {
-      handleLogout();
-      setIsLoggingOut(false);
-    }
-  }, [isModalVisible, isLoggingOut]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
