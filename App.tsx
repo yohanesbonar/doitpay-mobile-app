@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
   },
   floatingDebugButton: {
     position: 'absolute',
-    bottom: 90,
+    bottom: 100,
     right: 20,
     backgroundColor: '#007AFF',
     paddingVertical: 10,
