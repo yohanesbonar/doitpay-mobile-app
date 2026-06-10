@@ -30,7 +30,9 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
   logout: () => {
-    storage.clearAll();
+    Object.values(StorageKey).forEach((key) => {
+      storage.remove(key);
+    });
     console.log('User logged out, all tokens cleared from storage');
     set({ accessToken: null });
   },
