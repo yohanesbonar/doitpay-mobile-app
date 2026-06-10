@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Modal, Button } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { I18nextProvider } from 'react-i18next';
@@ -11,6 +11,10 @@ import perf from '@react-native-firebase/perf';
 import crashlytics from '@react-native-firebase/crashlytics';
 import JailMonkey from 'jail-monkey'; // Import JailMonkey
 import NetInfo from '@react-native-community/netinfo';
+
+import RNShake from 'react-native-shake';
+import NetworkLogger from 'react-native-network-logger';
+import Config from 'react-native-config';
 
 import { initI18next } from './src/i18n/initI18next.ts';
 import { ThemeProvider } from './src/theme/ThemeProvider.tsx';
@@ -54,18 +58,35 @@ const AppInitializer = () => {
 const App = () => {
   const [isDeviceCompromised, setIsDeviceCompromised] = useState<boolean | null>(null);
   const [isInternetConnected, setIsInternetConnected] = useState<boolean>(true);
+
+  const [loggerVisible, setLoggerVisible] = useState<boolean>(false);
+  const isLoggerEnabled =
+    Config.ENABLE_NETWORK_LOGGER === 'true' || Config.ENABLE_NETWORK_LOGGER === true;
+
   const routeNameRef = useRef<string | undefined>(undefined);
   const traceRef = useRef<any>(null);
 
   useEffect(() => {
-  const unsubscribe = NetInfo.addEventListener((state) => {
-    const isOK = state.isConnected && state.isInternetReachable;
-    
-    setIsInternetConnected(isOK ?? true);
-  });
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      const isOK = state.isConnected && state.isInternetReachable;
 
-  return () => unsubscribe();
-}, []);
+      setIsInternetConnected(isOK ?? true);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (!isLoggerEnabled) return;
+
+    const subscription = RNShake.addListener(() => {
+      setLoggerVisible(true);
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [isLoggerEnabled]);
 
   useEffect(() => {
     try {
@@ -165,6 +186,28 @@ const App = () => {
                 </View>
               )}
               <Toast config={toastConfig} />
+              {__DEV__ && (
+                <View style={styles.floatingDebugButton} onTouchEnd={() => setLoggerVisible(true)}>
+                  <Text style={styles.floatingDebugText}>🌐 Log</Text>
+                </View>
+              )}
+
+              <Modal
+                animationType="slide"
+                transparent={false}
+                visible={loggerVisible}
+                onRequestClose={() => setLoggerVisible(false)}>
+                <View style={styles.loggerContainer}>
+                  <View style={styles.loggerHeader}>
+                    <Button
+                      title="Close Logger"
+                      onPress={() => setLoggerVisible(false)}
+                      color="#FF3B30"
+                    />
+                  </View>
+                  <NetworkLogger theme="dark" />
+                </View>
+              </Modal>
             </SafeAreaProvider>
           </I18nextProvider>
         </QueryClientProvider>
@@ -198,6 +241,36 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     textAlign: 'center',
+  },
+  loggerContainer: {
+    flex: 1,
+    backgroundColor: '#121212',
+  },
+  loggerHeader: {
+    backgroundColor: '#1E1E1E',
+    paddingTop: 60,
+    paddingBottom: 10,
+    paddingHorizontal: 10,
+  },
+  floatingDebugButton: {
+    position: 'absolute',
+    bottom: 90,
+    right: 20,
+    backgroundColor: '#007AFF',
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    zIndex: 99999,
+  },
+  floatingDebugText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
 });
 
