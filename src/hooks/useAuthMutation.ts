@@ -58,7 +58,7 @@ export const useRegisterVerifyOtp = () => {
       const session = data?.data;
 
       if (session?.verificationToken) {
-        setStorageItem(StorageKey.ACCESS_TOKEN, session.verificationToken);
+        useAuthStore.getState().setToken(session.verificationToken);
 
         console.log('useRegisterVerifyOtp ACCESS_TOKEN saved to MMKV');
       }
@@ -72,6 +72,7 @@ export const useRegisterVerifyOtp = () => {
 
 export const useRegisterPinSetup = () => {
   const setToken = useAuthStore((state) => state.setToken);
+  const setRefreshToken = useAuthStore((state) => state.setRefreshToken);
   const setExpiresAt = useAuthStore((state) => state.setExpiresAt);
   const { mutate: updateDeviceToken } = useUpdateDeviceToken();
 
@@ -124,7 +125,7 @@ export const useRegisterPinSetup = () => {
         setToken(session.accessToken, true);
       }
       if (session?.refreshToken) {
-        setStorageItem(StorageKey.REFRESH_TOKEN, session.refreshToken);
+        setRefreshToken(session.refreshToken);
       }
       if (session?.expiresAt) {
         setExpiresAt(session.expiresAt);
@@ -163,7 +164,7 @@ export const useLoginVerifyOtp = () => {
       const session = data?.data;
 
       if (session?.verificationToken) {
-        setStorageItem(StorageKey.ACCESS_TOKEN, session.verificationToken);
+        useAuthStore.getState().setToken(session.verificationToken);
 
         console.log('useLoginVerifyOtp ACCESS_TOKEN saved to MMKV');
       }
@@ -177,6 +178,7 @@ export const useLoginVerifyOtp = () => {
 
 export const useLogin = () => {
   const setToken = useAuthStore((state) => state.setToken);
+  const setRefreshToken = useAuthStore((state) => state.setRefreshToken);
   const setExpiresAt = useAuthStore((state) => state.setExpiresAt);
   const { mutate: updateDeviceToken } = useUpdateDeviceToken();
 
@@ -224,7 +226,7 @@ export const useLogin = () => {
         setToken(session.accessToken);
       }
       if (session?.refreshToken) {
-        setStorageItem(StorageKey.REFRESH_TOKEN, session.refreshToken);
+        setRefreshToken(session.refreshToken);
       }
       if (session?.expiresAt) {
         setExpiresAt(session.expiresAt);
@@ -251,7 +253,7 @@ export const useForgotPinVerifyOtp = () => {
     onSuccess: (data) => {
       const session = data?.data;
       if (session?.verificationToken) {
-        setStorageItem(StorageKey.ACCESS_TOKEN, session.verificationToken);
+        useAuthStore.getState().setToken(session.verificationToken);
       }
     },
   });

@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(xargs ls)"
+      "Bash(xargs ls)",
+      "Bash(identify /Users/ansor/Documents/GitHub/doitpay-mobile-app/android/app/src/main/res/drawable/ic_notification.png)",
+      "Bash(which inkscape *)",
+      "Read(//Applications/**)"
     ]
   }
 }

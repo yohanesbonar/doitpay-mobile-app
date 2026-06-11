@@ -15,9 +15,10 @@ export const onDisplayNotification = async (title?: string, body?: string, data?
   await notifee.displayNotification({
     title: title,
     body: body,
-    data: data, 
+    data: data,
     android: {
       channelId,
+      smallIcon: 'ic_notification',
       importance: AndroidImportance.HIGH,
       pressAction: {
         id: 'default',
