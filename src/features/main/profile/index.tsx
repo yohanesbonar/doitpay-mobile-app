@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Settings, CreditCard, ShieldCheck, HelpCircle, Bell } from 'lucide-react-native';
+import { Settings, CreditCard, ShieldCheck, HelpCircle } from 'lucide-react-native';
 import { useTheme } from '../../../theme/ThemeProvider';
 import { createStyles } from './styles';
 import ProfileMenuItem from './components/ProfileMenuItem';
@@ -16,6 +16,7 @@ import { KycCardSkeleton } from './components/KycCardSkeleton';
 import { useGetLimitMeQuery } from '@/features/user/hooks/useGetLimitMeQuery';
 import { UserLimitType } from '@/features/user/types';
 import DeviceInfo from 'react-native-device-info';
+import { LogoutConfirmationModal } from './components/LogoutConfirmationModal';
 
 export const Profile = () => {
   const appVersion = DeviceInfo.getVersion();
@@ -23,6 +24,9 @@ export const Profile = () => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const navigation = useNavigation<any>();
+
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const { data: profileData, isLoading: loadingProfile } = useGetProfileMeQuery();
   const { data: limitData, isLoading: loadingLimit } = useGetLimitMeQuery();
@@ -79,13 +83,33 @@ export const Profile = () => {
         <TouchableOpacity
           style={styles.logoutButton}
           activeOpacity={0.7}
-          onPress={() => handleLogout()}>
+          onPress={() =>
+            setTimeout(() => {
+              setIsModalVisible(true);
+            }, 250)
+          }>
           <Text style={styles.logoutText}>Keluar</Text>
         </TouchableOpacity>
         <View style={{ alignItems: 'center', marginTop: 20 }}>
           <Text style={{ fontSize: 14 }}>Versi {appVersion}</Text>
         </View>
       </ScrollView>
+      <LogoutConfirmationModal
+        visible={isModalVisible}
+        colors={colors}
+        styles={styles}
+        onClose={() => setIsModalVisible(false)}
+        onConfirm={() => {
+          setIsLoggingOut(true);
+          setIsModalVisible(false);
+        }}
+        onDismiss={() => {
+          if (isLoggingOut) {
+            handleLogout();
+            setIsLoggingOut(false);
+          }
+        }}
+      />
     </SafeAreaView>
   );
 };

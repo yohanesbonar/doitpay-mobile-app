@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigation, useRoute, CommonActions, StackActions } from '@react-navigation/native';
+import { useNavigation, useRoute, StackActions } from '@react-navigation/native';
 import { BankListView } from '../../../features/transfer/bankList';
 import { useAuthStore } from '@/storage/useAuthStore';
 

@@ -22,17 +22,23 @@ export const formatOTPTimer = (seconds: number): string => {
 
 export const handleLogout = () => {
   const { logout, accessToken } = useAuthStore.getState();
+
   if (accessToken) {
     authApi.logout(accessToken).catch(() => {});
   }
+
   logout();
-  queryClient.clear();
-  Toast.show({
-    type: 'success',
-    text1: 'Log Out Berhasil',
-    position: 'top',
-    visibilityTime: 3000,
-  });
+
+  setTimeout(() => {
+    queryClient.clear();
+
+    Toast.show({
+      type: 'success',
+      text1: 'Log Out Berhasil',
+      position: 'top',
+      visibilityTime: 3000,
+    });
+  }, 400);
 };
 
 export const formatNumber = (val: string | number | null | undefined): string => {
