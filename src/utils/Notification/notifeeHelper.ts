@@ -15,7 +15,7 @@ export const onDisplayNotification = async (title?: string, body?: string, data?
   await notifee.displayNotification({
     title: title,
     body: body,
-    data: data, 
+    data: data,
     android: {
       channelId,
       importance: AndroidImportance.HIGH,
