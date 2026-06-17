@@ -197,6 +197,18 @@ export type LogoutResponse = {
   data: {};
 };
 
+// CHANGE PIN
+export interface ChangePinPayload {
+  oldPin: string;
+  newPin: string;
+}
+
+export type ChangePinResponse = {
+  status: string;
+  message: string;
+  data: {};
+};
+
 export const authApi = {
   registerRequestOtp: async (payload: RegisterOtpRequestPayload): Promise<RegisterOtpResponse> => {
     const { data } = await apiClient.post<RegisterOtpResponse>(
@@ -307,6 +319,12 @@ export const authApi = {
   logout: async (accessToken: string): Promise<LogoutResponse> => {
     const { data } = await apiClient.post<LogoutResponse>('/v1/auth/logout', undefined, {
       headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    return data;
+  },
+  changePin: async (payload: ChangePinPayload): Promise<ChangePinResponse> => {
+    const { data } = await apiClient.post<ChangePinResponse>('/v1/pin/change', payload, {
+      headers: { 'X-Idempotency-Key': generateUUID() },
     });
     return data;
   },

@@ -26,6 +26,8 @@ import {
   DeleteAccountPayload,
   DeleteAccountResponse,
   CancelAccountDeletionResponse,
+  ChangePinPayload,
+  ChangePinResponse,
 } from '../api/auth';
 import { setStorageItem, storage, StorageKey } from '../storage';
 import { useAuthStore } from '../storage/useAuthStore';
@@ -284,5 +286,11 @@ export const useDeleteAccount = () => {
 export const useCancelAccountDeletion = () => {
   return useMutation<CancelAccountDeletionResponse, Error, void>({
     mutationFn: () => authApi.cancelAccountDeletion(),
+  });
+};
+
+export const useChangePin = () => {
+  return useMutation<ChangePinResponse, Error, ChangePinPayload>({
+    mutationFn: (payload) => authApi.changePin(payload),
   });
 };

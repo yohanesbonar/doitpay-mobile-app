@@ -9,6 +9,8 @@ import {
   Linking,
   PermissionsAndroid,
   ActivityIndicator,
+  Dimensions,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CheckCircle2, Clock, XCircle, Download, Share2 } from 'lucide-react-native';
@@ -20,7 +22,8 @@ import { CameraRoll } from '@react-native-camera-roll/camera-roll';
 import Share from 'react-native-share';
 import { TransactionStatus, TransactionType } from '@/features/transaction/types';
 import { useTransactionReceiptQuery } from '@/features/transaction/hooks/useTransactionReceiptQuery';
-import FastImage from 'react-native-fast-image';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const STATUS_CONFIG: Record<
   string,
@@ -128,12 +131,14 @@ export const TransactionDetail = ({
     }
   };
 
+  const normalizeUri = (uri: string) =>
+    uri.startsWith('file://') ? uri : `file://${uri}`;
+
   const handleDownload = async () => {
     try {
       const uri = await viewShotRef.current.capture();
-      let targetUri = uri;
       if (Platform.OS === 'ios') {
-        if (uri.startsWith('file://')) targetUri = uri.replace('file://', '');
+        const targetUri = uri.startsWith('file://') ? uri.replace('file://', '') : uri;
         await CameraRoll.saveAsset(targetUri, { type: 'photo' });
         Alert.alert('Sukses', 'Bukti disimpan ke Galeri Foto.', [
           { text: 'OK', style: 'cancel' },
@@ -145,7 +150,7 @@ export const TransactionDetail = ({
           Alert.alert('Izin Ditolak', 'Aplikasi butuh izin akses galeri');
           return;
         }
-        await CameraRoll.saveAsset(targetUri, { type: 'photo' });
+        await CameraRoll.saveAsset(normalizeUri(uri), { type: 'photo' });
         Alert.alert('Sukses', 'Bukti berhasil disimpan ke Galeri Foto.', [
           { text: 'OK', style: 'cancel' },
           { text: 'Buka Galeri', onPress: openGallery },
@@ -153,9 +158,7 @@ export const TransactionDetail = ({
       }
     } catch (error) {
       console.error('Download error:', error);
-      if (Platform.OS !== 'ios') {
-        Alert.alert('Gagal', 'Gagal menyimpan bukti ke galeri');
-      }
+      Alert.alert('Gagal', 'Gagal menyimpan bukti ke galeri');
     }
   };
 
@@ -163,7 +166,7 @@ export const TransactionDetail = ({
     try {
       const uri = await viewShotRef.current.capture();
       await Share.open({
-        url: uri,
+        url: normalizeUri(uri),
         title: 'Bagikan Bukti',
         message: `Bukti Transaksi sebesar Rp ${formatNumber((receipt?.amount ?? 0).toString())}`,
       });
@@ -172,7 +175,65 @@ export const TransactionDetail = ({
     }
   };
 
-  console.log(receipt?.paymentMethod);
+  // Extracted as function so the same JSX renders in both the off-screen
+  // ViewShot (for capture) and the visible ScrollView (for display).
+  // Uses RN Image (not FastImage) because FastImage uses Fresco on Android
+  // which is not captured by react-native-view-shot.
+  const renderReceiptContent = () => (
+    <>
+      <View style={[styles.statusCard, { backgroundColor: statusColor }]}>
+        <View style={styles.statusIcon}>
+          <StatusIcon size={65} color="#FFFFFF" />
+        </View>
+        <Text style={styles.statusTitle}>{statusLabel}</Text>
+        <Text style={styles.statusAmount}>
+          Rp {formatNumber((receipt?.amount ?? 0).toString())}
+        </Text>
+        <View style={styles.curveCutout} />
+      </View>
+
+      <View style={styles.recipientBox}>
+        <View style={styles.recipientLeft}>
+          <View style={styles.bankLogoWrapper}>
+            <Image
+              source={{ uri: receipt?.paymentMethodLogoUrl }}
+              style={{ width: 30, height: 30 }}
+              resizeMode="contain"
+            />
+          </View>
+          <View style={styles.recipientInfo}>
+            <Text style={styles.recipientName} numberOfLines={1}>
+              {receipt?.beneficiaryName ?? '-'}
+            </Text>
+            <Text style={styles.recipientMethod}>
+              {receipt?.paymentMethod ? receipt.paymentMethod : '-'}
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      <View style={styles.detailsCard}>
+        <Text style={styles.sectionTitle}>Detail Transaksi</Text>
+
+        <View style={styles.detailRow}>
+          <Text style={styles.detailLabel}>ID Transaksi</Text>
+          <Text style={styles.detailValue}>{transactionId}</Text>
+        </View>
+        <View style={styles.detailRow}>
+          <Text style={styles.detailLabel}>Tanggal & Waktu</Text>
+          <Text style={styles.detailValue}>
+            {receipt?.createdAt ? formatDateTime(receipt.createdAt) : '-'}
+          </Text>
+        </View>
+        <View style={styles.detailRow}>
+          <Text style={styles.detailLabel}>Metode Pembayaran</Text>
+          <Text style={styles.detailValue}>
+            {receipt?.paymentMethod ? receipt.paymentMethod : '-'}
+          </Text>
+        </View>
+      </View>
+    </>
+  );
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
@@ -184,61 +245,31 @@ export const TransactionDetail = ({
             <ActivityIndicator size="large" color="#3B82F6" />
           </View>
         ) : (
-          <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-            <ViewShot ref={viewShotRef} options={{ format: 'png', quality: 1.0 }}>
-              <View style={[styles.statusCard, { backgroundColor: statusColor }]}>
-                <View style={styles.statusIcon}>
-                  <StatusIcon size={65} color="#FFFFFF" />
-                </View>
-                <Text style={styles.statusTitle}>{statusLabel}</Text>
-                <Text style={styles.statusAmount}>
-                  Rp {formatNumber((receipt?.amount ?? 0).toString())}
-                </Text>
-                <View style={styles.curveCutout} />
-              </View>
-
-              <View style={styles.recipientBox}>
-                <View style={styles.recipientLeft}>
-                  <View style={styles.bankLogoWrapper}>
-                    <FastImage
-                      source={{ uri: receipt?.paymentMethodLogoUrl }}
-                      style={{ width: 30, height: 30 }}
-                      resizeMode={FastImage.resizeMode.contain}
-                    />
-                  </View>
-                  <View style={styles.recipientInfo}>
-                    <Text style={styles.recipientName} numberOfLines={1}>
-                      {receipt?.beneficiaryName ?? '-'}
-                    </Text>
-                    <Text style={styles.recipientMethod}>
-                      {receipt?.paymentMethod ? receipt.paymentMethod : '-'}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-
-              <View style={styles.detailsCard}>
-                <Text style={styles.sectionTitle}>Detail Transaksi</Text>
-
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>ID Transaksi</Text>
-                  <Text style={styles.detailValue}>{transactionId}</Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Tanggal & Waktu</Text>
-                  <Text style={styles.detailValue}>
-                    {receipt?.createdAt ? formatDateTime(receipt.createdAt) : '-'}
-                  </Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Metode Pembayaran</Text>
-                  <Text style={styles.detailValue}>
-                    {receipt?.paymentMethod ? receipt.paymentMethod : '-'}
-                  </Text>
-                </View>
-              </View>
+          <>
+            {/*
+              ViewShot lives OUTSIDE ScrollView so Android renders the full
+              content tree (not just the visible viewport) before capture.
+              Positioned off-screen so it never shows in the UI.
+            */}
+            <ViewShot
+              ref={viewShotRef}
+              options={{ format: 'png', quality: 1.0 }}
+              style={{
+                position: 'absolute',
+                top: -9999,
+                left: 0,
+                width: SCREEN_WIDTH,
+                backgroundColor: '#FFFFFF',
+              }}>
+              {renderReceiptContent()}
             </ViewShot>
-          </ScrollView>
+
+            <ScrollView
+              contentContainerStyle={styles.content}
+              showsVerticalScrollIndicator={false}>
+              {renderReceiptContent()}
+            </ScrollView>
+          </>
         )}
 
         <View style={styles.footerContainer}>

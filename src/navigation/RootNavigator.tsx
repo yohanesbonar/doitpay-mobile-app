@@ -29,6 +29,7 @@ import { TransactionDetailScreen } from '@/screens/transaction/transaction-detai
 import { TransactionHistoryScreen } from '@/screens/main/transaction-history/transaction-history';
 import { DeleteAccount } from '@/features/main/profile/DeleteAccount';
 import { DeleteAccountStatus } from '@/features/main/profile/DeleteAccountStatus';
+import { ChangePin } from '@/features/main/profile/ChangePin';
 
 const Stack = createNativeStackNavigator();
 interface RootNavigatorProps {
@@ -94,6 +95,7 @@ export default function RootNavigator({ navigationRef, onReady, onStateChange }:
             <Stack.Screen name="TransactionDetail" component={TransactionDetailScreen} />
             <Stack.Screen name="DeleteAccount" component={DeleteAccount} />
             <Stack.Screen name="DeleteAccountStatus" component={DeleteAccountStatus} />
+            <Stack.Screen name="ChangePin" component={ChangePin} />
           </Stack.Group>
         ) : (
           <Stack.Group>

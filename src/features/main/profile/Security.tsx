@@ -12,8 +12,8 @@ import {
 export const Security = ({ navigation }: any) => {
   const [isBiometricActive, setIsBiometricActive] = useState(false);
 
-  const SecurityItem = ({ title, sub, icon: Icon, type = 'arrow', value, onValueChange }: any) => (
-    <TouchableOpacity style={styles.item} activeOpacity={0.7} disabled={type === 'switch'}>
+  const SecurityItem = ({ title, sub, icon: Icon, type = 'arrow', value, onValueChange, onPress }: any) => (
+    <TouchableOpacity style={styles.item} activeOpacity={0.7} disabled={type === 'switch'} onPress={onPress}>
       <View style={styles.row}>
         <View style={styles.iconBox}>
           <Icon size={22} color="#1A1A1A" />
@@ -45,7 +45,12 @@ export const Security = ({ navigation }: any) => {
       </View>
 
       <View style={styles.content}>
-        <SecurityItem title="Ubah PIN" sub="Ganti PIN 6 digit kamu" icon={Lock} />
+        <SecurityItem
+          title="Ubah PIN"
+          sub="Ganti PIN 6 digit kamu"
+          icon={Lock}
+          onPress={() => navigation.navigate('ChangePin')}
+        />
         <SecurityItem
           title="Biometrik"
           sub="Fingerprint/ Face ID untuk login cepat"
