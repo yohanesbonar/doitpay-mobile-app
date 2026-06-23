@@ -31,6 +31,7 @@ import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { queryClient } from './src/api/queryClient';
 import { navigationRef } from '@/navigation/navigationRef.ts';
 import { SecurityBlocker } from '@/components/organisms/SecurityBlocker/index.tsx';
+import { UpdateAppBottomSheet } from '@/components/molecules/UpdateAppBottomSheet';
 
 // Start i18n
 initI18next();
@@ -61,6 +62,7 @@ const App = () => {
 
   const [loggerVisible, setLoggerVisible] = useState<boolean>(false);
   const [isButtonVisible, setIsButtonVisible] = useState<boolean>(false);
+  const [isUpdateAppSheetVisible, setIsUpdateAppSheetVisible] = useState<boolean>(false);
   const isLoggerEnabled =
     Config.ENABLE_NETWORK_LOGGER === 'true' || Config.ENABLE_NETWORK_LOGGER === true;
 
@@ -153,6 +155,10 @@ const App = () => {
     }
   };
 
+  const handleUpdateApp = () => {
+    setIsUpdateAppSheetVisible(false);
+  };
+
   if (isDeviceCompromised === null) {
     return null;
   }
@@ -215,6 +221,10 @@ const App = () => {
                   <NetworkLogger theme="dark" />
                 </View>
               </Modal>
+              <UpdateAppBottomSheet
+                visible={isUpdateAppSheetVisible}
+                onUpdatePress={handleUpdateApp}
+              />
             </SafeAreaProvider>
           </I18nextProvider>
         </QueryClientProvider>
