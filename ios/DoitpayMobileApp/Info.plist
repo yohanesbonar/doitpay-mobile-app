@@ -39,6 +39,8 @@
 	<string>Aplikasi ini membutuhkan akses galeri untuk menyimpan gambar QRIS Pembayaran.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Aplikasi ini membutuhkan akses galeri untuk mendownload QRIS.</string>
+	<key>NSSupportsLiveActivities</key>
+	<true/>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UIAppFonts</key>

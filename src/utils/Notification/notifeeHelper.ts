@@ -18,6 +18,7 @@ export const onDisplayNotification = async (title?: string, body?: string, data?
     data: data,
     android: {
       channelId,
+      smallIcon: 'ic_notification',
       importance: AndroidImportance.HIGH,
       pressAction: {
         id: 'default',
