@@ -5,20 +5,16 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
-  Platform,
-  Linking,
-  PermissionsAndroid,
   ActivityIndicator,
   Dimensions,
   Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { CheckCircle2, Clock, XCircle, Download, Share2 } from 'lucide-react-native';
+import { CheckCircle2, Clock, XCircle, TriangleAlert, Share2 } from 'lucide-react-native';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import { styles } from './styles';
 import { formatNumber } from '@/utils/Common';
 import ViewShot from 'react-native-view-shot';
-import { CameraRoll } from '@react-native-camera-roll/camera-roll';
 import Share from 'react-native-share';
 import { TransactionStatus, TransactionType } from '@/features/transaction/types';
 import { useTransactionReceiptQuery } from '@/features/transaction/hooks/useTransactionReceiptQuery';
@@ -85,6 +81,7 @@ export interface TransactionDetailProps {
   type: string;
   status?: string;
   onPressBack: () => void;
+  onPressReportIssue: () => void;
 }
 
 export const TransactionDetail = ({
@@ -93,6 +90,7 @@ export const TransactionDetail = ({
   type,
   status,
   onPressBack,
+  onPressReportIssue,
 }: TransactionDetailProps) => {
   const viewShotRef = useRef<any>(null);
 
@@ -106,61 +104,8 @@ export const TransactionDetail = ({
     Icon: StatusIcon,
   } = STATUS_CONFIG[resolvedStatus] ?? STATUS_CONFIG[TransactionStatus.SUCCESS_TRANSFER];
 
-  const hasAndroidPermission = async () => {
-    const permission =
-      Number(Platform.Version) >= 33
-        ? PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES
-        : PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE;
-    const hasPermission = await PermissionsAndroid.check(permission);
-    if (hasPermission) return true;
-    const result = await PermissionsAndroid.request(permission);
-    return result === 'granted';
-  };
-
-  const openGallery = async () => {
-    try {
-      if (Platform.OS === 'ios') {
-        const url = 'photos-redirect://';
-        const canOpen = await Linking.canOpenURL(url);
-        await Linking.openURL(canOpen ? url : 'calshow://');
-      } else {
-        await Linking.openURL('content://media/internal/images/media');
-      }
-    } catch {
-      Alert.alert('Info', 'Bukti disimpan. Silakan buka aplikasi Galeri/Photos di HP kamu.');
-    }
-  };
-
   const normalizeUri = (uri: string) =>
     uri.startsWith('file://') ? uri : `file://${uri}`;
-
-  const handleDownload = async () => {
-    try {
-      const uri = await viewShotRef.current.capture();
-      if (Platform.OS === 'ios') {
-        const targetUri = uri.startsWith('file://') ? uri.replace('file://', '') : uri;
-        await CameraRoll.saveAsset(targetUri, { type: 'photo' });
-        Alert.alert('Sukses', 'Bukti disimpan ke Galeri Foto.', [
-          { text: 'OK', style: 'cancel' },
-          { text: 'Buka Galeri', onPress: openGallery },
-        ]);
-      } else {
-        const allowed = await hasAndroidPermission();
-        if (!allowed) {
-          Alert.alert('Izin Ditolak', 'Aplikasi butuh izin akses galeri');
-          return;
-        }
-        await CameraRoll.saveAsset(normalizeUri(uri), { type: 'photo' });
-        Alert.alert('Sukses', 'Bukti berhasil disimpan ke Galeri Foto.', [
-          { text: 'OK', style: 'cancel' },
-          { text: 'Buka Galeri', onPress: openGallery },
-        ]);
-      }
-    } catch (error) {
-      console.error('Download error:', error);
-      Alert.alert('Gagal', 'Gagal menyimpan bukti ke galeri');
-    }
-  };
 
   const handleShare = async () => {
     try {
@@ -274,9 +219,9 @@ export const TransactionDetail = ({
 
         <View style={styles.footerContainer}>
           <View style={styles.actionsRow}>
-            <TouchableOpacity style={styles.actionButton} onPress={handleDownload}>
-              <Download size={18} color="#111827" style={{ marginRight: 8 }} />
-              <Text style={styles.actionText}>Unduh Bukti</Text>
+            <TouchableOpacity style={styles.actionButton} onPress={onPressReportIssue}>
+              <TriangleAlert size={18} color="#111827" style={{ marginRight: 8 }} />
+              <Text style={styles.actionText}>Laporkan Masalah</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
               <Share2 size={18} color="#111827" style={{ marginRight: 8 }} />

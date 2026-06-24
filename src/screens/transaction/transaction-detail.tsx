@@ -14,6 +14,13 @@ export const TransactionDetailScreen = () => {
       type={type}
       status={status}
       onPressBack={() => navigation.goBack()}
+      onPressReportIssue={() =>
+        navigation.navigate('DisputeReportCenter', {
+          transactionId,
+          recipientName: '',
+          amount: 0,
+        })
+      }
     />
   );
 };

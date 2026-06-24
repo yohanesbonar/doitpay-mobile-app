@@ -30,6 +30,15 @@ import { TransactionHistoryScreen } from '@/screens/main/transaction-history/tra
 import { DeleteAccount } from '@/features/main/profile/DeleteAccount';
 import { DeleteAccountStatus } from '@/features/main/profile/DeleteAccountStatus';
 import { ChangePin } from '@/features/main/profile/ChangePin';
+import DisputeHelpCenterScreen from '@/screens/dispute/helpCenter';
+import DisputeIssueTypeScreen from '@/screens/dispute/issueType';
+import DisputeAttachmentScreen from '@/screens/dispute/attachment';
+import DisputeReviewScreen from '@/screens/dispute/review';
+import DisputeSubmittedScreen from '@/screens/dispute/submitted';
+import DisputeListScreen from '@/screens/dispute/list';
+import DisputeDetailScreen from '@/screens/dispute/detail';
+import DisputeAddResponseScreen from '@/screens/dispute/addResponse';
+import DisputeReportCenterScreen from '@/screens/dispute/reportCenter';
 
 const Stack = createNativeStackNavigator();
 interface RootNavigatorProps {
@@ -96,6 +105,15 @@ export default function RootNavigator({ navigationRef, onReady, onStateChange }:
             <Stack.Screen name="DeleteAccount" component={DeleteAccount} />
             <Stack.Screen name="DeleteAccountStatus" component={DeleteAccountStatus} />
             <Stack.Screen name="ChangePin" component={ChangePin} />
+            <Stack.Screen name="DisputeHelpCenter" component={DisputeHelpCenterScreen} />
+            <Stack.Screen name="DisputeReportCenter" component={DisputeReportCenterScreen} />
+            <Stack.Screen name="DisputeIssueType" component={DisputeIssueTypeScreen} />
+            <Stack.Screen name="DisputeAttachment" component={DisputeAttachmentScreen} />
+            <Stack.Screen name="DisputeReview" component={DisputeReviewScreen} />
+            <Stack.Screen name="DisputeSubmitted" component={DisputeSubmittedScreen} />
+            <Stack.Screen name="DisputeList" component={DisputeListScreen} />
+            <Stack.Screen name="DisputeDetail" component={DisputeDetailScreen} />
+            <Stack.Screen name="DisputeAddResponse" component={DisputeAddResponseScreen} />
           </Stack.Group>
         ) : (
           <Stack.Group>
