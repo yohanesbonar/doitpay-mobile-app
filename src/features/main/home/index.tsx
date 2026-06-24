@@ -11,7 +11,7 @@ import { RecentRecipient } from './components/RecentRecipient.tsx';
 import { SearchBar } from './components/SearchBar.tsx';
 import { UnprotectedAccount } from './components/UnprotectedAccount.tsx';
 import { DeletionInProgressBanner } from './components/DeletionInProgressBanner.tsx';
-import { RecentActivitySkeleton, RecentBeneficiarySkeleton } from './components/HomeSkeletons.tsx';
+import { RecentActivitySkeleton, RecentBeneficiarySkeleton, TransferLimitSkeleton } from './components/HomeSkeletons.tsx';
 import { NotificationIconWithBadge } from '@/components/molecules/NotificationIconWithBadge';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { EmailBottomsheet } from '@/components/molecules/EmailBottomsheet';
@@ -109,20 +109,23 @@ export const HomeView = (props: HomeViewProps) => {
           contentContainerStyle={{ paddingBottom: 30 }}
           showsVerticalScrollIndicator={false}
           refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}>
-          {/* <UnprotectedAccount onPress={() => handleOpenEmailSheet()} isShow={hasKycPending} /> */}
           <DeletionInProgressBanner isShow={profile?.data?.isRequestDeleteAccount ?? false} />
           <View style={styles.dailyLimitWrapper}>
             <Text style={{ fontSize: 20, marginBottom: 4, fontFamily: 'Switzer-Semibold' }}>
               {t('home.dailyLimitTransfer')}
             </Text>
-            <TransferLimitCard
-              freeTransferQuotaRemaining={transferQuota?.freeTransferQuotaRemaining || 0}
-              freeTransferQuotaTotal={transferQuota?.freeTransferQuotaTotal || 0}
-              freeTransferQuotaUsed={transferQuota?.freeTransferQuotaUsed || 0}
-              transferFee={transferQuota?.transferFee || 0}
-              maxLimit={transferLimit?.maxAmount || 0}
-              isKycVerified={!hasKycPending}
-            />
+            {isLoading || !homeData ? (
+              <TransferLimitSkeleton />
+            ) : (
+              <TransferLimitCard
+                freeTransferQuotaRemaining={transferQuota?.freeTransferQuotaRemaining ?? 0}
+                freeTransferQuotaTotal={transferQuota?.freeTransferQuotaTotal ?? 0}
+                freeTransferQuotaUsed={transferQuota?.freeTransferQuotaUsed ?? 0}
+                transferFee={transferQuota?.transferFee ?? 0}
+                maxLimit={transferLimit?.maxAmount ?? 0}
+                isKycVerified={!hasKycPending}
+              />
+            )}
           </View>
           <View style={styles.mainWrapper}>
             {recentBeneficiaries.length > 0 || recentTransactions.length > 0 ? (
