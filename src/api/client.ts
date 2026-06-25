@@ -64,6 +64,7 @@ apiClient.interceptors.request.use(
     config.headers['X-Platform'] = Platform.OS;
     config.headers['X-App-Type'] = 'mobile';
     config.headers['X-Device-ID'] = deviceId;
+    config.headers['X-App-Version'] = Config.VERSION_NAME;
 
     // --- Firebase Performance Start ---
     if (!__DEV__) {
@@ -103,6 +104,7 @@ apiClient.interceptors.request.use(
                   'X-Platform': Platform.OS,
                   'X-App-Type': 'mobile',
                   'X-Device-ID': deviceId,
+                  'X-App-Version': Config.VERSION_NAME,
                 },
               },
             );
@@ -225,6 +227,7 @@ apiClient.interceptors.response.use(
               'X-Platform': Platform.OS,
               'X-App-Type': 'mobile',
               'X-Device-ID': deviceId,
+              'X-App-Version': Config.APP_VERSION,
             },
           },
         );
