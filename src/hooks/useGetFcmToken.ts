@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getMessaging, getToken, onTokenRefresh } from '@react-native-firebase/messaging';
-import { setStorageItem, storage, StorageKey } from '@/storage';
+import { setStorageItem, StorageKey } from '@/storage';
+import { useAuthStore } from '@/storage/useAuthStore';
 import { useUpdateDeviceToken } from './useDeviceMutation';
 import { Platform } from 'react-native';
 
@@ -10,7 +11,7 @@ export const useGetFcmToken = () => {
   const { mutate: updateDeviceToken } = useUpdateDeviceToken();
 
   const sendTokenToBackendIfLoggedIn = (token: string) => {
-    const accessToken = storage.getString(StorageKey.ACCESS_TOKEN);
+    const accessToken = useAuthStore.getState().accessToken;
 
     if (!accessToken) {
       console.log('User not logged in, skipping FCM registration.');

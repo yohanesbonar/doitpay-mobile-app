@@ -2,7 +2,6 @@ import axios, { AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios';
 import Config from 'react-native-config';
 import { isBefore, subSeconds } from 'date-fns';
 import { getDeviceFingerprint } from '../utils/Device/Device.ts';
-import { getStorageItem, setStorageItem, StorageKey } from '../storage/index.ts';
 import { useAuthStore } from '../storage/useAuthStore.ts';
 import Toast from 'react-native-toast-message';
 import { Platform } from 'react-native';
@@ -82,8 +81,7 @@ apiClient.interceptors.request.use(
     const noNeedAuth = config?.noNeedAuth;
 
     if (!noNeedAuth) {
-      const accessToken = getStorageItem(StorageKey.ACCESS_TOKEN);
-      const expiresAt = getStorageItem(StorageKey.EXPIRES_AT);
+      const { accessToken, expiresAt } = useAuthStore.getState();
 
       if (accessToken && expiresAt) {
         const expirationDate = new Date(expiresAt);
@@ -92,7 +90,7 @@ apiClient.interceptors.request.use(
         if (isTokenExpired && !isRefreshing) {
           isRefreshing = true;
           try {
-            const refreshToken = getStorageItem(StorageKey.REFRESH_TOKEN);
+            const { refreshToken } = useAuthStore.getState();
             const response = await axios.post(
               `${Config.API_URL}/v1/auth/refresh`,
               { refreshToken },
@@ -113,9 +111,7 @@ apiClient.interceptors.request.use(
               expiresAt: newExpiresAt,
             } = response?.data?.data;
 
-            if (newAccessToken) setStorageItem(StorageKey.ACCESS_TOKEN, newAccessToken);
-            if (newRefreshToken) setStorageItem(StorageKey.REFRESH_TOKEN, newRefreshToken);
-            if (newExpiresAt) setStorageItem(StorageKey.EXPIRES_AT, newExpiresAt);
+            useAuthStore.getState().setSession(newAccessToken, newRefreshToken, newExpiresAt);
 
             config.headers.Authorization = `Bearer ${newAccessToken}`;
             processQueue(null, newAccessToken);
@@ -139,7 +135,7 @@ apiClient.interceptors.request.use(
         }
       }
 
-      const currentToken = getStorageItem(StorageKey.ACCESS_TOKEN);
+      const currentToken = useAuthStore.getState().accessToken;
       if (currentToken) {
         config.headers.Authorization = `Bearer ${currentToken}`;
       }
@@ -212,7 +208,7 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const refreshToken = getStorageItem(StorageKey.REFRESH_TOKEN);
+        const { refreshToken } = useAuthStore.getState();
         const deviceId = await getDeviceFingerprint();
 
         const response = await axios.post(
@@ -243,9 +239,7 @@ apiClient.interceptors.response.use(
           console.log('-------------------------');
         }
 
-        setStorageItem(StorageKey.ACCESS_TOKEN, newAccessToken);
-        setStorageItem(StorageKey.REFRESH_TOKEN, newRefreshToken);
-        setStorageItem(StorageKey.EXPIRES_AT, newExpiresAt);
+        useAuthStore.getState().setSession(newAccessToken, newRefreshToken, newExpiresAt);
 
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         processQueue(null, newAccessToken);
