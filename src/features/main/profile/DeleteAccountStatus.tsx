@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { CheckCircle2, XCircle } from 'lucide-react-native';
 import Toast from 'react-native-toast-message';
@@ -7,8 +7,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import Button from '@/components/atoms/Button';
 import { useCancelAccountDeletion } from '@/hooks/useAuthMutation';
+import AccountDeletionIcon from '@/assets/icons/ic-account-deletion-pending.svg';
 import FastImage from 'react-native-fast-image';
-import { useAuthStore } from '@/storage/useAuthStore';
 
 const DISABLED_FEATURES = ['Transfer', 'Terima Pembayaran', 'Rekening Bank'];
 const ALLOWED_FEATURES = ['Login', 'Membatalkan Penghapusan'];
@@ -17,22 +17,6 @@ export const DeleteAccountStatus = () => {
   const navigation = useNavigation<any>();
   const queryClient = useQueryClient();
   const { mutate: cancelDeletion, isPending } = useCancelAccountDeletion();
-  const logout = useAuthStore((state) => state.logout);
-  const canGoBack = navigation.canGoBack();
-
-  const handleLogout = () => {
-    Alert.alert('Keluar', 'Apakah kamu yakin ingin keluar?', [
-      { text: 'Tidak', style: 'cancel' },
-      {
-        text: 'Ya, Keluar',
-        style: 'destructive',
-        onPress: () => {
-          queryClient.clear();
-          logout();
-        },
-      },
-    ]);
-  };
 
   const handleCancel = () => {
     Alert.alert('Batalkan Penghapusan', 'Apakah kamu yakin ingin membatalkan penghapusan akun?', [
@@ -43,15 +27,9 @@ export const DeleteAccountStatus = () => {
         onPress: () => {
           cancelDeletion(undefined, {
             onSuccess: () => {
-              queryClient.setQueryData(['profile-me'], (old: any) => ({
-                ...old,
-                data: { ...old?.data, isRequestDeleteAccount: false },
-              }));
               queryClient.invalidateQueries({ queryKey: ['profile-me'] });
               Toast.show({ type: 'success', text1: 'Penghapusan akun berhasil dibatalkan' });
-              if (canGoBack) {
-                navigation.goBack();
-              }
+              navigation.goBack();
             },
             onError: (err: any) => {
               Toast.show({
@@ -69,7 +47,7 @@ export const DeleteAccountStatus = () => {
     <View style={styles.container}>
       <HeaderToolbar
         title="Hapus Akun"
-        onPressBack={canGoBack ? () => navigation.goBack() : undefined}
+        onPressBack={() => navigation.goBack()}
         titlePosition="left"
         titleStyle="regular"
       />
@@ -120,11 +98,6 @@ export const DeleteAccountStatus = () => {
           color="#4A80F0"
           textColor="white"
         />
-        {!canGoBack && (
-          <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-            <Text style={styles.logoutText}>Keluar</Text>
-          </TouchableOpacity>
-        )}
       </View>
     </View>
   );
@@ -205,15 +178,5 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     borderTopWidth: 1,
     borderTopColor: '#F0F0F0',
-  },
-  logoutButton: {
-    alignItems: 'center',
-    paddingVertical: 14,
-    marginTop: 8,
-  },
-  logoutText: {
-    fontSize: 16,
-    fontFamily: 'Switzer-Semibold',
-    color: '#E25C5C',
   },
 });
