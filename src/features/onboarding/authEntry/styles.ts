@@ -93,7 +93,7 @@ export const createStyles = (colors: any) => {
       fontSize: 12,
       marginTop: 5,
     },
-    codeFieldRoot: { marginTop: 20, marginBottom: 40 },
+    codeFieldRoot: { marginTop: 20, marginBottom: 16 },
     cell: {
       width: 50,
       height: 60,
@@ -120,6 +120,16 @@ export const createStyles = (colors: any) => {
     filledCellText: {
       fontFamily: 'Switzer-Semibold',
       color: '#000',
+    },
+    cellError: {
+      borderColor: '#FF3B30',
+      backgroundColor: '#FFF5F5',
+    },
+    otpErrorText: {
+      color: '#FF3B30',
+      fontSize: 14,
+      marginBottom: 16,
+      fontFamily: 'Switzer-Regular',
     },
     resendContainer: {
       flexDirection: 'row',

@@ -196,7 +196,8 @@ apiClient.interceptors.response.use(
     }
 
     // --- Auto Refresh Token Logic (Handling 401) ---
-    if ((status === 401) && !originalRequest?._retry) {
+    const existingRefreshToken = getStorageItem(StorageKey.REFRESH_TOKEN);
+    if ((status === 401) && !originalRequest?._retry && !originalRequest?.noNeedAuth && existingRefreshToken) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
@@ -212,7 +213,7 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const refreshToken = getStorageItem(StorageKey.REFRESH_TOKEN);
+        const refreshToken = existingRefreshToken;
         const deviceId = await getDeviceFingerprint();
 
         const response = await axios.post(
