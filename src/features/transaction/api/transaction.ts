@@ -8,6 +8,8 @@ export interface TransactionReceiptData {
   id: string;
   paymentMethod: string;
   paymentMethodLogoUrl: string;
+  fee: number;
+  totalAmount: number;
 }
 
 export interface TransactionReceiptResponse {

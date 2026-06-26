@@ -13,7 +13,7 @@ import {
   Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { CheckCircle2, Clock, XCircle, Download, Share2 } from 'lucide-react-native';
+import { CheckCircle2, Clock, XCircle, FlagIcon, Share2 } from 'lucide-react-native';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import { styles } from './styles';
 import { formatNumber } from '@/utils/Common';
@@ -72,13 +72,6 @@ const formatDateTime = (dateStr: string) => {
   return `${day}/${month}/${year}, ${hours}:${minutes} WIB`;
 };
 
-const formatMethodLabel = (method: string) =>
-  method
-    .toLowerCase()
-    .split('_')
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(' ');
-
 export interface TransactionDetailProps {
   transactionId: string;
   referenceId: string;
@@ -131,36 +124,7 @@ export const TransactionDetail = ({
     }
   };
 
-  const normalizeUri = (uri: string) =>
-    uri.startsWith('file://') ? uri : `file://${uri}`;
-
-  const handleDownload = async () => {
-    try {
-      const uri = await viewShotRef.current.capture();
-      if (Platform.OS === 'ios') {
-        const targetUri = uri.startsWith('file://') ? uri.replace('file://', '') : uri;
-        await CameraRoll.saveAsset(targetUri, { type: 'photo' });
-        Alert.alert('Sukses', 'Bukti disimpan ke Galeri Foto.', [
-          { text: 'OK', style: 'cancel' },
-          { text: 'Buka Galeri', onPress: openGallery },
-        ]);
-      } else {
-        const allowed = await hasAndroidPermission();
-        if (!allowed) {
-          Alert.alert('Izin Ditolak', 'Aplikasi butuh izin akses galeri');
-          return;
-        }
-        await CameraRoll.saveAsset(normalizeUri(uri), { type: 'photo' });
-        Alert.alert('Sukses', 'Bukti berhasil disimpan ke Galeri Foto.', [
-          { text: 'OK', style: 'cancel' },
-          { text: 'Buka Galeri', onPress: openGallery },
-        ]);
-      }
-    } catch (error) {
-      console.error('Download error:', error);
-      Alert.alert('Gagal', 'Gagal menyimpan bukti ke galeri');
-    }
-  };
+  const normalizeUri = (uri: string) => (uri.startsWith('file://') ? uri : `file://${uri}`);
 
   const handleShare = async () => {
     try {
@@ -175,10 +139,6 @@ export const TransactionDetail = ({
     }
   };
 
-  // Extracted as function so the same JSX renders in both the off-screen
-  // ViewShot (for capture) and the visible ScrollView (for display).
-  // Uses RN Image (not FastImage) because FastImage uses Fresco on Android
-  // which is not captured by react-native-view-shot.
   const renderReceiptContent = () => (
     <>
       <View style={[styles.statusCard, { backgroundColor: statusColor }]}>
@@ -214,7 +174,6 @@ export const TransactionDetail = ({
 
       <View style={styles.detailsCard}>
         <Text style={styles.sectionTitle}>Detail Transaksi</Text>
-
         <View style={styles.detailRow}>
           <Text style={styles.detailLabel}>ID Transaksi</Text>
           <Text style={styles.detailValue}>{transactionId}</Text>
@@ -229,6 +188,22 @@ export const TransactionDetail = ({
           <Text style={styles.detailLabel}>Metode Pembayaran</Text>
           <Text style={styles.detailValue}>
             {receipt?.paymentMethod ? receipt.paymentMethod : '-'}
+          </Text>
+        </View>
+        <View style={styles.detailRow}>
+          <Text style={styles.detailLabel}>Jumlah</Text>
+          <Text style={styles.detailValue}>
+            Rp {formatNumber((receipt?.amount ?? 0).toString())}
+          </Text>
+        </View>
+        <View style={styles.detailRow}>
+          <Text style={styles.detailLabel}>Biaya Admin</Text>
+          <Text style={styles.detailValue}>Rp {formatNumber((receipt?.fee ?? 0).toString())}</Text>
+        </View>
+        <View style={[styles.detailRow, { borderBottomWidth: 0 }]}>
+          <Text style={styles.detailLabel}>Total</Text>
+          <Text style={styles.detailValue}>
+            Rp {formatNumber((receipt?.totalAmount ?? 0).toString())}
           </Text>
         </View>
       </View>
@@ -246,11 +221,6 @@ export const TransactionDetail = ({
           </View>
         ) : (
           <>
-            {/*
-              ViewShot lives OUTSIDE ScrollView so Android renders the full
-              content tree (not just the visible viewport) before capture.
-              Positioned off-screen so it never shows in the UI.
-            */}
             <ViewShot
               ref={viewShotRef}
               options={{ format: 'png', quality: 1.0 }}
@@ -264,25 +234,30 @@ export const TransactionDetail = ({
               {renderReceiptContent()}
             </ViewShot>
 
-            <ScrollView
-              contentContainerStyle={styles.content}
-              showsVerticalScrollIndicator={false}>
+            <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
               {renderReceiptContent()}
             </ScrollView>
           </>
         )}
 
         <View style={styles.footerContainer}>
-          <View style={styles.actionsRow}>
-            <TouchableOpacity style={styles.actionButton} onPress={handleDownload}>
-              <Download size={18} color="#111827" style={{ marginRight: 8 }} />
-              <Text style={styles.actionText}>Unduh Bukti</Text>
+          {status === 'PENDING' ? (
+            <TouchableOpacity style={styles.continuePaymentButton} onPress={onPressBack}>
+              <Text style={styles.continuePaymentButtonText}>Lanjutkan Pembayaran</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
-              <Share2 size={18} color="#111827" style={{ marginRight: 8 }} />
-              <Text style={styles.actionText}>Bagikan</Text>
-            </TouchableOpacity>
-          </View>
+          ) : (
+            <View style={styles.actionsRow}>
+              <TouchableOpacity style={styles.actionButton}>
+                <FlagIcon size={16} color="#111827" style={{ marginRight: 8 }} />
+                <Text style={[styles.actionText, { marginBottom: 2 }]}>Laporkan Masalah</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
+                <Share2 size={18} color="#111827" style={{ marginRight: 8 }} />
+                <Text style={styles.actionText}>Bagikan</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
           <TouchableOpacity style={styles.backButton} onPress={onPressBack}>
             <Text style={styles.backButtonText}>Kembali ke Daftar Transaksi</Text>
           </TouchableOpacity>

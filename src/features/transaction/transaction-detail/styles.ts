@@ -176,4 +176,18 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     color: '#FFFFFF',
   },
+  continuePaymentButton: {
+    borderColor: '#3B82F6',
+    borderWidth: 1,
+    borderRadius: 40,
+    paddingVertical: 16,
+    marginHorizontal: 24,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  continuePaymentButtonText: {
+    fontFamily: 'Switzer-Medium',
+    fontSize: 16,
+    color: '#3B82F6',
+  },
 });
