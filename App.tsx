@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Modal, Button, Pressable, Alert } from 'react-native';
+import { View, Text, StyleSheet, Modal, Button, Pressable, Alert, Linking } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { I18nextProvider } from 'react-i18next';
@@ -31,7 +31,8 @@ import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { queryClient } from './src/api/queryClient';
 import { navigationRef } from '@/navigation/navigationRef.ts';
 import { SecurityBlocker } from '@/components/organisms/SecurityBlocker/index.tsx';
-import { UpdateAppBottomSheet } from '@/components/molecules/UpdateAppBottomSheet';
+import { UpdateAppBottomSheet, UpdateAppData } from '@/components/molecules/UpdateAppBottomSheet';
+import { updateAppApi } from '@/api/updateApp';
 
 // Start i18n
 initI18next();
@@ -63,6 +64,7 @@ const App = () => {
   const [loggerVisible, setLoggerVisible] = useState<boolean>(false);
   const [isButtonVisible, setIsButtonVisible] = useState<boolean>(false);
   const [isUpdateAppSheetVisible, setIsUpdateAppSheetVisible] = useState<boolean>(false);
+  const [updateAppData, setUpdateAppData] = useState<UpdateAppData | undefined>(undefined);
   const isLoggerEnabled =
     Config.ENABLE_NETWORK_LOGGER === 'true' || Config.ENABLE_NETWORK_LOGGER === true;
 
@@ -114,6 +116,24 @@ const App = () => {
     }
   }, []);
 
+  useEffect(() => {
+    const runVersionCheck = async () => {
+      try {
+        const versionData = await updateAppApi.checkVersion();
+
+        setUpdateAppData(versionData);
+        setIsUpdateAppSheetVisible(
+          versionData.action === 'FORCE_UPDATE' || versionData.action === 'SOFT_UPDATE',
+        );
+      } catch (error) {
+        setUpdateAppData(undefined);
+        setIsUpdateAppSheetVisible(false);
+      }
+    };
+
+    runVersionCheck();
+  }, []);
+
   const onNavigationReady = () => {
     routeNameRef.current = navigationRef.getCurrentRoute()?.name;
   };
@@ -155,7 +175,28 @@ const App = () => {
     }
   };
 
-  const handleUpdateApp = () => {
+  const handleUpdateApp = async (data?: UpdateAppData) => {
+    const url = data?.update_url;
+
+    if (url) {
+      try {
+        const canOpenUrl = await Linking.canOpenURL(url);
+        if (canOpenUrl) {
+          await Linking.openURL(url);
+        }
+      } catch (error) {
+        if (__DEV__) {
+          console.error('Failed to open update URL', error);
+        }
+      }
+    }
+
+    if (data?.action === 'SOFT_UPDATE') {
+      setIsUpdateAppSheetVisible(false);
+    }
+  };
+
+  const handleLaterUpdate = () => {
     setIsUpdateAppSheetVisible(false);
   };
 
@@ -223,7 +264,9 @@ const App = () => {
               </Modal>
               <UpdateAppBottomSheet
                 visible={isUpdateAppSheetVisible}
+                data={updateAppData}
                 onUpdatePress={handleUpdateApp}
+                onLaterPress={handleLaterUpdate}
               />
             </SafeAreaProvider>
           </I18nextProvider>

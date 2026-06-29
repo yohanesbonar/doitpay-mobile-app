@@ -2,7 +2,7 @@ import React from 'react';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 import { styles } from './styles';
 
-export type UpdateAction = 'FORCE_UPDATE' | 'FLEXIBLE_UPDATE';
+export type UpdateAction = 'FORCE_UPDATE' | 'SOFT_UPDATE' | 'OK';
 
 export interface UpdateAppData {
   action?: UpdateAction;
@@ -30,8 +30,8 @@ export const UpdateAppBottomSheet = ({
     return null;
   }
 
-  const action = data?.action ?? 'FLEXIBLE_UPDATE';
-  const isFlexible = action === 'FLEXIBLE_UPDATE' && !data?.mandatory;
+  const action = data?.action ?? 'OK';
+  const isSoftUpdate = action === 'SOFT_UPDATE' && !data?.mandatory;
   const descriptionList = Array.isArray(data?.description)
     ? data.description
     : data?.description
@@ -44,17 +44,17 @@ export const UpdateAppBottomSheet = ({
 
   return (
     <View style={styles.overlay}>
-      <View style={[styles.sheetContainer, isFlexible && styles.flexibleSheetContainer]}>
-        {isFlexible ? (
-          <View style={styles.flexibleHeader}>
+      <View style={[styles.sheetContainer, isSoftUpdate && styles.softSheetContainer]}>
+        {isSoftUpdate ? (
+          <View style={styles.softHeader}>
             <Image source={require('@/assets/images/ic-bell.png')} style={styles.bellIcon} />
-            <Text style={[styles.title, styles.flexibleTitle]}>Ada yang Baru di Doitpay</Text>
+            <Text style={[styles.title, styles.softTitle]}>Ada yang Baru di Doitpay</Text>
           </View>
         ) : (
           <Text style={styles.title}>Perbarui Aplikasi untuk Melanjutkan</Text>
         )}
 
-        {isFlexible ? (
+        {isSoftUpdate ? (
           <>
             <Text style={styles.description}>
               {`Perbarui aplikasi ke versi ${data?.latest_version ?? ''} untuk menikmati fitur terbaru${descriptionList.length > 0 ? ':' : '.'}`}
@@ -74,13 +74,13 @@ export const UpdateAppBottomSheet = ({
         )}
 
         <TouchableOpacity
-          style={[styles.updateButton, isFlexible && styles.flexibleUpdateButton]}
+          style={[styles.updateButton, isSoftUpdate && styles.softUpdateButton]}
           onPress={() => onUpdatePress(data)}
           activeOpacity={0.85}>
           <Text style={styles.updateButtonText}>Update Aplikasi</Text>
         </TouchableOpacity>
 
-        {isFlexible && (
+        {isSoftUpdate && (
           <TouchableOpacity style={styles.laterButton} onPress={onLaterPress} activeOpacity={0.85}>
             <Text style={styles.laterButtonText}>Nanti Saja</Text>
           </TouchableOpacity>

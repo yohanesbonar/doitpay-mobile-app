@@ -21,14 +21,14 @@ export const styles = StyleSheet.create({
     paddingBottom: 28,
     width: '100%',
   },
-  flexibleSheetContainer: {
+  softSheetContainer: {
     width: '90%',
     borderRadius: 16,
     paddingTop: 18,
     paddingBottom: 14,
     marginBottom: 300,
   },
-  flexibleHeader: {
+  softHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 8,
@@ -45,7 +45,7 @@ export const styles = StyleSheet.create({
     fontFamily: 'Switzer-Semibold',
     marginBottom: 16,
   },
-  flexibleTitle: {
+  softTitle: {
     flex: 1,
     fontSize: 24,
     lineHeight: 36,
@@ -86,7 +86,7 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 24,
   },
-  flexibleUpdateButton: {
+  softUpdateButton: {
     height: 45,
   },
   updateButtonText: {

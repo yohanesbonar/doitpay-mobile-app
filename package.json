@@ -38,6 +38,7 @@
     "@react-native-firebase/crashlytics": "^24.0.0",
     "@react-native-firebase/messaging": "^24.0.0",
     "@react-native-firebase/perf": "^24.0.0",
+    "@react-native-firebase/remote-config": "24.0.0",
     "@react-native-picker/picker": "react-native-picker/picker",
     "@react-native/new-app-screen": "0.85.3",
     "@react-navigation/bottom-tabs": "^7.3.10",
