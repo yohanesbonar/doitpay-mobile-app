@@ -26,18 +26,18 @@ import {
   useDeleteAccountRequestOtp,
   useDeleteAccountVerifyOtp,
 } from '@/hooks/useAuthMutation';
-import { useAuthStore } from '@/storage/useAuthStore';
+import { handleLogout } from '@/utils/Common';
 import { useGetProfileMeQuery } from '@/features/user/hooks/useGetProfileMeQuery';
 import AccountDeletionIcon from '@/assets/icons/ic-account-deletion.svg';
 
 const CELL_COUNT_OTP = 6;
 const PIN_LENGTH = 6;
+const SUCCESS_AUTO_LOGOUT_DELAY = 3000;
 
 export const DeleteAccount = () => {
   const { colors } = useTheme();
   const authStyles = createAuthStyles(colors);
   const navigation = useNavigation<any>();
-  const logout = useAuthStore((state) => state.logout);
 
   const { data: profileData } = useGetProfileMeQuery();
   const phoneNumber = profileData?.data?.phoneNumber ?? '';
@@ -64,6 +64,14 @@ export const DeleteAccount = () => {
   useEffect(() => {
     if (currentStep === 2) setValueOTP('');
     if (currentStep === 3) setPin('');
+  }, [currentStep]);
+
+  useEffect(() => {
+    if (currentStep !== 4) return;
+    const timeout = setTimeout(() => {
+      handleLogout();
+    }, SUCCESS_AUTO_LOGOUT_DELAY);
+    return () => clearTimeout(timeout);
   }, [currentStep]);
 
   useEffect(() => {
@@ -258,7 +266,7 @@ export const DeleteAccount = () => {
 
   const handleBack = () => {
     if (currentStep === 4) {
-      logout();
+      handleLogout();
       return;
     }
     if (currentStep > 1) {
@@ -301,7 +309,7 @@ export const DeleteAccount = () => {
           <View style={styles.footer}>
             <Button
               type="regular"
-              onPress={() => logout()}
+              onPress={() => handleLogout()}
               title="Lihat Status"
               color="#4A80F0"
               textColor="white"

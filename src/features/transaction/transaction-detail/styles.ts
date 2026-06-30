@@ -248,7 +248,7 @@ export const receiptStyles = StyleSheet.create({
     marginRight: 6,
   },
   nominalAmount: {
-    fontFamily: 'Switzer-Bold',
+    fontFamily: 'Switzer-Semibold',
     fontSize: 30,
     color: '#111827',
   },
@@ -277,7 +277,7 @@ export const receiptStyles = StyleSheet.create({
     justifyContent: 'center',
   },
   partyName: {
-    fontFamily: 'Switzer-Semibold',
+    fontFamily: 'Switzer-Regular',
     fontSize: 16,
     color: '#111827',
     marginBottom: 2,
@@ -300,7 +300,7 @@ export const receiptStyles = StyleSheet.create({
     paddingTop: 24,
   },
   receiptSectionTitle: {
-    fontFamily: 'Switzer-Bold',
+    fontFamily: 'Switzer-Semibold',
     fontSize: 18,
     color: '#111827',
     marginBottom: 8,

@@ -123,6 +123,8 @@ export const TransactionDetail = ({
   const { data: receiptResponse, isLoading } = useTransactionReceiptQuery(referenceId, type);
   const receipt = receiptResponse?.data;
 
+  console.log(receipt, 'RECEIPT');
+
   const { data: profileResponse } = useGetProfileMeQuery();
   const profile = profileResponse?.data;
 
@@ -135,21 +137,13 @@ export const TransactionDetail = ({
 
   const isReceiveIn = type === TransactionType.RECEIVE_IN;
 
-  const senderName = isReceiveIn
-    ? (receipt?.senderName ?? receipt?.beneficiaryName ?? '-')
-    : (receipt?.senderName ?? profile?.fullName ?? '-');
-  const senderBank = isReceiveIn
-    ? (receipt?.senderBankName ?? receipt?.paymentMethod ?? '-')
-    : (receipt?.senderBankName ?? 'DoitPay');
-  const senderLogoUri = isReceiveIn
-    ? (receipt?.senderBankLogoUrl ?? receipt?.paymentMethodLogoUrl)
-    : receipt?.senderBankLogoUrl;
+  const senderName = receipt?.senderName || '-';
+  const senderBank = receipt?.paymentMethod || '-';
+  const senderLogoUri = receipt?.paymentMethodLogoUrl || '-';
 
-  const recipientName = isReceiveIn
-    ? (profile?.fullName ?? '-')
-    : (receipt?.beneficiaryName ?? '-');
-  const recipientBank = isReceiveIn ? 'DoitPay' : (receipt?.paymentMethod ?? '-');
-  const recipientLogoUri = isReceiveIn ? undefined : receipt?.paymentMethodLogoUrl;
+  const recipientName = receipt?.beneficiaryName || '-';
+  const recipientBank = receipt?.beneficiaryBankName || '-';
+  const recipientLogoUri = receipt?.beneficiaryBankLogo || '-';
 
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const doitpayLogo = require('../../../assets/images/ic-doitpay-white.png');

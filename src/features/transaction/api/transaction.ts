@@ -13,6 +13,8 @@ export interface TransactionReceiptData {
   senderName?: string;
   senderBankName?: string;
   senderBankLogoUrl?: string;
+  beneficiaryBankLogo?: string;
+  beneficiaryBankName?: string;
 }
 
 export interface TransactionReceiptResponse {
