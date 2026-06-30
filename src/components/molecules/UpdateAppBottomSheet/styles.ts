@@ -17,7 +17,7 @@ export const styles = StyleSheet.create({
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     paddingTop: 24,
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     paddingBottom: 28,
     width: '100%',
   },
@@ -25,8 +25,8 @@ export const styles = StyleSheet.create({
     width: '90%',
     borderRadius: 16,
     paddingTop: 18,
-    paddingBottom: 14,
-    marginBottom: 300,
+    paddingBottom: 18,
+    marginBottom: 280,
   },
   softHeader: {
     flexDirection: 'row',
@@ -50,6 +50,7 @@ export const styles = StyleSheet.create({
     fontSize: 24,
     lineHeight: 36,
     marginBottom: 0,
+    fontFamily: 'Switzer-Semibold',
   },
   description: {
     fontSize: 16,
@@ -59,6 +60,7 @@ export const styles = StyleSheet.create({
   },
   bulletListContainer: {
     gap: 2,
+    marginBottom: 4,
   },
   bulletItem: {
     flexDirection: 'row',

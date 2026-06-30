@@ -8,6 +8,7 @@ export interface UpdateAppData {
   action?: UpdateAction;
   latest_version?: string;
   description?: string | string[];
+  latestChangelogs?: unknown;
   minimum_version?: string;
   mandatory?: boolean;
   update_url?: string;
@@ -32,14 +33,39 @@ export const UpdateAppBottomSheet = ({
 
   const action = data?.action ?? 'OK';
   const isSoftUpdate = action === 'SOFT_UPDATE' && !data?.mandatory;
-  const descriptionList = Array.isArray(data?.description)
-    ? data.description
-    : data?.description
-      ? [data.description]
-      : [];
+
+  const extractTextFromChangelogItem = (item: unknown): string => {
+    if (typeof item === 'string') {
+      return item.trim();
+    }
+
+    if (item && typeof item === 'object') {
+      const candidate = [
+        (item as any).description,
+        (item as any).text,
+        (item as any).title,
+        (item as any).changelog,
+        (item as any).content,
+        (item as any).label,
+      ].find((value) => typeof value === 'string' && value.trim().length > 0);
+
+      return typeof candidate === 'string' ? candidate.trim() : '';
+    }
+
+    return '';
+  };
+
+  const descriptionSource = data?.latestChangelogs ?? data?.description;
+  const descriptionList = (Array.isArray(descriptionSource)
+    ? descriptionSource
+    : descriptionSource
+      ? [descriptionSource]
+      : []
+  )
+    .map(extractTextFromChangelogItem)
+    .filter((item) => item.length > 0);
 
   const forceDescription =
-    descriptionList[0] ??
     'Versi aplikasi yang Anda gunakan sudah tidak didukung. Silakan update Doitpay ke versi terbaru';
 
   return (
@@ -62,7 +88,9 @@ export const UpdateAppBottomSheet = ({
 
             <View style={styles.bulletListContainer}>
               {descriptionList.map((item, index) => (
-                <View key={item} style={[styles.bulletItem, index === 0 && { marginTop: 8 }]}>
+                <View
+                  key={`${item}-${index}`}
+                  style={[styles.bulletItem, index === 0 && { marginTop: 8 }]}>
                   <Text style={styles.bulletPrefix}>{'\u2713'}</Text>
                   <Text style={styles.bulletText}>{item}</Text>
                 </View>

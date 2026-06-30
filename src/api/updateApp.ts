@@ -1,5 +1,4 @@
 import apiClient from './client';
-import Config from 'react-native-config';
 import { Platform } from 'react-native';
 import remoteConfig from '@react-native-firebase/remote-config';
 import type { ResponseApi } from './types';
@@ -11,6 +10,7 @@ interface VersionCheckApiData {
   latest_version?: string;
   minimumVersion?: string;
   minimum_version?: string;
+  latestChangelogs?: unknown;
   description?: string | string[];
   mandatory?: boolean;
   updateUrl?: string;
@@ -42,81 +42,6 @@ const normalizeAction = (action?: string): UpdateAction => {
   }
 
   return 'OK';
-};
-
-const normalizeVersionString = (version?: string): string => {
-  if (!version) {
-    return '0.0.0';
-  }
-
-  return version.trim().replace(/^v/i, '');
-};
-
-const compareSemver = (currentVersion: string, targetVersion: string): number => {
-  const currentParts = normalizeVersionString(currentVersion)
-    .split('.')
-    .map((part) => Number.parseInt(part, 10) || 0);
-  const targetParts = normalizeVersionString(targetVersion)
-    .split('.')
-    .map((part) => Number.parseInt(part, 10) || 0);
-
-  const maxLength = Math.max(currentParts.length, targetParts.length);
-
-  for (let index = 0; index < maxLength; index += 1) {
-    const current = currentParts[index] ?? 0;
-    const target = targetParts[index] ?? 0;
-
-    if (current > target) {
-      return 1;
-    }
-
-    if (current < target) {
-      return -1;
-    }
-  }
-
-  return 0;
-};
-
-const deriveActionByVersion = (
-  defaultAction: UpdateAction,
-  minimumVersion?: string,
-  latestVersion?: string,
-): UpdateAction => {
-  const currentAppVersion = Config.VERSION_NAME ?? Config.APP_VERSION ?? '0.0.0';
-  const compareWithMinimum = minimumVersion
-    ? compareSemver(currentAppVersion, minimumVersion)
-    : undefined;
-  const compareWithLatest = latestVersion ? compareSemver(currentAppVersion, latestVersion) : undefined;
-
-  let finalAction: UpdateAction;
-  let decision = 'fallback to default action';
-
-  if (typeof compareWithMinimum === 'number' && compareWithMinimum < 0) {
-    finalAction = 'OK';
-    decision = 'below minimum version';
-  } else if (typeof compareWithLatest === 'number' && compareWithLatest < 0) {
-    finalAction = defaultAction === 'FORCE_UPDATE' ? 'FORCE_UPDATE' : 'SOFT_UPDATE';
-    decision = 'between minimum and latest version';
-  } else if (minimumVersion || latestVersion) {
-    finalAction = 'OK';
-    decision = 'already at/above latest version';
-  } else {
-    finalAction = defaultAction;
-  }
-
-  logUpdateDebug('Version decision', {
-    currentAppVersion,
-    minimumVersion,
-    latestVersion,
-    compareWithMinimum,
-    compareWithLatest,
-    defaultAction,
-    finalAction,
-    decision,
-  });
-
-  return finalAction;
 };
 
 const getRemoteConfigUpdateUrl = async (): Promise<string | undefined> => {
@@ -155,17 +80,55 @@ const getRemoteConfigUpdateUrl = async (): Promise<string | undefined> => {
   }
 };
 
+const extractChangelogText = (item: unknown): string => {
+  if (typeof item === 'string') {
+    return item.trim();
+  }
+
+  if (item && typeof item === 'object') {
+    const candidate = [
+      (item as any).description,
+      (item as any).text,
+      (item as any).title,
+      (item as any).changelog,
+      (item as any).content,
+      (item as any).label,
+    ].find((value) => typeof value === 'string' && value.trim().length > 0);
+
+    return typeof candidate === 'string' ? candidate.trim() : '';
+  }
+
+  return '';
+};
+
+const mapDescriptionList = (data?: VersionCheckApiData): string[] => {
+  const source = data?.latestChangelogs ?? data?.description;
+  const list = Array.isArray(source) ? source : source ? [source] : [];
+
+  return list.map(extractChangelogText).filter((item) => item.length > 0);
+};
+
 const mapVersionCheckData = (data?: VersionCheckApiData): UpdateAppData => {
   const normalizedAction = normalizeAction(data?.action);
   const latestVersion = data?.latest_version ?? data?.latestVersion;
   const minimumVersion = data?.minimum_version ?? data?.minimumVersion;
-  const finalAction = deriveActionByVersion(normalizedAction, minimumVersion, latestVersion);
+  const finalAction = normalizedAction;
+  const descriptionList = mapDescriptionList(data);
+
+  logUpdateDebug('Version decision', {
+    rawAction: data?.action,
+    finalAction,
+    latestVersion,
+    minimumVersion,
+    decision: 'use action from API response',
+  });
 
   return {
     action: finalAction,
     latest_version: latestVersion,
     minimum_version: minimumVersion,
-    description: data?.description,
+    description: descriptionList,
+    latestChangelogs: descriptionList,
     mandatory: finalAction === 'FORCE_UPDATE' ? true : (data?.mandatory ?? false),
     update_url: data?.update_url ?? data?.updateUrl,
   };
