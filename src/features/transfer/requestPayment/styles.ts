@@ -10,6 +10,9 @@ export const createStyles = (colors: any) =>
       paddingVertical: 24,
       flex: 1,
     },
+    contentContainer: {
+      paddingBottom: 210,
+    },
     title: {
       fontSize: 24,
       fontFamily: 'Switzer-Semibold',
@@ -61,7 +64,11 @@ export const createStyles = (colors: any) =>
     },
     footer: {
       paddingHorizontal: 24,
-      paddingBottom: 30,
+      paddingBottom: 16,
+      paddingTop: 16,
+      borderTopWidth: 1,
+      borderTopColor: '#E5E7EB',
+      backgroundColor: colors.white,
     },
     amountInput: {
       flex: 1,
@@ -117,9 +124,63 @@ export const createStyles = (colors: any) =>
       paddingVertical: 10,
       borderRadius: 25,
       alignItems: 'center',
-      marginTop: 12,
+      marginTop: 24,
     },
     disabledButton: {
       backgroundColor: '#E0E0E0',
+    },
+    summaryRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginTop: 8,
+    },
+    summaryLabel: {
+      fontFamily: 'Switzer-Regular',
+      color: '#000000',
+      fontSize: 14,
+    },
+    summaryValue: {
+      fontFamily: 'Switzer-Regular',
+      color: '#1F2937',
+      fontSize: 14,
+    },
+    summaryValueBold: {
+      fontFamily: 'Switzer-Bold',
+      color: '#1F2937',
+      fontSize: 14,
+    },
+    summaryFreeText: {
+      fontFamily: 'Switzer-Medium',
+      color: '#16A34A',
+      fontSize: 14,
+    },
+    totalText: {
+      fontFamily: 'Switzer-Bold',
+      color: '#1D7BE7',
+      fontSize: 24,
+    },
+    infoContainer: {
+      marginTop: 8,
+    },
+    infoRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+    infoText: {
+      fontFamily: 'Switzer-Medium',
+      fontSize: 14,
+      color: '#1F2937',
+    },
+    infoTextWarning: {
+      fontFamily: 'Switzer-Medium',
+      fontSize: 14,
+      color: '#000000',
+    },
+    infoTextDefault: {
+      fontFamily: 'Switzer-Regular',
+      fontSize: 14,
+      color: '#666666',
     },
   });
