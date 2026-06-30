@@ -12,7 +12,12 @@ const RequestPaymentScreen = () => {
     navigation.goBack();
   };
 
-  const handleGenerateQR = (methodPayment: string, amount: string, receiveData: any, bankPayment?: any) => {
+  const handleGenerateQR = (
+    methodPayment: string,
+    amount: string,
+    receiveData: any,
+    bankPayment?: any,
+  ) => {
     navigation.navigate('PaymentInstruction', {
       paymentMethod: methodPayment,
       amount,
