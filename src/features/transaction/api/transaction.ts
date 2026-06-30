@@ -4,17 +4,16 @@ import { GetTransactionsQueries } from '../types';
 export interface TransactionReceiptData {
   amount: number;
   beneficiaryName: string;
+  beneficiaryBankName?: string;
+  beneficiaryBankLogo?: string;
   createdAt: string;
   id: string;
   paymentMethod: string;
   paymentMethodLogoUrl: string;
+  paymentMethodName?: string;
   fee: number;
   totalAmount: number;
   senderName?: string;
-  senderBankName?: string;
-  senderBankLogoUrl?: string;
-  beneficiaryBankLogo?: string;
-  beneficiaryBankName?: string;
 }
 
 export interface TransactionReceiptResponse {
