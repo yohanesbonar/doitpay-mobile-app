@@ -15,6 +15,7 @@ interface InputOTPNumberProps {
   getCellOnLayoutHandler: (index: number) => (event: any) => void;
   onResendOtp: () => void;
   isPending: boolean;
+  errorMessage?: string;
 }
 
 const InputOTPNumber: React.FC<InputOTPNumberProps> = ({
@@ -28,6 +29,7 @@ const InputOTPNumber: React.FC<InputOTPNumberProps> = ({
   getCellOnLayoutHandler,
   onResendOtp,
   isPending,
+  errorMessage,
 }) => {
   const { t } = useTranslation();
 
@@ -54,7 +56,12 @@ const InputOTPNumber: React.FC<InputOTPNumberProps> = ({
           return (
             <View
               key={index}
-              style={[styles.cell, isFocused && styles.focusCell, isFilled && styles.filledCell]}
+              style={[
+                styles.cell,
+                isFocused && styles.focusCell,
+                isFilled && styles.filledCell,
+                !!errorMessage && styles.cellError,
+              ]}
               onLayout={getCellOnLayoutHandler(index)}>
               <Text style={[styles.cellText, isFilled && styles.filledCellText]}>
                 {symbol || (isFocused ? <Cursor /> : null)}

@@ -8,8 +8,6 @@ export const useTransactionReceiptQuery = (
 ) => {
   const isReceive = type === TransactionType.RECEIVE_IN;
 
-  console.log(isReceive);
-
   return useQuery({
     queryKey: ['transaction-receipt', referenceId, type],
     queryFn: () =>

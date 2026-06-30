@@ -16,7 +16,7 @@ export type Transaction = {
 
 export enum TransactionType {
   TRANSFER_OUT = 'TRANSFER_OUT',
-  RECEIVE_IN = 'RECEIVE_IN',
+  RECEIVE_IN = 'RECEIVE',
   REFUND = 'REFUND',
   ADJUSTMENT = 'ADJUSTMENT',
   WITHDRAWAL = 'WITHDRAWAL',

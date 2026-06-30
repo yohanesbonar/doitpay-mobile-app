@@ -59,6 +59,34 @@ const ActivityItemSkeleton = ({ opacity }: { opacity: Animated.Value }) => (
   </View>
 );
 
+export const TransferLimitSkeleton = () => {
+  const opacity = usePulse();
+  return (
+    <View style={styles.transferLimitCard}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
+        <SkeletonBox width={140} height={14} borderRadius={4} opacity={opacity} />
+        <SkeletonBox width={100} height={24} borderRadius={8} opacity={opacity} />
+      </View>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 }}>
+        <SkeletonBox width={80} height={28} borderRadius={4} opacity={opacity} />
+        <SkeletonBox width={50} height={14} borderRadius={4} opacity={opacity} />
+      </View>
+      <View style={{ marginTop: 12, marginBottom: 8 }}>
+        <SkeletonBox width="100%" height={8} borderRadius={4} opacity={opacity} />
+      </View>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <View>
+          <SkeletonBox width={80} height={14} borderRadius={4} opacity={opacity} />
+          <View style={{ marginTop: 4 }}>
+            <SkeletonBox width={120} height={16} borderRadius={4} opacity={opacity} />
+          </View>
+        </View>
+        <SkeletonBox width={100} height={28} borderRadius={8} opacity={opacity} />
+      </View>
+    </View>
+  );
+};
+
 export const RecentActivitySkeleton = () => {
   const opacity = usePulse();
   return (
@@ -80,6 +108,12 @@ const styles = StyleSheet.create({
   },
   beneficiaryItem: {
     alignItems: 'center',
+  },
+  transferLimitCard: {
+    borderRadius: 16,
+    marginVertical: 10,
+    padding: 16,
+    backgroundColor: '#E0E0E0',
   },
   activityItem: {
     flexDirection: 'row',

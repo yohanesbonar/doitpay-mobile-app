@@ -115,13 +115,23 @@ export const AuthEntry = ({ route }) => {
             otpCode: valueOTP,
           },
           {
-            onSuccess: (res) => {
+            onSuccess: (res: any) => {
+              if (res?.status === 'error') {
+                setValueOTP('');
+                Toast.show({
+                  type: 'error',
+                  text1: res?.error?.message ?? 'OTP invalid',
+                });
+                return;
+              }
               setCurrentStep(3);
             },
             onError: (err: any) => {
+              setValueOTP('');
+              const msg = err?.response?.data?.error?.message ?? err?.error?.message ?? 'OTP tidak valid';
               Toast.show({
                 type: 'error',
-                text1: err?.error?.message ?? '',
+                text1: msg,
               });
             },
           },
@@ -133,14 +143,23 @@ export const AuthEntry = ({ route }) => {
             otpCode: valueOTP,
           },
           {
-            onSuccess: (res) => {
+            onSuccess: (res: any) => {
+              if (res?.status === 'error') {
+                setValueOTP('');
+                Toast.show({
+                  type: 'error',
+                  text1: res?.error?.message ?? 'OTP tidak valid',
+                });
+                return;
+              }
               setCurrentStep(4);
             },
             onError: (err: any) => {
-              console.error('error loginVerifyOTP', err?.error?.message);
+              setValueOTP('');
+              const msg = err?.response?.data?.error?.message ?? err?.error?.message ?? 'OTP tidak valid';
               Toast.show({
                 type: 'error',
-                text1: err?.error?.message ?? '',
+                text1: msg,
               });
             },
           },
@@ -235,7 +254,7 @@ export const AuthEntry = ({ route }) => {
             onChangeText={(text) => {
               handlePINChange(text);
             }}
-            onForgotPinPress={() => navigation.navigate('ForgotPin')}
+            onForgotPinPress={isLoginState ? () => (navigation as any).navigate('ForgotPin') : undefined}
           />
         );
       // disable this step because KYC is not ready
@@ -390,9 +409,10 @@ export const AuthEntry = ({ route }) => {
               },
               onError: (err: any) => {
                 setConfirmationPin('');
+                const msg = err?.response?.data?.error?.message ?? err?.error?.message ?? 'PIN salah';
                 Toast.show({
                   type: 'error',
-                  text1: err?.error?.message || 'Gagal mengatur PIN',
+                  text1: msg,
                 });
               },
             },
@@ -488,7 +508,7 @@ export const AuthEntry = ({ route }) => {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined} 
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{ flex: 1, backgroundColor: colors.pageBackground }}
         enabled={true}>
         <View style={{ flex: 1 }}>

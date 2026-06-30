@@ -64,6 +64,7 @@ apiClient.interceptors.request.use(
     config.headers['X-Platform'] = Platform.OS;
     config.headers['X-App-Type'] = 'mobile';
     config.headers['X-Device-ID'] = deviceId;
+    config.headers['X-App-Version'] = Config.VERSION_NAME;
 
     // --- Firebase Performance Start ---
     if (!__DEV__) {
@@ -103,6 +104,7 @@ apiClient.interceptors.request.use(
                   'X-Platform': Platform.OS,
                   'X-App-Type': 'mobile',
                   'X-Device-ID': deviceId,
+                  'X-App-Version': Config.VERSION_NAME,
                 },
               },
             );
@@ -196,7 +198,8 @@ apiClient.interceptors.response.use(
     }
 
     // --- Auto Refresh Token Logic (Handling 401) ---
-    if ((status === 401) && !originalRequest?._retry) {
+    const existingRefreshToken = getStorageItem(StorageKey.REFRESH_TOKEN);
+    if ((status === 401) && !originalRequest?._retry && !originalRequest?.noNeedAuth && existingRefreshToken) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
@@ -212,7 +215,7 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const refreshToken = getStorageItem(StorageKey.REFRESH_TOKEN);
+        const refreshToken = existingRefreshToken;
         const deviceId = await getDeviceFingerprint();
 
         const response = await axios.post(
@@ -225,6 +228,7 @@ apiClient.interceptors.response.use(
               'X-Platform': Platform.OS,
               'X-App-Type': 'mobile',
               'X-Device-ID': deviceId,
+              'X-App-Version': Config.APP_VERSION,
             },
           },
         );

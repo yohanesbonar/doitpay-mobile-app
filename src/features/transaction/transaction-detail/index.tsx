@@ -10,9 +10,9 @@ import {
   Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { CheckCircle2, Clock, XCircle, TriangleAlert, Share2 } from 'lucide-react-native';
+import { CheckCircle2, Clock, XCircle, TriangleAlert, FlagIcon, Share2 } from 'lucide-react-native';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
-import { styles } from './styles';
+import { styles, receiptStyles } from './styles';
 import { formatNumber } from '@/utils/Common';
 import ViewShot from 'react-native-view-shot';
 import Share from 'react-native-share';
@@ -68,12 +68,31 @@ const formatDateTime = (dateStr: string) => {
   return `${day}/${month}/${year}, ${hours}:${minutes} WIB`;
 };
 
-const formatMethodLabel = (method: string) =>
-  method
-    .toLowerCase()
-    .split('_')
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(' ');
+const MONTH_NAMES = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
+
+const formatDateTimeReceipt = (dateStr: string) => {
+  const date = new Date(dateStr);
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = MONTH_NAMES[date.getMonth()];
+  const year = date.getFullYear();
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const seconds = date.getSeconds().toString().padStart(2, '0');
+  return `${day} ${month} ${year}  ${hours}:${minutes}:${seconds}`;
+};
 
 export interface TransactionDetailProps {
   transactionId: string;
@@ -82,6 +101,8 @@ export interface TransactionDetailProps {
   status?: string;
   onPressBack: () => void;
   onPressReportIssue: () => void;
+  onContinuePayment?: () => void;
+  isLoadingContinue?: boolean;
 }
 
 export const TransactionDetail = ({
@@ -91,6 +112,8 @@ export const TransactionDetail = ({
   status,
   onPressBack,
   onPressReportIssue,
+  onContinuePayment,
+  isLoadingContinue,
 }: TransactionDetailProps) => {
   const viewShotRef = useRef<any>(null);
 
@@ -104,8 +127,20 @@ export const TransactionDetail = ({
     Icon: StatusIcon,
   } = STATUS_CONFIG[resolvedStatus] ?? STATUS_CONFIG[TransactionStatus.SUCCESS_TRANSFER];
 
-  const normalizeUri = (uri: string) =>
-    uri.startsWith('file://') ? uri : `file://${uri}`;
+  const isReceiveIn = type === TransactionType.RECEIVE_IN;
+
+  const senderName = receipt?.senderName || '-';
+  const senderBank = receipt?.paymentMethod || '-';
+  const senderLogoUri = receipt?.paymentMethodLogoUrl;
+
+  const recipientName = receipt?.beneficiaryName || '-';
+  const recipientBank = receipt?.beneficiaryBankName || '-';
+  const recipientLogoUri = receipt?.beneficiaryBankLogo;
+
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const doitpayLogo = require('../../../assets/images/ic-doitpay-white.png');
+
+  const normalizeUri = (uri: string) => (uri.startsWith('file://') ? uri : `file://${uri}`);
 
   const handleShare = async () => {
     try {
@@ -120,10 +155,6 @@ export const TransactionDetail = ({
     }
   };
 
-  // Extracted as function so the same JSX renders in both the off-screen
-  // ViewShot (for capture) and the visible ScrollView (for display).
-  // Uses RN Image (not FastImage) because FastImage uses Fresco on Android
-  // which is not captured by react-native-view-shot.
   const renderReceiptContent = () => (
     <>
       <View style={[styles.statusCard, { backgroundColor: statusColor }]}>
@@ -159,7 +190,6 @@ export const TransactionDetail = ({
 
       <View style={styles.detailsCard}>
         <Text style={styles.sectionTitle}>Detail Transaksi</Text>
-
         <View style={styles.detailRow}>
           <Text style={styles.detailLabel}>ID Transaksi</Text>
           <Text style={styles.detailValue}>{transactionId}</Text>
@@ -176,8 +206,143 @@ export const TransactionDetail = ({
             {receipt?.paymentMethod ? receipt.paymentMethod : '-'}
           </Text>
         </View>
+        <View style={styles.detailRow}>
+          <Text style={styles.detailLabel}>Jumlah</Text>
+          <Text style={styles.detailValue}>
+            Rp {formatNumber((receipt?.amount ?? 0).toString())}
+          </Text>
+        </View>
+        <View style={styles.detailRow}>
+          <Text style={styles.detailLabel}>Biaya Admin</Text>
+          <Text style={styles.detailValue}>Rp {formatNumber((receipt?.fee ?? 0).toString())}</Text>
+        </View>
+        <View style={[styles.detailRow, { borderBottomWidth: 0 }]}>
+          <Text style={styles.detailLabel}>Total</Text>
+          <Text style={styles.detailValue}>
+            Rp {formatNumber((receipt?.totalAmount ?? 0).toString())}
+          </Text>
+        </View>
       </View>
     </>
+  );
+
+  const renderReceiptForCapture = () => (
+    <View style={receiptStyles.container}>
+      <View style={[receiptStyles.header, { backgroundColor: statusColor }]}>
+        <Image source={doitpayLogo} style={receiptStyles.logo} resizeMode="contain" />
+        <Text style={receiptStyles.statusText}>{statusLabel}</Text>
+      </View>
+
+      <View style={receiptStyles.nominalCard}>
+        <Text style={receiptStyles.nominalLabel}>Nominal</Text>
+        <View style={receiptStyles.nominalRow}>
+          <Text style={receiptStyles.nominalCurrency}>Rp</Text>
+          <Text style={receiptStyles.nominalAmount}>
+            {formatNumber((receipt?.amount ?? 0).toString())}
+          </Text>
+        </View>
+      </View>
+
+      {!isReceiveIn && (
+        <View style={receiptStyles.partySection}>
+          <View style={receiptStyles.partyRow}>
+            <View style={receiptStyles.partyLogo}>
+              {senderLogoUri ? (
+                <Image
+                  source={{ uri: senderLogoUri }}
+                  style={{ width: 30, height: 30 }}
+                  resizeMode="contain"
+                />
+              ) : (
+                <Image
+                  source={doitpayLogo}
+                  style={{ width: 30, height: 30 }}
+                  resizeMode="contain"
+                />
+              )}
+            </View>
+            <View style={receiptStyles.partyInfo}>
+              <Text style={receiptStyles.partyName} numberOfLines={1}>
+                {senderName}
+              </Text>
+              <Text style={receiptStyles.partyBank}>{senderBank}</Text>
+            </View>
+          </View>
+
+          <View style={receiptStyles.dashedConnector} />
+
+          <View style={receiptStyles.partyRow}>
+            <View style={receiptStyles.partyLogo}>
+              {recipientLogoUri ? (
+                <Image
+                  source={{ uri: recipientLogoUri }}
+                  style={{ width: 30, height: 30 }}
+                  resizeMode="contain"
+                />
+              ) : (
+                <Image
+                  source={doitpayLogo}
+                  style={{ width: 30, height: 30 }}
+                  resizeMode="contain"
+                />
+              )}
+            </View>
+            <View style={receiptStyles.partyInfo}>
+              <Text style={receiptStyles.partyName} numberOfLines={1}>
+                {recipientName}
+              </Text>
+              <Text style={receiptStyles.partyBank}>{recipientBank}</Text>
+            </View>
+          </View>
+        </View>
+      )}
+
+      <View style={receiptStyles.detailSection}>
+        <Text style={receiptStyles.receiptSectionTitle}>Detail Transaksi</Text>
+
+        <View style={receiptStyles.receiptDetailRow}>
+          <Text style={receiptStyles.receiptDetailLabel}>ID Transaksi</Text>
+          <Text style={receiptStyles.receiptDetailValue}>{transactionId}</Text>
+        </View>
+        <View style={receiptStyles.receiptDetailRow}>
+          <Text style={receiptStyles.receiptDetailLabel}>Tanggal & Waktu</Text>
+          <Text style={receiptStyles.receiptDetailValue}>
+            {receipt?.createdAt ? formatDateTimeReceipt(receipt.createdAt) : '-'}
+          </Text>
+        </View>
+        <View style={receiptStyles.receiptDetailRow}>
+          <Text style={receiptStyles.receiptDetailLabel}>Metode Pembayaran</Text>
+          <Text style={receiptStyles.receiptDetailValue}>{receipt?.paymentMethod ?? '-'}</Text>
+        </View>
+        <View style={receiptStyles.receiptDetailRow}>
+          <Text style={receiptStyles.receiptDetailLabel}>Jumlah</Text>
+          <Text style={receiptStyles.receiptDetailValue}>
+            Rp {formatNumber((receipt?.amount ?? 0).toString())}
+          </Text>
+        </View>
+        {receipt?.fee != null && (
+          <View style={receiptStyles.receiptDetailRow}>
+            <Text style={receiptStyles.receiptDetailLabel}>Biaya Admin</Text>
+            <Text style={receiptStyles.receiptDetailValue}>
+              Rp {formatNumber(receipt.fee.toString())}
+            </Text>
+          </View>
+        )}
+        {receipt?.totalAmount != null && (
+          <View style={receiptStyles.receiptDetailRow}>
+            <Text style={receiptStyles.receiptDetailLabel}>Total</Text>
+            <Text style={receiptStyles.receiptDetailValue}>
+              Rp {formatNumber(receipt.totalAmount.toString())}
+            </Text>
+          </View>
+        )}
+      </View>
+
+      <View style={receiptStyles.footer}>
+        <Text style={receiptStyles.footerText}>PT Indoraya Sehati Remmitance</Text>
+        <Text style={receiptStyles.footerText}>©{new Date().getFullYear()}</Text>
+      </View>
+    </View>
   );
 
   return (
@@ -191,11 +356,6 @@ export const TransactionDetail = ({
           </View>
         ) : (
           <>
-            {/*
-              ViewShot lives OUTSIDE ScrollView so Android renders the full
-              content tree (not just the visible viewport) before capture.
-              Positioned off-screen so it never shows in the UI.
-            */}
             <ViewShot
               ref={viewShotRef}
               options={{ format: 'png', quality: 1.0 }}
@@ -206,28 +366,40 @@ export const TransactionDetail = ({
                 width: SCREEN_WIDTH,
                 backgroundColor: '#FFFFFF',
               }}>
-              {renderReceiptContent()}
+              {renderReceiptForCapture()}
             </ViewShot>
 
-            <ScrollView
-              contentContainerStyle={styles.content}
-              showsVerticalScrollIndicator={false}>
+            <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
               {renderReceiptContent()}
             </ScrollView>
           </>
         )}
 
         <View style={styles.footerContainer}>
-          <View style={styles.actionsRow}>
-            <TouchableOpacity style={styles.actionButton} onPress={onPressReportIssue}>
-              <TriangleAlert size={18} color="#111827" style={{ marginRight: 8 }} />
-              <Text style={styles.actionText}>Laporkan Masalah</Text>
+          {status === 'PENDING' ? (
+            <TouchableOpacity
+              style={[styles.continuePaymentButton, isLoadingContinue && { opacity: 0.6 }]}
+              onPress={onContinuePayment}
+              disabled={isLoadingContinue}>
+              {isLoadingContinue ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <Text style={styles.continuePaymentButtonText}>Lanjutkan Pembayaran</Text>
+              )}
             </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
-              <Share2 size={18} color="#111827" style={{ marginRight: 8 }} />
-              <Text style={styles.actionText}>Bagikan</Text>
-            </TouchableOpacity>
-          </View>
+          ) : (
+            <View style={styles.actionsRow}>
+              <TouchableOpacity style={styles.actionButton} onPress={onPressReportIssue}>
+                <TriangleAlert size={18} color="#111827" style={{ marginRight: 8 }} />
+                <Text style={styles.actionText}>Laporkan Masalah</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
+                <Share2 size={18} color="#111827" style={{ marginRight: 8 }} />
+                <Text style={styles.actionText}>Bagikan</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
           <TouchableOpacity style={styles.backButton} onPress={onPressBack}>
             <Text style={styles.backButtonText}>Kembali ke Daftar Transaksi</Text>
           </TouchableOpacity>

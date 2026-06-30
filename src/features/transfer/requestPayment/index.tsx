@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import { useTheme } from '@/theme/ThemeProvider';
 import { createStyles } from './styles';
@@ -19,13 +20,23 @@ import { useTranslation } from 'react-i18next';
 import { useReceive } from '@/hooks/useTransferMutation.ts';
 import Toast from 'react-native-toast-message';
 import PaymentMethod from '../transferDetail/components/PaymentMethod.tsx';
-import _ from 'lodash';
+import {
+  paymentApi,
+  PaymentCalculatePayload,
+} from '../transferDetail/api/payment-calculate-api.ts';
+import { Info, TriangleAlert } from 'lucide-react-native';
+import { useIsFocused } from '@react-navigation/native';
 
 const QUICK_AMOUNTS = ['50000', '100000', '200000', '500000', '1000000', '2000000'];
 
 interface RequestPaymentViewProps {
   onPressBack: () => void;
-  onGenerateQR: (methodPayment: string, amount: string, receiveData: any, bankPayment?: any) => void;
+  onGenerateQR: (
+    methodPayment: string,
+    amount: string,
+    receiveData: any,
+    bankPayment?: any,
+  ) => void;
   gotoPaymentInstruction: (
     paymentMethod: 'VA' | 'QRIS',
     amount: string,
@@ -53,9 +64,15 @@ export const RequestPaymentView = ({
   const [bankPayment, setBankPayment] = useState(initialBankPayment || null);
   const [isDisableConfirm, setIsDisableConfirm] = useState(false);
   const [isErrorMinimumReached, setIsErrorMinimumReached] = useState(false);
+  const [calculateData, setCalculateData] = useState<any>(null);
+  const [isLoadingCalculate, setIsLoadingCalculate] = useState(false);
 
   const isInputEmpty = amount === '';
   const { mutate: postReceive, isPending: isLoadingReceive } = useReceive();
+  const isFocused = useIsFocused();
+  const isFirstMount = useRef(true);
+  const prevMethodPayment = useRef(methodPayment);
+  const prevBankPayment = useRef(bankPayment?.code);
 
   const onPressConfirm = () => {
     let payload = {
@@ -65,18 +82,20 @@ export const RequestPaymentView = ({
       remark: '',
     };
     let idempotencyKey = new Date().getTime().toString();
+
     postReceive(
       {
-        payload,
+        payload: payload as any,
         idempotencyKey,
       },
       {
         onSuccess: (data) => {
           let receiveData = data?.data ?? {};
-          if (methodPayment == 'QRIS') onGenerateQR(methodPayment, amount, receiveData, bankPayment);
+          if (methodPayment == 'QRIS')
+            onGenerateQR(methodPayment, amount, receiveData, bankPayment);
           else gotoPaymentInstruction(methodPayment, amount, receiveData, bankPayment);
         },
-        onError: (error) => {
+        onError: (error: any) => {
           console.error('error postReceive', error?.error?.message);
           Toast.show({
             type: 'error',
@@ -86,6 +105,64 @@ export const RequestPaymentView = ({
       },
     );
   };
+
+  useEffect(() => {
+    if (!isFocused) return;
+
+    const numericAmt = amount ? parseInt(amount, 10) : 0;
+
+    const getCalculatePayload = (amt: number): PaymentCalculatePayload => {
+      return {
+        amount: amt,
+        productType: 'RECEIVE',
+        payMethod: methodPayment === 'VA' ? 'VIRTUAL_ACCOUNT' : methodPayment,
+        payChannel: methodPayment === 'VA' ? bankPayment?.code || '' : 'QRIS',
+      };
+    };
+
+    const fetchCalculation = async (amt: number) => {
+      if (methodPayment === 'VA' && !bankPayment?.code && amt >= 10000) return;
+
+      setIsLoadingCalculate(true);
+      try {
+        const payload = getCalculatePayload(amt);
+        const res = await paymentApi.calculatePayment(payload);
+        if (res && res.status === 'success') {
+          setCalculateData(res.data);
+        }
+      } catch (error) {
+        console.log('Receive calculate error:', error);
+      } finally {
+        setIsLoadingCalculate(false);
+      }
+    };
+
+    const isMethodChanged = prevMethodPayment.current !== methodPayment;
+    const isBankChanged = prevBankPayment.current !== bankPayment?.code;
+
+    if (isFirstMount.current || isMethodChanged || isBankChanged) {
+      isFirstMount.current = false;
+      prevMethodPayment.current = methodPayment;
+      prevBankPayment.current = bankPayment?.code;
+
+      fetchCalculation(numericAmt);
+      return;
+    }
+
+    const isQrisReady = methodPayment === 'QRIS';
+    const isVaReady = methodPayment === 'VA' && !!bankPayment?.code;
+    const isPaymentMethodReady = isQrisReady || isVaReady;
+
+    if (numericAmt >= 10000 && isPaymentMethodReady) {
+      setIsLoadingCalculate(true);
+
+      const delayDebounceFn = setTimeout(() => {
+        fetchCalculation(numericAmt);
+      }, 500);
+
+      return () => clearTimeout(delayDebounceFn);
+    }
+  }, [amount, methodPayment, bankPayment, isFocused]);
 
   useEffect(() => {
     let errorMinimumReached;
@@ -100,21 +177,19 @@ export const RequestPaymentView = ({
     let isDisable;
     if (methodPayment == 'QRIS' && errorMinimumReached) {
       isDisable = true;
-      console.log('a');
-    } else if (methodPayment == 'VA' && (_.isEmpty(bankPayment) || errorMinimumReached)) {
+    } else if (methodPayment == 'VA' && (!bankPayment || errorMinimumReached)) {
       isDisable = true;
-      console.log('b');
+    } else if (isLoadingCalculate) {
+      isDisable = true;
     } else {
       isDisable = false;
     }
 
-    console.log('setIsDisableConfirm ', isDisable);
     setIsDisableConfirm(isDisable);
-  }, [amount, methodPayment, bankPayment]);
+  }, [amount, methodPayment, bankPayment, isLoadingCalculate]);
 
   const handleInputChange = (val: string) => {
     const cleanNumber = val.replace(/[^0-9]/g, '');
-    console.log('val', cleanNumber);
     setAmount(cleanNumber);
   };
 
@@ -126,7 +201,7 @@ export const RequestPaymentView = ({
         <View style={styles.container}>
           <HeaderToolbar title="Terima Pembayaran" onPressBack={onPressBack} titlePosition="left" />
 
-          <ScrollView style={styles.content}>
+          <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
             <View style={{ paddingHorizontal: 16 }}>
               <Text style={styles.title}>{t('requestPayment.inputNominal')}</Text>
               <Text style={styles.subtitle}>{t('requestPayment.descInputNominal')}</Text>
@@ -173,11 +248,33 @@ export const RequestPaymentView = ({
           </ScrollView>
 
           <View style={styles.footer}>
+            {calculateData && (
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>Biaya terima</Text>
+                {calculateData.isFreeTransfer || calculateData.fee === 0 ? (
+                  <Text style={styles.summaryFreeText}>GRATIS</Text>
+                ) : (
+                  <Text
+                    style={styles.summaryLabel}>{`Rp ${formatNumber(calculateData?.fee)}`}</Text>
+                )}
+              </View>
+            )}
+
+            {calculateData && (
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>Total Bayar</Text>
+                <Text style={styles.totalText}>
+                  {`Rp ${calculateData?.totalAmount ? formatNumber(calculateData.totalAmount) : '-'}`}
+                </Text>
+              </View>
+            )}
+
             <Button
               type="withIcon"
               title={methodPayment != 'VA' ? 'Generate QR' : 'Generate VA'}
               onPress={onPressConfirm}
               color={colors.buttonBlue}
+              textColor="white"
               textStyle={{ color: colors.textWhite }}
               sourceIcon={
                 methodPayment != 'VA'

@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, LayoutChangeEvent, TouchableOpacity } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient'; // Import library ini
+import LinearGradient from 'react-native-linear-gradient';
 import { useTheme } from '../../../../theme/ThemeProvider';
 import { TransferQuota } from '../types';
+
+const formatCurrency = (value: number): string => {
+  return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+};
 
 interface Props {
   freeTransferQuotaRemaining: number;
@@ -14,12 +18,14 @@ interface Props {
 }
 
 export const TransferLimitCard = ({
-  freeTransferQuotaTotal,
-  freeTransferQuotaUsed,
-  maxLimit,
+  freeTransferQuotaTotal = 0,
+  freeTransferQuotaUsed = 0,
+  maxLimit = 0,
   isKycVerified = false,
 }: Props) => {
-  const percentage = (freeTransferQuotaUsed / freeTransferQuotaTotal) * 100;
+  const percentage = freeTransferQuotaTotal > 0
+    ? (freeTransferQuotaUsed / freeTransferQuotaTotal) * 100
+    : 0;
 
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -73,7 +79,7 @@ export const TransferLimitCard = ({
         <View style={styles.rowBetween}>
           <View style={{}}>
             <Text style={styles.labelLimit}>Limit Harian</Text>
-            <Text style={styles.amount}>Rp {maxLimit.toLocaleString()}</Text>
+            <Text style={styles.amount}>Rp {formatCurrency(maxLimit)}</Text>
           </View>
           {!isKycVerified && (
             <TouchableOpacity
