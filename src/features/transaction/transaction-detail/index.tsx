@@ -22,7 +22,6 @@ import { CameraRoll } from '@react-native-camera-roll/camera-roll';
 import Share from 'react-native-share';
 import { TransactionStatus, TransactionType } from '@/features/transaction/types';
 import { useTransactionReceiptQuery } from '@/features/transaction/hooks/useTransactionReceiptQuery';
-import { useGetProfileMeQuery } from '@/features/user/hooks/useGetProfileMeQuery';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -123,11 +122,6 @@ export const TransactionDetail = ({
   const { data: receiptResponse, isLoading } = useTransactionReceiptQuery(referenceId, type);
   const receipt = receiptResponse?.data;
 
-  console.log(receipt, 'RECEIPT');
-
-  const { data: profileResponse } = useGetProfileMeQuery();
-  const profile = profileResponse?.data;
-
   const resolvedStatus = deriveStatus(type, status);
   const {
     label: statusLabel,
@@ -139,11 +133,11 @@ export const TransactionDetail = ({
 
   const senderName = receipt?.senderName || '-';
   const senderBank = receipt?.paymentMethod || '-';
-  const senderLogoUri = receipt?.paymentMethodLogoUrl || '-';
+  const senderLogoUri = receipt?.paymentMethodLogoUrl;
 
   const recipientName = receipt?.beneficiaryName || '-';
   const recipientBank = receipt?.beneficiaryBankName || '-';
-  const recipientLogoUri = receipt?.beneficiaryBankLogo || '-';
+  const recipientLogoUri = receipt?.beneficiaryBankLogo;
 
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const doitpayLogo = require('../../../assets/images/ic-doitpay-white.png');
