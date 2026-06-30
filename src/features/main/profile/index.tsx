@@ -26,7 +26,6 @@ export const Profile = () => {
   const navigation = useNavigation<any>();
 
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const { data: profileData, isLoading: loadingProfile } = useGetProfileMeQuery();
   const { data: limitData, isLoading: loadingLimit } = useGetLimitMeQuery();
@@ -102,14 +101,8 @@ export const Profile = () => {
         styles={styles}
         onClose={() => setIsModalVisible(false)}
         onConfirm={() => {
-          setIsLoggingOut(true);
           setIsModalVisible(false);
-        }}
-        onDismiss={() => {
-          if (isLoggingOut) {
-            handleLogout();
-            setIsLoggingOut(false);
-          }
+          handleLogout();
         }}
       />
     </SafeAreaView>

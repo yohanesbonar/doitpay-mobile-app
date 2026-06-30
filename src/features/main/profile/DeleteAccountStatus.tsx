@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { CheckCircle2, XCircle } from 'lucide-react-native';
@@ -17,6 +17,8 @@ export const DeleteAccountStatus = () => {
   const navigation = useNavigation<any>();
   const queryClient = useQueryClient();
   const { mutate: cancelDeletion, isPending } = useCancelAccountDeletion();
+  const [isCancelled, setIsCancelled] = useState(false);
+  const [isReloadingProfile, setIsReloadingProfile] = useState(false);
 
   const handleCancel = () => {
     Alert.alert('Batalkan Penghapusan', 'Apakah kamu yakin ingin membatalkan penghapusan akun?', [
@@ -26,10 +28,12 @@ export const DeleteAccountStatus = () => {
         style: 'destructive',
         onPress: () => {
           cancelDeletion(undefined, {
-            onSuccess: () => {
-              queryClient.invalidateQueries({ queryKey: ['profile-me'] });
+            onSuccess: async () => {
+              setIsReloadingProfile(true);
+              await queryClient.refetchQueries({ queryKey: ['profile-me'] });
+              setIsReloadingProfile(false);
+              setIsCancelled(true);
               Toast.show({ type: 'success', text1: 'Penghapusan akun berhasil dibatalkan' });
-              navigation.goBack();
             },
             onError: (err: any) => {
               Toast.show({
@@ -43,11 +47,15 @@ export const DeleteAccountStatus = () => {
     ]);
   };
 
+  const handleGoHome = () => {
+    navigation.reset({ index: 0, routes: [{ name: 'MainTabs' }] });
+  };
+
   return (
     <View style={styles.container}>
       <HeaderToolbar
         title="Hapus Akun"
-        onPressBack={() => navigation.goBack()}
+        onPressBack={navigation.canGoBack() ? () => navigation.goBack() : undefined}
         titlePosition="left"
         titleStyle="regular"
       />
@@ -93,11 +101,22 @@ export const DeleteAccountStatus = () => {
         <Button
           type="regular"
           onPress={handleCancel}
-          loading={isPending}
+          loading={isPending || isReloadingProfile}
+          disable={isCancelled}
           title="Batalkan Penghapusan"
           color="#4A80F0"
           textColor="white"
         />
+        {isCancelled && (
+          <Button
+            type="regular"
+            onPress={handleGoHome}
+            title="Kembali ke Home"
+            color="#16A34A"
+            textColor="white"
+            style={styles.goHomeButton}
+          />
+        )}
       </View>
     </View>
   );
@@ -178,5 +197,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     borderTopWidth: 1,
     borderTopColor: '#F0F0F0',
+  },
+  goHomeButton: {
+    marginTop: 12,
   },
 });

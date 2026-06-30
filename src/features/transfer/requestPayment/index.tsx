@@ -82,6 +82,7 @@ export const RequestPaymentView = ({
       remark: '',
     };
     let idempotencyKey = new Date().getTime().toString();
+
     postReceive(
       {
         payload: payload as any,
