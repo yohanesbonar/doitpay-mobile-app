@@ -25,7 +25,12 @@ const QUICK_AMOUNTS = ['50000', '100000', '200000', '500000', '1000000', '200000
 
 interface RequestPaymentViewProps {
   onPressBack: () => void;
-  onGenerateQR: (methodPayment: string, amount: string, receiveData: any, bankPayment?: any) => void;
+  onGenerateQR: (
+    methodPayment: string,
+    amount: string,
+    receiveData: any,
+    bankPayment?: any,
+  ) => void;
   gotoPaymentInstruction: (
     paymentMethod: 'VA' | 'QRIS',
     amount: string,
@@ -65,6 +70,7 @@ export const RequestPaymentView = ({
       remark: '',
     };
     let idempotencyKey = new Date().getTime().toString();
+
     postReceive(
       {
         payload,
@@ -73,7 +79,9 @@ export const RequestPaymentView = ({
       {
         onSuccess: (data) => {
           let receiveData = data?.data ?? {};
-          if (methodPayment == 'QRIS') onGenerateQR(methodPayment, amount, receiveData, bankPayment);
+
+          if (methodPayment == 'QRIS')
+            onGenerateQR(methodPayment, amount, receiveData, bankPayment);
           else gotoPaymentInstruction(methodPayment, amount, receiveData, bankPayment);
         },
         onError: (error) => {
