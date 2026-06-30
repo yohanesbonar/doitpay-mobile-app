@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { View, Text, ScrollView, Image } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Text, ScrollView, Image, Animated, Easing, LayoutChangeEvent } from 'react-native';
 // Menggunakan MailOpen (Diterima), Send (Mengirim), dan Check (Selesai) sesuai UI Figma kamu
 import { MailOpen, Send, Check } from 'lucide-react-native';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
@@ -61,8 +61,41 @@ const TransferProcessingView = ({
     0,
     stepLabels.findIndex((s) => s.key === currentStep),
   );
-  
+
   const ActiveIcon = stepLabels[currentStepIndex]?.Icon || MailOpen;
+
+  const segmentAnims = useRef(stepLabels.map(() => new Animated.Value(0))).current;
+  const sweepAnim = useRef(new Animated.Value(0)).current;
+  const [segmentWidth, setSegmentWidth] = useState(0);
+
+  useEffect(() => {
+    stepLabels.forEach((_, index) => {
+      Animated.timing(segmentAnims[index], {
+        toValue: index < currentStepIndex ? 1 : 0,
+        duration: 300,
+        useNativeDriver: false,
+      }).start();
+    });
+  }, [currentStepIndex, segmentAnims]);
+
+  useEffect(() => {
+    sweepAnim.setValue(0);
+    const loop = Animated.loop(
+      Animated.timing(sweepAnim, {
+        toValue: 1,
+        duration: 1000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+    );
+    loop.start();
+
+    return () => loop.stop();
+  }, [currentStepIndex, sweepAnim]);
+
+  const handleFirstSegmentLayout = (event: LayoutChangeEvent) => {
+    setSegmentWidth(event.nativeEvent.layout.width);
+  };
 
   return (
     <View style={styles.container}>
@@ -89,15 +122,48 @@ const TransferProcessingView = ({
 
         <View style={styles.stepperWrapper}>
           <View style={styles.progressLineContainer}>
-            {stepLabels.map((step, index) => (
-              <View
-                key={`line-${step.key}`}
-                style={[
-                  styles.progressSegment,
-                  index <= currentStepIndex ? styles.segmentActive : styles.segmentInactive,
-                ]}
-              />
-            ))}
+            {stepLabels.map((step, index) => {
+              const isActive = index === currentStepIndex;
+              const sweepWidth = segmentWidth * 0.4;
+
+              return (
+                <View
+                  key={`line-${step.key}`}
+                  style={styles.progressSegment}
+                  onLayout={index === 0 ? handleFirstSegmentLayout : undefined}>
+                  <Animated.View
+                    style={[
+                      styles.progressSegmentFill,
+                      {
+                        backgroundColor: segmentAnims[index].interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ['#E5E7EB', '#3475E8'],
+                        }),
+                      },
+                    ]}
+                  />
+
+                  {isActive && segmentWidth > 0 && (
+                    <Animated.View
+                      style={[
+                        styles.progressSweep,
+                        {
+                          width: sweepWidth,
+                          transform: [
+                            {
+                              translateX: sweepAnim.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: [-sweepWidth, segmentWidth],
+                              }),
+                            },
+                          ],
+                        },
+                      ]}
+                    />
+                  )}
+                </View>
+              );
+            })}
           </View>
 
           <View style={styles.labelContainer}>

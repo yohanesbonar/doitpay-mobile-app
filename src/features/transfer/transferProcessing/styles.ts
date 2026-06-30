@@ -76,10 +76,23 @@ export const styles = StyleSheet.create({
     flex: 1,
     height: 4,
     borderRadius: 2,
-    marginHorizontal: 2, 
+    marginHorizontal: 2,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  progressSegmentFill: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 2,
+  },
+  progressSweep: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    backgroundColor: '#3475E8',
+    borderRadius: 2,
   },
   segmentActive: {
-    backgroundColor: '#3475E8', 
+    backgroundColor: '#3475E8',
   },
   segmentInactive: {
     backgroundColor: '#E5E7EB',
