@@ -2,13 +2,30 @@ import React from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { DisputeSubmittedView } from '@/features/dispute/submitted';
 
+const formatEstimatedAt = (value?: string) => {
+  if (!value) {
+    return '-';
+  }
+
+  const parsedDate = new Date(value);
+  if (Number.isNaN(parsedDate.getTime())) {
+    return value;
+  }
+
+  return parsedDate.toLocaleDateString('id-ID', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  });
+};
+
 const DisputeSubmittedScreen = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
 
   const {
     reportId,
-    dateLabel,
+    estimatedAt,
     issueType,
     description,
     attachmentCount,
@@ -17,17 +34,19 @@ const DisputeSubmittedScreen = () => {
     amount,
   } = route.params || {};
 
+  const estimatedAtLabel = formatEstimatedAt(estimatedAt);
+
   return (
     <DisputeSubmittedView
       reportId={reportId || '-'}
-      dateLabel={dateLabel || '-'}
+      dateLabel={estimatedAtLabel}
       onPressViewReport={() =>
         navigation.replace('DisputeDetail', {
           report: {
             id: reportId || '-',
             transactionId: transactionId || '-',
             issueType: issueType || 'Laporan Masalah',
-            date: dateLabel || '-',
+            date: estimatedAtLabel,
             status: 'DIAJUKAN',
             recipientName: recipientName || '-',
             amount: amount || 0,

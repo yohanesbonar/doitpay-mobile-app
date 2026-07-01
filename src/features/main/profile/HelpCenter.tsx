@@ -94,7 +94,7 @@ export const HelpCenter = ({ navigation }: any) => {
           <TouchableOpacity
             style={styles.menuCard}
             activeOpacity={0.8}
-            onPress={() => navigation.navigate('DisputeReportCenter')}>
+            onPress={() => navigation.navigate('DisputeReportCenter', { disputeType: 'ALL' })}>
             <View style={styles.iconWrap}>
               <FileText size={20} color="#737373" />
             </View>

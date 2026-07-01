@@ -47,7 +47,7 @@ export const DisputeReportCenterView = ({
         title="Pusat Bantuan"
         onPressBack={() => onPressBack()}
         titlePosition="left"
-        titleStyle="bold"
+        titleStyle="medium"
         backgroundColor="#F5F5F7"
       />
 
@@ -76,14 +76,6 @@ export const DisputeReportCenterView = ({
               </View>
             ))}
           </View>
-
-          {!!transactionId && (
-            <View style={styles.transactionCard}>
-              <Text style={styles.txLabel}>Detail transaksi</Text>
-              <Text style={styles.txValue}>{transactionId}</Text>
-              <Text style={styles.txMeta}>{recipientName || '-'} • Rp {(amount || 0).toLocaleString('id-ID')}</Text>
-            </View>
-          )}
         </ScrollView>
 
         <View style={styles.footerButtons}>

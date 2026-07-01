@@ -6,19 +6,34 @@ const DisputeAttachmentScreen = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
 
-  const { issueType, transactionId, recipientName, amount } = route.params || {};
+  const {
+    issueType,
+    issueReasonId,
+    issueReasonType,
+    disputeId,
+    transactionId,
+    orderReferenceId,
+    recipientName,
+    amount,
+  } =
+    route.params || {};
 
   return (
     <DisputeAttachmentView
       issueType={issueType || '-'}
       transactionId={transactionId}
       onPressBack={() => navigation.goBack()}
-      onContinue={(description, attachmentCount) =>
+      onContinue={(description, attachmentCount, attachmentUris) =>
         navigation.navigate('DisputeReview', {
           issueType,
+          issueReasonId,
+          issueReasonType,
+          disputeId,
           description,
           attachmentCount,
+          attachmentUris,
           transactionId,
+          orderReferenceId,
           recipientName,
           amount,
         })

@@ -1,32 +1,106 @@
 import React, { useMemo, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import Button from '@/components/atoms/Button';
-import { ISSUE_OPTIONS } from '../types';
+import { DisputeReason } from './api/dispute-reasons-api';
+
+const MANUAL_OTHER_OPTION_ID = 'MANUAL_OTHER';
+
+interface DisputeIssueTypeOption {
+  id: string;
+  label: string;
+  type?: string;
+}
 
 interface DisputeIssueTypeViewProps {
   onPressBack: () => void;
-  onContinue: (issueType: string, description: string) => void;
+  onContinue: (selectedReason: DisputeIssueTypeOption, description: string) => void;
+  issueOptions: DisputeReason[];
+  isLoading?: boolean;
 }
 
-export const DisputeIssueTypeView = ({ onPressBack, onContinue }: DisputeIssueTypeViewProps) => {
+export const DisputeIssueTypeView = ({
+  onPressBack,
+  onContinue,
+  issueOptions,
+  isLoading,
+}: DisputeIssueTypeViewProps) => {
   const [selectedIssue, setSelectedIssue] = useState('');
   const [customIssue, setCustomIssue] = useState('');
 
-  const isOther = selectedIssue === 'Lainnya';
+  const normalizedOptions = useMemo(() => {
+    const apiOptions = issueOptions
+      .map((option) => ({
+        id: option.id,
+        label: option.label,
+        type: option.type,
+      }))
+      .filter((option) => option.id !== MANUAL_OTHER_OPTION_ID);
+
+    const hasOtherFromApi = apiOptions.some((option) =>
+      option.label?.toLowerCase().includes('lain'),
+    );
+
+    if (hasOtherFromApi) {
+      return apiOptions;
+    }
+
+    return [
+      ...apiOptions,
+      {
+        id: MANUAL_OTHER_OPTION_ID,
+        label: 'Lainnya',
+        type: 'ALL',
+      },
+    ];
+  }, [issueOptions]);
+
+  const selectedReason = useMemo(
+    () => normalizedOptions.find((option) => option.id === selectedIssue),
+    [normalizedOptions, selectedIssue],
+  );
+
+  const isOther = selectedReason?.id === MANUAL_OTHER_OPTION_ID;
 
   const canContinue = useMemo(() => {
-    if (!selectedIssue) return false;
+    if (!selectedReason) return false;
     if (isOther) return customIssue.trim().length > 3;
     return true;
-  }, [selectedIssue, customIssue, isOther]);
+  }, [selectedReason, customIssue, isOther]);
 
-  const issueLabel = isOther ? customIssue.trim() : selectedIssue;
+  const issueLabel = isOther ? customIssue.trim() : selectedReason?.label || '';
+
+  const handleContinue = () => {
+    if (!selectedReason) {
+      return;
+    }
+
+    onContinue(
+      {
+        ...selectedReason,
+        label: issueLabel,
+      },
+      issueLabel,
+    );
+  };
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['bottom']}>
-      <HeaderToolbar title="Laporkan Masalah" onPressBack={onPressBack} titlePosition="left" />
+      <HeaderToolbar
+        title="Laporkan Masalah"
+        onPressBack={onPressBack}
+        titlePosition="left"
+        titleStyle="medium"
+      />
 
       <View style={styles.container}>
         <ScrollView showsVerticalScrollIndicator={false}>
@@ -35,22 +109,35 @@ export const DisputeIssueTypeView = ({ onPressBack, onContinue }: DisputeIssueTy
             Pilih kategori yang paling sesuai agar laporan dapat diproses lebih cepat.
           </Text>
 
-          {ISSUE_OPTIONS.map((option) => {
-            const selected = selectedIssue === option;
+          {isLoading ? (
+            <View style={styles.loadingWrapper}>
+              <ActivityIndicator size="small" color="#3475E8" />
+              <Text style={styles.loadingText}>Memuat jenis masalah...</Text>
+            </View>
+          ) : normalizedOptions.length > 0 ? (
+            normalizedOptions.map((option) => {
+              const selected = selectedIssue === option.id;
 
-            return (
-              <TouchableOpacity
-                key={option}
-                style={[styles.optionButton, selected && styles.optionButtonActive]}
-                onPress={() => setSelectedIssue(option)}
-                activeOpacity={0.8}>
-                <View style={[styles.radioOuter, selected && styles.radioOuterActive]}>
-                  {selected && <View style={styles.radioInner} />}
-                </View>
-                <Text style={[styles.optionText, selected && styles.optionTextActive]}>{option}</Text>
-              </TouchableOpacity>
-            );
-          })}
+              return (
+                <TouchableOpacity
+                  key={option.id}
+                  style={[styles.optionButton, selected && styles.optionButtonActive]}
+                  onPress={() => setSelectedIssue(option.id)}
+                  activeOpacity={0.8}>
+                  <View style={[styles.radioOuter, selected && styles.radioOuterActive]}>
+                    {selected && <View style={styles.radioInner} />}
+                  </View>
+                  <Text style={[styles.optionText, selected && styles.optionTextActive]}>
+                    {option.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })
+          ) : (
+            <View style={styles.loadingWrapper}>
+              <Text style={styles.loadingText}>Jenis masalah belum tersedia.</Text>
+            </View>
+          )}
 
           {isOther && (
             <View style={styles.otherWrapper}>
@@ -67,7 +154,7 @@ export const DisputeIssueTypeView = ({ onPressBack, onContinue }: DisputeIssueTy
         </ScrollView>
 
         <Button
-          onPress={() => onContinue(issueLabel, issueLabel)}
+          onPress={handleContinue}
           title="Lanjutkan"
           color="#3475E8"
           type="regular"
@@ -90,17 +177,16 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
     paddingTop: 20,
-    paddingBottom: 24,
   },
   title: {
-    color: '#111827',
-    fontFamily: 'Switzer-Bold',
+    color: '#000000',
+    fontFamily: 'Switzer-Semibold',
     fontSize: 24,
   },
   subtitle: {
     marginTop: 6,
     marginBottom: 18,
-    color: '#6B7280',
+    color: '#000000',
     fontFamily: 'Switzer-Regular',
     fontSize: 14,
   },
@@ -116,7 +202,7 @@ const styles = StyleSheet.create({
   },
   optionButtonActive: {
     borderColor: '#3475E8',
-    backgroundColor: '#F5F9FF',
+    backgroundColor: '#FFFFFF',
   },
   optionText: {
     color: '#1F2937',
@@ -124,7 +210,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   optionTextActive: {
-    color: '#0F3FA8',
+    color: '#1F2937',
   },
   radioOuter: {
     width: 16,
@@ -175,5 +261,17 @@ const styles = StyleSheet.create({
   primaryButtonText: {
     fontFamily: 'Switzer-Bold',
     fontSize: 15,
+  },
+  loadingWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
+  },
+  loadingText: {
+    marginTop: 8,
+    color: '#6B7280',
+    fontFamily: 'Switzer-Regular',
+    fontSize: 13,
+    textAlign: 'center',
   },
 });

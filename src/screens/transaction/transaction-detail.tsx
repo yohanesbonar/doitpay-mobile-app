@@ -63,8 +63,13 @@ export const TransactionDetailScreen = () => {
       onPressReportIssue={() =>
         navigation.navigate('DisputeReportCenter', {
           transactionId,
+          orderReferenceId: referenceId || transactionId,
           recipientName: '',
           amount: 0,
+          disputeType:
+            type === TransactionType.RECEIVE || type === TransactionType.RECEIVE_IN
+              ? 'RECEIVE'
+              : 'TRANSFER',
         })
       }
       onContinuePayment={handleContinuePayment}

@@ -8,7 +8,7 @@ const DisputeHelpCenterScreen = () => {
   return (
     <DisputeHelpCenterView
       onPressBack={() => navigation.goBack()}
-      onPressReportCenter={() => navigation.navigate('DisputeReportCenter')}
+      onPressReportCenter={() => navigation.navigate('DisputeReportCenter', { disputeType: 'ALL' })}
     />
   );
 };

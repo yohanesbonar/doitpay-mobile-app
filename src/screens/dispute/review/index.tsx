@@ -6,26 +6,37 @@ const DisputeReviewScreen = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
 
-  const { issueType, description, attachmentCount, transactionId, recipientName, amount } =
-    route.params || {};
+  const {
+    issueType,
+    issueReasonId,
+    disputeId,
+    description,
+    attachmentCount,
+    attachmentUris,
+    transactionId,
+    orderReferenceId,
+    recipientName,
+    amount,
+  } = route.params || {};
 
   return (
     <DisputeReviewView
       issueType={issueType || '-'}
+      issueReasonId={issueReasonId}
+      disputeId={disputeId}
       description={description || '-'}
       attachmentCount={attachmentCount || 0}
+      attachmentUris={attachmentUris || []}
+      transactionId={transactionId}
+      orderReferenceId={orderReferenceId}
       onPressBack={() => navigation.goBack()}
-      onSubmit={() =>
+      onSubmit={(latestDescription, latestAttachmentCount, disputeId, estimatedAt) =>
         navigation.replace('DisputeSubmitted', {
-          reportId: `LAPORAN-${Date.now().toString().slice(-6)}`,
-          dateLabel: new Date().toLocaleDateString('id-ID', {
-            day: '2-digit',
-            month: 'long',
-            year: 'numeric',
-          }),
+          reportId: disputeId || `LAPORAN-${Date.now().toString().slice(-6)}`,
+          estimatedAt,
           issueType,
-          description,
-          attachmentCount,
+          description: latestDescription,
+          attachmentCount: latestAttachmentCount,
           transactionId,
           recipientName,
           amount,

@@ -18,7 +18,7 @@ export const DisputeSubmittedView = ({
   onPressBackToHome,
 }: DisputeSubmittedViewProps) => {
   return (
-    <SafeAreaView style={styles.safeArea} edges={['bottom']}>
+    <SafeAreaView style={styles.safeArea} edges={['bottom', 'top']}>
       <View style={styles.hero}>
         <View style={styles.heroBadge}>
           <Check size={36} color="#FFFFFF" />
@@ -27,7 +27,7 @@ export const DisputeSubmittedView = ({
       </View>
 
       <View style={styles.content}>
-        <Text style={styles.sectionTitle}>Detail laporan</Text>
+        <Text style={styles.sectionTitle}>Detail Laporan</Text>
 
         <View style={styles.row}>
           <Text style={styles.label}>ID Laporan</Text>
@@ -35,13 +35,15 @@ export const DisputeSubmittedView = ({
         </View>
 
         <View style={styles.row}>
-          <Text style={styles.label}>Tanggal</Text>
+          <Text style={styles.label}>Estimasi Selesai</Text>
           <Text style={styles.value}>{dateLabel}</Text>
         </View>
 
         <View style={styles.row}>
           <Text style={styles.label}>Status</Text>
-          <Text style={styles.status}>Diajukan</Text>
+          <View style={styles.statusBadge}>
+            <Text style={styles.status}>Dilaporkan</Text>
+          </View>
         </View>
       </View>
 
@@ -49,14 +51,17 @@ export const DisputeSubmittedView = ({
         <Button
           onPress={onPressViewReport}
           title="Lihat Laporan"
-          color="#3475E8"
+          color="#3981FF"
           type="regular"
           textColor="white"
           textStyle={styles.primaryButtonText}
           style={styles.primaryButton}
         />
 
-        <TouchableOpacity onPress={onPressBackToHome} style={styles.secondaryButton} activeOpacity={0.8}>
+        <TouchableOpacity
+          onPress={onPressBackToHome}
+          style={styles.secondaryButton}
+          activeOpacity={0.8}>
           <Text style={styles.secondaryButtonText}>Kembali ke Beranda</Text>
         </TouchableOpacity>
       </View>
@@ -70,10 +75,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   hero: {
-    backgroundColor: '#3475E8',
+    backgroundColor: '#3981FF',
     alignItems: 'center',
-    paddingTop: 42,
-    paddingBottom: 34,
+    paddingTop: 50,
+    paddingBottom: 60,
   },
   heroBadge: {
     width: 72,
@@ -83,11 +88,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
+    borderWidth: 6,
+    borderColor: '#E5E7EB',
   },
   heroTitle: {
     color: '#FFFFFF',
-    fontFamily: 'Switzer-Bold',
-    fontSize: 20,
+    fontFamily: 'Switzer-Semibold',
+    fontSize: 24,
   },
   content: {
     paddingHorizontal: 20,
@@ -112,19 +119,24 @@ const styles = StyleSheet.create({
     fontFamily: 'Switzer-Regular',
   },
   value: {
-    color: '#111827',
-    fontSize: 13,
+    color: '#000000',
+    fontSize: 14,
     fontFamily: 'Switzer-Medium',
   },
   status: {
-    color: '#3475E8',
+    color: '#3E7BF3',
     fontSize: 13,
-    fontFamily: 'Switzer-Bold',
+    fontFamily: 'Switzer-Medium',
+  },
+  statusBadge: {
+    backgroundColor: '#EAF1FF',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
   },
   footer: {
     marginTop: 'auto',
     paddingHorizontal: 20,
-    paddingBottom: 20,
     paddingTop: 12,
     backgroundColor: '#FFFFFF',
   },
@@ -138,7 +150,7 @@ const styles = StyleSheet.create({
   },
   secondaryButton: {
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#D1D5DB',
     borderRadius: 24,
     height: 48,
     alignItems: 'center',

@@ -6,7 +6,8 @@ const DisputeReportCenterScreen = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
 
-  const { transactionId, recipientName, amount } = route.params || {};
+  const { transactionId, orderReferenceId, recipientName, amount, disputeType } = route.params || {};
+  const resolvedDisputeType = disputeType || (transactionId ? 'TRANSFER' : 'ALL');
 
   return (
     <DisputeReportCenterView
@@ -17,8 +18,10 @@ const DisputeReportCenterScreen = () => {
       onPressCreateReport={() =>
         navigation.navigate('DisputeIssueType', {
           transactionId,
+          orderReferenceId,
           recipientName,
           amount,
+          disputeType: resolvedDisputeType,
         })
       }
       onPressMyReports={() => navigation.navigate('DisputeList')}
