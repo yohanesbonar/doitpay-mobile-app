@@ -93,7 +93,7 @@ export const DisputeReviewView = ({
   const hasAttachment = attachments.length > 0;
 
   const canSubmit = useMemo(
-    () => descriptionInput.trim().length > 3 && hasAttachment,
+    () => descriptionInput.trim().length > 0 && hasAttachment,
     [descriptionInput, hasAttachment],
   );
 

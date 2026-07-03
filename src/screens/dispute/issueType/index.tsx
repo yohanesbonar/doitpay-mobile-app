@@ -38,15 +38,11 @@ const DisputeIssueTypeScreen = () => {
           amount,
         };
 
-        if (transactionId) {
-          navigation.navigate('DisputeReview', {
-            ...commonParams,
-            attachmentCount: 0,
-          });
-          return;
-        }
-
-        navigation.navigate('DisputeAttachment', commonParams);
+        navigation.navigate('DisputeReview', {
+          ...commonParams,
+          attachmentCount: 0,
+          attachmentUris: [],
+        });
       }}
     />
   );

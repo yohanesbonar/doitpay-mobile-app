@@ -73,7 +73,7 @@ export const DisputeIssueTypeView = ({
 
   const canContinue = useMemo(() => {
     if (!selectedReason) return false;
-    if (isOther) return customIssue.trim().length > 3;
+    if (isOther) return customIssue.trim().length > 0;
     return true;
   }, [selectedReason, customIssue, isOther]);
 

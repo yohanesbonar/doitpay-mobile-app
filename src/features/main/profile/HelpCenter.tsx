@@ -56,7 +56,7 @@ export const HelpCenter = ({ navigation }: any) => {
         title="Pusat Bantuan"
         onPressBack={() => navigation.goBack()}
         titlePosition="left"
-        titleStyle="bold"
+        titleStyle="medium"
         backgroundColor="#F5F5F7"
       />
 

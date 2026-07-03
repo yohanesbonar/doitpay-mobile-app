@@ -1,11 +1,64 @@
 import React, { useMemo, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { FlatList, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Image,
+} from 'react-native';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
-import { ACTIVE_REPORTS, DisputeReport, FINISHED_REPORTS } from '../types';
+import { DisputeReport } from '../types';
 import { AlertCircle, CheckCircle2, Clock3, RefreshCw, XCircle } from 'lucide-react-native';
+import { useDisputeListQuery } from './hooks/useDisputeListQuery';
+import { DisputeListItemApi } from './api/dispute-list-api';
 
 type ListTab = 'aktif' | 'selesai';
+
+const formatDate = (value?: string) => {
+  if (!value) {
+    return '-';
+  }
+
+  const parsedDate = new Date(value);
+  if (Number.isNaN(parsedDate.getTime())) {
+    return value;
+  }
+
+  return parsedDate.toLocaleDateString('id-ID', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  });
+};
+
+const mapApiStatusToDisputeStatus = (status?: string): DisputeReport['status'] => {
+  const normalized = (status || '').toUpperCase();
+
+  if (normalized.includes('CLOSED') || normalized === 'DONE') {
+    return 'SELESAI';
+  }
+
+  if (normalized.includes('OPEN') || normalized === 'ACTIVE') {
+    return 'DIPROSES';
+  }
+
+  return 'DIAJUKAN';
+};
+
+const toDisputeReport = (item: DisputeListItemApi): DisputeReport => ({
+  id: item.id,
+  transactionId: item.orderReferenceId || item.id,
+  issueType: item.customReason || item.detail || 'Laporan Masalah',
+  date: formatDate(item.createdAt || item.updatedAt),
+  status: mapApiStatusToDisputeStatus(item.status),
+  recipientName: '-',
+  amount: 0,
+  description: item.detail,
+  attachmentCount: 0,
+});
 
 interface DisputeListViewProps {
   onPressBack: () => void;
@@ -75,8 +128,22 @@ const statusPillConfig: Record<
 
 export const DisputeListView = ({ onPressBack, onPressReport }: DisputeListViewProps) => {
   const [tab, setTab] = useState<ListTab>('aktif');
+  const queryStatus = tab === 'aktif' ? 'ACTIVE' : 'DONE';
 
-  const data = useMemo(() => (tab === 'aktif' ? ACTIVE_REPORTS : FINISHED_REPORTS), [tab]);
+  const {
+    data,
+    isLoading,
+    isRefetching,
+    refetch,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  } = useDisputeListQuery({ status: queryStatus });
+
+  const dataSource = useMemo(
+    () => (data?.pages.flatMap((page) => page.items) || []).map(toDisputeReport),
+    [data],
+  );
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['bottom']}>
@@ -84,7 +151,7 @@ export const DisputeListView = ({ onPressBack, onPressReport }: DisputeListViewP
         title="Laporan Saya"
         onPressBack={onPressBack}
         titlePosition="left"
-        titleStyle="bold"
+        titleStyle="medium"
         backgroundColor="#F5F5F7"
       />
 
@@ -105,7 +172,12 @@ export const DisputeListView = ({ onPressBack, onPressReport }: DisputeListViewP
           </TouchableOpacity>
         </View>
 
-        {data.length === 0 ? (
+        {isLoading ? (
+          <View style={styles.loadingWrapper}>
+            <ActivityIndicator size="small" color="#3981FF" />
+            <Text style={styles.loadingText}>Memuat laporan...</Text>
+          </View>
+        ) : dataSource.length === 0 ? (
           <View style={styles.emptyState}>
             <Image
               source={require('@/assets/images/ic-empty-report-list.png')}
@@ -119,9 +191,22 @@ export const DisputeListView = ({ onPressBack, onPressReport }: DisputeListViewP
           </View>
         ) : (
           <FlatList
-            data={data}
+            data={dataSource}
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.listContent}
+            refreshing={isRefetching}
+            onRefresh={refetch}
+            onEndReached={() => {
+              if (hasNextPage && !isFetchingNextPage) {
+                fetchNextPage();
+              }
+            }}
+            onEndReachedThreshold={0.3}
+            ListFooterComponent={
+              isFetchingNextPage ? (
+                <ActivityIndicator size="small" color="#3981FF" style={{ paddingVertical: 16 }} />
+              ) : null
+            }
             renderItem={({ item }) => {
               const status = statusPillConfig[item.status] || statusPillConfig.DIAJUKAN;
               const StatusIcon = status.Icon;
@@ -136,10 +221,19 @@ export const DisputeListView = ({ onPressBack, onPressReport }: DisputeListViewP
                   </View>
 
                   <View style={styles.cardHeader}>
-                    <View>
-                      <Text style={styles.issueType}>{item.issueType}</Text>
-                      <Text style={styles.metaText}>
-                        {item.date} #{item.transactionId}
+                    <View style={styles.cardMainInfo}>
+                      <Text
+                        style={styles.issueType}
+                        numberOfLines={2}
+                        ellipsizeMode="tail">
+                        {item.issueType}
+                      </Text>
+                      <Text style={styles.metaText}>{item.date}</Text>
+                      <Text
+                        style={styles.metaSubText}
+                        numberOfLines={1}
+                        ellipsizeMode="tail">
+                        #{item.transactionId}
                       </Text>
                     </View>
                     <View style={[styles.statusPill, { backgroundColor: status.bg }]}>
@@ -198,6 +292,17 @@ const styles = StyleSheet.create({
   listContent: {
     paddingBottom: 20,
   },
+  loadingWrapper: {
+    paddingTop: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingText: {
+    marginTop: 8,
+    color: '#6B7280',
+    fontFamily: 'Switzer-Regular',
+    fontSize: 13,
+  },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -220,25 +325,40 @@ const styles = StyleSheet.create({
   cardHeader: {
     flex: 1,
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
+  },
+  cardMainInfo: {
+    flex: 1,
+    flexShrink: 1,
+    minWidth: 0,
+    marginRight: 12,
   },
   issueType: {
     color: '#000000',
     fontFamily: 'Switzer-Medium',
     fontSize: 16,
+    lineHeight: 20,
   },
   statusPill: {
     borderRadius: 5,
     paddingVertical: 4,
     paddingHorizontal: 10,
-    marginLeft: 10,
+    marginLeft: 8,
+    alignSelf: 'flex-start',
+    flexShrink: 0,
   },
   statusPillText: {
     fontFamily: 'Switzer-Medium',
     fontSize: 12,
   },
   metaText: {
+    color: '#000000',
+    fontFamily: 'Switzer-Regular',
+    fontSize: 12,
+    marginTop: 1,
+  },
+  metaSubText: {
     color: '#000000',
     fontFamily: 'Switzer-Regular',
     fontSize: 12,
