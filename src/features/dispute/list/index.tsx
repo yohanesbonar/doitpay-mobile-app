@@ -243,7 +243,7 @@ export const DisputeListView = ({
                       <Text style={styles.metaText}>{item.date}</Text>
                       <Text
                         style={styles.metaSubText}>
-                        #{item.transactionId}
+                        #{item.id}
                       </Text>
                     </View>
                     <View style={[styles.statusPill, { backgroundColor: status.bg }]}>
@@ -354,7 +354,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     paddingVertical: 4,
     paddingHorizontal: 10,
-    marginLeft: 8,
+    marginLeft: 16,
     alignSelf: 'flex-start',
     flexShrink: 0,
   },
