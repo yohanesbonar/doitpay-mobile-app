@@ -242,9 +242,7 @@ export const DisputeListView = ({
                       </Text>
                       <Text style={styles.metaText}>{item.date}</Text>
                       <Text
-                        style={styles.metaSubText}
-                        numberOfLines={1}
-                        ellipsizeMode="tail">
+                        style={styles.metaSubText}>
                         #{item.transactionId}
                       </Text>
                     </View>
