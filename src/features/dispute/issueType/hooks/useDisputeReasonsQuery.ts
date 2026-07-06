@@ -5,10 +5,14 @@ import {
 } from '../api/dispute-reasons-api';
 import { useQuery } from '@tanstack/react-query';
 
-export const useDisputeReasonsQuery = (type: DisputeReasonType = 'TRANSFER') => {
+export const useDisputeReasonsQuery = (
+  type: DisputeReasonType = 'TRANSFER',
+  isCustomerReportFlow = false,
+) => {
   return useQuery<GetDisputeReasonsResponse>({
-    queryKey: ['dispute-reasons', type],
-    queryFn: () => disputeReasonsApi.getReasons(type),
+    queryKey: ['dispute-reasons', isCustomerReportFlow ? 'customer-report' : 'dispute', type],
+    queryFn: () =>
+      isCustomerReportFlow ? disputeReasonsApi.getCustomerReportReasons() : disputeReasonsApi.getReasons(type),
     staleTime: 60_000,
   });
 };

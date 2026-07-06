@@ -211,6 +211,8 @@ export const DisputeReviewView = ({
         return;
       }
 
+      const isDisputeFlow = !!transactionId;
+
       const evidenceKeys: string[] = [];
       for (const attachment of attachments) {
         setAttachments((prev) =>
@@ -229,10 +231,15 @@ export const DisputeReviewView = ({
         const fileName = sanitizeFilename(attachment.fileName, extension);
 
         try {
-          const presignRes = await disputeReviewApi.createEvidencePresign({
-            contentType,
-            filename: fileName,
-          });
+          const presignRes = isDisputeFlow
+            ? await disputeReviewApi.createEvidencePresign({
+                contentType,
+                filename: fileName,
+              })
+            : await disputeReviewApi.createCustomerReportEvidencePresign({
+                contentType,
+                filename: fileName,
+              });
 
           await disputeReviewApi.uploadEvidenceFile(
             presignRes.data.uploadUrl,
@@ -286,11 +293,13 @@ export const DisputeReviewView = ({
         customReason: customReasonText,
         detail: detailText,
         evidenceKeys,
-        orderReferenceId: orderReferenceId || transactionId,
+        ...(isDisputeFlow ? { orderReferenceId: orderReferenceId || transactionId } : {}),
         ...(issueReasonId === MANUAL_OTHER_OPTION_ID ? {} : { reasonId: issueReasonId }),
       };
 
-      const createDraftRes = await disputeReviewApi.createDraft(createDraftPayload);
+      const createDraftRes = isDisputeFlow
+        ? await disputeReviewApi.createDraft(createDraftPayload)
+        : await disputeReviewApi.createCustomerReport(createDraftPayload);
 
       const createdDisputeId = createDraftRes?.data?.id || disputeId;
       const estimatedAt = createDraftRes?.data?.estimatedAt;

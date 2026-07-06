@@ -9,6 +9,7 @@ export interface GetDisputesQueries {
 
 export interface DisputeListItemApi {
   id: string;
+  transactionId?: string;
   createdAt?: string;
   updatedAt?: string;
   estimatedAt?: string;
@@ -19,11 +20,17 @@ export interface DisputeListItemApi {
   status?: string;
 }
 
+export type ReportListItemApi = DisputeListItemApi;
+
 export type GetDisputesResponse = ResponseListApi<DisputeListItemApi>;
 
 export const disputeListApi = {
   getDisputes: async (queries?: GetDisputesQueries): Promise<GetDisputesResponse> => {
     const { data } = await apiClient.get<GetDisputesResponse>('/v1/disputes', { params: queries });
+    return data;
+  },
+  getCustomerReportsDisputes: async (queries?: GetDisputesQueries): Promise<GetDisputesResponse> => {
+    const { data } = await apiClient.get<GetDisputesResponse>('/v1/customer-reports', { params: queries });
     return data;
   },
 };

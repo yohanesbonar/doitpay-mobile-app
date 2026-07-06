@@ -24,7 +24,7 @@ const DisputeReportCenterScreen = () => {
           disputeType: resolvedDisputeType,
         })
       }
-      onPressMyReports={() => navigation.navigate('DisputeList')}
+      onPressMyReports={() => navigation.navigate('DisputeList', { transactionId })}
     />
   );
 };

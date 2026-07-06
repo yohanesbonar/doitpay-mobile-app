@@ -16,7 +16,11 @@ const DisputeIssueTypeScreen = () => {
     amount,
     disputeType = 'TRANSFER',
   } = route.params || {};
-  const { data: reasonsData, isLoading } = useDisputeReasonsQuery(disputeType as DisputeReasonType);
+  const isCustomerReportFlow = !transactionId;
+  const { data: reasonsData, isLoading } = useDisputeReasonsQuery(
+    disputeType as DisputeReasonType,
+    isCustomerReportFlow,
+  );
 
   const issueOptions = reasonsData?.data?.reasons ?? [];
 

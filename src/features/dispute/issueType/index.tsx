@@ -46,14 +46,6 @@ export const DisputeIssueTypeView = ({
       }))
       .filter((option) => option.id !== MANUAL_OTHER_OPTION_ID);
 
-    const hasOtherFromApi = apiOptions.some((option) =>
-      option.label?.toLowerCase().includes('lain'),
-    );
-
-    if (hasOtherFromApi) {
-      return apiOptions;
-    }
-
     return [
       ...apiOptions,
       {

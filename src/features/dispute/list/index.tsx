@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   ActivityIndicator,
@@ -13,7 +13,8 @@ import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import { DisputeReport } from '../types';
 import { AlertCircle, CheckCircle2, Clock3, RefreshCw, XCircle } from 'lucide-react-native';
 import { useDisputeListQuery } from './hooks/useDisputeListQuery';
-import { DisputeListItemApi } from './api/dispute-list-api';
+import { ReportListItemApi } from './api/dispute-list-api';
+import { useFocusEffect } from '@react-navigation/native';
 
 type ListTab = 'aktif' | 'selesai';
 
@@ -48,9 +49,9 @@ const mapApiStatusToDisputeStatus = (status?: string): DisputeReport['status'] =
   return 'DIAJUKAN';
 };
 
-const toDisputeReport = (item: DisputeListItemApi): DisputeReport => ({
+const toDisputeReport = (item: ReportListItemApi): DisputeReport => ({
   id: item.id,
-  transactionId: item.orderReferenceId || item.id,
+  transactionId: item.transactionId || item.orderReferenceId || item.id,
   issueType: item.customReason || item.detail || 'Laporan Masalah',
   date: formatDate(item.createdAt || item.updatedAt),
   status: mapApiStatusToDisputeStatus(item.status),
@@ -61,6 +62,7 @@ const toDisputeReport = (item: DisputeListItemApi): DisputeReport => ({
 });
 
 interface DisputeListViewProps {
+  transactionId?: string;
   onPressBack: () => void;
   onPressReport: (report: DisputeReport) => void;
 }
@@ -126,7 +128,11 @@ const statusPillConfig: Record<
   },
 };
 
-export const DisputeListView = ({ onPressBack, onPressReport }: DisputeListViewProps) => {
+export const DisputeListView = ({
+  transactionId,
+  onPressBack,
+  onPressReport,
+}: DisputeListViewProps) => {
   const [tab, setTab] = useState<ListTab>('aktif');
   const queryStatus = tab === 'aktif' ? 'ACTIVE' : 'DONE';
 
@@ -138,11 +144,17 @@ export const DisputeListView = ({ onPressBack, onPressReport }: DisputeListViewP
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage,
-  } = useDisputeListQuery({ status: queryStatus });
+  } = useDisputeListQuery({ status: queryStatus, transactionId });
 
   const dataSource = useMemo(
     () => (data?.pages.flatMap((page) => page.items) || []).map(toDisputeReport),
     [data],
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch]),
   );
 
   return (
@@ -192,7 +204,7 @@ export const DisputeListView = ({ onPressBack, onPressReport }: DisputeListViewP
         ) : (
           <FlatList
             data={dataSource}
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item, index) => `${item.id}-${index}`}
             contentContainerStyle={styles.listContent}
             refreshing={isRefetching}
             onRefresh={refetch}

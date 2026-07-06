@@ -90,9 +90,22 @@ export const disputeReviewApi = {
     return data;
   },
 
+  createCustomerReport: async (payload: CreateDisputeDraftPayload) => {
+    const { data } = await apiClient.post<ResponseApi<CreateDisputeDraftData>>('/v1/customer-reports', payload);
+    return data;
+  },
+
   createEvidencePresign: async (payload: CreateEvidencePresignPayload) => {
     const { data } = await apiClient.post<ResponseApi<CreateEvidencePresignData>>(
       '/v1/disputes/evidences/presign',
+      payload,
+    );
+    return data;
+  },
+
+  createCustomerReportEvidencePresign: async (payload: CreateEvidencePresignPayload) => {
+    const { data } = await apiClient.post<ResponseApi<CreateEvidencePresignData>>(
+      '/v1/customer-reports/evidences/presign',
       payload,
     );
     return data;

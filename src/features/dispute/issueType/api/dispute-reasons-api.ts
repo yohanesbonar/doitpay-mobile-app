@@ -23,4 +23,9 @@ export const disputeReasonsApi = {
 
     return data;
   },
+
+  getCustomerReportReasons: async (): Promise<GetDisputeReasonsResponse> => {
+    const { data } = await apiClient.get<GetDisputeReasonsResponse>('/v1/customer-reports/reasons');
+    return data;
+  },
 };
