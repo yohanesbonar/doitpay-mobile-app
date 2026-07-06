@@ -26,6 +26,7 @@ import {
 } from '../transferDetail/api/payment-calculate-api.ts';
 import { Info, TriangleAlert } from 'lucide-react-native';
 import { useIsFocused } from '@react-navigation/native';
+import { usePaymentMethodAvailability } from '../hooks/usePaymentMethodAvailability';
 
 const QUICK_AMOUNTS = ['50000', '100000', '200000', '500000', '1000000', '2000000'];
 
@@ -66,6 +67,7 @@ export const RequestPaymentView = ({
   const [isErrorMinimumReached, setIsErrorMinimumReached] = useState(false);
   const [calculateData, setCalculateData] = useState<any>(null);
   const [isLoadingCalculate, setIsLoadingCalculate] = useState(false);
+  const paymentMethodAvailability = usePaymentMethodAvailability('RECEIVE');
 
   const isInputEmpty = amount === '';
   const { mutate: postReceive, isPending: isLoadingReceive } = useReceive();
@@ -73,6 +75,16 @@ export const RequestPaymentView = ({
   const isFirstMount = useRef(true);
   const prevMethodPayment = useRef(methodPayment);
   const prevBankPayment = useRef(bankPayment?.code);
+
+  useEffect(() => {
+    const { vaEnabled, qrisEnabled, defaultMethod } = paymentMethodAvailability;
+
+    if ((methodPayment === 'VA' && !vaEnabled) || (methodPayment === 'QRIS' && !qrisEnabled)) {
+      if (defaultMethod) {
+        setMethodPayment(defaultMethod);
+      }
+    }
+  }, [methodPayment, paymentMethodAvailability]);
 
   const onPressConfirm = () => {
     let payload = {
@@ -108,6 +120,7 @@ export const RequestPaymentView = ({
 
   useEffect(() => {
     if (!isFocused) return;
+    if (paymentMethodAvailability.isLoading) return;
 
     const numericAmt = amount ? parseInt(amount, 10) : 0;
 
@@ -162,7 +175,7 @@ export const RequestPaymentView = ({
 
       return () => clearTimeout(delayDebounceFn);
     }
-  }, [amount, methodPayment, bankPayment, isFocused]);
+  }, [amount, methodPayment, bankPayment, isFocused, paymentMethodAvailability.isLoading]);
 
   useEffect(() => {
     let errorMinimumReached;
@@ -175,7 +188,11 @@ export const RequestPaymentView = ({
     setIsErrorMinimumReached(errorMinimumReached);
 
     let isDisable;
-    if (methodPayment == 'QRIS' && errorMinimumReached) {
+    if (paymentMethodAvailability.isLoading) {
+      isDisable = true;
+    } else if (!paymentMethodAvailability.hasAnyEnabled) {
+      isDisable = true;
+    } else if (methodPayment == 'QRIS' && errorMinimumReached) {
       isDisable = true;
     } else if (methodPayment == 'VA' && (!bankPayment || errorMinimumReached)) {
       isDisable = true;
@@ -186,7 +203,14 @@ export const RequestPaymentView = ({
     }
 
     setIsDisableConfirm(isDisable);
-  }, [amount, methodPayment, bankPayment, isLoadingCalculate]);
+  }, [
+    amount,
+    methodPayment,
+    bankPayment,
+    isLoadingCalculate,
+    paymentMethodAvailability.isLoading,
+    paymentMethodAvailability.hasAnyEnabled,
+  ]);
 
   const handleInputChange = (val: string) => {
     const cleanNumber = val.replace(/[^0-9]/g, '');
@@ -244,6 +268,9 @@ export const RequestPaymentView = ({
               onSelect={(val) => setMethodPayment(val)}
               onSelectBank={(val) => setBankPayment(val)}
               initialBankPayment={initialBankPayment}
+              isVAEnabled={paymentMethodAvailability.vaEnabled}
+              isQRISEnabled={paymentMethodAvailability.qrisEnabled}
+              isLoading={paymentMethodAvailability.isLoading}
             />
           </ScrollView>
 

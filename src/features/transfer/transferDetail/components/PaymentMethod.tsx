@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput, Image } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, Image, ActivityIndicator } from 'react-native';
 import { styles } from '../styles';
 import { Search, CreditCard, QrCode, CheckCircle2, Circle } from 'lucide-react-native';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -19,6 +19,9 @@ interface PaymentMethodProps {
   onSelectBank: (data: any) => void;
   initialBankPayment?: any;
   styleProps: any;
+  isVAEnabled?: boolean;
+  isQRISEnabled?: boolean;
+  isLoading?: boolean;
 }
 
 const PaymentMethod: React.FC<PaymentMethodProps> = ({
@@ -27,6 +30,9 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
   onSelectBank,
   initialBankPayment,
   styleProps,
+  isVAEnabled = true,
+  isQRISEnabled = true,
+  isLoading = false,
 }) => {
   const [selectedBank, setSelectedBank] = useState(initialBankPayment?.id || '');
   const [searchQuery, setSearchQuery] = useState('');
@@ -118,68 +124,122 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
         Metode Pembayaran
       </Text>
 
-      <View style={{ flexDirection: 'row', marginBottom: 20 }}>
-        <TouchableOpacity
-          onPress={() => onSelect('VA')}
+      {isLoading ? (
+        <View
           style={{
-            flex: 1,
-            flexDirection: 'row',
-            height: 37,
-            backgroundColor: selectedMethod === 'VA' ? '#3B82F6' : '#FFF',
-            borderRadius: 26,
-            borderWidth: selectedMethod === 'VA' ? 0 : 1,
+            backgroundColor: '#F9FAFB',
+            borderWidth: 1,
             borderColor: '#E5E7EB',
+            borderRadius: 12,
+            paddingHorizontal: 14,
+            paddingVertical: 12,
+            marginBottom: 20,
+            flexDirection: 'row',
             alignItems: 'center',
-            justifyContent: 'center',
-            marginRight: 8,
+            gap: 8,
           }}>
-          <CreditCard
-            size={20}
-            color={selectedMethod === 'VA' ? '#FFF' : '#0A0A0A'}
-            strokeWidth={2.5}
-          />
+          <ActivityIndicator size="small" color="#3B82F6" />
           <Text
             style={{
-              marginLeft: 10,
-              color: selectedMethod === 'VA' ? '#FFF' : '#0A0A0A',
-              fontFamily: 'Switzer-Bold',
-              fontSize: 14,
+              color: '#374151',
+              fontFamily: 'Switzer-Regular',
+              fontSize: 13,
             }}>
-            Virtual Account
+            Memuat metode pembayaran...
           </Text>
-        </TouchableOpacity>
+        </View>
+      ) : null}
 
-        <TouchableOpacity
-          onPress={() => onSelect('QRIS')}
+      {!isLoading && !isVAEnabled && !isQRISEnabled ? (
+        <View
           style={{
-            flex: 1,
-            flexDirection: 'row',
-            height: 37,
-            backgroundColor: selectedMethod === 'QRIS' ? '#3B82F6' : '#FFF',
-            borderRadius: 26,
-            borderWidth: selectedMethod === 'QRIS' ? 0 : 1,
-            borderColor: '#E5E7EB',
-            alignItems: 'center',
-            justifyContent: 'center',
+            backgroundColor: '#FEF2F2',
+            borderWidth: 1,
+            borderColor: '#FECACA',
+            borderRadius: 12,
+            paddingHorizontal: 14,
+            paddingVertical: 12,
+            marginBottom: 20,
           }}>
-          <QrCode
-            size={20}
-            color={selectedMethod === 'QRIS' ? '#FFF' : '#0A0A0A'}
-            strokeWidth={2.5}
-          />
           <Text
             style={{
-              marginLeft: 10,
-              color: selectedMethod === 'QRIS' ? '#FFF' : '#0A0A0A',
-              fontFamily: 'Switzer-Bold',
-              fontSize: 14,
+              color: '#B91C1C',
+              fontFamily: 'Switzer-Regular',
+              fontSize: 13,
             }}>
-            QRIS
+            Metode pembayaran sedang tidak tersedia.
           </Text>
-        </TouchableOpacity>
-      </View>
+        </View>
+      ) : null}
 
-      {selectedMethod === 'VA' ? (
+      {!isLoading && (isVAEnabled || isQRISEnabled) ? (
+        <View style={{ flexDirection: 'row', marginBottom: 20 }}>
+          {isVAEnabled ? (
+            <TouchableOpacity
+              onPress={() => onSelect('VA')}
+              style={{
+                flex: 1,
+                flexDirection: 'row',
+                height: 37,
+                backgroundColor: selectedMethod === 'VA' ? '#3B82F6' : '#FFF',
+                borderRadius: 26,
+                borderWidth: selectedMethod === 'VA' ? 0 : 1,
+                borderColor: '#E5E7EB',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: isQRISEnabled ? 8 : 0,
+              }}>
+              <CreditCard
+                size={20}
+                color={selectedMethod === 'VA' ? '#FFF' : '#0A0A0A'}
+                strokeWidth={2.5}
+              />
+              <Text
+                style={{
+                  marginLeft: 10,
+                  color: selectedMethod === 'VA' ? '#FFF' : '#0A0A0A',
+                  fontFamily: 'Switzer-Bold',
+                  fontSize: 14,
+                }}>
+                Virtual Account
+              </Text>
+            </TouchableOpacity>
+          ) : null}
+
+          {isQRISEnabled ? (
+            <TouchableOpacity
+              onPress={() => onSelect('QRIS')}
+              style={{
+                flex: 1,
+                flexDirection: 'row',
+                height: 37,
+                backgroundColor: selectedMethod === 'QRIS' ? '#3B82F6' : '#FFF',
+                borderRadius: 26,
+                borderWidth: selectedMethod === 'QRIS' ? 0 : 1,
+                borderColor: '#E5E7EB',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+              <QrCode
+                size={20}
+                color={selectedMethod === 'QRIS' ? '#FFF' : '#0A0A0A'}
+                strokeWidth={2.5}
+              />
+              <Text
+                style={{
+                  marginLeft: 10,
+                  color: selectedMethod === 'QRIS' ? '#FFF' : '#0A0A0A',
+                  fontFamily: 'Switzer-Bold',
+                  fontSize: 14,
+                }}>
+                QRIS
+              </Text>
+            </TouchableOpacity>
+          ) : null}
+        </View>
+      ) : null}
+
+      {!isLoading && selectedMethod === 'VA' && isVAEnabled ? (
         <View style={{ paddingBottom: 70 }}>
           <View
             style={{
@@ -267,7 +327,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
             );
           })}
         </View>
-      ) : (
+      ) : !isLoading && selectedMethod === 'QRIS' && isQRISEnabled ? (
         <View
           style={{
             backgroundColor: '#F0F7FF',
@@ -278,7 +338,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
             borderColor: '#3B82F6',
             flexDirection: 'row',
             alignItems: 'center',
-            marginBottom: 80
+            marginBottom: 80,
           }}>
           <QrCode size={24} color="#3B82F6" style={{ marginRight: 12 }} />
           <Text
@@ -292,7 +352,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
             Kode QRIS akan dibuat setelah konfirmasi. Bagikan ke pengirim untuk pembayaran.
           </Text>
         </View>
-      )}
+      ) : null}
     </View>
   );
 };
