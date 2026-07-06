@@ -14,15 +14,10 @@ export const useDisputeListQuery = ({
   transactionId,
   limit = 20,
 }: UseDisputeListQueryParams) => {
-  const hasTransactionId = !!transactionId;
-  const getDisputesApi = hasTransactionId
-    ? disputeListApi.getDisputes
-    : disputeListApi.getCustomerReportsDisputes;
-
   return useInfiniteQuery({
     queryKey: ['dispute-list', status, transactionId, limit],
     queryFn: async ({ pageParam }) => {
-      const response = await getDisputesApi({
+      const response = await disputeListApi.getCustomerReportsDisputes({
         status,
         cursor: pageParam,
         limit,
