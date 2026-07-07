@@ -58,6 +58,7 @@
     "react-dom": "^19.2.4",
     "react-i18next": "^15.4.1",
     "react-native": "0.85.3",
+    "react-native-blob-util": "^0.24.10",
     "react-native-config": "^1.6.1",
     "react-native-confirmation-code-field": "^9.0.0",
     "react-native-device-info": "^15.0.2",

@@ -13,6 +13,7 @@ import { Settings } from '../features/main/profile/Settings';
 import { Security } from '../features/main/profile/Security';
 import { BankAccounts } from '../features/main/profile/BankAccount';
 import { HelpCenter } from '../features/main/profile/HelpCenter';
+import { EStatement } from '../features/main/profile/EStatement';
 import Profile from '../features/main/profile';
 import TransferDetail from '../screens/transfer/transferDetail';
 import PaymentInstruction from '../screens/transfer/paymentInstruction';
@@ -128,6 +129,7 @@ export default function RootNavigator({ navigationRef, onReady, onStateChange }:
               <Stack.Screen name="Security" component={Security} />
               <Stack.Screen name="BankAccounts" component={BankAccounts} />
               <Stack.Screen name="HelpCenter" component={HelpCenter} />
+              <Stack.Screen name="EStatement" component={EStatement} />
               <Stack.Screen name="Beneficiary" component={BeneficiaryScreen} />
               <Stack.Screen name="History" component={TransactionHistoryScreen} />
               <Stack.Screen name="Profile" component={Profile} />
