@@ -26,6 +26,7 @@ const PaymentInstructionScreen = () => {
     transferData,
     receiveData,
     bankPayment,
+    from,
   } = (route.params || {}) as any;
 
   console.log('PaymentInstructionScreen - Route Params:', {
@@ -65,7 +66,13 @@ const PaymentInstructionScreen = () => {
 
   const handleBack = () => {
     if (pollingTimerRef.current) clearTimeout(pollingTimerRef.current);
-    navigation.goBack();
+
+    if (from === 'transactionDetail') {
+      navigation.goBack();
+      return;
+    }
+
+    navigation.pop(2);
   };
 
   const hasFetchedInstruction = useRef(false);
