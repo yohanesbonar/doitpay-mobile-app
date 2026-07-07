@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Settings, CreditCard, ShieldCheck, HelpCircle } from 'lucide-react-native';
+import { Settings, CreditCard, ShieldCheck, HelpCircle, FileText } from 'lucide-react-native';
 import { useTheme } from '../../../theme/ThemeProvider';
 import { createStyles } from './styles';
 import ProfileMenuItem from './components/ProfileMenuItem';
@@ -62,6 +62,11 @@ export const Profile = () => {
             title="Pengaturan"
             icon={Settings}
             onPress={() => navigation.navigate('Settings')}
+          />
+          <ProfileMenuItem
+            title="E-Statement"
+            icon={FileText}
+            onPress={() => navigation.navigate('EStatement')}
           />
           <ProfileMenuItem
             title="Rekening Bank"

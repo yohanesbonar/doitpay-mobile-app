@@ -14,6 +14,7 @@ export interface TransactionReceiptData {
   fee: number;
   totalAmount: number;
   senderName?: string;
+  percentageFee?: number;
 }
 
 export interface TransactionReceiptResponse {

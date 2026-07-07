@@ -1,5 +1,6 @@
 import { TransactionDetail } from '@/features/transaction/transaction-detail';
 import { TransactionType } from '@/features/transaction/types';
+import { TransactionReceiptData } from '@/features/transaction/api/transaction';
 import { transferApi } from '@/api/transfer';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useState } from 'react';
@@ -11,15 +12,11 @@ export const TransactionDetailScreen = () => {
   const { transactionId = '', referenceId = '', type = '', status } = route.params ?? {};
   const [isLoadingContinue, setIsLoadingContinue] = useState(false);
 
-  const handleContinuePayment = async () => {
+  const handleContinuePayment = async (receipt: TransactionReceiptData) => {
     try {
       setIsLoadingContinue(true);
 
-      const isReceive = type === TransactionType.RECEIVE_IN;
-      const detail = isReceive
-        ? await transferApi.getReceiveDetailById({ id: transactionId })
-        : await transferApi.getTransferDetailById({ id: transactionId });
-
+      const detail = await transferApi.getTransferDetailById({ id: referenceId });
       const detailData = detail.data;
       const paymentMethod = detailData.qris ? 'QRIS' : 'VA';
 
@@ -31,20 +28,32 @@ export const TransactionDetailScreen = () => {
           }
         : undefined;
 
-      const params: Record<string, any> = {
+      const transferData = {
+        ...detailData,
+        fee: receipt.fee,
+        percentageFee: receipt.percentageFee,
+        totalAmount: receipt.totalAmount,
+      };
+
+      const accountData = {
+        accountHolderName: receipt.beneficiaryName,
+        accountName: receipt.beneficiaryName,
+      };
+
+      const bankData = {
+        name: receipt.beneficiaryBankName,
+        logoUrl: receipt.beneficiaryBankLogo,
+      };
+
+      navigation.navigate('PaymentInstruction', {
         paymentMethod,
         amount: detailData.amount?.toString(),
         bankPayment,
-      };
-
-      if (isReceive) {
-        params.method = 'receive';
-        params.receiveData = detailData;
-      } else {
-        params.transferData = detailData;
-      }
-
-      navigation.navigate('PaymentInstruction', params);
+        transferData,
+        accountData,
+        bankData,
+        from: 'transactionDetail',
+      });
     } catch (error) {
       console.log('handleContinuePayment error:', error);
       Alert.alert('Gagal', 'Tidak dapat memuat detail pembayaran. Silakan coba lagi.');
@@ -66,10 +75,7 @@ export const TransactionDetailScreen = () => {
           orderReferenceId: referenceId || transactionId,
           recipientName: '',
           amount: 0,
-          disputeType:
-            type === TransactionType.RECEIVE || type === TransactionType.RECEIVE_IN
-              ? 'RECEIVE'
-              : 'TRANSFER',
+          disputeType: type === TransactionType.RECEIVE_IN ? 'RECEIVE' : 'TRANSFER',
         })
       }
       onContinuePayment={handleContinuePayment}

@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { CheckCircle2, Download, Share2 } from 'lucide-react-native';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
+import { FeeInfoButton } from '@/components/molecules/FeeInfoButton';
 import { styles, receiptStyles } from './styles';
 import { formatApiDateToLocal, formatNumber } from '@/utils/Common';
 import ViewShot from 'react-native-view-shot';
@@ -102,6 +103,7 @@ const PaymentReceiptView = ({
     ? String(receiptData.paymentMethod)
     : paymentMethod || methodLabel;
   const effectiveFee = receiptData?.fee;
+  const effectivePercentageFee = receiptData?.percentageFee;
   const effectiveTotalAmount = receiptData?.totalAmount;
   const effectiveBeneficiaryBankName = receiptData?.beneficiaryBankName;
   const effectiveBeneficiaryBankLogo = receiptData?.beneficiaryBankLogo;
@@ -313,7 +315,8 @@ const PaymentReceiptView = ({
           <View style={receiptStyles.receiptDetailRow}>
             <Text style={receiptStyles.receiptDetailLabel}>Biaya Admin</Text>
             <Text style={receiptStyles.receiptDetailValue}>
-              Rp {formatNumber(effectiveFee.toString())}
+              Rp {formatNumber(effectiveFee.toString())}{' '}
+              {effectivePercentageFee && `(${effectivePercentageFee}%)`}
             </Text>
           </View>
         )}
@@ -405,8 +408,14 @@ const PaymentReceiptView = ({
           </View>
           {effectiveFee != null && (
             <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Biaya Admin</Text>
-              <Text style={styles.detailValue}>Rp {formatNumber(effectiveFee.toString())}</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={styles.detailLabelWithIcon}>Biaya Admin</Text>
+                <FeeInfoButton message="Biaya jasa admin yang dibebankan kepada merchant" />
+              </View>
+              <Text style={styles.detailValue}>
+                Rp {formatNumber(effectiveFee.toString())}{' '}
+                {effectivePercentageFee && `(${effectivePercentageFee}%)`}
+              </Text>
             </View>
           )}
           {effectiveTotalAmount != null && (

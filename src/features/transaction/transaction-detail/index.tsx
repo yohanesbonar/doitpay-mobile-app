@@ -12,12 +12,14 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CheckCircle2, Clock, XCircle, TriangleAlert, FlagIcon, Share2 } from 'lucide-react-native';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
+import { FeeInfoButton } from '@/components/molecules/FeeInfoButton';
 import { styles, receiptStyles } from './styles';
 import { formatNumber } from '@/utils/Common';
 import ViewShot from 'react-native-view-shot';
 import Share from 'react-native-share';
 import { TransactionStatus, TransactionType } from '@/features/transaction/types';
 import { useTransactionReceiptQuery } from '@/features/transaction/hooks/useTransactionReceiptQuery';
+import { TransactionReceiptData } from '@/features/transaction/api/transaction';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -101,7 +103,7 @@ export interface TransactionDetailProps {
   status?: string;
   onPressBack: () => void;
   onPressReportIssue: () => void;
-  onContinuePayment?: () => void;
+  onContinuePayment?: (receipt: TransactionReceiptData) => void;
   isLoadingContinue?: boolean;
 }
 
@@ -212,9 +214,16 @@ export const TransactionDetail = ({
             Rp {formatNumber((receipt?.amount ?? 0).toString())}
           </Text>
         </View>
+
         <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Biaya Admin</Text>
-          <Text style={styles.detailValue}>Rp {formatNumber((receipt?.fee ?? 0).toString())}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={styles.detailLabelWithIcon}>Biaya Admin</Text>
+            <FeeInfoButton message="Biaya jasa admin yang dibebankan kepada merchant" />
+          </View>
+          <Text style={styles.detailValue}>
+            Rp {formatNumber((receipt?.fee ?? 0).toString())}{' '}
+            {receipt?.percentageFee && `(${receipt?.percentageFee}%)`}
+          </Text>
         </View>
         <View style={[styles.detailRow, { borderBottomWidth: 0 }]}>
           <Text style={styles.detailLabel}>Total</Text>
@@ -376,11 +385,11 @@ export const TransactionDetail = ({
         )}
 
         <View style={styles.footerContainer}>
-          {status === 'PENDING' ? (
+          {status === 'PENDING' && !isReceiveIn ? (
             <TouchableOpacity
               style={[styles.continuePaymentButton, isLoadingContinue && { opacity: 0.6 }]}
-              onPress={onContinuePayment}
-              disabled={isLoadingContinue}>
+              onPress={() => receipt && onContinuePayment?.(receipt)}
+              disabled={isLoadingContinue || !receipt}>
               {isLoadingContinue ? (
                 <ActivityIndicator size="small" color="#FFFFFF" />
               ) : (

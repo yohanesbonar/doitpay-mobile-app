@@ -125,6 +125,13 @@ export const styles = StyleSheet.create({
     flexShrink: 0,
     includeFontPadding: false,
   },
+  detailLabelWithIcon: {
+    fontFamily: 'Switzer-Regular',
+    fontSize: 14,
+    color: '#6B7280',
+    includeFontPadding: false,
+    marginRight: 4,
+  },
   detailValue: {
     fontFamily: 'Switzer-Medium',
     fontSize: 14,

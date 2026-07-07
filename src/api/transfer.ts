@@ -192,8 +192,4 @@ export const transferApi = {
     const { data } = await apiClient.get<PaymentStatusResponse>(`/v1/receive/${payload.id}/receipt`);
     return data;
   },
-  getReceiveDetailById: async (payload: { id: string }): Promise<GetTransferDetailResponse> => {
-    const { data } = await apiClient.get<GetTransferDetailResponse>(`/v1/receive/${payload.id}`);
-    return data;
-  },
 };
