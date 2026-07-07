@@ -41,7 +41,7 @@ const TransferProcessingView = ({
   bankData,
   amount,
   paymentMethod,
-  currentStep = 'received', 
+  currentStep = 'received',
   onPressBack,
   onFinish,
 }: TransferProcessingViewProps) => {
