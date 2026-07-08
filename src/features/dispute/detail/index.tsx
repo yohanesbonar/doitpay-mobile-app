@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Modal,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -11,11 +12,15 @@ import {
   View,
 } from 'react-native';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
-import { AlertCircle, Check, X } from 'lucide-react-native';
+import { AlertCircle, Check, Copy, X } from 'lucide-react-native';
 import { DisputeReport } from '../types';
+import Clipboard from '@react-native-clipboard/clipboard';
+import Toast from 'react-native-toast-message';
 
 interface DisputeDetailViewProps {
   report: DisputeReport;
+  isRefreshing?: boolean;
+  onRefresh?: () => void;
   onPressBack: () => void;
   onWithdraw: () => void;
   onAddResponse: () => void;
@@ -25,15 +30,25 @@ interface DisputeDetailViewProps {
 type TimelineStep = {
   label: string;
   time: string;
+  isActive?: boolean;
 };
 
-const timelineSteps: TimelineStep[] = [
+const fallbackTimelineSteps: TimelineStep[] = [
   { label: 'Dilaporkan', time: '21 Juni · 09:12' },
   { label: 'Diterima', time: '22 Juni · 09:12' },
   { label: 'Sedang Ditinjau', time: '23 Juni · 09:12' },
   { label: 'Menunggu Pihak Bank', time: '26 Juni · 09:12' },
   { label: 'Selesai', time: '30 Juni · 09:12' },
 ];
+
+const checkpointLabelMap: Record<string, string> = {
+  REPORTED: 'Dilaporkan',
+  UNDER_REVIEW: 'Sedang Ditinjau',
+  NEED_USER_FEEDBACK: 'Butuh Tindakan',
+  DONE: 'Selesai',
+  RESOLVED: 'Selesai',
+  REJECTED: 'Ditolak',
+};
 
 const badgeLabelMap: Record<string, string> = {
   DIAJUKAN: 'Ditinjau',
@@ -62,20 +77,71 @@ const getProgressIndex = (status: DisputeReport['status']): number => {
   }
 };
 
-const formatReportCode = (id: string): string => {
-  const digits = id.replace(/\D/g, '');
-  if (!digits) return '#D-00000';
-  return `#D-${digits.slice(-5)}`;
-};
-
 const formatTransactionCode = (transactionId: string): string => {
   const digits = transactionId.replace(/\D/g, '');
   if (!digits) return '#D12381';
   return `#D${digits.slice(-5)}`;
 };
 
+const formatEstimateDate = (value?: string): string => {
+  if (!value) {
+    return '-';
+  }
+
+  const parsedDate = new Date(value);
+  if (Number.isNaN(parsedDate.getTime())) {
+    return value;
+  }
+
+  return parsedDate.toLocaleDateString('id-ID', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  });
+};
+
+const formatCheckpointTime = (value?: string): string => {
+  if (!value) {
+    return '-';
+  }
+
+  const parsedDate = new Date(value);
+  if (Number.isNaN(parsedDate.getTime())) {
+    return value;
+  }
+
+  return parsedDate.toLocaleString('id-ID', {
+    day: '2-digit',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+};
+
+const buildTimelineFromCheckpoints = (report: DisputeReport): TimelineStep[] => {
+  const checkpoints = report.statusCheckpoints || [];
+
+  if (checkpoints.length === 0) {
+    return fallbackTimelineSteps;
+  }
+
+  return checkpoints.map((checkpoint) => {
+    const normalizedStatus = (checkpoint.status || '').toUpperCase();
+    const label = checkpointLabelMap[normalizedStatus] || normalizedStatus.replace(/_/g, ' ');
+
+    return {
+      label,
+      time: formatCheckpointTime(checkpoint.timestamp),
+      isActive: checkpoint.isActive,
+    };
+  });
+};
+
 export const DisputeDetailView = ({
   report,
+  isRefreshing = false,
+  onRefresh,
   onPressBack,
   onWithdraw,
   onAddResponse,
@@ -85,32 +151,65 @@ export const DisputeDetailView = ({
   const [showReopenSheet, setShowReopenSheet] = useState(false);
   const [reopenReason, setReopenReason] = useState('');
 
+  const timelineSteps = useMemo(() => buildTimelineFromCheckpoints(report), [report]);
+  const activeCheckpointIndex = timelineSteps.findIndex((step) => step.isActive);
+
   const progressIndex = getProgressIndex(report.status);
   const isNeedInfo = report.status === 'DIBUTUHKAN_INFO';
   const isDone = report.status === 'SELESAI';
   const isClosed = report.status === 'DITARIK' || report.status === 'DITOLAK';
 
+  const handleCopyReportId = () => {
+    const reportId = (report.id || '').trim();
+    if (!reportId) {
+      return;
+    }
+
+    Clipboard.setString(reportId);
+    Toast.show({
+      type: 'success',
+      text1: 'ID laporan disalin',
+    });
+  };
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['bottom']}>
       <HeaderToolbar
-        title={`Laporan ${formatReportCode(report.id)}`}
+        title="Laporan Saya"
         onPressBack={onPressBack}
         titlePosition="left"
-        titleStyle="bold"
+        titleStyle="medium"
         backgroundColor="#F5F5F7"
       />
 
       <View style={styles.container}>
-        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            onRefresh ? (
+              <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor="#3981FF" />
+            ) : undefined
+          }>
           <View style={styles.summaryCard}>
+            <View style={styles.reportIdRow}>
+              <Text style={styles.reportIdText}>{`ID#${report.id}`}</Text>
+              <TouchableOpacity
+                style={styles.copyIdButton}
+                activeOpacity={0.8}
+                onPress={handleCopyReportId}>
+                <Copy size={18} color="#525252" />
+              </TouchableOpacity>
+            </View>
+
             <View style={styles.summaryTopRow}>
               <View>
                 <Text style={styles.issueType}>{report.issueType}</Text>
                 <Text
-                  style={styles.summaryMeta}>{`${report.date || '27 Mei 2026'}  ${formatTransactionCode(report.transactionId)}`}</Text>
+                  style={styles.summaryMeta}>{`${report.date}`}</Text>
               </View>
               <View style={styles.badge}>
-                <Text style={styles.badgeText}>{badgeLabelMap[report.status] || 'Ditinjau'}</Text>
+                <Text style={styles.badgeText}>{badgeLabelMap[report.status]}</Text>
               </View>
             </View>
 
@@ -118,7 +217,7 @@ export const DisputeDetailView = ({
 
             <View style={styles.estimateRow}>
               <Text style={styles.estimateLabel}>Estimasi selesai:</Text>
-              <Text style={styles.estimateValue}>30 Juni 2026</Text>
+              <Text style={styles.estimateValue}>{formatEstimateDate(report.estimatedAt)}</Text>
             </View>
           </View>
 
@@ -126,8 +225,13 @@ export const DisputeDetailView = ({
             <Text style={styles.statusTitle}>Status</Text>
 
             {timelineSteps.map((step, index) => {
-              const done = isDone ? index <= progressIndex : index < progressIndex;
-              const current = !isDone && index === progressIndex;
+              const hasDynamicActive = activeCheckpointIndex >= 0;
+              const done = hasDynamicActive
+                ? index < activeCheckpointIndex || (isDone && index <= activeCheckpointIndex)
+                : isDone
+                  ? index <= progressIndex
+                  : index < progressIndex;
+              const current = hasDynamicActive ? index === activeCheckpointIndex : !isDone && index === progressIndex;
               const pending = !done && !current;
 
               return (
@@ -218,7 +322,7 @@ export const DisputeDetailView = ({
 
             <Text style={styles.modalTitle}>Tarik laporan ini?</Text>
             <Text style={styles.modalDesc}>
-              Laporan {formatReportCode(report.id)} akan ditutup. Kamu bisa melaporkan lagi nanti jika perlu.
+              Laporan {report.id} akan ditutup. Kamu bisa melaporkan lagi nanti jika perlu.
             </Text>
 
             <TouchableOpacity
@@ -298,7 +402,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   content: {
-    paddingTop: 16,
+    paddingTop: 8,
     paddingBottom: 120,
   },
   summaryCard: {
@@ -309,18 +413,35 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 14,
   },
+  reportIdRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  reportIdText: {
+    color: '#000000',
+    fontFamily: 'Switzer-Regular',
+    fontSize: 12,
+  },
+  copyIdButton: {
+    marginLeft: 8,
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   summaryTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   issueType: {
-    color: '#1A1A1A',
+    color: '#000000',
     fontFamily: 'Switzer-Medium',
     fontSize: 16,
   },
   summaryMeta: {
-    color: '#1A1A1A',
+    color: '#000000',
     fontFamily: 'Switzer-Regular',
     fontSize: 12,
     marginTop: 2,
@@ -354,7 +475,7 @@ const styles = StyleSheet.create({
   },
   estimateValue: {
     color: '#000000',
-    fontFamily: 'Switzer-Bold',
+    fontFamily: 'Switzer-Semibold',
     fontSize: 20,
     lineHeight: 38,
   },

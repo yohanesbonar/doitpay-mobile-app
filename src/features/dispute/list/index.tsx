@@ -59,6 +59,7 @@ const toDisputeReport = (item: ReportListItemApi): DisputeReport => ({
   transactionId: item.transactionId || item.orderReferenceId || item.id,
   issueType: item.reasonLabel ?? 'Lainnya',
   date: formatDate(item.createdAt || item.updatedAt),
+  estimatedAt: item.estimatedAt,
   status: mapApiStatusToDisputeStatus(item.status),
   recipientName: '-',
   amount: 0,

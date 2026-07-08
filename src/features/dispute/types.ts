@@ -6,12 +6,20 @@ export type DisputeStatus =
   | 'DITARIK'
   | 'DITOLAK';
 
+export interface DisputeStatusCheckpoint {
+  status: string;
+  timestamp?: string;
+  isActive?: boolean;
+}
+
 export interface DisputeReport {
   id: string;
   transactionId: string;
   issueType: string;
   date: string;
+  estimatedAt?: string;
   status: DisputeStatus;
+  statusCheckpoints?: DisputeStatusCheckpoint[];
   recipientName: string;
   amount: number;
   description?: string;
