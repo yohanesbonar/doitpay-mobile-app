@@ -38,21 +38,26 @@ const formatDate = (value?: string) => {
 const mapApiStatusToDisputeStatus = (status?: string): DisputeReport['status'] => {
   const normalized = (status || '').toUpperCase();
 
-  if (normalized.includes('CLOSED') || normalized === 'DONE') {
-    return 'SELESAI';
+  switch (normalized) {
+    case 'REPORTED':
+      return 'DIPROSES';
+    case 'UNDER_REVIEW':
+      return 'DIAJUKAN';
+    case 'NEED_USER_FEEDBACK':
+      return 'DIBUTUHKAN_INFO';
+    case 'RESOLVED':
+      return 'SELESAI';
+    case 'REJECTED':
+      return 'DITOLAK';
+    default:
+      return 'DIAJUKAN';
   }
-
-  if (normalized.includes('OPEN') || normalized === 'ACTIVE') {
-    return 'DIPROSES';
-  }
-
-  return 'DIAJUKAN';
 };
 
 const toDisputeReport = (item: ReportListItemApi): DisputeReport => ({
   id: item.id,
   transactionId: item.transactionId || item.orderReferenceId || item.id,
-  issueType: item.customReason || item.detail || 'Laporan Masalah',
+  issueType: item.reasonLabel ?? 'Lainnya',
   date: formatDate(item.createdAt || item.updatedAt),
   status: mapApiStatusToDisputeStatus(item.status),
   recipientName: '-',
@@ -80,50 +85,42 @@ const statusPillConfig: Record<
 > = {
   DIAJUKAN: {
     label: 'Ditinjau',
-    color: '#737373',
-    bg: '#E7E7E7',
-    iconBg: '#E5E5E5',
-    iconColor: '#737373',
+    color: '#404040',
+    bg: '#D4D4D4',
+    iconBg: '#D4D4D4',
+    iconColor: '#404040',
     Icon: Clock3,
   },
   DIPROSES: {
     label: 'Diproses',
     color: '#3981FF',
-    bg: '#E7F0FF',
-    iconBg: '#E7F0FF',
+    bg: '#EBF2FF',
+    iconBg: '#EBF2FF',
     iconColor: '#3981FF',
     Icon: RefreshCw,
   },
   DIBUTUHKAN_INFO: {
     label: 'Butuh Tindakan',
-    color: '#D9A10D',
-    bg: '#FFF4D1',
-    iconBg: '#FFF4D1',
-    iconColor: '#D9A10D',
+    color: '#CA8A04',
+    bg: '#FEF9C3',
+    iconBg: '#FEF9C3',
+    iconColor: '#CA8A04',
     Icon: AlertCircle,
   },
   SELESAI: {
     label: 'Selesai',
-    color: '#22B35A',
-    bg: '#DFF8E8',
-    iconBg: '#DFF8E8',
-    iconColor: '#22B35A',
+    color: '#16A34A',
+    bg: '#DCFCE7',
+    iconBg: '#DCFCE7',
+    iconColor: '#16A34A',
     Icon: CheckCircle2,
-  },
-  DITARIK: {
-    label: 'Ditarik',
-    color: '#737373',
-    bg: '#E7E7E7',
-    iconBg: '#E5E5E5',
-    iconColor: '#737373',
-    Icon: Clock3,
   },
   DITOLAK: {
     label: 'Ditolak',
-    color: '#FF5A5A',
-    bg: '#FFE3E3',
-    iconBg: '#FFE3E3',
-    iconColor: '#FF5A5A',
+    color: '#DC2626',
+    bg: '#E5E5E5',
+    iconBg: '#E5E5E5',
+    iconColor: '#DC2626',
     Icon: XCircle,
   },
 };

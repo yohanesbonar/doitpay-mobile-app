@@ -10,6 +10,7 @@ export interface GetDisputesQueries {
 export interface DisputeListItemApi {
   id: string;
   transactionId?: string;
+  reasonLabel?: string;
   createdAt?: string;
   updatedAt?: string;
   estimatedAt?: string;
