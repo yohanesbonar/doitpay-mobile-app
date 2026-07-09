@@ -5,6 +5,7 @@ export interface DisputeStatusCheckpointApi {
   status: string;
   timestamp?: string;
   isActive?: boolean;
+  isCompleted?: boolean;
 }
 
 export interface DisputeEvidenceFileApi {

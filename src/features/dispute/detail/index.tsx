@@ -31,6 +31,7 @@ type TimelineStep = {
   label: string;
   time: string;
   isActive?: boolean;
+  isCompleted?: boolean;
 };
 
 const fallbackTimelineSteps: TimelineStep[] = [
@@ -134,6 +135,7 @@ const buildTimelineFromCheckpoints = (report: DisputeReport): TimelineStep[] => 
       label,
       time: formatCheckpointTime(checkpoint.timestamp),
       isActive: checkpoint.isActive,
+      isCompleted: checkpoint.isCompleted,
     };
   });
 };
@@ -152,7 +154,7 @@ export const DisputeDetailView = ({
   const [reopenReason, setReopenReason] = useState('');
 
   const timelineSteps = useMemo(() => buildTimelineFromCheckpoints(report), [report]);
-  const activeCheckpointIndex = timelineSteps.findIndex((step) => step.isActive);
+  const hasDynamicFlags = (report.statusCheckpoints || []).length > 0;
 
   const progressIndex = getProgressIndex(report.status);
   const isNeedInfo = report.status === 'DIBUTUHKAN_INFO';
@@ -225,13 +227,14 @@ export const DisputeDetailView = ({
             <Text style={styles.statusTitle}>Status</Text>
 
             {timelineSteps.map((step, index) => {
-              const hasDynamicActive = activeCheckpointIndex >= 0;
-              const done = hasDynamicActive
-                ? index < activeCheckpointIndex || (isDone && index <= activeCheckpointIndex)
+              const done = hasDynamicFlags
+                ? Boolean(step.isCompleted)
                 : isDone
                   ? index <= progressIndex
                   : index < progressIndex;
-              const current = hasDynamicActive ? index === activeCheckpointIndex : !isDone && index === progressIndex;
+              const current = hasDynamicFlags
+                ? !done && Boolean(step.isActive)
+                : !isDone && index === progressIndex;
               const pending = !done && !current;
 
               return (

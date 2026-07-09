@@ -10,6 +10,7 @@ export interface DisputeStatusCheckpoint {
   status: string;
   timestamp?: string;
   isActive?: boolean;
+  isCompleted?: boolean;
 }
 
 export interface DisputeReport {
