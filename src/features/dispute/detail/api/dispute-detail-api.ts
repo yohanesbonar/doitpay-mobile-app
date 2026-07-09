@@ -31,10 +31,15 @@ export interface DisputeDetailApi {
 }
 
 export type GetDisputeDetailResponse = ResponseApi<DisputeDetailApi>;
+export type CancelDisputeResponse = ResponseApi<DisputeDetailApi>;
 
 export const disputeDetailApi = {
   getCustomerReportDetail: async (id: string): Promise<GetDisputeDetailResponse> => {
     const { data } = await apiClient.get<GetDisputeDetailResponse>(`/v1/customer-reports/${id}`);
+    return data;
+  },
+  cancelCustomerReport: async (id: string): Promise<CancelDisputeResponse> => {
+    const { data } = await apiClient.post<CancelDisputeResponse>(`/v1/customer-reports/${id}/cancel`);
     return data;
   },
 };

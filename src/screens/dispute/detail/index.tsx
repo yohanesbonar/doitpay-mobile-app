@@ -3,6 +3,9 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { DisputeDetailView } from '@/features/dispute/detail';
 import { DisputeReport } from '@/features/dispute/types';
 import { useDisputeDetailQuery } from '@/features/dispute/detail/hooks/useDisputeDetailQuery';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { disputeDetailApi } from '@/features/dispute/detail/api/dispute-detail-api';
+import Toast from 'react-native-toast-message';
 
 const DisputeDetailScreen = () => {
   const navigation = useNavigation<any>();
@@ -10,6 +13,7 @@ const DisputeDetailScreen = () => {
 
   const initialReport = route.params?.report as DisputeReport | undefined;
   const detailId = initialReport?.id;
+  const queryClient = useQueryClient();
 
   const [statusOverride, setStatusOverride] = useState<DisputeReport['status'] | undefined>();
   const {
@@ -17,6 +21,30 @@ const DisputeDetailScreen = () => {
     refetch,
     isRefetching,
   } = useDisputeDetailQuery(detailId);
+
+  const { mutate: cancelReport } = useMutation({
+    mutationFn: (id: string) => disputeDetailApi.cancelCustomerReport(id),
+    onSuccess: async () => {
+      setStatusOverride('DITARIK');
+      await queryClient.invalidateQueries({ queryKey: ['dispute-list'] });
+      await queryClient.refetchQueries({ queryKey: ['dispute-list'], type: 'active' });
+      Toast.show({
+        type: 'success',
+        text1: 'Laporan berhasil ditarik',
+      });
+
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'DisputeList' }],
+      });
+    },
+    onError: (error: any) => {
+      Toast.show({
+        type: 'error',
+        text1: error?.message || 'Gagal menarik laporan',
+      });
+    },
+  });
 
   const baseReport = useMemo<DisputeReport>(() => {
     if (detailData?.data) {
@@ -103,7 +131,17 @@ const DisputeDetailScreen = () => {
         void refetch();
       }}
       onPressBack={() => navigation.goBack()}
-      onWithdraw={() => setStatusOverride('DITARIK')}
+      onWithdraw={() => {
+        if (!detailId) {
+          Toast.show({
+            type: 'error',
+            text1: 'ID laporan tidak tersedia',
+          });
+          return;
+        }
+
+        cancelReport(detailId);
+      }}
       onReopen={() => setStatusOverride('DIPROSES')}
       onAddResponse={() => navigation.navigate('DisputeAddResponse', { report })}
     />
