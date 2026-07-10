@@ -15,7 +15,14 @@ const DisputeListScreen = () => {
   return (
     <DisputeListView
       transactionId={transactionId}
-      onPressBack={() => navigation.goBack()}
+      onPressBack={() => {
+        if (navigation.canGoBack()) {
+          navigation.goBack();
+          return;
+        }
+
+        navigation.navigate('MainTabs');
+      }}
       onPressReport={handleOpenReport}
     />
   );

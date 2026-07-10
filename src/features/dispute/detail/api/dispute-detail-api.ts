@@ -12,6 +12,7 @@ export interface DisputeEvidenceFileApi {
   id: string;
   fileKey: string;
   createdAt?: string;
+  url?: string;
 }
 
 export interface DisputeDetailApi {

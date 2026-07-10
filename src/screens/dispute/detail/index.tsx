@@ -16,11 +16,8 @@ const DisputeDetailScreen = () => {
   const queryClient = useQueryClient();
 
   const [statusOverride, setStatusOverride] = useState<DisputeReport['status'] | undefined>();
-  const {
-    data: detailData,
-    refetch,
-    isRefetching,
-  } = useDisputeDetailQuery(detailId);
+  const [showWithdrawSuccessModal, setShowWithdrawSuccessModal] = useState(false);
+  const { data: detailData, refetch, isRefetching } = useDisputeDetailQuery(detailId);
 
   const { mutate: cancelReport } = useMutation({
     mutationFn: (id: string) => disputeDetailApi.cancelCustomerReport(id),
@@ -28,15 +25,7 @@ const DisputeDetailScreen = () => {
       setStatusOverride('DITARIK');
       await queryClient.invalidateQueries({ queryKey: ['dispute-list'] });
       await queryClient.refetchQueries({ queryKey: ['dispute-list'], type: 'active' });
-      Toast.show({
-        type: 'success',
-        text1: 'Laporan berhasil ditarik',
-      });
-
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'DisputeList' }],
-      });
+      setShowWithdrawSuccessModal(true);
     },
     onError: (error: any) => {
       Toast.show({
@@ -90,12 +79,19 @@ const DisputeDetailScreen = () => {
       return {
         id: item.id || initialReport?.id || '-',
         transactionId:
-          item.transactionId || item.orderReferenceId || initialReport?.transactionId || item.id || '-',
-        issueType: item.reasonLabel || item.customReason || initialReport?.issueType || 'Laporan Masalah',
+          item.transactionId ||
+          item.orderReferenceId ||
+          initialReport?.transactionId ||
+          item.id ||
+          '-',
+        issueType:
+          item.reasonLabel || item.customReason || initialReport?.issueType || 'Laporan Masalah',
         date: formatDate(item.createdAt || item.updatedAt || initialReport?.date),
         estimatedAt: item.estimatedAt || initialReport?.estimatedAt,
         status: mapApiStatusToDisputeStatus(item.status),
+        rawStatus: item.status || initialReport?.rawStatus,
         statusCheckpoints: item.statusCheckpoints || initialReport?.statusCheckpoints,
+        evidenceFiles: item.evidenceFiles || initialReport?.evidenceFiles,
         recipientName: initialReport?.recipientName || '-',
         amount: initialReport?.amount || 0,
         description: item.detail || initialReport?.description || '-',
@@ -141,6 +137,22 @@ const DisputeDetailScreen = () => {
         }
 
         cancelReport(detailId);
+      }}
+      showWithdrawSuccessModal={showWithdrawSuccessModal}
+      onCloseWithdrawSuccessModal={() => {
+        setShowWithdrawSuccessModal(false);
+        // navigate to maintabs
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'MainTabs' }],
+        });
+      }}
+      onBackToDisputeList={() => {
+        setShowWithdrawSuccessModal(false);
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'DisputeList' }],
+        });
       }}
       onReopen={() => setStatusOverride('DIPROSES')}
       onAddResponse={() => navigation.navigate('DisputeAddResponse', { report })}

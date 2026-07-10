@@ -157,7 +157,7 @@ export const DisputeReviewView = ({
 
       const options = {
         mediaType: 'photo',
-        selectionLimit: 0,
+        selectionLimit: 3 - attachments.length,
         quality: 0.8,
       } as const;
 
@@ -337,43 +337,45 @@ export const DisputeReviewView = ({
             {attachments.map((attachment) => (
               <View key={attachment.id} style={styles.attachmentCell}>
                 <View style={styles.previewBox}>
-                <Image
-                  source={{ uri: attachment.uri }}
-                  style={styles.previewImage}
-                  resizeMode="cover"
-                />
+                  <Image
+                    source={{ uri: attachment.uri }}
+                    style={styles.previewImage}
+                    resizeMode="cover"
+                  />
 
-                <TouchableOpacity
-                  style={styles.removeButton}
-                  onPress={() => removeAttachment(attachment.id)}
-                  activeOpacity={0.85}>
-                  <X size={14} color="#374151" />
-                </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.removeButton}
+                    onPress={() => removeAttachment(attachment.id)}
+                    activeOpacity={0.85}>
+                    <X size={14} color="#374151" />
+                  </TouchableOpacity>
 
-                {attachment.uploadState === 'uploading' && (
-                  <View style={styles.uploadingBadge}>
-                    <Text style={styles.uploadingText}>Uploading...</Text>
-                  </View>
-                )}
+                  {attachment.uploadState === 'uploading' && (
+                    <View style={styles.uploadingBadge}>
+                      <Text style={styles.uploadingText}>Uploading...</Text>
+                    </View>
+                  )}
 
-                {attachment.uploadState === 'failed' && (
-                  <View style={styles.failedBadge}>
-                    <Text style={styles.failedText}>Gagal</Text>
-                  </View>
-                )}
+                  {attachment.uploadState === 'failed' && (
+                    <View style={styles.failedBadge}>
+                      <Text style={styles.failedText}>Gagal</Text>
+                    </View>
+                  )}
                 </View>
               </View>
             ))}
 
-            <TouchableOpacity
-              style={styles.attachmentCell}
-              onPress={addAttachment}
-              activeOpacity={0.85}>
-              <View style={styles.uploadButton}>
-                <Camera size={24} color="#525252" />
-                <Text style={styles.uploadText}>Upload Foto</Text>
-              </View>
-            </TouchableOpacity>
+            {attachments.length < 3 && (
+              <TouchableOpacity
+                style={styles.attachmentCell}
+                onPress={addAttachment}
+                activeOpacity={0.85}>
+                <View style={styles.uploadButton}>
+                  <Camera size={28} color="#525252" />
+                  <Text style={styles.uploadText}>Upload Foto</Text>
+                </View>
+              </TouchableOpacity>
+            )}
           </View>
 
           <Text style={styles.sectionHeader}>Deskripsi Masalah</Text>

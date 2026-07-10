@@ -13,6 +13,13 @@ export interface DisputeStatusCheckpoint {
   isCompleted?: boolean;
 }
 
+export interface DisputeEvidenceFile {
+  id: string;
+  fileKey: string;
+  createdAt?: string;
+  url?: string;
+}
+
 export interface DisputeReport {
   id: string;
   transactionId: string;
@@ -20,7 +27,9 @@ export interface DisputeReport {
   date: string;
   estimatedAt?: string;
   status: DisputeStatus;
+  rawStatus?: string;
   statusCheckpoints?: DisputeStatusCheckpoint[];
+  evidenceFiles?: DisputeEvidenceFile[];
   recipientName: string;
   amount: number;
   description?: string;

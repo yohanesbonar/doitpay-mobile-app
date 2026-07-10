@@ -61,6 +61,7 @@ const toDisputeReport = (item: ReportListItemApi): DisputeReport => ({
   date: formatDate(item.createdAt || item.updatedAt),
   estimatedAt: item.estimatedAt,
   status: mapApiStatusToDisputeStatus(item.status),
+  rawStatus: item.status,
   recipientName: '-',
   amount: 0,
   description: item.detail,

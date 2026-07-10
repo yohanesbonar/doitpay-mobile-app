@@ -149,9 +149,10 @@ export const DisputeAttachmentView = ({
               style={styles.uploadTile}
               onPress={addAttachment}
               activeOpacity={0.85}>
-              <Camera size={26} color="#525252" />
+              <Camera size={28} color="#525252" />
               <Text style={styles.uploadTileText}>Upload Foto</Text>
             </TouchableOpacity>
+
           </View>
 
           <Text style={styles.inputLabel}>Tuliskan detail masalah</Text>

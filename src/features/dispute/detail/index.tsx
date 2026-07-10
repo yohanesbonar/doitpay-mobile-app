@@ -23,6 +23,9 @@ interface DisputeDetailViewProps {
   onRefresh?: () => void;
   onPressBack: () => void;
   onWithdraw: () => void;
+  showWithdrawSuccessModal?: boolean;
+  onCloseWithdrawSuccessModal?: () => void;
+  onBackToDisputeList?: () => void;
   onAddResponse: () => void;
   onReopen: () => void;
 }
@@ -52,12 +55,51 @@ const checkpointLabelMap: Record<string, string> = {
 };
 
 const badgeLabelMap: Record<string, string> = {
+  REPORTED: 'Diproses',
+  UNDER_REVIEW: 'Ditinjau',
+  NEED_USER_FEEDBACK: 'Butuh Tindakan',
+  RESOLVED: 'Selesai',
+  DONE: 'Selesai',
+  REJECTED: 'Ditolak',
   DIAJUKAN: 'Ditinjau',
-  DIPROSES: 'Ditinjau',
-  DIBUTUHKAN_INFO: 'Ditinjau',
-  SELESAI: 'Ditinjau',
+  DIPROSES: 'Diproses',
+  DIBUTUHKAN_INFO: 'Butuh Tindakan',
+  SELESAI: 'Selesai',
   DITARIK: 'Ditutup',
   DITOLAK: 'Ditolak',
+};
+
+const badgeStyleMap: Record<
+  string,
+  {
+    color: string;
+    bg: string;
+  }
+> = {
+  DIAJUKAN: {
+    color: '#404040',
+    bg: '#D4D4D4',
+  },
+  DIPROSES: {
+    color: '#3981FF',
+    bg: '#EBF2FF',
+  },
+  DIBUTUHKAN_INFO: {
+    color: '#CA8A04',
+    bg: '#FEF9C3',
+  },
+  SELESAI: {
+    color: '#16A34A',
+    bg: '#DCFCE7',
+  },
+  DITARIK: {
+    color: '#DC2626',
+    bg: '#E5E5E5',
+  },
+  DITOLAK: {
+    color: '#DC2626',
+    bg: '#E5E5E5',
+  },
 };
 
 const getProgressIndex = (status: DisputeReport['status']): number => {
@@ -146,6 +188,9 @@ export const DisputeDetailView = ({
   onRefresh,
   onPressBack,
   onWithdraw,
+  showWithdrawSuccessModal = false,
+  onCloseWithdrawSuccessModal,
+  onBackToDisputeList,
   onAddResponse,
   onReopen,
 }: DisputeDetailViewProps) => {
@@ -160,6 +205,8 @@ export const DisputeDetailView = ({
   const isNeedInfo = report.status === 'DIBUTUHKAN_INFO';
   const isDone = report.status === 'SELESAI';
   const isClosed = report.status === 'DITARIK' || report.status === 'DITOLAK';
+  const badgeLabel = badgeLabelMap[(report.rawStatus || report.status || '').toUpperCase()] || 'Ditinjau';
+  const badgeStyle = badgeStyleMap[report.status] || badgeStyleMap.DIAJUKAN;
 
   const handleCopyReportId = () => {
     const reportId = (report.id || '').trim();
@@ -210,8 +257,8 @@ export const DisputeDetailView = ({
                 <Text
                   style={styles.summaryMeta}>{`${report.date}`}</Text>
               </View>
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>{badgeLabelMap[report.status]}</Text>
+              <View style={[styles.badge, { backgroundColor: badgeStyle.bg }]}>
+                <Text style={[styles.badgeText, { color: badgeStyle.color }]}>{badgeLabel}</Text>
               </View>
             </View>
 
@@ -286,17 +333,29 @@ export const DisputeDetailView = ({
 
         {!isClosed && (
           <View style={styles.footer}>
-            {isNeedInfo ? (
-              <TouchableOpacity style={styles.outlinePrimaryButton} activeOpacity={0.85} onPress={onAddResponse}>
-                <Text style={styles.outlinePrimaryButtonText}>Balas Laporan</Text>
-              </TouchableOpacity>
-            ) : isDone ? (
+            {isDone ? (
               <TouchableOpacity
                 style={styles.outlinePrimaryButton}
                 activeOpacity={0.85}
                 onPress={() => setShowReopenSheet(true)}>
                 <Text style={styles.outlinePrimaryButtonText}>Buka Kembali Laporan</Text>
               </TouchableOpacity>
+            ) : isNeedInfo ? (
+              <>
+                <TouchableOpacity
+                  style={styles.outlinePrimaryButton}
+                  activeOpacity={0.85}
+                  onPress={onAddResponse}>
+                  <Text style={styles.outlinePrimaryButtonText}>Balas Laporan</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.outlineDangerButton, styles.secondaryFooterButton]}
+                  activeOpacity={0.85}
+                  onPress={() => setShowWithdrawModal(true)}>
+                  <Text style={styles.outlineDangerButtonText}>Tarik Laporan</Text>
+                </TouchableOpacity>
+              </>
             ) : (
               <TouchableOpacity
                 style={styles.outlineDangerButton}
@@ -390,6 +449,40 @@ export const DisputeDetailView = ({
             </TouchableWithoutFeedback>
           </View>
         </TouchableWithoutFeedback>
+      </Modal>
+
+      <Modal
+        visible={showWithdrawSuccessModal}
+        transparent
+        animationType="fade"
+        onRequestClose={onCloseWithdrawSuccessModal}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.successModalCard}>
+            <View style={styles.successIconCircle}>
+              <Check size={36} color="#16A34A" strokeWidth={2.6} />
+            </View>
+
+            <Text style={styles.successTitle}>Laporan Berhasil Ditarik</Text>
+            <Text style={styles.successDesc}>
+              Laporan telah berhasil ditarik dan tidak akan diproses lebih lanjut. Anda dapat membuat laporan
+              baru jika diperlukan.
+            </Text>
+
+            <TouchableOpacity
+              style={styles.successPrimaryButton}
+              activeOpacity={0.85}
+              onPress={onBackToDisputeList}>
+              <Text style={styles.successPrimaryButtonText}>Kembali ke Laporan Saya</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.successSecondaryButton}
+              activeOpacity={0.85}
+              onPress={onCloseWithdrawSuccessModal}>
+              <Text style={styles.successSecondaryButtonText}>Keluar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </Modal>
     </SafeAreaView>
   );
@@ -623,6 +716,9 @@ const styles = StyleSheet.create({
     fontFamily: 'Switzer-Medium',
     fontSize: 14,
   },
+  secondaryFooterButton: {
+    marginTop: 10,
+  },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.48)',
@@ -759,6 +855,65 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   sheetSecondaryButtonText: {
+    color: '#000000',
+    fontFamily: 'Switzer-Regular',
+    fontSize: 14,
+  },
+  successModalCard: {
+    width: '100%',
+    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 18,
+    paddingTop: 20,
+    paddingBottom: 16,
+  },
+  successIconCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 4,
+    borderColor: '#16A34A',
+    alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 18,
+  },
+  successTitle: {
+    color: '#111111',
+    fontFamily: 'Switzer-Semibold',
+    fontSize: 24,
+    lineHeight: 38,
+    marginBottom: 8,
+  },
+  successDesc: {
+    color: '#121212',
+    fontFamily: 'Switzer-Regular',
+    fontSize: 14,
+    lineHeight: 24,
+  },
+  successPrimaryButton: {
+    marginTop: 20,
+    height: 45,
+    borderRadius: 22,
+    backgroundColor: '#3981FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  successPrimaryButtonText: {
+    color: '#FFFFFF',
+    fontFamily: 'Switzer-Medium',
+    fontSize: 14,
+  },
+  successSecondaryButton: {
+    marginTop: 10,
+    height: 45,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: '#DDDEE2',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  successSecondaryButtonText: {
     color: '#000000',
     fontFamily: 'Switzer-Regular',
     fontSize: 14,

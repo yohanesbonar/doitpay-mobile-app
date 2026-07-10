@@ -12,12 +12,14 @@ import {
   Alert,
 } from 'react-native';
 import { launchImageLibrary, ImageLibraryOptions } from 'react-native-image-picker';
-import { AlertCircle, Check, Upload, X } from 'lucide-react-native';
+import { AlertCircle, Check, Image as ImageIcon, Upload, X } from 'lucide-react-native';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import Button from '@/components/atoms/Button';
+import { DisputeReport } from '../types';
 
 interface DisputeAddResponseViewProps {
   reportId: string;
+  report?: DisputeReport;
   onPressBack: () => void;
   onSubmitSuccess: () => void;
 }
@@ -28,23 +30,58 @@ interface PhotoItem {
   size?: number;
 }
 
+type ResponseTab = 'LAPORAN' | 'BALASAN';
+
 const formatReportCode = (id: string): string => {
   const digits = id.replace(/\D/g, '');
   if (!digits) return '#D-00000';
   return `#D-${digits.slice(-5)}`;
 };
 
+const getFileKeyName = (fileKey?: string) => {
+  if (!fileKey) {
+    return 'lampiran';
+  }
+
+  return fileKey.split('/').pop() || fileKey;
+};
+
+const getFileExtension = (fileKey?: string) => {
+  const fileName = getFileKeyName(fileKey);
+  const parts = fileName.split('.');
+  return parts.length > 1 ? parts[parts.length - 1].toUpperCase() : 'FILE';
+};
+
+const isRemoteImageUrl = (value?: string) => {
+  if (!value) {
+    return false;
+  }
+
+  return /^https?:\/\//i.test(value.trim());
+};
+
 export const DisputeAddResponseView = ({
   reportId,
+  report,
   onPressBack,
   onSubmitSuccess,
 }: DisputeAddResponseViewProps) => {
-  const [description, setDescription] = useState(
-    'Salah pengiriman transfer\nTanggal: 29 Mei 2026\nNominal: Rp 100,000',
-  );
+  const [selectedTab, setSelectedTab] = useState<ResponseTab>('BALASAN');
+  const [description, setDescription] = useState('');
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [previewImageUri, setPreviewImageUri] = useState<string | null>(null);
+  const previousEvidenceFiles = report?.evidenceFiles || [];
+
+  const openPreview = (uri: string) => {
+    if (!uri) return;
+    setPreviewImageUri(uri);
+  };
+
+  const closePreview = () => {
+    setPreviewImageUri(null);
+  };
 
   const removeAttachment = (index: number) => {
     setPhotos((prev) => prev.filter((_, i) => i !== index));
@@ -54,7 +91,7 @@ export const DisputeAddResponseView = ({
     try {
       const options: ImageLibraryOptions = {
         mediaType: 'photo',
-        selectionLimit: 0,
+        selectionLimit: 3 - photos.length,
         quality: 0.8,
       };
 
@@ -83,7 +120,7 @@ export const DisputeAddResponseView = ({
     }
   };
 
-  const canSubmit = useMemo(() => description.trim().length > 10 && photos.length > 0, [description, photos]);
+  const canSubmit = useMemo(() => description.trim().length > 0, [description]);
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
@@ -116,14 +153,16 @@ export const DisputeAddResponseView = ({
   return (
     <SafeAreaView style={styles.safeArea} edges={['bottom']}>
       <HeaderToolbar
-        title={`Laporan ${formatReportCode(reportId)}`}
+        title="Laporan Saya"
         onPressBack={onPressBack}
         titlePosition="left"
-        titleStyle="bold"
+        titleStyle="medium"
       />
 
       <View style={styles.container}>
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}>
           <Text style={styles.title}>Tambahan Laporan</Text>
           <Text style={styles.subtitle}>Pastikan detail laporan sudah sesuai.</Text>
 
@@ -131,64 +170,160 @@ export const DisputeAddResponseView = ({
             <View style={styles.warningIconWrap}>
               <AlertCircle size={12} color="#FFFFFF" />
             </View>
-            <Text style={styles.warningText}>Tim kami butuh informasi tambahan agar laporan bisa dilanjutkan.</Text>
+            <Text style={styles.warningText}>
+              Tim kami butuh informasi tambahan agar laporan bisa dilanjutkan.
+            </Text>
           </View>
 
-          <Text style={styles.label}>Lampiran Foto</Text>
-          <View style={styles.photoRow}>
-            {photos.map((photo, index) => (
-              <View key={`photo-${index}-${photo.uri}`} style={styles.thumbnailWrapper}>
-                <Image
-                  source={{ uri: photo.uri }}
-                  style={styles.thumbnail}
-                  resizeMode="cover"
-                />
-                <TouchableOpacity
-                  style={styles.thumbnailRemoveButton}
-                  activeOpacity={0.8}
-                  onPress={() => removeAttachment(index)}>
-                  <X size={16} color="#FFFFFF" strokeWidth={2} />
-                </TouchableOpacity>
-              </View>
-            ))}
+          <View style={styles.tabWrapper}>
             <TouchableOpacity
-              style={styles.uploadBox}
-              onPress={handlePickPhoto}
-              activeOpacity={0.8}>
-              <Upload size={28} color="#9CA3AF" strokeWidth={1.5} />
-              <Text style={styles.uploadBoxText}>Upload Foto</Text>
+              style={[styles.tabButton, selectedTab === 'LAPORAN' && styles.tabButtonActive]}
+              activeOpacity={0.85}
+              onPress={() => setSelectedTab('LAPORAN')}>
+              <Text
+                style={[
+                  styles.tabButtonText,
+                  selectedTab === 'LAPORAN' && styles.tabButtonTextActive,
+                ]}>
+                Laporan
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.tabButton, selectedTab === 'BALASAN' && styles.tabButtonActive]}
+              activeOpacity={0.85}
+              onPress={() => setSelectedTab('BALASAN')}>
+              <Text
+                style={[
+                  styles.tabButtonText,
+                  selectedTab === 'BALASAN' && styles.tabButtonTextActive,
+                ]}>
+                Balasan
+              </Text>
             </TouchableOpacity>
           </View>
 
-          {photos.length > 0 && (
-            <Text style={styles.attachmentHintText}>{photos.length} file terpilih</Text>
-          )}
+          {selectedTab === 'LAPORAN' ? (
+            <>
+              <Text style={styles.label}>Jenis Masalah</Text>
+              <View style={styles.readonlyBox}>
+                <Text style={styles.readonlyText}>{report?.issueType || ''}</Text>
+              </View>
 
-          <Text style={styles.label}>Balasan Kamu</Text>
-          <TextInput
-            value={description}
-            onChangeText={setDescription}
-            multiline
-            style={styles.textArea}
-            placeholder="Jelaskan tambahan informasi"
-            placeholderTextColor="#9CA3AF"
-            editable={!isSubmitting}
-          />
+              <Text style={styles.label}>Lampiran Foto</Text>
+              {previousEvidenceFiles.length > 0 ? (
+                <>
+                  <View style={styles.previousPhotoRow}>
+                    {previousEvidenceFiles.map((file) => {
+                      const imageUri = file.url || file.fileKey;
+                      const hasImageUrl = isRemoteImageUrl(imageUri);
+
+                      return (
+                        <View key={file.id} style={styles.previousPhotoTile}>
+                          <TouchableOpacity
+                            style={styles.previousPhotoPreview}
+                            activeOpacity={hasImageUrl ? 0.85 : 1}
+                            disabled={!hasImageUrl}
+                            onPress={() => openPreview(imageUri)}>
+                            {hasImageUrl ? (
+                              <Image
+                                source={{ uri: imageUri }}
+                                style={styles.previousPhotoPreview}
+                                resizeMode="cover"
+                              />
+                            ) : (
+                              <>
+                                <ImageIcon size={26} color="#9CA3AF" strokeWidth={1.8} />
+                                <Text style={styles.previousPhotoExt}>
+                                  {getFileExtension(file.fileKey)}
+                                </Text>
+                              </>
+                            )}
+                          </TouchableOpacity>
+                        </View>
+                      );
+                    })}
+                  </View>
+                </>
+              ) : (
+                <View style={styles.previousAttachmentBox}>
+                  <Text style={styles.previousAttachmentText}>Belum ada lampiran sebelumnya</Text>
+                </View>
+              )}
+
+              <Text style={styles.label}>Balasan Kamu</Text>
+              <View style={styles.reportSummaryCard}>
+                <Text style={styles.reportSummaryText}>{report?.description || '-'}</Text>
+              </View>
+            </>
+          ) : (
+            <>
+              <Text style={styles.label}>Lampiran Foto</Text>
+              <View style={styles.photoRow}>
+                {photos.map((photo, index) => (
+                  <View key={`photo-${index}-${photo.uri}`} style={styles.thumbnailWrapper}>
+                    <TouchableOpacity activeOpacity={0.85} onPress={() => openPreview(photo.uri)}>
+                      <Image
+                        source={{ uri: photo.uri }}
+                        style={styles.thumbnail}
+                        resizeMode="cover"
+                      />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.thumbnailRemoveButton}
+                      activeOpacity={0.8}
+                      onPress={() => removeAttachment(index)}>
+                      <X size={16} color="#FFFFFF" strokeWidth={2} />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+                {photos.length < 3 && (
+                  <TouchableOpacity
+                    style={styles.uploadBox}
+                    onPress={handlePickPhoto}
+                    activeOpacity={0.8}>
+                    <Upload size={28} color="#9CA3AF" strokeWidth={1.5} />
+                    <Text style={styles.uploadBoxText}>Upload Foto</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              {photos.length > 0 && (
+                <Text style={styles.attachmentHintText}>{photos.length} file terpilih</Text>
+              )}
+
+              <Text style={styles.label}>Tambahan Informasi</Text>
+              <TextInput
+                value={description}
+                onChangeText={setDescription}
+                multiline
+                style={styles.textArea}
+                placeholder="Deskripsikan tambahan informasi kamu"
+                placeholderTextColor="#9CA3AF"
+                editable={!isSubmitting}
+              />
+            </>
+          )}
         </ScrollView>
 
-        <Button
-          onPress={handleSubmit}
-          title="Kirim Balasan"
-          color="#3475E8"
-          type="regular"
-          textColor="white"
-          textStyle={styles.primaryButtonText}
-          style={[styles.primaryButton, !canSubmit && styles.disabledButton]}
-          disable={!canSubmit || isSubmitting}
-        />
+        {selectedTab === 'BALASAN' ? (
+          <Button
+            onPress={handleSubmit}
+            title="Kirim Balasan"
+            color="#3475E8"
+            type="regular"
+            textColor="white"
+            textStyle={styles.primaryButtonText}
+            style={[styles.primaryButton, !canSubmit && styles.disabledButton]}
+            disable={!canSubmit || isSubmitting}
+          />
+        ) : null}
       </View>
 
-      <Modal visible={showSuccess} transparent animationType="fade" onRequestClose={() => setShowSuccess(false)}>
+      <Modal
+        visible={showSuccess}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowSuccess(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
             <TouchableOpacity
@@ -204,8 +339,8 @@ export const DisputeAddResponseView = ({
 
             <Text style={styles.successTitle}>Balasan Berhasil Dikirim</Text>
             <Text style={styles.successDesc}>
-              Informasi tambahan telah kami terima. Tim kami akan meninjau laporan dan menghubungi Anda jika
-              diperlukan.
+              Informasi tambahan telah kami terima. Tim kami akan meninjau laporan dan menghubungi
+              Anda jika diperlukan.
             </Text>
             <Text style={styles.successEstimate}>Estimasi peninjauan: 1×24 jam</Text>
 
@@ -231,6 +366,29 @@ export const DisputeAddResponseView = ({
           </View>
         </View>
       </Modal>
+
+      <Modal
+        visible={Boolean(previewImageUri)}
+        transparent
+        animationType="fade"
+        onRequestClose={closePreview}>
+        <View style={styles.previewOverlay}>
+          <TouchableOpacity
+            style={styles.previewCloseButton}
+            activeOpacity={0.85}
+            onPress={closePreview}>
+            <X size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+
+          {previewImageUri ? (
+            <Image
+              source={{ uri: previewImageUri }}
+              style={styles.previewImage}
+              resizeMode="contain"
+            />
+          ) : null}
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -251,8 +409,8 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#111827',
-    fontFamily: 'Switzer-Bold',
-    fontSize: 28,
+    fontFamily: 'Switzer-Semibold',
+    fontSize: 24,
     lineHeight: 36,
     marginBottom: 6,
   },
@@ -291,11 +449,126 @@ const styles = StyleSheet.create({
     fontFamily: 'Switzer-Medium',
     lineHeight: 20,
   },
+  tabWrapper: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 18,
+  },
+  tabButton: {
+    minWidth: 74,
+    height: 32,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+  },
+  tabButtonActive: {
+    borderColor: '#D1D5DB',
+    backgroundColor: '#FFFFFF',
+  },
+  tabButtonText: {
+    color: '#111827',
+    fontFamily: 'Switzer-Medium',
+    fontSize: 13,
+  },
+  tabButtonTextActive: {
+    color: '#111827',
+  },
   label: {
     color: '#111827',
-    fontFamily: 'Switzer-Bold',
+    fontFamily: 'Switzer-Medium',
     fontSize: 16,
     marginBottom: 10,
+  },
+  readonlyBox: {
+    minHeight: 40,
+    borderRadius: 8,
+    backgroundColor: '#D4D4D4',
+    paddingHorizontal: 12,
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  readonlyText: {
+    color: '#737373',
+    fontFamily: 'Switzer-Medium',
+    fontSize: 14,
+  },
+  reportSummaryCard: {
+    borderRadius: 10,
+    backgroundColor: '#D4D4D4',
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    marginBottom: 16,
+  },
+  reportSummaryText: {
+    color: '#374151',
+    fontFamily: 'Switzer-Medium',
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  reportSummaryMeta: {
+    color: '#737373',
+    fontFamily: 'Switzer-Regular',
+    fontSize: 12,
+    lineHeight: 18,
+    marginTop: 2,
+  },
+  previousAttachmentBox: {
+    minHeight: 52,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#FAFAFA',
+    paddingHorizontal: 12,
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  previousAttachmentText: {
+    color: '#6B7280',
+    fontFamily: 'Switzer-Regular',
+    fontSize: 14,
+  },
+  previousPhotoRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginBottom: 8,
+  },
+  previousPhotoTile: {
+    width: 96,
+  },
+  previousPhotoPreview: {
+    width: 96,
+    height: 96,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#F9FAFB',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  previousPhotoExt: {
+    marginTop: 6,
+    color: '#6B7280',
+    fontFamily: 'Switzer-Semibold',
+    fontSize: 11,
+  },
+  previousPhotoName: {
+    marginTop: 6,
+    color: '#6B7280',
+    fontFamily: 'Switzer-Regular',
+    fontSize: 11,
+    lineHeight: 14,
+  },
+  previousAttachmentHint: {
+    marginBottom: 16,
+    color: '#9CA3AF',
+    fontFamily: 'Switzer-Regular',
+    fontSize: 12,
+    lineHeight: 18,
   },
   photoRow: {
     flexDirection: 'row',
@@ -449,5 +722,28 @@ const styles = StyleSheet.create({
     color: '#000000',
     fontFamily: 'Switzer-Medium',
     fontSize: 14,
+  },
+  previewOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.9)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+  },
+  previewCloseButton: {
+    position: 'absolute',
+    top: 56,
+    right: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 2,
+  },
+  previewImage: {
+    width: '100%',
+    height: '78%',
   },
 });
