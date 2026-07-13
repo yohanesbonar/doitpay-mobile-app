@@ -61,11 +61,12 @@ const badgeLabelMap: Record<string, string> = {
   RESOLVED: 'Selesai',
   DONE: 'Selesai',
   REJECTED: 'Ditolak',
+  CANCELED: 'Ditarik',
   DIAJUKAN: 'Ditinjau',
   DIPROSES: 'Diproses',
   DIBUTUHKAN_INFO: 'Butuh Tindakan',
   SELESAI: 'Selesai',
-  DITARIK: 'Ditutup',
+  DITARIK: 'Ditarik',
   DITOLAK: 'Ditolak',
 };
 
@@ -202,10 +203,11 @@ export const DisputeDetailView = ({
   const hasDynamicFlags = (report.statusCheckpoints || []).length > 0;
 
   const progressIndex = getProgressIndex(report.status);
-  const isNeedInfo = report.status === 'DIBUTUHKAN_INFO';
+  const isNeedInfo = report.status === 'DIBUTUHKAN_INFO' || report.rawStatus === 'NEED_USER_FEEDBACK';
   const isDone = report.status === 'SELESAI';
   const isClosed = report.status === 'DITARIK' || report.status === 'DITOLAK';
-  const badgeLabel = badgeLabelMap[(report.rawStatus || report.status || '').toUpperCase()] || 'Ditinjau';
+  const badgeLabel =
+    badgeLabelMap[(report.rawStatus || report.status || '').toUpperCase()] || 'Ditinjau';
   const badgeStyle = badgeStyleMap[report.status] || badgeStyleMap.DIAJUKAN;
 
   const handleCopyReportId = () => {
@@ -254,8 +256,7 @@ export const DisputeDetailView = ({
             <View style={styles.summaryTopRow}>
               <View>
                 <Text style={styles.issueType}>{report.issueType}</Text>
-                <Text
-                  style={styles.summaryMeta}>{`${report.date}`}</Text>
+                <Text style={styles.summaryMeta}>{`${report.date}`}</Text>
               </View>
               <View style={[styles.badge, { backgroundColor: badgeStyle.bg }]}>
                 <Text style={[styles.badgeText, { color: badgeStyle.color }]}>{badgeLabel}</Text>
@@ -284,6 +285,10 @@ export const DisputeDetailView = ({
                 : !isDone && index === progressIndex;
               const pending = !done && !current;
 
+              if (step.isActive && report.rawStatus === 'CANCELED') {
+                step.label = 'Ditarik';
+              }
+
               return (
                 <View key={`${step.label}-${index}`} style={styles.timelineItem}>
                   <View style={styles.indicatorColumn}>
@@ -297,7 +302,9 @@ export const DisputeDetailView = ({
                       {done && <Check size={10} color="#1C9F4B" strokeWidth={3} />}
                     </View>
                     {index < timelineSteps.length - 1 && (
-                      <View style={[styles.connector, (done || current) && styles.connectorActive]} />
+                      <View
+                        style={[styles.connector, (done || current) && styles.connectorActive]}
+                      />
                     )}
                   </View>
 
@@ -349,20 +356,24 @@ export const DisputeDetailView = ({
                   <Text style={styles.outlinePrimaryButtonText}>Balas Laporan</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity
-                  style={[styles.outlineDangerButton, styles.secondaryFooterButton]}
-                  activeOpacity={0.85}
-                  onPress={() => setShowWithdrawModal(true)}>
-                  <Text style={styles.outlineDangerButtonText}>Tarik Laporan</Text>
-                </TouchableOpacity>
+                {report.rawStatus !== 'CANCELED' && (
+                  <TouchableOpacity
+                    style={[styles.outlineDangerButton, styles.secondaryFooterButton]}
+                    activeOpacity={0.85}
+                    onPress={() => setShowWithdrawModal(true)}>
+                    <Text style={styles.outlineDangerButtonText}>Tarik Laporan</Text>
+                  </TouchableOpacity>
+                )}
               </>
-            ) : (
+            ) : report.rawStatus !== 'CANCELED' ? (
               <TouchableOpacity
                 style={styles.outlineDangerButton}
                 activeOpacity={0.85}
                 onPress={() => setShowWithdrawModal(true)}>
                 <Text style={styles.outlineDangerButtonText}>Tarik Laporan</Text>
               </TouchableOpacity>
+            ) : (
+              <View style={{}}></View>
             )}
           </View>
         )}
@@ -464,8 +475,8 @@ export const DisputeDetailView = ({
 
             <Text style={styles.successTitle}>Laporan Berhasil Ditarik</Text>
             <Text style={styles.successDesc}>
-              Laporan telah berhasil ditarik dan tidak akan diproses lebih lanjut. Anda dapat membuat laporan
-              baru jika diperlukan.
+              Laporan telah berhasil ditarik dan tidak akan diproses lebih lanjut. Anda dapat
+              membuat laporan baru jika diperlukan.
             </Text>
 
             <TouchableOpacity

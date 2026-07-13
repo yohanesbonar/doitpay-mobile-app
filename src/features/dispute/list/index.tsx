@@ -49,6 +49,8 @@ const mapApiStatusToDisputeStatus = (status?: string): DisputeReport['status'] =
       return 'SELESAI';
     case 'REJECTED':
       return 'DITOLAK';
+    case 'CANCELED':
+      return 'DITARIK';
     default:
       return 'DIAJUKAN';
   }
@@ -70,6 +72,7 @@ const toDisputeReport = (item: ReportListItemApi): DisputeReport => ({
 
 interface DisputeListViewProps {
   transactionId?: string;
+  initialTab?: ListTab;
   onPressBack: () => void;
   onPressReport: (report: DisputeReport) => void;
 }
@@ -120,8 +123,16 @@ const statusPillConfig: Record<
   DITOLAK: {
     label: 'Ditolak',
     color: '#DC2626',
-    bg: '#E5E5E5',
-    iconBg: '#E5E5E5',
+    bg: '#FEE2E2',
+    iconBg: '#FEE2E2',
+    iconColor: '#DC2626',
+    Icon: XCircle,
+  },
+  DITARIK: {
+    label: 'Ditarik',
+    color: '#DC2626',
+    bg: '#FEE2E2',
+    iconBg: '#FFE2E2',
     iconColor: '#DC2626',
     Icon: XCircle,
   },
@@ -129,21 +140,15 @@ const statusPillConfig: Record<
 
 export const DisputeListView = ({
   transactionId,
+  initialTab,
   onPressBack,
   onPressReport,
 }: DisputeListViewProps) => {
-  const [tab, setTab] = useState<ListTab>('aktif');
+  const [tab, setTab] = useState<ListTab>(initialTab === 'selesai' ? 'selesai' : 'aktif');
   const queryStatus = tab === 'aktif' ? 'ACTIVE' : 'DONE';
 
-  const {
-    data,
-    isLoading,
-    isRefetching,
-    refetch,
-    hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage,
-  } = useDisputeListQuery({ status: queryStatus, transactionId });
+  const { data, isLoading, isRefetching, refetch, hasNextPage, isFetchingNextPage, fetchNextPage } =
+    useDisputeListQuery({ status: queryStatus, transactionId });
 
   const dataSource = useMemo(
     () => (data?.pages.flatMap((page) => page.items) || []).map(toDisputeReport),
@@ -219,6 +224,7 @@ export const DisputeListView = ({
               ) : null
             }
             renderItem={({ item }) => {
+              console.log('Rendering item:', item); // Debugging line to check the item being rendered
               const status = statusPillConfig[item.status] || statusPillConfig.DIAJUKAN;
               const StatusIcon = status.Icon;
 
@@ -233,17 +239,11 @@ export const DisputeListView = ({
 
                   <View style={styles.cardHeader}>
                     <View style={styles.cardMainInfo}>
-                      <Text
-                        style={styles.issueType}
-                        numberOfLines={2}
-                        ellipsizeMode="tail">
+                      <Text style={styles.issueType} numberOfLines={2} ellipsizeMode="tail">
                         {item.issueType}
                       </Text>
                       <Text style={styles.metaText}>{item.date}</Text>
-                      <Text
-                        style={styles.metaSubText}>
-                        #{item.id}
-                      </Text>
+                      <Text style={styles.metaSubText}>#{item.id}</Text>
                     </View>
                     <View style={[styles.statusPill, { backgroundColor: status.bg }]}>
                       <Text style={[styles.statusPillText, { color: status.color }]}>

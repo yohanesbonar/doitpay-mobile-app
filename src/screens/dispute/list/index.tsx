@@ -6,15 +6,16 @@ import { DisputeReport } from '@/features/dispute/types';
 const DisputeListScreen = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
-  const { transactionId } = route.params || {};
+  const { transactionId, initialTab } = route.params || {};
 
   const handleOpenReport = (report: DisputeReport) => {
-    navigation.navigate('DisputeDetail', { report });
+    navigation.navigate('DisputeDetail', { reportId: report.id });
   };
 
   return (
     <DisputeListView
       transactionId={transactionId}
+      initialTab={initialTab}
       onPressBack={() => {
         if (navigation.canGoBack()) {
           navigation.goBack();

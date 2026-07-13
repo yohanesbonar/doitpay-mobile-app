@@ -12,7 +12,8 @@ const DisputeDetailScreen = () => {
   const route = useRoute<any>();
 
   const initialReport = route.params?.report as DisputeReport | undefined;
-  const detailId = initialReport?.id;
+  const routeReportId = route.params?.reportId as string | undefined;
+  const detailId = routeReportId || initialReport?.id;
   const queryClient = useQueryClient();
 
   const [statusOverride, setStatusOverride] = useState<DisputeReport['status'] | undefined>();
@@ -36,83 +37,74 @@ const DisputeDetailScreen = () => {
   });
 
   const baseReport = useMemo<DisputeReport>(() => {
-    if (detailData?.data) {
-      const item = detailData.data;
+    const mapApiStatusToDisputeStatus = (status?: string): DisputeReport['status'] => {
+      const normalized = (status || '').toUpperCase();
 
-      const mapApiStatusToDisputeStatus = (status?: string): DisputeReport['status'] => {
-        const normalized = (status || '').toUpperCase();
+      switch (normalized) {
+        case 'REPORTED':
+          return 'DIPROSES';
+        case 'UNDER_REVIEW':
+          return 'DIAJUKAN';
+        case 'NEED_USER_FEEDBACK':
+          return 'DIBUTUHKAN_INFO';
+        case 'RESOLVED':
+        case 'DONE':
+          return 'SELESAI';
+        case 'REJECTED':
+          return 'DITOLAK';
+        default:
+          return 'DIAJUKAN';
+      }
+    };
 
-        switch (normalized) {
-          case 'REPORTED':
-            return 'DIPROSES';
-          case 'UNDER_REVIEW':
-            return 'DIAJUKAN';
-          case 'NEED_USER_FEEDBACK':
-            return 'DIBUTUHKAN_INFO';
-          case 'RESOLVED':
-          case 'DONE':
-            return 'SELESAI';
-          case 'REJECTED':
-            return 'DITOLAK';
-          default:
-            return initialReport?.status || 'DIAJUKAN';
-        }
-      };
+    const formatDate = (value?: string) => {
+      if (!value) {
+        return '-';
+      }
 
-      const formatDate = (value?: string) => {
-        if (!value) {
-          return '-';
-        }
+      const parsedDate = new Date(value);
+      if (Number.isNaN(parsedDate.getTime())) {
+        return value;
+      }
 
-        const parsedDate = new Date(value);
-        if (Number.isNaN(parsedDate.getTime())) {
-          return value;
-        }
+      return parsedDate.toLocaleDateString('id-ID', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+      });
+    };
 
-        return parsedDate.toLocaleDateString('id-ID', {
-          day: '2-digit',
-          month: 'long',
-          year: 'numeric',
-        });
-      };
-
+    const item = detailData?.data;
+    if (!item) {
       return {
-        id: item.id || initialReport?.id || '-',
-        transactionId:
-          item.transactionId ||
-          item.orderReferenceId ||
-          initialReport?.transactionId ||
-          item.id ||
-          '-',
-        issueType:
-          item.reasonLabel || item.customReason || initialReport?.issueType || 'Laporan Masalah',
-        date: formatDate(item.createdAt || item.updatedAt || initialReport?.date),
-        estimatedAt: item.estimatedAt || initialReport?.estimatedAt,
-        status: mapApiStatusToDisputeStatus(item.status),
-        rawStatus: item.status || initialReport?.rawStatus,
-        statusCheckpoints: item.statusCheckpoints || initialReport?.statusCheckpoints,
-        evidenceFiles: item.evidenceFiles || initialReport?.evidenceFiles,
-        recipientName: initialReport?.recipientName || '-',
-        amount: initialReport?.amount || 0,
-        description: item.detail || initialReport?.description || '-',
-        attachmentCount: item.evidenceFiles?.length ?? initialReport?.attachmentCount ?? 0,
-      };
-    }
-
-    return (
-      initialReport || {
-        id: '-',
+        id: detailId || '-',
         transactionId: '-',
-        issueType: 'Laporan Masalah',
+        issueType: '-',
         date: '-',
         status: 'DIAJUKAN',
         recipientName: '-',
         amount: 0,
         description: '-',
         attachmentCount: 0,
-      }
-    );
-  }, [detailData, initialReport]);
+      };
+    }
+
+    return {
+      id: item.id || detailId || '-',
+      transactionId: item.transactionId || item.orderReferenceId || item.id || '-',
+      issueType: item.reasonLabel || item.customReason || 'Laporan Masalah',
+      date: formatDate(item.createdAt || item.updatedAt),
+      estimatedAt: item.estimatedAt,
+      status: mapApiStatusToDisputeStatus(item.status),
+      rawStatus: item.status,
+      statusCheckpoints: item.statusCheckpoints,
+      evidenceFiles: item.evidenceFiles,
+      recipientName: '-',
+      amount: 0,
+      description: item.detail || '-',
+      attachmentCount: item.evidenceFiles?.length ?? 0,
+    };
+  }, [detailData, detailId]);
 
   const report = useMemo(
     () => (statusOverride ? { ...baseReport, status: statusOverride } : baseReport),
@@ -151,7 +143,7 @@ const DisputeDetailScreen = () => {
         setShowWithdrawSuccessModal(false);
         navigation.reset({
           index: 0,
-          routes: [{ name: 'DisputeList' }],
+          routes: [{ name: 'DisputeList', params: { initialTab: 'selesai' } }],
         });
       }}
       onReopen={() => setStatusOverride('DIPROSES')}

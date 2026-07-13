@@ -10,9 +10,10 @@ import {
   TouchableOpacity,
   View,
   Alert,
+  Dimensions,
 } from 'react-native';
 import { launchImageLibrary, ImageLibraryOptions } from 'react-native-image-picker';
-import { AlertCircle, Check, Image as ImageIcon, Upload, X } from 'lucide-react-native';
+import { AlertCircle, Camera, Check, Image as ImageIcon, X } from 'lucide-react-native';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import Button from '@/components/atoms/Button';
 import { DisputeReport } from '../types';
@@ -281,7 +282,7 @@ export const DisputeAddResponseView = ({
                     style={styles.uploadBox}
                     onPress={handlePickPhoto}
                     activeOpacity={0.8}>
-                    <Upload size={28} color="#9CA3AF" strokeWidth={1.5} />
+                    <Camera size={28} color="#525252" />
                     <Text style={styles.uploadBoxText}>Upload Foto</Text>
                   </TouchableOpacity>
                 )}
@@ -604,21 +605,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   uploadBox: {
-    width: 96,
+    width: (Dimensions.get('window').width - 40 - 20) / 3,
     height: 96,
-    borderRadius: 8,
-    borderWidth: 1.5,
-    borderStyle: 'dashed',
+    borderWidth: 1,
     borderColor: '#D1D5DB',
+    borderStyle: 'dashed',
+    borderRadius: 8,
+    paddingHorizontal: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-    backgroundColor: '#FAFAFA',
   },
   uploadBoxText: {
-    color: '#6B7280',
-    fontFamily: 'Switzer-Regular',
-    fontSize: 12,
+    marginTop: 6,
+    color: '#111827',
+    fontFamily: 'Switzer-Medium',
+    fontSize: 14,
   },
   attachmentHintText: {
     marginBottom: 12,
