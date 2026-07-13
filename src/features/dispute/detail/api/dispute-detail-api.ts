@@ -34,6 +34,12 @@ export interface DisputeDetailApi {
 
 export type GetDisputeDetailResponse = ResponseApi<DisputeDetailApi>;
 export type CancelDisputeResponse = ResponseApi<DisputeDetailApi>;
+export type ReopenDisputeResponse = ResponseApi<DisputeDetailApi>;
+
+export interface ReopenCustomerReportPayload {
+  additionalInformation: string;
+  evidenceKeys?: string[];
+}
 
 export const disputeDetailApi = {
   getCustomerReportDetail: async (id: string): Promise<GetDisputeDetailResponse> => {
@@ -42,6 +48,16 @@ export const disputeDetailApi = {
   },
   cancelCustomerReport: async (id: string): Promise<CancelDisputeResponse> => {
     const { data } = await apiClient.post<CancelDisputeResponse>(`/v1/customer-reports/${id}/cancel`);
+    return data;
+  },
+  reopenCustomerReport: async (
+    id: string,
+    payload: ReopenCustomerReportPayload,
+  ): Promise<ReopenDisputeResponse> => {
+    const { data } = await apiClient.post<ReopenDisputeResponse>(
+      `/v1/customer-reports/${id}/reopen`,
+      payload,
+    );
     return data;
   },
 };

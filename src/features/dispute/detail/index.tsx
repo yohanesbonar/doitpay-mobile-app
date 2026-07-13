@@ -6,9 +6,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   View,
 } from 'react-native';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
@@ -196,16 +194,15 @@ export const DisputeDetailView = ({
   onReopen,
 }: DisputeDetailViewProps) => {
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
-  const [showReopenSheet, setShowReopenSheet] = useState(false);
-  const [reopenReason, setReopenReason] = useState('');
+  console.log('report', report);
 
   const timelineSteps = useMemo(() => buildTimelineFromCheckpoints(report), [report]);
   const hasDynamicFlags = (report.statusCheckpoints || []).length > 0;
 
   const progressIndex = getProgressIndex(report.status);
   const isNeedInfo = report.status === 'DIBUTUHKAN_INFO' || report.rawStatus === 'NEED_USER_FEEDBACK';
-  const isDone = report.status === 'SELESAI';
-  const isClosed = report.status === 'DITARIK' || report.status === 'DITOLAK';
+  const isDone = report.rawStatus === 'REJECTED' || report.rawStatus === 'RESOLVED' || true;
+  const isClosed = report.status === 'DITARIK';
   const badgeLabel =
     badgeLabelMap[(report.rawStatus || report.status || '').toUpperCase()] || 'Ditinjau';
   const badgeStyle = badgeStyleMap[report.status] || badgeStyleMap.DIAJUKAN;
@@ -344,7 +341,7 @@ export const DisputeDetailView = ({
               <TouchableOpacity
                 style={styles.outlinePrimaryButton}
                 activeOpacity={0.85}
-                onPress={() => setShowReopenSheet(true)}>
+                onPress={onReopen}>
                 <Text style={styles.outlinePrimaryButtonText}>Buka Kembali Laporan</Text>
               </TouchableOpacity>
             ) : isNeedInfo ? (
@@ -416,50 +413,6 @@ export const DisputeDetailView = ({
             </TouchableOpacity>
           </View>
         </View>
-      </Modal>
-
-      <Modal
-        visible={showReopenSheet}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowReopenSheet(false)}>
-        <TouchableWithoutFeedback onPress={() => setShowReopenSheet(false)}>
-          <View style={styles.sheetOverlay}>
-            <TouchableWithoutFeedback>
-              <View style={styles.sheetContainer}>
-                <View style={styles.sheetHandle} />
-                <Text style={styles.sheetTitle}>Buka Kembali Laporan</Text>
-                <Text style={styles.sheetLabel}>Kenapa kamu ingin membuka kembali?</Text>
-
-                <TextInput
-                  value={reopenReason}
-                  onChangeText={setReopenReason}
-                  multiline
-                  style={styles.sheetInput}
-                  placeholder=""
-                  placeholderTextColor="#9CA3AF"
-                />
-
-                <TouchableOpacity
-                  style={styles.sheetPrimaryButton}
-                  activeOpacity={0.85}
-                  onPress={() => {
-                    setShowReopenSheet(false);
-                    onReopen();
-                  }}>
-                  <Text style={styles.sheetPrimaryButtonText}>Kirim & Buka Kembali</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.sheetSecondaryButton}
-                  activeOpacity={0.85}
-                  onPress={() => setShowReopenSheet(false)}>
-                  <Text style={styles.sheetSecondaryButtonText}>Batal</Text>
-                </TouchableOpacity>
-              </View>
-            </TouchableWithoutFeedback>
-          </View>
-        </TouchableWithoutFeedback>
       </Modal>
 
       <Modal

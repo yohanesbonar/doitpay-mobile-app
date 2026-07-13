@@ -146,8 +146,20 @@ const DisputeDetailScreen = () => {
           routes: [{ name: 'DisputeList', params: { initialTab: 'selesai' } }],
         });
       }}
-      onReopen={() => setStatusOverride('DIPROSES')}
-      onAddResponse={() => navigation.navigate('DisputeAddResponse', { report })}
+      onReopen={() =>
+        navigation.navigate('DisputeAddResponse', {
+          mode: 'reopen',
+          report,
+          reportId: report?.id,
+        })
+      }
+      onAddResponse={() =>
+        navigation.navigate('DisputeAddResponse', {
+          mode: 'response',
+          report,
+          reportId: report?.id,
+        })
+      }
     />
   );
 };
