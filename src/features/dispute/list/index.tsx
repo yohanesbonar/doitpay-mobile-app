@@ -11,7 +11,14 @@ import {
 } from 'react-native';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import { DisputeReport } from '../types';
-import { AlertCircle, CheckCircle2, Clock3, RefreshCw, XCircle } from 'lucide-react-native';
+import {
+  AlertCircle,
+  CheckCircle2,
+  Clock3,
+  History,
+  RefreshCw,
+  XCircle,
+} from 'lucide-react-native';
 import { useDisputeListQuery } from './hooks/useDisputeListQuery';
 import { ReportListItemApi } from './api/dispute-list-api';
 import { useFocusEffect } from '@react-navigation/native';
@@ -60,6 +67,7 @@ const toDisputeReport = (item: ReportListItemApi): DisputeReport => ({
   id: item.id,
   transactionId: item.transactionId || item.orderReferenceId || item.id,
   issueType: item.reasonLabel ?? 'Lainnya',
+  reopenedAt: item.reopenedAt,
   date: formatDate(item.createdAt || item.updatedAt),
   estimatedAt: item.estimatedAt,
   status: mapApiStatusToDisputeStatus(item.status),
@@ -162,7 +170,7 @@ export const DisputeListView = ({
   );
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['bottom']}>
+    <SafeAreaView style={styles.safeArea} edges={['']}>
       <HeaderToolbar
         title="Laporan Saya"
         onPressBack={onPressBack}
@@ -245,7 +253,16 @@ export const DisputeListView = ({
                       <Text style={styles.metaText}>{item.date}</Text>
                       <Text style={styles.metaSubText}>#{item.id}</Text>
                     </View>
-                    <View style={[styles.statusPill, { backgroundColor: status.bg }]}>
+                    {item?.reopenedAt && (
+                      <View style={[styles.statusPill, { backgroundColor: '#DCFCE7' }]}>
+                        <History color="#10b981" size={15} />
+                      </View>
+                    )}
+                    <View
+                      style={[
+                        styles.statusPill,
+                        { backgroundColor: status.bg, marginLeft: item?.reopenedAt ? 8 : 16 },
+                      ]}>
                       <Text style={[styles.statusPillText, { color: status.color }]}>
                         {status.label}
                       </Text>
@@ -352,7 +369,7 @@ const styles = StyleSheet.create({
   statusPill: {
     borderRadius: 5,
     paddingVertical: 4,
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
     marginLeft: 16,
     alignSelf: 'flex-start',
     flexShrink: 0,
@@ -397,5 +414,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     lineHeight: 24,
+  },
+  statusPillIcon: {
+    width: 29,
+    height: 24,
+    marginRight: 4,
+    marginTop: 1,
   },
 });

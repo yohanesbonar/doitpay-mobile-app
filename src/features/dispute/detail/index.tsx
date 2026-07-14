@@ -201,7 +201,7 @@ export const DisputeDetailView = ({
 
   const progressIndex = getProgressIndex(report.status);
   const isNeedInfo = report.status === 'DIBUTUHKAN_INFO' || report.rawStatus === 'NEED_USER_FEEDBACK';
-  const isDone = report.rawStatus === 'REJECTED' || report.rawStatus === 'RESOLVED' || true;
+  const isDone = report.rawStatus === 'REJECTED' || report.rawStatus === 'RESOLVED';
   const isClosed = report.status === 'DITARIK';
   const badgeLabel =
     badgeLabelMap[(report.rawStatus || report.status || '').toUpperCase()] || 'Ditinjau';

@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { launchImageLibrary, ImageLibraryOptions } from 'react-native-image-picker';
 import { AlertCircle, Camera, Check, Image as ImageIcon, X } from 'lucide-react-native';
+import { useQueryClient } from '@tanstack/react-query';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import Button from '@/components/atoms/Button';
 import { DisputeReport } from '../types';
@@ -103,6 +104,7 @@ export const DisputeAddResponseView = ({
   onPressBack,
   onSubmitSuccess,
 }: DisputeAddResponseViewProps) => {
+  const queryClient = useQueryClient();
   const isReopenMode = mode === 'reopen';
   const [selectedTab, setSelectedTab] = useState<ResponseTab>('BALASAN');
   const [description, setDescription] = useState('');
@@ -187,50 +189,63 @@ export const DisputeAddResponseView = ({
 
   const canSubmit = useMemo(() => description.trim().length > 0, [description]);
 
+  const uploadAttachmentsAndCollectKeys = async (attachments: PhotoItem[]) => {
+    const evidenceKeys: string[] = [];
+
+    for (const attachment of attachments) {
+      if (attachment.isExisting && attachment.fileKey) {
+        evidenceKeys.push(attachment.fileKey);
+        continue;
+      }
+
+      const contentType = normalizeContentType(attachment.type);
+      const extension = contentType.includes('png') ? 'png' : 'jpg';
+      const fileName = sanitizeFilename(attachment.name, extension);
+
+      const presignRes = await disputeReviewApi.createCustomerReportEvidencePresign({
+        contentType,
+        filename: fileName,
+      });
+
+      await disputeReviewApi.uploadEvidenceFile(
+        presignRes.data.uploadUrl,
+        presignRes.data.uploadFields,
+        {
+          uri: attachment.uri,
+          name: fileName,
+          type: contentType,
+        },
+      );
+
+      if (presignRes.data.uploadKey) {
+        evidenceKeys.push(presignRes.data.uploadKey);
+      }
+    }
+
+    return evidenceKeys;
+  };
+
   const handleSubmit = async () => {
     if (!canSubmit) return;
     setIsSubmitting(true);
     try {
+      const evidenceKeys = await uploadAttachmentsAndCollectKeys(photos);
+
       if (isReopenMode) {
-        const evidenceKeys: string[] = [];
-
-        for (const attachment of photos) {
-          if (attachment.isExisting && attachment.fileKey) {
-            evidenceKeys.push(attachment.fileKey);
-            continue;
-          }
-
-          const contentType = normalizeContentType(attachment.type);
-          const extension = contentType.includes('png') ? 'png' : 'jpg';
-          const fileName = sanitizeFilename(attachment.name, extension);
-
-          const presignRes = await disputeReviewApi.createCustomerReportEvidencePresign({
-            contentType,
-            filename: fileName,
-          });
-
-          await disputeReviewApi.uploadEvidenceFile(
-            presignRes.data.uploadUrl,
-            presignRes.data.uploadFields,
-            {
-              uri: attachment.uri,
-              name: fileName,
-              type: contentType,
-            },
-          );
-
-          if (presignRes.data.uploadKey) {
-            evidenceKeys.push(presignRes.data.uploadKey);
-          }
-        }
-
         await disputeDetailApi.reopenCustomerReport(reportId, {
           additionalInformation: description.trim(),
           evidenceKeys: evidenceKeys.length > 0 ? evidenceKeys : undefined,
         });
       } else {
-        await new Promise((resolve: any) => setTimeout(resolve, 1000));
+        await disputeDetailApi.submitCustomerReportFeedback(reportId, {
+          additionalInformation: description.trim(),
+          evidenceKeys: evidenceKeys.length > 0 ? evidenceKeys : undefined,
+        });
       }
+
+      await queryClient.invalidateQueries({ queryKey: ['dispute-list'] });
+      await queryClient.invalidateQueries({ queryKey: ['dispute-detail', reportId] });
+      await queryClient.refetchQueries({ queryKey: ['dispute-detail', reportId], type: 'active' });
       
       setShowSuccess(true);
     } catch (error) {

@@ -21,7 +21,7 @@ const DisputeAddResponseScreen = () => {
         if (mode === 'reopen') {
           navigation.reset({
             index: 0,
-            routes: [{ name: 'DisputeList', params: { initialTab: 'selesai' } }],
+            routes: [{ name: 'DisputeList', params: { initialTab: 'aktif' } }],
           });
           return;
         }
