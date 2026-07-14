@@ -438,13 +438,6 @@ export const DisputeDetailView = ({
               onPress={onBackToDisputeList}>
               <Text style={styles.successPrimaryButtonText}>Kembali ke Laporan Saya</Text>
             </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.successSecondaryButton}
-              activeOpacity={0.85}
-              onPress={onCloseWithdrawSuccessModal}>
-              <Text style={styles.successSecondaryButtonText}>Keluar</Text>
-            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -862,6 +855,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#3981FF',
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 10,
   },
   successPrimaryButtonText: {
     color: '#FFFFFF',

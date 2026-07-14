@@ -530,18 +530,6 @@ export const DisputeAddResponseView = ({
               textStyle={styles.primaryButtonText}
               style={styles.modalPrimaryButton}
             />
-
-            <TouchableOpacity
-              style={styles.modalGhostButton}
-              onPress={() => {
-                setShowSuccess(false);
-                if (isReopenMode) {
-                  onSubmitSuccess();
-                }
-              }}
-              activeOpacity={0.8}>
-              <Text style={styles.modalGhostButtonText}>Keluar</Text>
-            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -885,7 +873,7 @@ const styles = StyleSheet.create({
   modalPrimaryButton: {
     borderRadius: 22,
     height: 42,
-    marginTop: 16,
+    marginVertical: 16,
   },
   modalGhostButton: {
     marginTop: 16,
