@@ -15,6 +15,7 @@ import {
   AlertCircle,
   CheckCircle2,
   Clock3,
+  FileWarning,
   History,
   RefreshCw,
   XCircle,
@@ -68,6 +69,7 @@ const toDisputeReport = (item: ReportListItemApi): DisputeReport => ({
   transactionId: item.transactionId || item.orderReferenceId || item.id,
   issueType: item.reasonLabel ?? 'Lainnya',
   reopenedAt: item.reopenedAt,
+  isReplied: item.isReplied,
   date: formatDate(item.createdAt || item.updatedAt),
   estimatedAt: item.estimatedAt,
   status: mapApiStatusToDisputeStatus(item.status),
@@ -253,6 +255,11 @@ export const DisputeListView = ({
                       <Text style={styles.metaText}>{item.date}</Text>
                       <Text style={styles.metaSubText}>#{item.id}</Text>
                     </View>
+                    {item?.isReplied && (
+                      <View style={[styles.statusPill, { backgroundColor: '#FEF9C3' }]}>
+                        <FileWarning color="#CA8A04" size={15} />
+                      </View>
+                    )}
                     {item?.reopenedAt && (
                       <View style={[styles.statusPill, { backgroundColor: '#DCFCE7' }]}>
                         <History color="#10b981" size={15} />
@@ -261,7 +268,7 @@ export const DisputeListView = ({
                     <View
                       style={[
                         styles.statusPill,
-                        { backgroundColor: status.bg, marginLeft: item?.reopenedAt ? 8 : 16 },
+                        { backgroundColor: status.bg, marginLeft: item?.reopenedAt || item?.isReplied ? 8 : 16 },
                       ]}>
                       <Text style={[styles.statusPillText, { color: status.color }]}>
                         {status.label}
@@ -414,11 +421,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     lineHeight: 24,
-  },
-  statusPillIcon: {
-    width: 29,
-    height: 24,
-    marginRight: 4,
-    marginTop: 1,
   },
 });

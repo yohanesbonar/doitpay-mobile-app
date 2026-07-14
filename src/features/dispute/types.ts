@@ -24,6 +24,8 @@ export interface DisputeReport {
   id: string;
   transactionId: string;
   issueType: string;
+  reopenedAt?: string;
+  isReplied?: boolean;
   date: string;
   estimatedAt?: string;
   status: DisputeStatus;

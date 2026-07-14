@@ -94,6 +94,7 @@ const DisputeDetailScreen = () => {
       transactionId: item.transactionId || item.orderReferenceId || item.id || '-',
       issueType: item.reasonLabel || item.customReason || 'Laporan Masalah',
       reopenedAt: item.reopenedAt,
+      isReplied: item.isReplied,
       date: formatDate(item.createdAt || item.updatedAt),
       estimatedAt: item.estimatedAt,
       status: mapApiStatusToDisputeStatus(item.status),

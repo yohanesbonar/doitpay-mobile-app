@@ -25,6 +25,7 @@ export interface DisputeDetailApi {
   reasonId?: string;
   reasonLabel?: string;
   reopenedAt?: string;
+  isReplied?: boolean;
   orderReferenceId?: string;
   transactionId?: string;
   reportType?: string;

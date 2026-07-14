@@ -12,6 +12,7 @@ export interface DisputeListItemApi {
   transactionId?: string;
   reasonLabel?: string;
   reopenedAt?: string;
+  isReplied?: boolean;
   createdAt?: string;
   updatedAt?: string;
   estimatedAt?: string;
