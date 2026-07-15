@@ -29,6 +29,12 @@ react {
     /* Bundling */
     //   A list containing the node command and its flags. Default is just 'node'.
     // nodeExecutableAndArgs = ["node"]
+    def nodeBinary = System.getenv("NODE_BINARY")
+    if (!nodeBinary) {
+        def homebrewNode = file("/opt/homebrew/bin/node")
+        nodeBinary = homebrewNode.exists() ? homebrewNode.absolutePath : "node"
+    }
+    nodeExecutableAndArgs = [nodeBinary]
     //
     //   The command to run when bundling. By default is 'bundle'
     // bundleCommand = "ram-bundle"
