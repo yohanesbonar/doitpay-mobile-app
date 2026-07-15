@@ -17,6 +17,13 @@ export const useDisputeListQuery = ({
   return useInfiniteQuery({
     queryKey: ['dispute-list', status, transactionId, limit],
     queryFn: async ({ pageParam }) => {
+      console.log('[DisputeList] API hit', {
+        status,
+        cursor: pageParam,
+        limit,
+        transactionId,
+      });
+
       const response = await disputeListApi.getCustomerReportsDisputes({
         status,
         cursor: pageParam,
@@ -30,5 +37,6 @@ export const useDisputeListQuery = ({
     },
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    refetchOnMount: 'always',
   });
 };

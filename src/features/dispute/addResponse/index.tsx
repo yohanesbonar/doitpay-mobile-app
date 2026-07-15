@@ -324,7 +324,7 @@ export const DisputeAddResponseView = ({
                 <Text style={styles.readonlyText}>{report?.issueType || ''}</Text>
               </View>
 
-              <Text style={styles.label}>Lampiran Foto</Text>
+              <Text style={styles.label}>Lampiran Foto (maksimal upload 3 Foto)</Text>
               <View style={styles.photoRow}>
                 {photos.map((photo, index) => (
                   <View key={`photo-${index}-${photo.uri}`} style={styles.thumbnailWrapper}>
@@ -334,11 +334,17 @@ export const DisputeAddResponseView = ({
                       disabled={!canRenderImageUri(photo.uri)}
                       onPress={() => openPreview(photo.uri)}>
                       {canRenderImageUri(photo.uri) ? (
-                        <Image source={{ uri: photo.uri }} style={styles.thumbnail} resizeMode="cover" />
+                        <Image
+                          source={{ uri: photo.uri }}
+                          style={styles.thumbnail}
+                          resizeMode="cover"
+                        />
                       ) : (
                         <View style={styles.previousPhotoPreview}>
                           <ImageIcon size={26} color="#9CA3AF" strokeWidth={1.8} />
-                          <Text style={styles.previousPhotoExt}>{getFileExtension(photo.fileKey)}</Text>
+                          <Text style={styles.previousPhotoExt}>
+                            {getFileExtension(photo.fileKey)}
+                          </Text>
                         </View>
                       )}
                     </TouchableOpacity>
@@ -352,7 +358,10 @@ export const DisputeAddResponseView = ({
                 ))}
 
                 {photos.length < 3 && (
-                  <TouchableOpacity style={styles.uploadBox} onPress={handlePickPhoto} activeOpacity={0.8}>
+                  <TouchableOpacity
+                    style={styles.uploadBox}
+                    onPress={handlePickPhoto}
+                    activeOpacity={0.8}>
                     <Camera size={28} color="#525252" />
                     <Text style={styles.uploadBoxText}>Upload Foto</Text>
                   </TouchableOpacity>
@@ -382,7 +391,7 @@ export const DisputeAddResponseView = ({
                 <Text style={styles.readonlyText}>{report?.issueType || ''}</Text>
               </View>
 
-              <Text style={styles.label}>Lampiran Foto</Text>
+              <Text style={styles.label}>Lampiran Foto (maksimal upload 3 Foto)</Text>
               {previousEvidenceFiles.length > 0 ? (
                 <View style={styles.previousPhotoRow}>
                   {previousEvidenceFiles.map((file) => {
@@ -405,7 +414,9 @@ export const DisputeAddResponseView = ({
                           ) : (
                             <>
                               <ImageIcon size={26} color="#9CA3AF" strokeWidth={1.8} />
-                              <Text style={styles.previousPhotoExt}>{getFileExtension(file.fileKey)}</Text>
+                              <Text style={styles.previousPhotoExt}>
+                                {getFileExtension(file.fileKey)}
+                              </Text>
                             </>
                           )}
                         </TouchableOpacity>
@@ -426,7 +437,7 @@ export const DisputeAddResponseView = ({
             </>
           ) : (
             <>
-              <Text style={styles.label}>Lampiran Foto</Text>
+              <Text style={styles.label}>Lampiran Foto (maksimal upload 3 Foto)</Text>
               <View style={styles.photoRow}>
                 {photos.map((photo, index) => (
                   <View key={`photo-${index}-${photo.uri}`} style={styles.thumbnailWrapper}>
@@ -455,11 +466,6 @@ export const DisputeAddResponseView = ({
                   </TouchableOpacity>
                 )}
               </View>
-
-              {photos.length > 0 && (
-                <Text style={styles.attachmentHintText}>{photos.length} file terpilih</Text>
-              )}
-
               <Text style={styles.label}>Tambahan Informasi</Text>
               <TextInput
                 value={description}
@@ -501,7 +507,7 @@ export const DisputeAddResponseView = ({
                 activeOpacity={0.8}
                 onPress={() => setShowSuccess(false)}>
                 <X size={24} color="#525252" />
-            </TouchableOpacity>
+              </TouchableOpacity>
             )}
 
             <View style={styles.successIconCircle}>
@@ -509,7 +515,9 @@ export const DisputeAddResponseView = ({
             </View>
 
             <Text style={styles.successTitle}>
-              {isReopenMode ? 'Pengajuan Pembukaan Laporan Berhasil Dikirim' : 'Balasan Berhasil Dikirim'}
+              {isReopenMode
+                ? 'Pengajuan Pembukaan Laporan Berhasil Dikirim'
+                : 'Balasan Berhasil Dikirim'}
             </Text>
             <Text style={styles.successDesc}>
               {isReopenMode
@@ -632,8 +640,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   tabButtonActive: {
-    borderColor: '#D1D5DB',
-    backgroundColor: '#FFFFFF',
+    borderColor: '#3475E8',
+    backgroundColor: '#3475E8',
   },
   tabButtonText: {
     color: '#111827',
@@ -641,7 +649,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   tabButtonTextActive: {
-    color: '#111827',
+    color: '#FFFFFF',
   },
   label: {
     color: '#111827',
@@ -746,8 +754,8 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   thumbnail: {
-    width: 96,
-    height: 96,
+    width: (Dimensions.get('window').width - 40 - 25) / 3,
+    height: (Dimensions.get('window').width - 40 - 25) / 3,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#E5E7EB',
@@ -770,8 +778,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   uploadBox: {
-    width: (Dimensions.get('window').width - 40 - 20) / 3,
-    height: 96,
+    width: (Dimensions.get('window').width - 40 - 25) / 3,
+    height: (Dimensions.get('window').width - 40 - 25) / 3,
     borderWidth: 1,
     borderColor: '#D1D5DB',
     borderStyle: 'dashed',

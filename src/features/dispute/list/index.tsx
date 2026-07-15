@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   ActivityIndicator,
@@ -164,6 +164,10 @@ export const DisputeListView = ({
     () => (data?.pages.flatMap((page) => page.items) || []).map(toDisputeReport),
     [data],
   );
+
+  useEffect(() => {
+    refetch();
+  }, [queryStatus, refetch]);
 
   useFocusEffect(
     useCallback(() => {

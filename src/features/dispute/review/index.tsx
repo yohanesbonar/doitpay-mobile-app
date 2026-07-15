@@ -332,7 +332,7 @@ export const DisputeReviewView = ({
             <Text style={styles.issueTypeText}>{issueType}</Text>
           </View>
 
-          <Text style={styles.sectionHeader}>Lampiran Foto</Text>
+          <Text style={styles.sectionHeader}>Lampiran Foto (maksimal upload 3 Foto)</Text>
           <View style={styles.attachmentRow}>
             {attachments.map((attachment) => (
               <View key={attachment.id} style={styles.attachmentCell}>
@@ -482,7 +482,7 @@ const styles = StyleSheet.create({
   },
   previewBox: {
     width: '100%',
-    height: 96,
+    height: (Dimensions.get('window').width - 40) / 3,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#D1D5DB',
@@ -536,7 +536,7 @@ const styles = StyleSheet.create({
   },
   uploadButton: {
     width: '100%',
-    height: 96,
+    height: (Dimensions.get('window').width - 40) / 3,
     borderWidth: 1,
     borderColor: '#D1D5DB',
     borderStyle: 'dashed',
