@@ -1,9 +1,9 @@
 import { StyleSheet } from 'react-native';
 
-export const createStyles = (colors: any) => {
+export const createStyles = (colors: any, backgroundColor?: string) => {
     return StyleSheet.create({
         container: {
-            backgroundColor: colors.headerBackground,
+            backgroundColor: backgroundColor || colors.headerBackground,
         },
         contentWrapper: {
             flexDirection: 'row',
