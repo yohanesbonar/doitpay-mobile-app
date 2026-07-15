@@ -67,7 +67,7 @@ export const DateBottomSheet = ({
 
   const handleConfirm = () => {
     onSelect(tempDate);
-    onClose();
+    bottomSheetRef.current?.dismiss();
   };
 
   return isMounted ? (

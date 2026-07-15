@@ -8,6 +8,7 @@ import {
   Modal,
   TouchableWithoutFeedback,
   Alert,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft, ChevronDown, CheckCircle2 } from 'lucide-react-native';
@@ -90,18 +91,40 @@ export const EStatement = ({ navigation }: any) => {
   const handleOpenFile = async () => {
     if (!fileUrl) return;
 
-    try {
-      const periodStart = statementStatusData?.data?.periodStart;
-      const fileName = periodStart
-        ? `E-Statement_${format(new Date(periodStart), 'MMMM_yyyy', { locale: id })}.pdf`
-        : 'E-Statement.pdf';
-      const path = `${ReactNativeBlobUtil.fs.dirs.CacheDir}/${fileName}`;
+    const periodEnd = statementStatusData?.data?.periodEnd;
+    const fileName = periodEnd
+      ? `E-Statement_${format(new Date(periodEnd), 'MMMM_yyyy', { locale: id })}.pdf`
+      : 'E-Statement.pdf';
+    const path = `${ReactNativeBlobUtil.fs.dirs.CacheDir}/${fileName}`;
 
-      const res = await ReactNativeBlobUtil.config({ path }).fetch('GET', fileUrl);
-      await Share.open({ url: `file://${res.path()}`, title: fileName });
-    } catch (error) {
+    try {
+      const response = await ReactNativeBlobUtil.config({ timeout: 30000 }).fetch('GET', fileUrl, {
+        'Accept-Encoding': 'identity',
+      });
+      const base64Data = response.base64();
+      await ReactNativeBlobUtil.fs.writeFile(path, base64Data, 'base64');
+
+      if (Platform.OS === 'android') {
+        await ReactNativeBlobUtil.android.actionViewIntent(path, 'application/pdf');
+      } else {
+        await Share.open({
+          url: `file://${path}`,
+          type: 'application/pdf',
+          filename: fileName,
+          title: fileName,
+          failOnCancel: false,
+        });
+      }
+    } catch (error: any) {
       console.log('Open e-statement file error:', error);
-      Alert.alert('Gagal', 'Gagal membuka file e-statement');
+      if (error?.code === 'ENOAPP') {
+        Alert.alert(
+          'Gagal',
+          'Tidak ada aplikasi untuk membuka PDF di perangkat ini. Install aplikasi seperti Google Drive/Adobe Acrobat lalu coba lagi.',
+        );
+      } else {
+        Alert.alert('Gagal', 'Gagal membuka file e-statement');
+      }
     }
   };
 
