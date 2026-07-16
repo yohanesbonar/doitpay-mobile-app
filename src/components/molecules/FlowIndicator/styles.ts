@@ -11,13 +11,13 @@ export const createStyles = (colors: any) => {
     container: {
       flex: 1,
       flexDirection: 'row',
-      height: 4, 
+      height: 4,
     },
     segmentBase: {
-      flex: 1, 
+      flex: 1,
       height: '100%',
-      backgroundColor: '#E0E0E0', 
-      marginHorizontal: 2, 
+      backgroundColor: '#E0E0E0',
+      marginHorizontal: 2,
       borderRadius: 2,
       overflow: 'hidden',
     },
@@ -28,7 +28,7 @@ export const createStyles = (colors: any) => {
       marginLeft: 12,
       fontSize: 18,
       color: '#000',
-      fontFamily: "Switzer-Medium",
+      fontFamily: 'Switzer-Medium',
     },
   });
 };

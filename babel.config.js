@@ -1,19 +1,16 @@
 module.exports = {
-  presets: [
-    '@react-native/babel-preset',
-    'nativewind/babel'
-  ],
+  presets: ['@react-native/babel-preset', 'nativewind/babel'],
   plugins: [
     [
       'module-resolver',
       {
-        root: ['./src'], 
+        root: ['./src'],
         alias: {
-          '@': './src', 
+          '@': './src',
           'tailwind.config': './tailwind.config.js',
         },
       },
     ],
-    "react-native-worklets/plugin",
+    'react-native-worklets/plugin',
   ],
 };

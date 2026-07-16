@@ -17,7 +17,7 @@ export const LogoutConfirmationModal: React.FC<LogoutConfirmationModalProps> = (
   onConfirm,
   styles,
   colors,
-  onDismiss
+  onDismiss,
 }) => {
   return (
     <Modal

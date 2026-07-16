@@ -1,4 +1,9 @@
-import { deviceApi, UpdateDeviceHeader, UpdateDevicePayload, UpdateDeviceResponse } from '@/api/device';
+import {
+  deviceApi,
+  UpdateDeviceHeader,
+  UpdateDevicePayload,
+  UpdateDeviceResponse,
+} from '@/api/device';
 import { useMutation } from '@tanstack/react-query';
 
 export const useUpdateDeviceToken = () => {

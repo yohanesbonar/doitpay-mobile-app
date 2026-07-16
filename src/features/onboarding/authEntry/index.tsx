@@ -31,6 +31,7 @@ import InputOTPNumber from './components/InputOTPNumber.tsx';
 import Toast from 'react-native-toast-message';
 import CreateAndConfirmPIN from './components/CreateAndConfirmPIN.tsx';
 import crashlytics from '@react-native-firebase/crashlytics';
+import { usePostHog } from 'posthog-react-native';
 
 export interface PhoneNumberFormValues {
   phoneNumber: string;
@@ -40,6 +41,7 @@ export interface PhoneNumberFormValues {
 export const AuthEntry = ({ route }) => {
   const { isLoginState } = route.params;
   const { colors } = useTheme();
+  const posthog = usePostHog();
   const styles = createStyles(colors);
   const { t } = useTranslation();
   const navigation = useNavigation();
@@ -128,7 +130,8 @@ export const AuthEntry = ({ route }) => {
             },
             onError: (err: any) => {
               setValueOTP('');
-              const msg = err?.response?.data?.error?.message ?? err?.error?.message ?? 'OTP tidak valid';
+              const msg =
+                err?.response?.data?.error?.message ?? err?.error?.message ?? 'OTP tidak valid';
               Toast.show({
                 type: 'error',
                 text1: msg,
@@ -156,7 +159,8 @@ export const AuthEntry = ({ route }) => {
             },
             onError: (err: any) => {
               setValueOTP('');
-              const msg = err?.response?.data?.error?.message ?? err?.error?.message ?? 'OTP tidak valid';
+              const msg =
+                err?.response?.data?.error?.message ?? err?.error?.message ?? 'OTP tidak valid';
               Toast.show({
                 type: 'error',
                 text1: msg,
@@ -254,7 +258,9 @@ export const AuthEntry = ({ route }) => {
             onChangeText={(text) => {
               handlePINChange(text);
             }}
-            onForgotPinPress={isLoginState ? () => (navigation as any).navigate('ForgotPin') : undefined}
+            onForgotPinPress={
+              isLoginState ? () => (navigation as any).navigate('ForgotPin') : undefined
+            }
           />
         );
       // disable this step because KYC is not ready
@@ -285,6 +291,7 @@ export const AuthEntry = ({ route }) => {
           onSuccess: (res) => {
             setTimerOTP(res.data.retryAfterSeconds || 30);
             setCurrentStep(2);
+            posthog.capture('otp_requested', { method: 'SMS', flow: 'register' });
           },
           onError: (err) => {
             console.error('error registerRequestOTP', err);
@@ -305,6 +312,7 @@ export const AuthEntry = ({ route }) => {
           onSuccess: (res) => {
             setTimerOTP(res.data.retryAfterSeconds || 30);
             setCurrentStep(2);
+            posthog.capture('otp_requested', { method: 'SMS', flow: 'login' });
           },
           onError: (err) => {
             console.error('error loginRequestOTP', err);
@@ -367,6 +375,11 @@ export const AuthEntry = ({ route }) => {
                 onSuccess: (res) => {
                   crashlytics().log('User register setup pin');
                   crashlytics().setUserId(formattedPhone);
+                  posthog.identify(formattedPhone, {
+                    $set: { phone_number: formattedPhone },
+                    $set_once: { first_registration_date: new Date().toISOString() },
+                  });
+                  posthog.capture('user_registered', { method: 'SMS' });
                   setTimeout(() => {
                     navigation.navigate('MainTabs', { isLoginState });
                   }, 500);
@@ -398,6 +411,11 @@ export const AuthEntry = ({ route }) => {
               onSuccess: (res) => {
                 crashlytics().log('User login success');
                 crashlytics().setUserId(formattedPhone);
+                posthog.identify(formattedPhone, {
+                  $set: { phone_number: formattedPhone },
+                  $set_once: { first_login_date: new Date().toISOString() },
+                });
+                posthog.capture('user_logged_in', { method: 'SMS' });
                 console.log('Login success:', res);
                 Toast.show({
                   type: 'success',
@@ -409,7 +427,8 @@ export const AuthEntry = ({ route }) => {
               },
               onError: (err: any) => {
                 setConfirmationPin('');
-                const msg = err?.response?.data?.error?.message ?? err?.error?.message ?? 'PIN salah';
+                const msg =
+                  err?.response?.data?.error?.message ?? err?.error?.message ?? 'PIN salah';
                 Toast.show({
                   type: 'error',
                   text1: msg,

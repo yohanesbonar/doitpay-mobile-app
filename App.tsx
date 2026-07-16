@@ -5,6 +5,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { I18nextProvider } from 'react-i18next';
 import i18next from 'i18next';
 import Toast from 'react-native-toast-message';
+import { posthog } from './src/config/posthog';
 import { getMessaging, setBackgroundMessageHandler } from '@react-native-firebase/messaging';
 import notifee, { EventType } from '@notifee/react-native';
 import perf from '@react-native-firebase/perf';
@@ -119,6 +120,10 @@ const App = () => {
   const onNavigationStateChange = async () => {
     const previousRouteName = routeNameRef.current;
     const currentRouteName = navigationRef.getCurrentRoute()?.name;
+
+    if (previousRouteName !== currentRouteName && currentRouteName) {
+      posthog.screen(currentRouteName, { previous_screen: previousRouteName });
+    }
 
     if (previousRouteName !== currentRouteName) {
       if (__DEV__ && currentRouteName) {

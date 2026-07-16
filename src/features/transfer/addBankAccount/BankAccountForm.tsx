@@ -33,7 +33,7 @@ const BankAccountForm = ({
   selectedId,
   setShowResult,
   setResultData,
-  inputRef
+  inputRef,
 }: BankAccountFormProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);

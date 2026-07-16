@@ -9,29 +9,29 @@
     "verifyNow": "Verifikasi email sekarang",
     "protectYourAccount": "Amankan akun kamu",
     "addYourEmail": "Tambahkan email untuk melindungi akun dari SIM dan sebagai metode pemulihan jika kamu lupa PIN",
-    "safeSIMSwap": "Perlindungan SIM Swap", 
+    "safeSIMSwap": "Perlindungan SIM Swap",
     "emailFactorSafety": "Email sebagai faktor keamanan kedua untuk PIN reset dan login perangkat baru.",
     "verificationEmail": "Verifikasi Email",
     "next": "Nanti Saja"
   },
   "onboarding": {
-    "freeTransfer": "Transfer Gratis", 
-    "description": "Kirim uang ke 100+ bank se-Indonesia. \nGratis hinga Rp 5,000,000 per hari.", 
-    "getStarted": "Mulai Sekarang", 
-    "openWithGmail": "Masuk dengan Gmail", 
+    "freeTransfer": "Transfer Gratis",
+    "description": "Kirim uang ke 100+ bank se-Indonesia. \nGratis hinga Rp 5,000,000 per hari.",
+    "getStarted": "Mulai Sekarang",
+    "openWithGmail": "Masuk dengan Gmail",
     "accountQuestion": "Sudah punya akun? Masuk"
   },
   "routes": {
     "home": "Home"
-  }, 
+  },
   "authEntry": {
-    "phoneNumber": "Nomor Handphone", 
+    "phoneNumber": "Nomor Handphone",
     "verification": "Verifikasi",
-    "pin": "Pin", 
+    "pin": "Pin",
     "enterPhoneNumber": "Masukkan nomor \nhandphone kamu",
-    "descEnterPhoneNumber": "Kode verifikasi akan dikirim via SMS", 
+    "descEnterPhoneNumber": "Kode verifikasi akan dikirim via SMS",
     "descTerms1": "Dengan melanjutkan, kamu menyetujui",
-    "descTerms2": "Syarat & Ketentuan", 
+    "descTerms2": "Syarat & Ketentuan",
     "descTerms3": "serta",
     "descTerms4": "Kebijakan Privasi",
     "descTerms5": "Doitpay.",
@@ -42,7 +42,7 @@
     "descTermsOTP2": "Kirim ulang (30s)",
     "createPIN": "Buat PIN 6 Digit",
     "descCreatePIN": "PIN untuk konfirmasi setiap transfer",
-    "phoneNumberLabel": "Phone Number", 
+    "phoneNumberLabel": "Phone Number",
     "confirmationPIN": "Konfirmasi PIN",
     "descConfirmationPIN": "Masukkan ulang PIN",
     "inputPIN": "Masukkan PIN",
@@ -61,15 +61,15 @@
   },
   "bankList": {
     "sendTo": "Kirim ke",
-    "rekening": "Rekening", 
-    "next": "Lewati", 
+    "rekening": "Rekening",
+    "next": "Lewati",
     "populerBank": "Bank Populer",
-    "allBank": "Semua Bank", 
+    "allBank": "Semua Bank",
     "nameBankAccount": "Nama, bank atau nomor rekening"
   },
   "addBankAccount": {
-    "rekening": "Rekening", 
-    "continue": "Lanjutkan", 
+    "rekening": "Rekening",
+    "continue": "Lanjutkan",
     "checkAccount": "Cek no rekening",
     "skip": "Lewati"
   },
@@ -83,38 +83,38 @@
   "successBottomSheet": {
     "readyToTransfer": "Siap untuk transfer kapan saja",
     "successAddAccount": "Rekening berhasil ditambahkan",
-    "continueToHomepage": "Lanjut ke Homepage", 
+    "continueToHomepage": "Lanjut ke Homepage",
     "continueToBankList": "Lanjut ke Rekening Bank"
-  }, 
+  },
   "bankAccountForm": {
     "accountNumber": "Nomor Rekening",
     "8DigitAccountNumber": "8 Digit no rekening"
-  }, 
+  },
   "history": {
-    "title": "Riwayat", 
+    "title": "Riwayat",
     "searchTransaction": "Cari transaksi",
     "clearFilter": "Clear Filter",
     "transactionNotFound": "Belum Ada Riwayat Transaksi",
     "descTransactionNotFound": "Semua aktivitas transfer, pembayaran, dan uang masuk akan muncul di sini."
-  }, 
+  },
   "beneficiary": {
     "title": "Penerima",
     "search": "Cari Penerima",
     "beneficiaryNotFound": "Belum Ada Kontak Tersimpan",
     "descBeneficiaryNotFound": "Semua rekening penerima yang kamu simpan akan muncul di sini."
-  }, 
+  },
   "mainTabNav": {
     "homepage": "Beranda",
     "history": "Riwayat",
     "transfer": "Transfer",
     "beneficiary": "Penerima",
     "profile": "Profil"
-  }, 
+  },
   "completeAccountPopup": {
     "title": "Lengkapi Rekening Bank Kamu",
     "desc": "Tambahkan rekening bank untuk mulai transfer, menerima uang, dan menggunakan semua fitur Doitpay dengan aman.",
     "addAccount": "Tambah Rekening"
-  }, 
+  },
   "requestPayment": {
     "inputNominal": "Masukkan nominal",
     "descInputNominal": "Input nominal untuk menerima pembayaran",

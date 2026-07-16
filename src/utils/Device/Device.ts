@@ -11,7 +11,7 @@ export const getDeviceFingerprint = async (): Promise<string> => {
     cachedDeviceId = uniqueId;
     return uniqueId;
   } catch (error) {
-    console.error("Failed to get device ID", error);
+    console.error('Failed to get device ID', error);
     return 'unknown-device';
   }
 };

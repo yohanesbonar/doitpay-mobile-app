@@ -17,6 +17,7 @@ import { useGetLimitMeQuery } from '@/features/user/hooks/useGetLimitMeQuery';
 import { UserLimitType } from '@/features/user/types';
 import DeviceInfo from 'react-native-device-info';
 import { LogoutConfirmationModal } from './components/LogoutConfirmationModal';
+import { usePostHog } from 'posthog-react-native';
 
 export const Profile = () => {
   const appVersion = DeviceInfo.getVersion();
@@ -24,6 +25,7 @@ export const Profile = () => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const navigation = useNavigation<any>();
+  const posthog = usePostHog();
 
   const [isModalVisible, setIsModalVisible] = useState(false);
 
@@ -107,6 +109,8 @@ export const Profile = () => {
         onClose={() => setIsModalVisible(false)}
         onConfirm={() => {
           setIsModalVisible(false);
+          posthog.capture('user_logged_out');
+          posthog.reset();
           handleLogout();
         }}
       />

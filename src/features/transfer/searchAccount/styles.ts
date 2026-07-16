@@ -18,8 +18,8 @@ export const createStyles = (colors: any) =>
       padding: 16,
       borderColor: '#619AFF',
       borderWidth: 1,
-      borderRadius: 16, 
-      backgroundColor: '#FFF'
+      borderRadius: 16,
+      backgroundColor: '#FFF',
     },
     listLogoContainer: {
       width: 48,
@@ -73,8 +73,8 @@ export const createStyles = (colors: any) =>
     },
     labelInput: {
       fontSize: 14,
-      fontFamily: 'Switzer-Regular', 
+      fontFamily: 'Switzer-Regular',
       color: colors.black,
-      marginBottom: 8, 
+      marginBottom: 8,
     },
   });

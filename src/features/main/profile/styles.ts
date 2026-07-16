@@ -201,12 +201,12 @@ export const createStyles = (colors: any) =>
     },
     textBatal: {
       fontSize: 14,
-      fontFamily:'Switzer-Medium',
+      fontFamily: 'Switzer-Medium',
       color: '#000000',
     },
     textKeluar: {
       fontSize: 14,
-      fontFamily:'Switzer-Medium',
+      fontFamily: 'Switzer-Medium',
       color: '#FFFFFF',
     },
   });

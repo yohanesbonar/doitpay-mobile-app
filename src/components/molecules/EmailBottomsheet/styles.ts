@@ -21,7 +21,7 @@ export const createStyles = (colors: typeof themeColors.light) => {
       padding: 12,
       fontFamily: 'Switzer-Regular',
       color: '#1A1A1A',
-      backgroundColor: "#FFFFFF"
+      backgroundColor: '#FFFFFF',
     },
     errorText: {
       color: '#EF4444',

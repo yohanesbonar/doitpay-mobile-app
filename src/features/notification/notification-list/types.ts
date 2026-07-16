@@ -12,7 +12,6 @@ export type NotificationSubType =
   | 'email'
   | 'account';
 
-
 export type Notification = {
   id: string;
   title: string;

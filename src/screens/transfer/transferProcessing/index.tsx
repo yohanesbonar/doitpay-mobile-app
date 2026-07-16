@@ -6,6 +6,7 @@ import TransferProcessingView, {
 import { BackHandler, StyleSheet } from 'react-native';
 import { useTransferStatus } from '@/hooks/useTransferStatus';
 import { formatApiDateToLocal } from '@/utils/Common';
+import { usePostHog } from 'posthog-react-native';
 
 const mapApiStatusToViewStep = (status: string | undefined): TransferStep => {
   switch (status) {
@@ -23,6 +24,7 @@ const mapApiStatusToViewStep = (status: string | undefined): TransferStep => {
 const TransferProcessingScreen = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
+  const posthog = usePostHog();
 
   const { accountData, bankData, amount, paymentMethod, transferId, transferData } =
     (route.params || {}) as any;
@@ -86,6 +88,11 @@ const TransferProcessingScreen = () => {
 
   useEffect(() => {
     if (data?.status === 'COMPLETED') {
+      posthog.capture('transfer_completed', {
+        transfer_id: activeTransferId,
+        amount: data?.data?.amount || amount,
+        payment_method: paymentMethod,
+      });
       const finalTimer = setTimeout(() => {
         handleFinish();
       }, 2000);
@@ -93,11 +100,17 @@ const TransferProcessingScreen = () => {
     }
 
     if (data?.status === 'CANCELLED' || data?.status === 'DISBURSING_FAILED') {
+      posthog.capture('transfer_failed', {
+        transfer_id: activeTransferId,
+        amount: data?.data?.amount || amount,
+        payment_method: paymentMethod,
+        failure_reason: data?.status,
+      });
       const transactionTime = data?.lastUpdatedAt || new Date().toISOString();
 
       const errorTitle = 'Transfer Gagal';
-      const errorNote =  'Dana akan dikembalikan ke saldo kamu maksimal 1x24 jam.';
-      const infoLabel =  'Refund diproses';
+      const errorNote = 'Dana akan dikembalikan ke saldo kamu maksimal 1x24 jam.';
+      const infoLabel = 'Refund diproses';
 
       const errorTimer = setTimeout(() => {
         navigation.replace('TransferFailed', {

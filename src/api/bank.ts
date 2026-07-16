@@ -17,7 +17,7 @@ export type BankTransferResponse = {
         shortName: string;
         swiftCode: string;
       },
-    ],
+    ];
     popular: [
       {
         code: string;
@@ -27,7 +27,7 @@ export type BankTransferResponse = {
         shortName: string;
         swiftCode: string;
       },
-    ],
+    ];
   };
 };
 
@@ -55,14 +55,14 @@ export type BankInquiryResponse = {
 };
 
 export const bankApi = {
-    getBanks: async (payload?: BankTransferPayload): Promise<BankTransferResponse> => {
-        const { data } = await apiClient.get<BankTransferResponse>('/v1/banks', {
-            params: payload
-        });
-        return data;
-    },
-    postBankInquiry: async (payload: BankInquiryPayload): Promise<BankInquiryResponse> => {
-        const { data } = await apiClient.post<BankInquiryResponse>('/v1/banks/inquiry', payload);
-        return data;
-    }
-}
+  getBanks: async (payload?: BankTransferPayload): Promise<BankTransferResponse> => {
+    const { data } = await apiClient.get<BankTransferResponse>('/v1/banks', {
+      params: payload,
+    });
+    return data;
+  },
+  postBankInquiry: async (payload: BankInquiryPayload): Promise<BankInquiryResponse> => {
+    const { data } = await apiClient.post<BankInquiryResponse>('/v1/banks/inquiry', payload);
+    return data;
+  },
+};

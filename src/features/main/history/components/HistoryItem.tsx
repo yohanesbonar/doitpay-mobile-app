@@ -42,12 +42,9 @@ interface HistoryItemProps {
   showDate?: boolean;
 }
 
+const formatTime = (dateStr: string) => `${format(new Date(dateStr), 'HH:mm')} WIB`;
 
-const formatTime = (dateStr: string) =>
-  `${format(new Date(dateStr), 'HH:mm')} WIB`;
-
-const formatDateTime = (dateStr: string) =>
-  format(new Date(dateStr), 'dd/MM/yyyy | HH:mm');
+const formatDateTime = (dateStr: string) => format(new Date(dateStr), 'dd/MM/yyyy | HH:mm');
 
 const HistoryItem: FC<HistoryItemProps> = ({ item, showDate = false }) => {
   const isExpense = !item.isCredit;
@@ -66,8 +63,7 @@ const HistoryItem: FC<HistoryItemProps> = ({ item, showDate = false }) => {
   };
 
   const dateStr = item.paidAt ?? item.createdAt;
-  const timeLabel =
-    showDate || !isToday(dateStr) ? formatDateTime(dateStr) : formatTime(dateStr);
+  const timeLabel = showDate || !isToday(dateStr) ? formatDateTime(dateStr) : formatTime(dateStr);
 
   const iconEntry = IconMap.find((entry) => entry.status === item.status);
   const IconComponent = iconEntry?.icon ?? ReceiveInIcon;

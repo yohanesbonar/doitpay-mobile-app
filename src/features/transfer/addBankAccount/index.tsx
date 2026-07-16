@@ -23,6 +23,7 @@ import { useBankInquiry, useBanks } from '@/hooks/useBankMutation.ts';
 import { useAddBankAccount } from '@/hooks/useMeMutation.ts';
 import Toast from 'react-native-toast-message';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { usePostHog } from 'posthog-react-native';
 
 interface AddBankRecipientViewProps {
   onPressBack: () => void;
@@ -70,6 +71,7 @@ export const AddBankRecipientView = ({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedAccount, setSelectedAccount] = useState<any>(null);
 
+  const posthog = usePostHog();
   const { mutate: fetchBanks, isPending: isFetchingBanks } = useBankInquiry();
   const [resultData, setResultData] = useState<any>(null);
   const { mutate: postBankAccount, isPending: isPostingBankAccount } = useAddBankAccount();
@@ -96,6 +98,9 @@ export const AddBankRecipientView = ({
         {
           onSuccess: (data) => {
             console.log('Bank account added successfully:', data);
+            posthog.capture('bank_account_added', {
+              bank_code: bankData?.id || bankData?.code,
+            });
             setTimeout(() => {
               setShowModal(true);
             }, 800);

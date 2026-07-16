@@ -20,6 +20,7 @@ import Button from '../../../components/atoms/Button/index.tsx';
 import Toast from 'react-native-toast-message';
 import { paymentApi, PaymentCalculatePayload } from './api/payment-calculate-api';
 import { Info, TriangleAlert } from 'lucide-react-native';
+import { usePostHog } from 'posthog-react-native';
 
 interface TransferDetailViewProps {
   accountData: {
@@ -48,6 +49,7 @@ interface TransferDetailViewProps {
 
 const TransferDetailView = (props: TransferDetailViewProps) => {
   const navigation = useNavigation<any>();
+  const posthog = usePostHog();
   const [isFocusedInput, setIsFocusedInput] = useState(false);
   const inputRef = useRef<TextInput>(null);
 
@@ -157,6 +159,12 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
       remark: note,
     };
     let idempotencyKey = new Date().getTime().toString();
+
+    posthog.capture('transfer_initiated', {
+      amount: parseInt(amount),
+      payment_method: methodPayment,
+      pay_channel: methodPayment === 'VA' ? bankPayment?.code : 'QRIS',
+    });
 
     postTransfer(
       {
