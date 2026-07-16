@@ -9,28 +9,26 @@ const storage = createMMKV();
 const LANGUAGE_KEY = 'app_language';
 
 export const initI18next = () => {
-    const savedLanguage = storage.getString(LANGUAGE_KEY);
-    const deviceLanguage = RNLocalize.getLocales()[0]?.languageCode;
-    // const initialLanguage = savedLanguage || (deviceLanguage in {id: true, en: true} ? deviceLanguage : 'en');
-    const initialLanguage = "id";
+  const savedLanguage = storage.getString(LANGUAGE_KEY);
+  const deviceLanguage = RNLocalize.getLocales()[0]?.languageCode;
+  // const initialLanguage = savedLanguage || (deviceLanguage in {id: true, en: true} ? deviceLanguage : 'en');
+  const initialLanguage = 'id';
 
-    i18next
-        .use(initReactI18next)
-        .init({
-            fallbackLng: 'en',
-            lng: initialLanguage,
-            resources: {
-                en: { translation: en },
-                id: { translation: id },
-            },
-            interpolation: {
-                escapeValue: false,
-            },
-        });
+  i18next.use(initReactI18next).init({
+    fallbackLng: 'en',
+    lng: initialLanguage,
+    resources: {
+      en: { translation: en },
+      id: { translation: id },
+    },
+    interpolation: {
+      escapeValue: false,
+    },
+  });
 
-    const originalChangeLanguage = i18next.changeLanguage.bind(i18next);
-    i18next.changeLanguage = (lng: string | undefined) => {
-        if (lng) storage.set(LANGUAGE_KEY, lng);
-        return originalChangeLanguage(lng);
-    };
+  const originalChangeLanguage = i18next.changeLanguage.bind(i18next);
+  i18next.changeLanguage = (lng: string | undefined) => {
+    if (lng) storage.set(LANGUAGE_KEY, lng);
+    return originalChangeLanguage(lng);
+  };
 };

@@ -1,4 +1,4 @@
-import apiClient from "./client";
+import apiClient from './client';
 
 export interface UpdateDevicePayload {
   fcmToken: string;
@@ -6,12 +6,12 @@ export interface UpdateDevicePayload {
 }
 
 export interface UpdateDeviceHeader {
-  deviceId: string; 
+  deviceId: string;
 }
 
 export interface UpdateDeviceResponse {
   status: 'success' | 'failed';
-  data: Record<string, never>; 
+  data: Record<string, never>;
   message: string;
 }
 

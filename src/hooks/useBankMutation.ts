@@ -9,7 +9,7 @@ import {
 
 export const useBanks = () => {
   return useMutation<BankTransferResponse, Error, BankTransferPayload>({
-    mutationFn: (payload) => bankApi.getBanks(payload), 
+    mutationFn: (payload) => bankApi.getBanks(payload),
     onSuccess: (data) => {
       console.log('useBanks data.message:', data.message);
     },

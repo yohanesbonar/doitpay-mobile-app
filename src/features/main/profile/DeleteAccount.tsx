@@ -29,6 +29,7 @@ import {
 import { handleLogout } from '@/utils/Common';
 import { useGetProfileMeQuery } from '@/features/user/hooks/useGetProfileMeQuery';
 import AccountDeletionIcon from '@/assets/icons/ic-account-deletion.svg';
+import { usePostHog } from 'posthog-react-native';
 
 const CELL_COUNT_OTP = 6;
 const PIN_LENGTH = 6;
@@ -38,6 +39,7 @@ export const DeleteAccount = () => {
   const { colors } = useTheme();
   const authStyles = createAuthStyles(colors);
   const navigation = useNavigation<any>();
+  const posthog = usePostHog();
 
   const { data: profileData } = useGetProfileMeQuery();
   const phoneNumber = profileData?.data?.phoneNumber ?? '';
@@ -135,6 +137,8 @@ export const DeleteAccount = () => {
         {
           onSuccess: () => {
             Keyboard.dismiss();
+            posthog.capture('account_deletion_requested');
+            posthog.reset();
             setCurrentStep(4);
           },
           onError: (err: any) => {

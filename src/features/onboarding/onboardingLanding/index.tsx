@@ -27,14 +27,17 @@ export const OnboardingView = ({ onGetStarted, onLoginRedirect }: OnboardingView
 
   return (
     <View style={styles.container}>
-      <ScrollView 
+      <ScrollView
         contentContainerStyle={styles.scrollContent}
         bounces={false}
-        showsVerticalScrollIndicator={false}
-      >
+        showsVerticalScrollIndicator={false}>
         {/* Container Atas & Tengah */}
         <View style={styles.bankOnboardingContainer}>
-          <Image source={IconBankOnboarding} style={styles.iconBankOnboarding} resizeMode="contain" />
+          <Image
+            source={IconBankOnboarding}
+            style={styles.iconBankOnboarding}
+            resizeMode="contain"
+          />
           <Text style={styles.freeTransferText}>{t('onboarding.freeTransfer')}</Text>
           <Text style={styles.descriptionText}>{t('onboarding.description')}</Text>
         </View>

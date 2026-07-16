@@ -38,7 +38,7 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
             const iconProps = {
               color: color,
               size: 24,
-              strokeWidth: focused ? 2.5 : 2, 
+              strokeWidth: focused ? 2.5 : 2,
             };
 
             switch (name) {

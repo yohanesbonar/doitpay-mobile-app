@@ -1,9 +1,5 @@
 import { useEffect } from 'react';
-import { 
-  getMessaging, 
-  onMessage, 
-  onNotificationOpenedApp 
-} from '@react-native-firebase/messaging';
+import { getMessaging, onMessage, onNotificationOpenedApp } from '@react-native-firebase/messaging';
 import { handleNotificationNavigation } from '../utils/Notification/notificationHandler';
 import { onDisplayNotification } from '../utils/Notification/notifeeHelper';
 import notifee, { EventType } from '@notifee/react-native';
@@ -12,12 +8,12 @@ export const useNotificationListener = () => {
   useEffect(() => {
     const messaging = getMessaging();
 
-    const unsubscribeOnMessage = onMessage(messaging, async remoteMessage => {
-      console.log("onDisplayNotification ->> ", remoteMessage.notification, remoteMessage.data)
+    const unsubscribeOnMessage = onMessage(messaging, async (remoteMessage) => {
+      console.log('onDisplayNotification ->> ', remoteMessage.notification, remoteMessage.data);
       await onDisplayNotification(
         remoteMessage.notification?.title,
         remoteMessage.notification?.body,
-        remoteMessage.data
+        remoteMessage.data,
       );
     });
 
@@ -27,7 +23,7 @@ export const useNotificationListener = () => {
       }
     });
 
-    const unsubscribeOnOpened = onNotificationOpenedApp(messaging, remoteMessage => {
+    const unsubscribeOnOpened = onNotificationOpenedApp(messaging, (remoteMessage) => {
       handleNotificationNavigation(remoteMessage);
     });
 

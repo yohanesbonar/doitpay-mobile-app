@@ -1,10 +1,10 @@
 import React from 'react';
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/Ionicons';
-import {useTheme} from '../theme/ThemeProvider';
+import { useTheme } from '../theme/ThemeProvider';
 import Typography from '../theme/typography.ts';
 import Metrics from '../theme/metrics';
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 
 // Screens
 import HomeStackNavigator from './page-navigators/HomeStackNavigator.tsx';
@@ -17,8 +17,8 @@ export enum Routes {
 const Tab = createBottomTabNavigator();
 
 export default function AppNavigator() {
-  const {colors} = useTheme();
-  const {t} = useTranslation();
+  const { colors } = useTheme();
+  const { t } = useTranslation();
 
   const getIconName = (routeName: string) => {
     switch (routeName) {
@@ -31,8 +31,8 @@ export default function AppNavigator() {
 
   return (
     <Tab.Navigator
-      screenOptions={({route}) => ({
-        tabBarIcon: ({color, size}) => {
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ color, size }) => {
           const iconName = getIconName(route.name);
           return <Icon name={iconName} size={size} color={color} />;
         },
@@ -53,7 +53,7 @@ export default function AppNavigator() {
       <Tab.Screen
         name={Routes.HOME}
         component={HomeStackNavigator}
-        options={{tabBarLabel: t(Routes.HOME)}}
+        options={{ tabBarLabel: t(Routes.HOME) }}
       />
     </Tab.Navigator>
   );

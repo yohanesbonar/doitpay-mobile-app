@@ -13,10 +13,7 @@ const SkeletonBox = ({
   opacity: Animated.Value;
 }) => (
   <Animated.View
-    style={[
-      styles.skeletonBase,
-      { width: width as any, height, borderRadius, opacity },
-    ]}
+    style={[styles.skeletonBase, { width: width as any, height, borderRadius, opacity }]}
   />
 );
 

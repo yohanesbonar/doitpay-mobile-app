@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { useTheme } from '../theme/ThemeProvider';
+import { PostHogProvider } from 'posthog-react-native';
+import { posthog } from '../config/posthog';
 import { ActivityIndicator, StatusBar, View } from 'react-native';
 import Onboarding from '../screens/onboarding/onboardingLanding';
 import { AuthEntry } from '../features/onboarding/authEntry';
@@ -40,7 +42,11 @@ interface RootNavigatorProps {
   onStateChange: () => void;
 }
 
-export default function RootNavigator({ navigationRef, onReady, onStateChange }: RootNavigatorProps) {
+export default function RootNavigator({
+  navigationRef,
+  onReady,
+  onStateChange,
+}: RootNavigatorProps) {
   const { colors, theme } = useTheme();
   const navigationTheme = theme === 'light' ? DefaultTheme : DarkTheme;
 
@@ -73,85 +79,92 @@ export default function RootNavigator({ navigationRef, onReady, onStateChange }:
   }, [isAuthenticated, isProfileLoading, isPendingDeletion, navigationRef]);
 
   return (
-    <NavigationContainer 
-      theme={navigationTheme} 
+    <NavigationContainer
+      theme={navigationTheme}
       ref={navigationRef}
       onReady={onReady}
-      onStateChange={onStateChange}
-    >
-      <StatusBar
-        backgroundColor={colors.background}
-        barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
-      />
-      <Stack.Navigator
-        key={navigatorKey}
-        initialRouteName={initialRouteName}
-        screenOptions={{ headerShown: false }}>
-        {isAuthenticated ? (
-          isProfileLoading ? (
-            <Stack.Screen name="AuthLoading">
-              {() => (
-                <View
-                  style={{
-                    flex: 1,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    backgroundColor: colors.background,
-                  }}>
-                  <ActivityIndicator size="large" />
-                </View>
-              )}
-            </Stack.Screen>
+      onStateChange={onStateChange}>
+      <PostHogProvider
+        client={posthog}
+        autocapture={{
+          captureScreens: false,
+          captureTouches: true,
+          propsToCapture: ['testID'],
+        }}>
+        <StatusBar
+          backgroundColor={colors.background}
+          barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
+        />
+        <Stack.Navigator
+          key={navigatorKey}
+          initialRouteName={initialRouteName}
+          screenOptions={{ headerShown: false }}>
+          {isAuthenticated ? (
+            isProfileLoading ? (
+              <Stack.Screen name="AuthLoading">
+                {() => (
+                  <View
+                    style={{
+                      flex: 1,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      backgroundColor: colors.background,
+                    }}>
+                    <ActivityIndicator size="large" />
+                  </View>
+                )}
+              </Stack.Screen>
+            ) : (
+              <Stack.Group>
+                <Stack.Screen name="MainTabs" component={MainTabNavigator} />
+                <Stack.Screen name="BankList" component={BankList} />
+                <Stack.Screen name="AddBankRecipient" component={AddBankRecipient} />
+                <Stack.Screen name="TransferDetail" component={TransferDetail} />
+                <Stack.Screen name="PaymentInstruction" component={PaymentInstruction} />
+                <Stack.Screen
+                  name="TransferProcessing"
+                  component={TransferProcessing}
+                  options={{
+                    gestureEnabled: false,
+                    headerShown: false,
+                  }}
+                />
+                <Stack.Screen
+                  name="PaymentReceipt"
+                  component={PaymentReceipt}
+                  options={{
+                    gestureEnabled: false,
+                    headerShown: false,
+                  }}
+                />
+                <Stack.Screen name="Settings" component={Settings} />
+                <Stack.Screen name="Security" component={Security} />
+                <Stack.Screen name="BankAccounts" component={BankAccounts} />
+                <Stack.Screen name="HelpCenter" component={HelpCenter} />
+                <Stack.Screen name="EStatement" component={EStatement} />
+                <Stack.Screen name="Beneficiary" component={BeneficiaryScreen} />
+                <Stack.Screen name="History" component={TransactionHistoryScreen} />
+                <Stack.Screen name="Profile" component={Profile} />
+                <Stack.Screen name="SearchAccount" component={SearchAccountScreen} />
+                <Stack.Screen name="RequestPayment" component={RequestPaymentScreen} />
+                <Stack.Screen name="Notification" component={NotificationListScreen} />
+                <Stack.Screen name="TransferFailed" component={TransferFailedScreen} />
+                <Stack.Screen name="PaymentExpired" component={PaymentExpired} />
+                <Stack.Screen name="TransactionDetail" component={TransactionDetailScreen} />
+                <Stack.Screen name="DeleteAccount" component={DeleteAccount} />
+                <Stack.Screen name="DeleteAccountStatus" component={DeleteAccountStatus} />
+                <Stack.Screen name="ChangePin" component={ChangePin} />
+              </Stack.Group>
+            )
           ) : (
             <Stack.Group>
-              <Stack.Screen name="MainTabs" component={MainTabNavigator} />
-              <Stack.Screen name="BankList" component={BankList} />
-              <Stack.Screen name="AddBankRecipient" component={AddBankRecipient} />
-              <Stack.Screen name="TransferDetail" component={TransferDetail} />
-              <Stack.Screen name="PaymentInstruction" component={PaymentInstruction} />
-              <Stack.Screen
-                name="TransferProcessing"
-                component={TransferProcessing}
-                options={{
-                  gestureEnabled: false,
-                  headerShown: false,
-                }}
-              />
-              <Stack.Screen
-                name="PaymentReceipt"
-                component={PaymentReceipt}
-                options={{
-                  gestureEnabled: false,
-                  headerShown: false,
-                }}
-              />
-              <Stack.Screen name="Settings" component={Settings} />
-              <Stack.Screen name="Security" component={Security} />
-              <Stack.Screen name="BankAccounts" component={BankAccounts} />
-              <Stack.Screen name="HelpCenter" component={HelpCenter} />
-              <Stack.Screen name="EStatement" component={EStatement} />
-              <Stack.Screen name="Beneficiary" component={BeneficiaryScreen} />
-              <Stack.Screen name="History" component={TransactionHistoryScreen} />
-              <Stack.Screen name="Profile" component={Profile} />
-              <Stack.Screen name="SearchAccount" component={SearchAccountScreen} />
-              <Stack.Screen name="RequestPayment" component={RequestPaymentScreen} />
-              <Stack.Screen name="Notification" component={NotificationListScreen} />
-              <Stack.Screen name="TransferFailed" component={TransferFailedScreen} />
-              <Stack.Screen name="PaymentExpired" component={PaymentExpired} />
-              <Stack.Screen name="TransactionDetail" component={TransactionDetailScreen} />
-              <Stack.Screen name="DeleteAccount" component={DeleteAccount} />
-              <Stack.Screen name="DeleteAccountStatus" component={DeleteAccountStatus} />
-              <Stack.Screen name="ChangePin" component={ChangePin} />
+              <Stack.Screen name="MainApp" component={Onboarding} />
+              <Stack.Screen name="AuthEntry" component={AuthEntry} />
+              <Stack.Screen name="ForgotPin" component={ForgotPin} />
             </Stack.Group>
-          )
-        ) : (
-          <Stack.Group>
-            <Stack.Screen name="MainApp" component={Onboarding} />
-            <Stack.Screen name="AuthEntry" component={AuthEntry} />
-            <Stack.Screen name="ForgotPin" component={ForgotPin} />
-          </Stack.Group>
-        )}
-      </Stack.Navigator>
+          )}
+        </Stack.Navigator>
+      </PostHogProvider>
     </NavigationContainer>
   );
 }

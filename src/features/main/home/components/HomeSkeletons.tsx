@@ -63,7 +63,13 @@ export const TransferLimitSkeleton = () => {
   const opacity = usePulse();
   return (
     <View style={styles.transferLimitCard}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: 5,
+        }}>
         <SkeletonBox width={140} height={14} borderRadius={4} opacity={opacity} />
         <SkeletonBox width={100} height={24} borderRadius={8} opacity={opacity} />
       </View>

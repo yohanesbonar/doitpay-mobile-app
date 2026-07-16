@@ -1,5 +1,13 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Dimensions,
+  ActivityIndicator,
+} from 'react-native';
 import { Clock, RefreshCw, Headset, Info } from 'lucide-react-native';
 
 interface PaymentExpiredViewProps {
@@ -102,12 +110,11 @@ export const PaymentExpiredView: React.FC<PaymentExpiredViewProps> = ({
       </ScrollView>
 
       <View style={styles.footer}>
-        <TouchableOpacity 
-          style={[styles.btnAction, isButtonLoading && styles.btnDisabled]} 
-          onPress={onActionNewPayment} 
+        <TouchableOpacity
+          style={[styles.btnAction, isButtonLoading && styles.btnDisabled]}
+          onPress={onActionNewPayment}
           disabled={isButtonLoading}
-          activeOpacity={0.8}
-        >
+          activeOpacity={0.8}>
           {isButtonLoading ? (
             <ActivityIndicator size="small" color="#FFF" />
           ) : (

@@ -33,7 +33,7 @@ export const createStyles = (colors: any) => {
     formWrapper: {
       width: '100%',
       paddingVertical: 10,
-      marginTop: 16
+      marginTop: 16,
     },
     label: {
       fontSize: 16,
@@ -187,7 +187,7 @@ export const createStyles = (colors: any) => {
       fontSize: 14,
     },
     boldText: {
-      fontFamily: 'Switzer-Bold'
+      fontFamily: 'Switzer-Bold',
     },
     cardVerif: {
       marginTop: 16,
@@ -224,7 +224,7 @@ export const createStyles = (colors: any) => {
       fontSize: 18,
       color: '#000',
       marginBottom: 4,
-      fontFamily: 'Switzer-Medium'
+      fontFamily: 'Switzer-Medium',
     },
     cardSubtitleVerif: {
       fontSize: 14,
@@ -257,7 +257,7 @@ export const createStyles = (colors: any) => {
       lineHeight: 20,
     },
     dropdown: {
-      width: 100, 
+      width: 100,
       paddingVertical: 16,
       borderWidth: 1,
       borderColor: '#E0E0E0',
@@ -267,8 +267,8 @@ export const createStyles = (colors: any) => {
     dropdownContainer: {
       borderRadius: 12,
       marginTop: 8,
-      elevation: 4, 
-      shadowColor: '#000', 
+      elevation: 4,
+      shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       width: screenWidth - 32,
@@ -285,9 +285,9 @@ export const createStyles = (colors: any) => {
     flagPlaceholder: {
       width: 24,
       height: 16,
-      backgroundColor: 'red', 
+      backgroundColor: 'red',
       borderRadius: 2,
-      marginRight: 5
+      marginRight: 5,
     },
   });
 };

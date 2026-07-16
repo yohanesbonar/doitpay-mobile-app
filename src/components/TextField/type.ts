@@ -15,7 +15,7 @@ export interface ITextFieldProps {
   onPress?: any;
   editable?: any;
   autoFocus?: boolean;
-  autoCapitalize?: "none" | "sentences" | "words" | "characters" | undefined;
+  autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters' | undefined;
   maxLength?: number;
   specialVariant?: boolean;
   keyboardType?: string;

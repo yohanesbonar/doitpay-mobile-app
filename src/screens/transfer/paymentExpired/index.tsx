@@ -27,7 +27,6 @@ const PaymentExpiredScreen = () => {
 
   const handleCreateNewPayment = () => {
     if (method === 'receive') {
-      
       navigation.navigate('RequestPayment', {
         initialAmount: amount,
         initialPaymentMethod: paymentMethod,
@@ -38,7 +37,7 @@ const PaymentExpiredScreen = () => {
     }
 
     if (isPending) return;
-    console.log("bankPayment in handleCreateNewPayment:", bankPayment);
+    console.log('bankPayment in handleCreateNewPayment:', bankPayment);
     console.log('Full route params:', {
       method,
       paymentMethod,

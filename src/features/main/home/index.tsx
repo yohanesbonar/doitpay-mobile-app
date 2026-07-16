@@ -11,7 +11,11 @@ import { RecentRecipient } from './components/RecentRecipient.tsx';
 import { SearchBar } from './components/SearchBar.tsx';
 import { UnprotectedAccount } from './components/UnprotectedAccount.tsx';
 import { DeletionInProgressBanner } from './components/DeletionInProgressBanner.tsx';
-import { RecentActivitySkeleton, RecentBeneficiarySkeleton, TransferLimitSkeleton } from './components/HomeSkeletons.tsx';
+import {
+  RecentActivitySkeleton,
+  RecentBeneficiarySkeleton,
+  TransferLimitSkeleton,
+} from './components/HomeSkeletons.tsx';
 import { NotificationIconWithBadge } from '@/components/molecules/NotificationIconWithBadge';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { EmailBottomsheet } from '@/components/molecules/EmailBottomsheet';
@@ -23,6 +27,7 @@ import { useGetProfile } from '@/hooks/useMeMutation.ts';
 import { useGetProfileMeQuery } from '@/features/user/hooks/useGetProfileMeQuery.ts';
 import LogoDoitpay from '@/assets/icons/ic-logo.svg';
 import EmptyHomeIcon from '@/assets/icons/ic-empty-home.svg';
+import { usePostHog } from 'posthog-react-native';
 
 interface HomeViewProps {
   goToSearchAccount: () => void;
@@ -42,6 +47,7 @@ export const HomeView = (props: HomeViewProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const { t } = useTranslation();
+  const posthog = usePostHog();
 
   const [isSheetMounted, setIsSheetMounted] = useState(false);
   const emailSheetRef = useRef<BottomSheetModal>(null);
@@ -150,7 +156,10 @@ export const HomeView = (props: HomeViewProps) => {
                     <View style={{ marginRight: -24 }}>
                       <RecentRecipient
                         data={recentBeneficiaries}
-                        onPressItem={(b) =>
+                        onPressItem={(b) => {
+                          posthog.capture('recent_recipient_tapped', {
+                            bank_code: b.bankCode,
+                          });
                           props.goToTransferDetail({
                             bankData: { shortName: b.bankCode, logoUrl: null },
                             accountData: {
@@ -158,8 +167,8 @@ export const HomeView = (props: HomeViewProps) => {
                               accountNumber: b.accountNumber,
                             },
                             beneficiaryId: b.id,
-                          })
-                        }
+                          });
+                        }}
                       />
                     </View>
                   )}

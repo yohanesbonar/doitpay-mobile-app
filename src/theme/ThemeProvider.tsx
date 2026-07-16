@@ -26,7 +26,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (!storage.getString(THEME_KEY)) {
       // setTheme(systemColorScheme || 'light');
-      setTheme("light");
+      setTheme('light');
     }
   }, [systemColorScheme]);
 
@@ -42,8 +42,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
         theme,
         colors: themeColors[theme],
         toggleTheme,
-      }}
-    >
+      }}>
       {children}
     </ThemeContext.Provider>
   );

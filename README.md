@@ -105,20 +105,20 @@ The boilerplate includes a powerful metrics system in `src/theme/metrics.ts` tha
 
 ```typescript
 // Example usage in your styles
-import {metrics} from '../theme/metrics';
-import typography from "./typography";
-import {colors} from "./colors";
+import { metrics } from '../theme/metrics';
+import typography from './typography';
+import { colors } from './colors';
 
 const styles = StyleSheet.create({
-    container: {
-        paddingHorizontal: metrics.scale(10),
-        marginBottom: metrics.verticalScale(15),
-    },
-    title: {
-        fontSize: metrics.moderateScale(14),
-        fontFamily: typography.BOLD,
-        color: colors.primary,
-    },
+  container: {
+    paddingHorizontal: metrics.scale(10),
+    marginBottom: metrics.verticalScale(15),
+  },
+  title: {
+    fontSize: metrics.moderateScale(14),
+    fontFamily: typography.BOLD,
+    color: colors.primary,
+  },
 });
 ```
 
@@ -163,18 +163,18 @@ The `setup` script (mentioned in the Installation section) automatically links t
 #### Using the built-in fonts:
 
 ```typescript
-import {typography} from '../theme/typography';
-import metrics from "./metrics";
+import { typography } from '../theme/typography';
+import metrics from './metrics';
 
 const styles = StyleSheet.create({
-    title: {
-        fontFamily: typography.BOLD,
-        fontSize: metrics.moderateScale(14),
-    },
-    body: {
-        fontFamily: typography.REGULAR,
-        fontSize: metrics.moderateScale(12),
-    }
+  title: {
+    fontFamily: typography.BOLD,
+    fontSize: metrics.moderateScale(14),
+  },
+  body: {
+    fontFamily: typography.REGULAR,
+    fontSize: metrics.moderateScale(12),
+  },
 });
 ```
 
@@ -217,6 +217,7 @@ yarn start --reset-cache
 ```
 
 **In Xcode:**
+
 1. Close Xcode
 2. Clean Derived Data: `rm -rf ~/Library/Developer/Xcode/DerivedData/*`
 3. Reopen Xcode
@@ -248,6 +249,7 @@ yarn setup
 ```
 
 The setup script includes:
+
 - Command line argument parsing for project renaming
 - Automatic react-native-rename execution
 - Dependency installation

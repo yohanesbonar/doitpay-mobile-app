@@ -3,14 +3,14 @@ import { StyleSheet } from 'react-native';
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAFAFA', 
+    backgroundColor: '#FAFAFA',
   },
   content: {
     paddingHorizontal: 24,
     paddingTop: 70,
     alignContent: 'center',
-    alignItems: 'center', 
-    alignSelf: 'center'
+    alignItems: 'center',
+    alignSelf: 'center',
   },
   topInfo: {
     alignItems: 'center',
@@ -45,14 +45,14 @@ export const styles = StyleSheet.create({
   },
   amountText: {
     fontFamily: 'Switzer-Bold',
-    fontSize: 40, 
+    fontSize: 40,
     color: '#000',
   },
   iconVisualContainer: {
     flex: 1,
     marginTop: 32,
     alignItems: 'center',
-    minHeight: 120, 
+    minHeight: 120,
   },
   iconCircle: {
     width: 80,
@@ -123,7 +123,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FFF', 
+    backgroundColor: '#FFF',
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 20,

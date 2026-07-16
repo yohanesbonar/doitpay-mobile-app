@@ -12,7 +12,9 @@ const SkeletonBox = ({
   borderRadius?: number;
   opacity: Animated.Value;
 }) => (
-  <Animated.View style={[styles.skeletonBase, { width: width as any, height, borderRadius, opacity }]} />
+  <Animated.View
+    style={[styles.skeletonBase, { width: width as any, height, borderRadius, opacity }]}
+  />
 );
 
 const HistoryItemSkeleton = () => {
@@ -46,7 +48,9 @@ const HistoryItemSkeleton = () => {
 export const HistoryListSkeleton = () => (
   <View style={{ paddingTop: 8 }}>
     <View style={{ paddingHorizontal: 24, marginBottom: 16 }}>
-      <Animated.View style={[styles.skeletonBase, { width: 100, height: 20, borderRadius: 4, opacity: 0.4 }]} />
+      <Animated.View
+        style={[styles.skeletonBase, { width: 100, height: 20, borderRadius: 4, opacity: 0.4 }]}
+      />
     </View>
     {Array.from({ length: 5 }).map((_, i) => (
       <HistoryItemSkeleton key={i} />

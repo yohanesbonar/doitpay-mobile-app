@@ -6,14 +6,14 @@ export const handleNotificationNavigation = (remoteMessage: any) => {
   const type = remoteMessage.data?.type;
   const id = remoteMessage.data?.id;
 
-//   switch (type) {
-//     case 'TRANSACTION_DETAIL':
-//       navigate('TransactionDetail', { transactionId: id });
-//       break;
-//     case 'BANK_LIST':
-//       navigate('BankList'); // Sesuai folder bankList di struktur kamu
-//     default:
-//       navigate('Home');
-//       break;
-//   }
+  //   switch (type) {
+  //     case 'TRANSACTION_DETAIL':
+  //       navigate('TransactionDetail', { transactionId: id });
+  //       break;
+  //     case 'BANK_LIST':
+  //       navigate('BankList'); // Sesuai folder bankList di struktur kamu
+  //     default:
+  //       navigate('Home');
+  //       break;
+  //   }
 };

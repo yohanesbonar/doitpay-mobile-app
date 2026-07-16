@@ -24,16 +24,16 @@ interface NotificationItemProps {
 type IconConfig = { icon: React.ElementType; color: string; bg: string };
 
 const ICON_MAP: Record<NotificationSubType, IconConfig> = {
-  incoming:    { icon: ArrowDownCircle, color: '#22C55E', bg: '#DCFCE7' },
-  transfer:    { icon: Send,            color: '#4F84F6', bg: '#EEF2FF' },
-  qris:        { icon: QrCode,          color: '#4F84F6', bg: '#EEF2FF' },
-  refund:      { icon: RotateCcw,       color: '#22C55E', bg: '#DCFCE7' },
-  settlement:  { icon: CheckCircle,     color: '#4F84F6', bg: '#EEF2FF' },
-  pin:         { icon: Lock,            color: '#EF4444', bg: '#FEE2E2' },
-  beneficiary: { icon: Users,           color: '#4F84F6', bg: '#EEF2FF' },
-  login:       { icon: Monitor,         color: '#6B7280', bg: '#F3F4F6' },
-  email:       { icon: Mail,            color: '#6B7280', bg: '#F3F4F6' },
-  account:     { icon: User,            color: '#6B7280', bg: '#F3F4F6' },
+  incoming: { icon: ArrowDownCircle, color: '#22C55E', bg: '#DCFCE7' },
+  transfer: { icon: Send, color: '#4F84F6', bg: '#EEF2FF' },
+  qris: { icon: QrCode, color: '#4F84F6', bg: '#EEF2FF' },
+  refund: { icon: RotateCcw, color: '#22C55E', bg: '#DCFCE7' },
+  settlement: { icon: CheckCircle, color: '#4F84F6', bg: '#EEF2FF' },
+  pin: { icon: Lock, color: '#EF4444', bg: '#FEE2E2' },
+  beneficiary: { icon: Users, color: '#4F84F6', bg: '#EEF2FF' },
+  login: { icon: Monitor, color: '#6B7280', bg: '#F3F4F6' },
+  email: { icon: Mail, color: '#6B7280', bg: '#F3F4F6' },
+  account: { icon: User, color: '#6B7280', bg: '#F3F4F6' },
 };
 
 const DEFAULT_ICON: IconConfig = { icon: Bell, color: '#6B7280', bg: '#F3F4F6' };

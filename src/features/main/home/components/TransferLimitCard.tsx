@@ -23,9 +23,8 @@ export const TransferLimitCard = ({
   maxLimit = 0,
   isKycVerified = false,
 }: Props) => {
-  const percentage = freeTransferQuotaTotal > 0
-    ? (freeTransferQuotaUsed / freeTransferQuotaTotal) * 100
-    : 0;
+  const percentage =
+    freeTransferQuotaTotal > 0 ? (freeTransferQuotaUsed / freeTransferQuotaTotal) * 100 : 0;
 
   const { colors } = useTheme();
   const styles = createStyles(colors);

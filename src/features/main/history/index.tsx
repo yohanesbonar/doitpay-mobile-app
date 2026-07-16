@@ -209,8 +209,7 @@ export const History: FC<HistoryProps> = ({ navigateToDetail }) => {
                     type: item.type,
                     status: item.status,
                   })
-                }
-              >
+                }>
                 <HistoryItem item={item} />
               </Pressable>
             )}

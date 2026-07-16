@@ -238,7 +238,12 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
                   }}>
                   <Image
                     source={{ uri: item?.logoUrl }}
-                    style={{ width: '100%', height: '100%', resizeMode: 'contain', borderRadius: 8 }}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      resizeMode: 'contain',
+                      borderRadius: 8,
+                    }}
                   />
                 </View>
 
@@ -278,7 +283,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
             borderColor: '#3B82F6',
             flexDirection: 'row',
             alignItems: 'center',
-            marginBottom: 80
+            marginBottom: 80,
           }}>
           <QrCode size={24} color="#3B82F6" style={{ marginRight: 12 }} />
           <Text

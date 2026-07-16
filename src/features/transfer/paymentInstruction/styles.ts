@@ -277,7 +277,7 @@ export const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: '#3475E8', 
+    backgroundColor: '#3475E8',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -301,7 +301,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#E5E7EB', 
+    borderColor: '#E5E7EB',
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -326,7 +326,7 @@ export const styles = StyleSheet.create({
   payBeforeCountdown: {
     fontFamily: 'Switzer-Bold',
     fontSize: 24,
-    color: '#EF4444', 
+    color: '#EF4444',
     marginLeft: 8,
   },
 });

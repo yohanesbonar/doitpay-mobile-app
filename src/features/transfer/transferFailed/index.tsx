@@ -39,7 +39,7 @@ export const TransferFailedView: React.FC<TransferFailedViewProps> = ({
           </View>
           <Text style={styles.statusTitle}>{title}</Text>
           <Text style={styles.amountText}>Rp {formatNumber(amount)}</Text>
-            <View style={styles.curveCutout} />
+          <View style={styles.curveCutout} />
         </View>
 
         <View style={styles.contentBody}>

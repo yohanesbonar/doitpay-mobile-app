@@ -55,7 +55,7 @@ export const styles = StyleSheet.create({
     fontFamily: 'Switzer-Medium',
     fontSize: 20,
     marginBottom: 8,
-    marginRight: 10
+    marginRight: 10,
   },
   inputContainer: {
     flex: 1,
@@ -68,7 +68,7 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   inputContainerFocused: {
-    borderColor: '#BFDBFE', 
+    borderColor: '#BFDBFE',
     backgroundColor: '#FFF',
     shadowColor: '#2F80ED',
     shadowOffset: { width: 0, height: 0 },
@@ -159,13 +159,13 @@ export const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'transparent', 
+    backgroundColor: 'transparent',
   },
   footerContent: {
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 20,
     paddingTop: 16,
-    paddingBottom: 30, 
+    paddingBottom: 30,
     borderTopWidth: 1,
     borderTopColor: '#F2F2F2',
     shadowColor: '#000',
