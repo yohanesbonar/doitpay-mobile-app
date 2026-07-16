@@ -27,6 +27,7 @@ import {
 import { Info, TriangleAlert } from 'lucide-react-native';
 import { useIsFocused } from '@react-navigation/native';
 import { usePaymentMethodAvailability } from '../hooks/usePaymentMethodAvailability';
+import { usePostHog } from 'posthog-react-native';
 
 const QUICK_AMOUNTS = ['50000', '100000', '200000', '500000', '1000000', '2000000'];
 
@@ -57,6 +58,7 @@ export const RequestPaymentView = ({
   initialPaymentMethod,
   initialBankPayment,
 }: RequestPaymentViewProps) => {
+  const posthog = usePostHog();
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const [amount, setAmount] = useState(initialAmount || '');
@@ -103,6 +105,11 @@ export const RequestPaymentView = ({
       {
         onSuccess: (data) => {
           let receiveData = data?.data ?? {};
+          posthog.capture('payment_request_initiated', {
+            amount: parseInt(amount),
+            payment_method: methodPayment,
+            payment_channel: bankPayment?.code,
+          });
           if (methodPayment == 'QRIS')
             onGenerateQR(methodPayment, amount, receiveData, bankPayment);
           else gotoPaymentInstruction(methodPayment, amount, receiveData, bankPayment);

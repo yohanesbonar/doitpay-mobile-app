@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useRoute, useNavigation, useIsFocused } from '@react-navigation/native';
+import { usePostHog } from 'posthog-react-native';
 import { styles } from './styles';
 import PaymentMethod from './components/PaymentMethod';
 import QuickAmount from './components/QuickAmount';
@@ -49,6 +50,7 @@ interface TransferDetailViewProps {
 
 const TransferDetailView = (props: TransferDetailViewProps) => {
   const navigation = useNavigation<any>();
+  const posthog = usePostHog();
   const [isFocusedInput, setIsFocusedInput] = useState(false);
   const inputRef = useRef<TextInput>(null);
 
@@ -179,6 +181,13 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
       {
         onSuccess: (data) => {
           let transferData = data?.data ?? {};
+          posthog.capture('transfer_initiated', {
+            amount: parseInt(amount),
+            payment_method: methodPayment,
+            payment_channel: bankPayment?.code,
+            is_free_transfer: calculateData?.isFreeTransfer,
+            fee: calculateData?.fee,
+          });
           console.log('postTransfer onSuccess bankPayment', bankPayment);
           gotoPaymentInstruction(methodPayment, amount, transferData, bankPayment);
         },

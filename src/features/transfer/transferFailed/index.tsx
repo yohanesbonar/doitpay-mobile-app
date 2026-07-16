@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform } from 'react-native';
 import { X, AlertCircle, RefreshCw, Headset } from 'lucide-react-native';
 import { formatNumber } from '@/utils/Common';
+import { usePostHog } from 'posthog-react-native';
 
 interface TransferFailedViewProps {
   title: string;
@@ -30,6 +31,17 @@ export const TransferFailedView: React.FC<TransferFailedViewProps> = ({
   onRetry,
   onContactSupport,
 }) => {
+  const posthog = usePostHog();
+
+  useEffect(() => {
+    posthog.capture('transfer_failed', {
+      amount: parseInt(String(amount || '0')),
+      payment_method: paymentMethod,
+      transaction_id: transactionId,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer} bounces={false}>
@@ -39,7 +51,7 @@ export const TransferFailedView: React.FC<TransferFailedViewProps> = ({
           </View>
           <Text style={styles.statusTitle}>{title}</Text>
           <Text style={styles.amountText}>Rp {formatNumber(amount)}</Text>
-            <View style={styles.curveCutout} />
+          <View style={styles.curveCutout} />
         </View>
 
         <View style={styles.contentBody}>

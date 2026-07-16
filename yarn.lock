@@ -2466,6 +2466,18 @@
   resolved "https://registry.yarnpkg.com/@pkgr/core/-/core-0.3.6.tgz#3569708bd4be4d8870ba32bf1c456dac81600d97"
   integrity sha512-SEeaJLb3qBNF/OaXnaR1NmmBbFYk1zC0ZH/52fATcRPLFg/p791YrcyFFy44Bo9sLaGuSuLp5Q6axbb/O+v/RA==
 
+"@posthog/core@^1.42.0":
+  version "1.42.1"
+  resolved "https://registry.yarnpkg.com/@posthog/core/-/core-1.42.1.tgz#69d32b4345d861647b8728da57d4a8d3f142e4fd"
+  integrity sha512-cZojBmvf92gZAn0MGf/J2S+3t2sZqb9E2/6mjY4jJsImwz7PuYqdNj870Wx2iwwlf++wfhRuH4K4bpDy9GIoCA==
+  dependencies:
+    "@posthog/types" "^1.395.0"
+
+"@posthog/types@^1.395.0":
+  version "1.395.0"
+  resolved "https://registry.yarnpkg.com/@posthog/types/-/types-1.395.0.tgz#61ba7bd105c113d6e0581f14f363e772992a9d9b"
+  integrity sha512-Ty0gbVc6d9ku9H3caF54PmEfu4PHUGpJKTriMyDb4rjCTsEYOOjD4r6Fw/UMYSSWg8Ls3KnCtTow8LL6ciqNDg==
+
 "@protobufjs/aspromise@^1.1.1", "@protobufjs/aspromise@^1.1.2":
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/@protobufjs/aspromise/-/aspromise-1.1.2.tgz#9b8b0cc663d669a7d8f6f5d0893a14d348f30fbf"
@@ -8580,6 +8592,14 @@ postcss@^8.4.47:
     nanoid "^3.3.12"
     picocolors "^1.1.1"
     source-map-js "^1.2.1"
+
+posthog-react-native@^4.56.3:
+  version "4.56.3"
+  resolved "https://registry.yarnpkg.com/posthog-react-native/-/posthog-react-native-4.56.3.tgz#db432e95140746a1200e63f754b044a2808c0fdd"
+  integrity sha512-5oesoZRFgUMVr19uYBHhfNZoWjTpi4RSV096IvCL7ytHVWtnTJRzJAHzeW5urlMFLYE7GNpchzBk+sYGmhUFFA==
+  dependencies:
+    "@posthog/core" "^1.42.0"
+    "@posthog/types" "^1.395.0"
 
 prebuild-install@^6.0.1:
   version "6.1.4"

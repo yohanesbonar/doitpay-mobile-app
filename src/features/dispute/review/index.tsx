@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { usePostHog } from 'posthog-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Alert,
@@ -85,6 +86,7 @@ export const DisputeReviewView = ({
   onPressBack,
   onSubmit,
 }: DisputeReviewViewProps) => {
+  const posthog = usePostHog();
   const [descriptionInput, setDescriptionInput] = useState('');
   const [attachments, setAttachments] = useState<PhotoItem[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -303,6 +305,12 @@ export const DisputeReviewView = ({
 
       const createdDisputeId = createDraftRes?.data?.id || disputeId;
       const estimatedAt = createDraftRes?.data?.estimatedAt;
+
+      posthog.capture('dispute_submitted', {
+        issue_type: issueType,
+        attachment_count: attachments.length,
+        has_transaction_id: !!transactionId,
+      });
 
       onSubmit(descriptionInput.trim(), attachments.length, createdDisputeId, estimatedAt);
     } catch (error) {
