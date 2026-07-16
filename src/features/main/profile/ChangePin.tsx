@@ -16,12 +16,10 @@ import { createStyles } from '@/features/onboarding/authEntry/styles';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import CreateAndConfirmPIN from '@/features/onboarding/authEntry/components/CreateAndConfirmPIN';
 import { useChangePin } from '@/hooks/useAuthMutation';
-import { usePostHog } from 'posthog-react-native';
 
 const PIN_LENGTH = 6;
 
 export const ChangePin = () => {
-  const posthog = usePostHog();
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const navigation = useNavigation<any>();
@@ -96,7 +94,6 @@ export const ChangePin = () => {
         { oldPin, newPin: text },
         {
           onSuccess: () => {
-            posthog.capture('pin_changed');
             Keyboard.dismiss();
             Toast.show({ type: 'success', text1: 'PIN berhasil diubah' });
             navigation.goBack();

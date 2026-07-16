@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -20,7 +20,6 @@ import ViewShot from 'react-native-view-shot';
 import { CameraRoll } from '@react-native-camera-roll/camera-roll';
 import Share from 'react-native-share';
 import { useReceiveStatusQuery, useTransferDetailQuery } from '@/hooks/useTransferMutation';
-import { usePostHog } from 'posthog-react-native';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -53,18 +52,7 @@ const PaymentReceiptView = ({
   onPressHome,
   method,
 }: PaymentReceiptViewProps) => {
-  const posthog = usePostHog();
   const methodLabel = paymentMethod === 'QRIS' ? 'QRIS' : 'Virtual Account';
-
-  useEffect(() => {
-    posthog.capture('transfer_completed', {
-      amount: parseInt(amount || '0'),
-      payment_method: paymentMethod ?? null,
-      transaction_id: transactionId ?? null,
-      method: method ?? null,
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
   const { data: transferDetailData, isLoading: isTransferDetailLoading } = useTransferDetailQuery(
     method !== 'receive' ? transactionId : undefined,
   );

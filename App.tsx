@@ -18,7 +18,6 @@ import Config from 'react-native-config';
 
 import { initI18next } from './src/i18n/initI18next.ts';
 import { ThemeProvider } from './src/theme/ThemeProvider.tsx';
-import { posthog } from './src/config/posthog';
 import RootNavigator from './src/navigation/RootNavigator.tsx';
 import { toastConfig } from './src/utils/ToastConfig/index.tsx';
 import { useNotifications } from './src/hooks/useNotifications';
@@ -144,12 +143,6 @@ const App = () => {
     const currentRouteName = navigationRef.getCurrentRoute()?.name;
 
     if (previousRouteName !== currentRouteName) {
-      if (currentRouteName) {
-        posthog.screen(currentRouteName, {
-          previous_screen: previousRouteName ?? null,
-        });
-      }
-
       if (__DEV__ && currentRouteName) {
         console.log('--------------------------------------------------');
         console.log(`📱 CURRENT SCREEN : ${currentRouteName}`);

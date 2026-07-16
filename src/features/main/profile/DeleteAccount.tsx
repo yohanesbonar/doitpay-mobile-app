@@ -28,7 +28,6 @@ import {
 } from '@/hooks/useAuthMutation';
 import { handleLogout } from '@/utils/Common';
 import { useGetProfileMeQuery } from '@/features/user/hooks/useGetProfileMeQuery';
-import { usePostHog } from 'posthog-react-native';
 import AccountDeletionIcon from '@/assets/icons/ic-account-deletion.svg';
 
 const CELL_COUNT_OTP = 6;
@@ -36,7 +35,6 @@ const PIN_LENGTH = 6;
 const SUCCESS_AUTO_LOGOUT_DELAY = 3000;
 
 export const DeleteAccount = () => {
-  const posthog = usePostHog();
   const { colors } = useTheme();
   const authStyles = createAuthStyles(colors);
   const navigation = useNavigation<any>();
@@ -136,7 +134,6 @@ export const DeleteAccount = () => {
         { pin: text, reason: 'No longer needed', verifyToken },
         {
           onSuccess: () => {
-            posthog.capture('account_deletion_requested');
             Keyboard.dismiss();
             setCurrentStep(4);
           },
