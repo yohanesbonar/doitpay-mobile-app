@@ -21,6 +21,7 @@ import Toast from 'react-native-toast-message';
 import { paymentApi, PaymentCalculatePayload } from './api/payment-calculate-api';
 import { Info, TriangleAlert } from 'lucide-react-native';
 import { usePaymentMethodAvailability } from '../hooks/usePaymentMethodAvailability';
+import { getAmountRange, trackPostHogEvent } from '@/analytics/posthog';
 
 interface TransferDetailViewProps {
   accountData: {
@@ -81,10 +82,39 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
   const paymentMethodAvailability = usePaymentMethodAvailability('TRANSFER');
 
   const { mutate: postTransfer, isPending: isLoadingTransfer } = useTransfer();
+  const hasTrackedValidAmountRef = useRef(false);
+  const hasTrackedReviewViewRef = useRef(false);
 
   useEffect(() => {
     console.log('bankPayment ->>>', bankPayment);
   }, [bankPayment]);
+
+  useEffect(() => {
+    if (hasTrackedReviewViewRef.current) return;
+
+    trackPostHogEvent('transfer_review_viewed', {
+      amount_range: getAmountRange(amount),
+      destination_bank: bankData?.shortName || bankData?.name || 'unknown',
+      source_bank: bankPayment?.code || bankData?.shortName || 'unknown',
+      pay_method: methodPayment,
+    });
+
+    hasTrackedReviewViewRef.current = true;
+  }, [amount, bankData?.name, bankData?.shortName, bankPayment?.code, methodPayment]);
+
+  useEffect(() => {
+    const numericAmount = amount ? parseInt(amount, 10) : 0;
+
+    if (numericAmount >= 10000 && !hasTrackedValidAmountRef.current) {
+      trackPostHogEvent('transfer_amount_entered', {
+        amount_range: getAmountRange(numericAmount),
+        destination_bank: bankData?.shortName || bankData?.name || 'unknown',
+        pay_method: methodPayment,
+      });
+
+      hasTrackedValidAmountRef.current = true;
+    }
+  }, [amount, bankData?.name, bankData?.shortName, methodPayment]);
 
   useEffect(() => {
     const { vaEnabled, qrisEnabled, defaultMethod } = paymentMethodAvailability;
@@ -161,6 +191,15 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
   }, [amount, methodPayment, bankPayment, isFocused, paymentMethodAvailability.isLoading]);
 
   const onPressConfirm = () => {
+    trackPostHogEvent('transfer_confirmed', {
+      amount_range: getAmountRange(amount),
+      destination_bank: bankData?.shortName || bankData?.name || 'unknown',
+      source_bank: bankPayment?.code || bankData?.shortName || 'unknown',
+      pay_method: methodPayment,
+      fee_status:
+        calculateData?.isFreeTransfer || calculateData?.fee === 0 ? 'free_quota' : 'paid',
+    });
+
     let payload = {
       amount: parseInt(amount),
       inquiryId: accountData?.id,

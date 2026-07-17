@@ -1,3 +1,6 @@
 API_URL=https:/$()/mobi.doitpay.dev
 APP_NAME=DoitPay-Staging
 ENABLE_NETWORK_LOGGER=true
+POSTHOG_API_KEY=phc_ykySbnwwLioDBHnq4LLwHkBPtACwoPWXQJUBKjGiPvhf
+POSTHOG_HOST=https:/$()/us.i.posthog.com
+POSTHOG_RELEASE_STAGE=internal_release
