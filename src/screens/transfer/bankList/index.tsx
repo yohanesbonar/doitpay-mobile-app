@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigation, useRoute, StackActions } from '@react-navigation/native';
 import { BankListView } from '../../../features/transfer/bankList';
 import { useAuthStore } from '@/storage/useAuthStore';
+import { trackPostHogEvent } from '@/analytics/posthog';
 
 const BankListScreen = () => {
   const navigation = useNavigation<any>();
@@ -27,6 +28,11 @@ const BankListScreen = () => {
   };
 
   const handleSelectBank = (bank: any, method: 'send' | 'receive') => {
+    trackPostHogEvent('recipient_bank_selected', {
+      destination_bank: bank?.shortName || bank?.name || 'unknown',
+      entry_point: fromProfile ? 'profile' : fromTabBar ? 'home_transfer_button' : 'bank_list',
+    });
+
     setTimeout(() => {
       navigation.navigate({
         name: 'AddBankRecipient',

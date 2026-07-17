@@ -23,6 +23,7 @@ import { useGetProfile } from '@/hooks/useMeMutation.ts';
 import { useGetProfileMeQuery } from '@/features/user/hooks/useGetProfileMeQuery.ts';
 import LogoDoitpay from '@/assets/icons/ic-logo.svg';
 import EmptyHomeIcon from '@/assets/icons/ic-empty-home.svg';
+import { trackPostHogEvent } from '@/analytics/posthog';
 
 interface HomeViewProps {
   goToSearchAccount: () => void;
@@ -57,6 +58,16 @@ export const HomeView = (props: HomeViewProps) => {
   const recentBeneficiaries = homeData?.recentBeneficiaries ?? [];
   const transferQuota = homeData?.transferQuota;
   const hasKycPending = homeData?.pendingActions.some((a) => a.code === 'KYC_INCOMPLETE') ?? false;
+  const hasTrackedHomeViewRef = useRef(false);
+
+  useEffect(() => {
+    if (hasTrackedHomeViewRef.current) return;
+
+    trackPostHogEvent('home_viewed', {
+      account_status: hasKycPending ? 'PENDING_APPROVAL' : 'ACTIVE',
+    });
+    hasTrackedHomeViewRef.current = true;
+  }, [hasKycPending]);
 
   const handleOpenEmailSheet = useCallback(() => {
     setIsSheetMounted(true);

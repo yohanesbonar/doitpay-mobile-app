@@ -19,6 +19,7 @@ import { CameraRoll } from '@react-native-camera-roll/camera-roll';
 import Share from 'react-native-share';
 import ViewShot from 'react-native-view-shot';
 import Clipboard from '@react-native-clipboard/clipboard';
+import { getAmountRange, trackPostHogEvent } from '@/analytics/posthog';
 
 interface PaymentInstructionViewProps {
   accountData?: {
@@ -126,6 +127,10 @@ const PaymentInstructionView = ({
 
   const handleCopy = (text) => {
     Clipboard.setString(text);
+    trackPostHogEvent('va_number_copied', {
+      source_bank:
+        transferData?.va?.name || receiveData?.va?.name || bankData?.shortName || 'unknown',
+    });
     Alert.alert('Sukses', 'Nomor VA berhasil disalin');
   };
 

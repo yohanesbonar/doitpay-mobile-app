@@ -33,6 +33,8 @@ import { navigationRef } from '@/navigation/navigationRef.ts';
 import { SecurityBlocker } from '@/components/organisms/SecurityBlocker/index.tsx';
 import { UpdateAppBottomSheet, UpdateAppData } from '@/components/molecules/UpdateAppBottomSheet';
 import { updateAppApi } from '@/api/updateApp';
+import { PostHogProvider } from 'posthog-react-native';
+import { posthogClient, trackScreenView } from './src/analytics/posthog';
 
 // Start i18n
 initI18next();
@@ -65,8 +67,7 @@ const App = () => {
   const [isButtonVisible, setIsButtonVisible] = useState<boolean>(false);
   const [isUpdateAppSheetVisible, setIsUpdateAppSheetVisible] = useState<boolean>(false);
   const [updateAppData, setUpdateAppData] = useState<UpdateAppData | undefined>(undefined);
-  const isLoggerEnabled =
-    Config.ENABLE_NETWORK_LOGGER === 'true' || Config.ENABLE_NETWORK_LOGGER === true;
+  const isLoggerEnabled = String(Config.ENABLE_NETWORK_LOGGER) === 'true';
 
   const routeNameRef = useRef<string | undefined>(undefined);
   const traceRef = useRef<any>(null);
@@ -135,14 +136,20 @@ const App = () => {
   }, []);
 
   const onNavigationReady = () => {
-    routeNameRef.current = navigationRef.getCurrentRoute()?.name;
+    routeNameRef.current = (navigationRef.getCurrentRoute() as { name?: string } | undefined)?.name;
   };
 
   const onNavigationStateChange = async () => {
     const previousRouteName = routeNameRef.current;
-    const currentRouteName = navigationRef.getCurrentRoute()?.name;
+    const currentRouteName = (navigationRef.getCurrentRoute() as { name?: string } | undefined)?.name;
 
     if (previousRouteName !== currentRouteName) {
+      if (currentRouteName) {
+        trackScreenView(currentRouteName, {
+          previous_screen_name: previousRouteName,
+        });
+      }
+
       if (__DEV__ && currentRouteName) {
         console.log('--------------------------------------------------');
         console.log(`📱 CURRENT SCREEN : ${currentRouteName}`);
@@ -212,7 +219,7 @@ const App = () => {
     );
   }
 
-  return (
+  const appTree = (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <BottomSheetModalProvider>
         <QueryClientProvider client={queryClient}>
@@ -273,6 +280,21 @@ const App = () => {
         </QueryClientProvider>
       </BottomSheetModalProvider>
     </GestureHandlerRootView>
+  );
+
+  if (!posthogClient) {
+    return appTree;
+  }
+
+  return (
+    <PostHogProvider
+      client={posthogClient}
+      autocapture={{
+        captureTouches: true,
+        captureScreens: true,
+      }}>
+      {appTree}
+    </PostHogProvider>
   );
 };
 

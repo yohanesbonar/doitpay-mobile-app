@@ -5,6 +5,8 @@ declare module "*.svg" {
   export default content;
 }
 
+declare module '*.css';
+
 declare module 'react-native-image-picker' {
   export type ImageLibraryOptions = {
     mediaType?: 'photo' | 'video' | 'mixed';

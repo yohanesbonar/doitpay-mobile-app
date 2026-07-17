@@ -6,6 +6,7 @@ import TransferProcessingView, {
 import { BackHandler, StyleSheet } from 'react-native';
 import { useTransferStatus } from '@/hooks/useTransferStatus';
 import { formatApiDateToLocal } from '@/utils/Common';
+import { getAmountRange, trackPostHogEvent } from '@/analytics/posthog';
 
 const mapApiStatusToViewStep = (status: string | undefined): TransferStep => {
   switch (status) {
@@ -65,6 +66,14 @@ const TransferProcessingScreen = () => {
   const handleBack = () => {};
 
   const handleFinish = () => {
+    trackPostHogEvent('transfer_completed', {
+      amount_range: getAmountRange(data?.data?.amount || amount),
+      payment_method: paymentMethod,
+      destination_bank: bankData?.shortName || bankData?.name || 'unknown',
+      source_bank: accountData?.bankName || bankData?.shortName || 'unknown',
+      completion_time_range: 'unknown',
+    });
+
     const beneficiaryApi = data?.data?.beneficiary;
     const transactionTime = data?.data?.processedAt || new Date().toISOString();
 
@@ -93,6 +102,14 @@ const TransferProcessingScreen = () => {
     }
 
     if (data?.status === 'CANCELLED' || data?.status === 'DISBURSING_FAILED') {
+      trackPostHogEvent('transfer_failed', {
+        amount_range: getAmountRange(data?.data?.amount || amount),
+        payment_method: paymentMethod,
+        destination_bank: bankData?.shortName || bankData?.name || 'unknown',
+        source_bank: accountData?.bankName || bankData?.shortName || 'unknown',
+        failure_reason: data?.status === 'CANCELLED' ? 'cancelled' : 'disbursing_failed',
+      });
+
       const transactionTime = data?.lastUpdatedAt || new Date().toISOString();
 
       const errorTitle = 'Transfer Gagal';

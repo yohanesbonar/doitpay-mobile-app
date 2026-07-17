@@ -23,6 +23,7 @@ import { useBankInquiry, useBanks } from '@/hooks/useBankMutation.ts';
 import { useAddBankAccount } from '@/hooks/useMeMutation.ts';
 import Toast from 'react-native-toast-message';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { trackPostHogEvent } from '@/analytics/posthog';
 
 interface AddBankRecipientViewProps {
   onPressBack: () => void;
@@ -120,6 +121,10 @@ export const AddBankRecipientView = ({
         onSuccess: (data) => {
           console.log('Bank inquiry result:', data);
           if (data.data) {
+            trackPostHogEvent('recipient_verified', {
+              destination_bank: bankData?.shortName || bankData?.name || 'unknown',
+              account_status: 'ACTIVE',
+            });
             setResultData(data?.data);
             setShowResult(true);
           }
@@ -129,6 +134,10 @@ export const AddBankRecipientView = ({
             accountNumberInputRef.current?.focus();
           }, 150);
           console.log('error fetchBanks', error);
+          trackPostHogEvent('recipient_verification_failed', {
+            destination_bank: bankData?.shortName || bankData?.name || 'unknown',
+            failure_reason: error?.error?.message ?? 'gagal_memeriksa_rekening',
+          });
           Toast.show({
             type: 'error',
             text1: error?.error?.message ?? 'Gagal memeriksa rekening',
