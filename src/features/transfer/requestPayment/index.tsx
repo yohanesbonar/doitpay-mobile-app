@@ -44,6 +44,7 @@ interface RequestPaymentViewProps {
     transferData: any,
     bankPayment: any,
   ) => void;
+  onSelectQrisMethod?: () => Promise<boolean>;
   initialAmount?: string;
   initialPaymentMethod?: 'VA' | 'QRIS';
   initialBankPayment?: any;
@@ -53,6 +54,7 @@ export const RequestPaymentView = ({
   onPressBack,
   onGenerateQR,
   gotoPaymentInstruction,
+  onSelectQrisMethod,
   initialAmount,
   initialPaymentMethod,
   initialBankPayment,
@@ -265,7 +267,14 @@ export const RequestPaymentView = ({
             <PaymentMethod
               selectedMethod={methodPayment}
               styleProps={{ backgroundColor: '#FFF' }}
-              onSelect={(val) => setMethodPayment(val)}
+              onSelect={async (val) => {
+                if (val === 'QRIS' && onSelectQrisMethod) {
+                  const canUseQris = await onSelectQrisMethod();
+                  if (!canUseQris) return;
+                }
+
+                setMethodPayment(val);
+              }}
               onSelectBank={(val) => setBankPayment(val)}
               initialBankPayment={initialBankPayment}
               isVAEnabled={paymentMethodAvailability.vaEnabled}

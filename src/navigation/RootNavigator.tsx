@@ -40,6 +40,7 @@ import DisputeListScreen from '@/screens/dispute/list';
 import DisputeDetailScreen from '@/screens/dispute/detail';
 import DisputeAddResponseScreen from '@/screens/dispute/addResponse';
 import DisputeReportCenterScreen from '@/screens/dispute/reportCenter';
+import ActivateQrisScreen from '@/screens/kyc/activateQris';
 import { useGetProfileMeQuery } from '@/features/user/hooks/useGetProfileMeQuery';
 
 const Stack = createNativeStackNavigator();
@@ -163,6 +164,7 @@ export default function RootNavigator({
               <Stack.Screen name="DisputeList" component={DisputeListScreen} />
               <Stack.Screen name="DisputeDetail" component={DisputeDetailScreen} />
               <Stack.Screen name="DisputeAddResponse" component={DisputeAddResponseScreen} />
+              <Stack.Screen name="ActivateQris" component={ActivateQrisScreen} />
             </Stack.Group>
           )
         ) : (

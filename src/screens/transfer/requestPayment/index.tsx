@@ -1,9 +1,10 @@
 import React from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { RequestPaymentView } from '@/features/transfer/requestPayment';
+import { qrisApi } from '@/api/qris';
 
 const RequestPaymentScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const { method, bankPayment, initialAmount, initialPaymentMethod, initialBankPayment } =
     (route.params || {}) as any;
@@ -27,8 +28,26 @@ const RequestPaymentScreen = () => {
     });
   };
 
+  const handleSelectQrisMethod = async () => {
+    try {
+      const eligibility = await qrisApi.getActivationEligibilitySample();
+
+      if (!eligibility.hasNmid) {
+        navigation.navigate('ActivateQris', {
+          kycStatus: eligibility.kycStatus,
+          rejectionReason: eligibility.rejectionReason,
+        });
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      return false;
+    }
+  };
+
   const gotoPaymentInstruction = (
-    methodPayment,
+    methodPayment: 'VA' | 'QRIS',
     amount: string,
     receiveData: any,
     bankPayment: any,
@@ -53,6 +72,7 @@ const RequestPaymentScreen = () => {
       onPressBack={handleBack}
       onGenerateQR={handleGenerateQR}
       gotoPaymentInstruction={gotoPaymentInstruction}
+      onSelectQrisMethod={handleSelectQrisMethod}
       initialAmount={initialAmount}
       initialPaymentMethod={initialPaymentMethod}
       initialBankPayment={initialBankPayment}
