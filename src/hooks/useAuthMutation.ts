@@ -57,14 +57,6 @@ export const useRegisterVerifyOtp = () => {
     onSuccess: (data) => {
       console.log('useRegisterVerifyOtp data.message:', data.message);
       console.log('useRegisterVerifyOtp data', data);
-
-      const session = data?.data;
-
-      if (session?.verificationToken) {
-        setStorageItem(StorageKey.ACCESS_TOKEN, session.verificationToken);
-
-        console.log('useRegisterVerifyOtp ACCESS_TOKEN saved to MMKV');
-      }
     },
     onError: (error) => {
       console.log('error useRegisterVerifyOtp', error);
@@ -133,6 +125,9 @@ export const useRegisterPinSetup = () => {
         setExpiresAt(session.expiresAt);
       }
 
+      if (session?.accessToken) {
+        sendFcmTokenToBackend();
+      }
       console.log('[AuthHook] register success, fallback PostHog identify from hook.');
       identifyPostHogUser(variables.phoneNumber, {
         account_status: 'ACTIVE',

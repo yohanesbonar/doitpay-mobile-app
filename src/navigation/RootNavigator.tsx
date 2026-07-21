@@ -41,6 +41,7 @@ import DisputeDetailScreen from '@/screens/dispute/detail';
 import DisputeAddResponseScreen from '@/screens/dispute/addResponse';
 import DisputeReportCenterScreen from '@/screens/dispute/reportCenter';
 import { useGetProfileMeQuery } from '@/features/user/hooks/useGetProfileMeQuery';
+import { KycPendingStatus } from '@/features/onboarding/kyc/KycPendingStatus';
 
 const Stack = createNativeStackNavigator();
 interface RootNavigatorProps {
@@ -170,6 +171,7 @@ export default function RootNavigator({
             <Stack.Screen name="MainApp" component={Onboarding} />
             <Stack.Screen name="AuthEntry" component={AuthEntry} />
             <Stack.Screen name="ForgotPin" component={ForgotPin} />
+            <Stack.Screen name="KycPendingStatus" component={KycPendingStatus} />
           </Stack.Group>
         )}
       </Stack.Navigator>
