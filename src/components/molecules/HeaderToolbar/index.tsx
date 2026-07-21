@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TextStyle } from 'react-native';
+import { View, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../../theme/ThemeProvider.tsx';
 import { createStyles } from './styles.ts';
@@ -17,6 +17,7 @@ export interface HeaderToolbarProps {
   onPressRightButton?: () => void;
   titlePosition?: TitlePosition;
   titleStyle?: TitleWeight;
+  backgroundColor?: string;
 }
 
 const HeaderToolbar: React.FC<HeaderToolbarProps> = ({
@@ -28,20 +29,21 @@ const HeaderToolbar: React.FC<HeaderToolbarProps> = ({
   onPressRightButton,
   titlePosition = 'center',
   titleStyle = 'regular',
+  backgroundColor,
 }) => {
   const { colors } = useTheme();
-  const styles = createStyles(colors);
+  const styles = createStyles(colors, backgroundColor);
 
-  const getFontWeight = (): TextStyle['fontWeight'] => {
+  const getTitleFontFamily = (): string => {
     switch (titleStyle) {
       case 'bold':
-        return 'bold';
+        return 'Switzer-Bold';
       case 'medium':
-        return '500';
+        return 'Switzer-Medium';
       case 'regular':
-        return 'normal';
+        return 'Switzer-Regular';
       default:
-        return '400';
+        return 'Switzer-Regular';
     }
   };
 
@@ -62,7 +64,7 @@ const HeaderToolbar: React.FC<HeaderToolbarProps> = ({
             style={[
               styles.title,
               titlePosition === 'left' && styles.titleLeft,
-              { fontWeight: getFontWeight() },
+              { fontFamily: getTitleFontFamily() },
             ]}
             numberOfLines={1}>
             {title}

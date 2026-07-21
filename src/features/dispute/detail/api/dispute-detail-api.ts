@@ -1,0 +1,81 @@
+import apiClient from '@/api/client';
+import { ResponseApi } from '@/api/types';
+
+export interface DisputeStatusCheckpointApi {
+  status: string;
+  timestamp?: string;
+  isActive?: boolean;
+  isCompleted?: boolean;
+}
+
+export interface DisputeEvidenceFileApi {
+  id: string;
+  fileKey: string;
+  createdAt?: string;
+  url?: string;
+}
+
+export interface DisputeDetailApi {
+  id: string;
+  createdAt?: string;
+  updatedAt?: string;
+  estimatedAt?: string;
+  customReason?: string;
+  detail?: string;
+  reasonId?: string;
+  reasonLabel?: string;
+  reopenedAt?: string;
+  isReplied?: boolean;
+  orderReferenceId?: string;
+  transactionId?: string;
+  reportType?: string;
+  status?: string;
+  statusCheckpoints?: DisputeStatusCheckpointApi[];
+  evidenceFiles?: DisputeEvidenceFileApi[];
+}
+
+export type GetDisputeDetailResponse = ResponseApi<DisputeDetailApi>;
+export type CancelDisputeResponse = ResponseApi<DisputeDetailApi>;
+export type ReopenDisputeResponse = ResponseApi<DisputeDetailApi>;
+export type SubmitCustomerReportFeedbackResponse = ResponseApi<DisputeDetailApi>;
+
+export interface ReopenCustomerReportPayload {
+  additionalInformation: string;
+  evidenceKeys?: string[];
+}
+
+export interface SubmitCustomerReportFeedbackPayload {
+  additionalInformation: string;
+  evidenceKeys?: string[];
+}
+
+export const disputeDetailApi = {
+  getCustomerReportDetail: async (id: string): Promise<GetDisputeDetailResponse> => {
+    const { data } = await apiClient.get<GetDisputeDetailResponse>(`/v1/customer-reports/${id}`);
+    return data;
+  },
+  cancelCustomerReport: async (id: string): Promise<CancelDisputeResponse> => {
+    const { data } = await apiClient.post<CancelDisputeResponse>(`/v1/customer-reports/${id}/cancel`);
+    return data;
+  },
+  reopenCustomerReport: async (
+    id: string,
+    payload: ReopenCustomerReportPayload,
+  ): Promise<ReopenDisputeResponse> => {
+    const { data } = await apiClient.post<ReopenDisputeResponse>(
+      `/v1/customer-reports/${id}/reopen`,
+      payload,
+    );
+    return data;
+  },
+  submitCustomerReportFeedback: async (
+    id: string,
+    payload: SubmitCustomerReportFeedbackPayload,
+  ): Promise<SubmitCustomerReportFeedbackResponse> => {
+    const { data } = await apiClient.post<SubmitCustomerReportFeedbackResponse>(
+      `/v1/customer-reports/${id}/feedback`,
+      payload,
+    );
+    return data;
+  },
+};

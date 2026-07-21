@@ -6,6 +6,7 @@ import {
   usePaymentStatusMutation,
 } from '@/hooks/useTransferMutation';
 import { formatApiDateToLocal } from '@/utils/Common';
+import { getAmountRange, trackPostHogEvent } from '@/analytics/posthog';
 
 const PaymentInstructionScreen = () => {
   const navigation = useNavigation<any>();
@@ -14,6 +15,7 @@ const PaymentInstructionScreen = () => {
   const pollingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const lastUpdatedRef = useRef<string | number>('');
+  const hasTrackedInstructionRef = useRef(false);
 
   const {
     accountData,
@@ -93,6 +95,27 @@ const PaymentInstructionScreen = () => {
   }, [paymentCode, activeId]);
 
   useEffect(() => {
+    if (!instructionData || hasTrackedInstructionRef.current) return;
+
+    if (method !== 'receive') {
+      trackPostHogEvent('va_generated', {
+        amount_range: getAmountRange(amount),
+        destination_bank: bankData?.shortName || bankData?.name || 'unknown',
+        source_bank: bankPayment?.code || bankData?.shortName || 'unknown',
+      });
+    }
+
+    trackPostHogEvent('va_instruction_viewed', {
+      amount_range: getAmountRange(amount),
+      destination_bank: bankData?.shortName || bankData?.name || 'unknown',
+      source_bank: bankPayment?.code || bankData?.shortName || 'unknown',
+      payment_method: paymentMethod,
+    });
+
+    hasTrackedInstructionRef.current = true;
+  }, [amount, bankData?.name, bankData?.shortName, bankPayment?.code, instructionData, method, paymentMethod]);
+
+  useEffect(() => {
     if (!statusData) return;
 
     console.log('DEBUG - Payment Status Data Updated:', statusData);
@@ -106,6 +129,14 @@ const PaymentInstructionScreen = () => {
     lastUpdatedRef.current = serverTimestamp;
 
     if (currentServerStatus === 'PAID') {
+      if (method !== 'receive') {
+        trackPostHogEvent('va_payment_detected', {
+          amount_range: getAmountRange(amount),
+          destination_bank: bankData?.shortName || bankData?.name || 'unknown',
+          source_bank: bankPayment?.code || bankData?.shortName || 'unknown',
+        });
+      }
+
       if (pollingTimerRef.current) clearTimeout(pollingTimerRef.current);
 
       const serverTransactionTime = statusData?.data?.updatedAt || statusData?.data?.paidAt;
@@ -133,6 +164,13 @@ const PaymentInstructionScreen = () => {
         });
       }
     } else if (currentServerStatus === 'EXPIRED' || currentServerStatus === 'FAILED') {
+      trackPostHogEvent(currentServerStatus === 'EXPIRED' ? 'va_expired' : 'transfer_failed', {
+        amount_range: getAmountRange(amount),
+        destination_bank: bankData?.shortName || bankData?.name || 'unknown',
+        source_bank: bankPayment?.code || bankData?.shortName || 'unknown',
+        failure_reason: currentServerStatus === 'EXPIRED' ? 'expired' : 'failed',
+      });
+
       if (pollingTimerRef.current) clearTimeout(pollingTimerRef.current);
 
       const serverTransactionTime = statusData?.data?.updatedAt || new Date().toISOString();

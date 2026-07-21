@@ -5,21 +5,17 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
-  Platform,
-  Linking,
-  PermissionsAndroid,
   ActivityIndicator,
   Dimensions,
   Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { CheckCircle2, Clock, XCircle, FlagIcon, Share2 } from 'lucide-react-native';
+import { CheckCircle2, Clock, XCircle, TriangleAlert, FlagIcon, Share2 } from 'lucide-react-native';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import { FeeInfoButton } from '@/components/molecules/FeeInfoButton';
 import { styles, receiptStyles } from './styles';
 import { formatNumber } from '@/utils/Common';
 import ViewShot from 'react-native-view-shot';
-import { CameraRoll } from '@react-native-camera-roll/camera-roll';
 import Share from 'react-native-share';
 import { TransactionStatus, TransactionType } from '@/features/transaction/types';
 import { useTransactionReceiptQuery } from '@/features/transaction/hooks/useTransactionReceiptQuery';
@@ -106,6 +102,7 @@ export interface TransactionDetailProps {
   type: string;
   status?: string;
   onPressBack: () => void;
+  onPressReportIssue: () => void;
   onContinuePayment?: (receipt: TransactionReceiptData) => void;
   isLoadingContinue?: boolean;
 }
@@ -116,6 +113,7 @@ export const TransactionDetail = ({
   type,
   status,
   onPressBack,
+  onPressReportIssue,
   onContinuePayment,
   isLoadingContinue,
 }: TransactionDetailProps) => {
@@ -400,9 +398,9 @@ export const TransactionDetail = ({
             </TouchableOpacity>
           ) : (
             <View style={styles.actionsRow}>
-              <TouchableOpacity style={styles.actionButton}>
-                <FlagIcon size={16} color="#111827" style={{ marginRight: 8 }} />
-                <Text style={[styles.actionText, { marginBottom: 2 }]}>Laporkan Masalah</Text>
+              <TouchableOpacity style={styles.actionButton} onPress={onPressReportIssue}>
+                <TriangleAlert size={18} color="#111827" style={{ marginRight: 8 }} />
+                <Text style={styles.actionText}>Laporkan Masalah</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
                 <Share2 size={18} color="#111827" style={{ marginRight: 8 }} />

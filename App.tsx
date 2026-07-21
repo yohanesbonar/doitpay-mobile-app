@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Modal, Button, Pressable, Alert } from 'react-native';
+import { View, Text, StyleSheet, Modal, Button, Pressable, Alert, Linking } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { I18nextProvider } from 'react-i18next';
@@ -31,6 +31,10 @@ import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { queryClient } from './src/api/queryClient';
 import { navigationRef } from '@/navigation/navigationRef.ts';
 import { SecurityBlocker } from '@/components/organisms/SecurityBlocker/index.tsx';
+import { UpdateAppBottomSheet, UpdateAppData } from '@/components/molecules/UpdateAppBottomSheet';
+import { updateAppApi } from '@/api/updateApp';
+import { PostHogProvider } from 'posthog-react-native';
+import { posthogClient, trackScreenView } from './src/analytics/posthog';
 
 // Start i18n
 initI18next();
@@ -61,8 +65,9 @@ const App = () => {
 
   const [loggerVisible, setLoggerVisible] = useState<boolean>(false);
   const [isButtonVisible, setIsButtonVisible] = useState<boolean>(false);
-  const isLoggerEnabled =
-    Config.ENABLE_NETWORK_LOGGER === 'true' || Config.ENABLE_NETWORK_LOGGER === true;
+  const [isUpdateAppSheetVisible, setIsUpdateAppSheetVisible] = useState<boolean>(false);
+  const [updateAppData, setUpdateAppData] = useState<UpdateAppData | undefined>(undefined);
+  const isLoggerEnabled = String(Config.ENABLE_NETWORK_LOGGER) === 'true';
 
   const routeNameRef = useRef<string | undefined>(undefined);
   const traceRef = useRef<any>(null);
@@ -112,15 +117,39 @@ const App = () => {
     }
   }, []);
 
+  useEffect(() => {
+    const runVersionCheck = async () => {
+      try {
+        const versionData = await updateAppApi.checkVersion();
+
+        setUpdateAppData(versionData);
+        setIsUpdateAppSheetVisible(
+          versionData.action === 'FORCE_UPDATE' || versionData.action === 'SOFT_UPDATE',
+        );
+      } catch (error) {
+        setUpdateAppData(undefined);
+        setIsUpdateAppSheetVisible(false);
+      }
+    };
+
+    runVersionCheck();
+  }, []);
+
   const onNavigationReady = () => {
-    routeNameRef.current = navigationRef.getCurrentRoute()?.name;
+    routeNameRef.current = (navigationRef.getCurrentRoute() as { name?: string } | undefined)?.name;
   };
 
   const onNavigationStateChange = async () => {
     const previousRouteName = routeNameRef.current;
-    const currentRouteName = navigationRef.getCurrentRoute()?.name;
+    const currentRouteName = (navigationRef.getCurrentRoute() as { name?: string } | undefined)?.name;
 
     if (previousRouteName !== currentRouteName) {
+      if (currentRouteName) {
+        trackScreenView(currentRouteName, {
+          previous_screen_name: previousRouteName,
+        });
+      }
+
       if (__DEV__ && currentRouteName) {
         console.log('--------------------------------------------------');
         console.log(`📱 CURRENT SCREEN : ${currentRouteName}`);
@@ -153,6 +182,31 @@ const App = () => {
     }
   };
 
+  const handleUpdateApp = async (data?: UpdateAppData) => {
+    const url = data?.update_url;
+
+    if (url) {
+      try {
+        const canOpenUrl = await Linking.canOpenURL(url);
+        if (canOpenUrl) {
+          await Linking.openURL(url);
+        }
+      } catch (error) {
+        if (__DEV__) {
+          console.error('Failed to open update URL', error);
+        }
+      }
+    }
+
+    if (data?.action === 'SOFT_UPDATE') {
+      setIsUpdateAppSheetVisible(false);
+    }
+  };
+
+  const handleLaterUpdate = () => {
+    setIsUpdateAppSheetVisible(false);
+  };
+
   if (isDeviceCompromised === null) {
     return null;
   }
@@ -165,7 +219,7 @@ const App = () => {
     );
   }
 
-  return (
+  const appTree = (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <BottomSheetModalProvider>
         <QueryClientProvider client={queryClient}>
@@ -215,11 +269,32 @@ const App = () => {
                   <NetworkLogger theme="dark" />
                 </View>
               </Modal>
+              <UpdateAppBottomSheet
+                visible={isUpdateAppSheetVisible}
+                data={updateAppData}
+                onUpdatePress={handleUpdateApp}
+                onLaterPress={handleLaterUpdate}
+              />
             </SafeAreaProvider>
           </I18nextProvider>
         </QueryClientProvider>
       </BottomSheetModalProvider>
     </GestureHandlerRootView>
+  );
+
+  if (!posthogClient) {
+    return appTree;
+  }
+
+  return (
+    <PostHogProvider
+      client={posthogClient}
+      autocapture={{
+        captureTouches: true,
+        captureScreens: true,
+      }}>
+      {appTree}
+    </PostHogProvider>
   );
 };
 

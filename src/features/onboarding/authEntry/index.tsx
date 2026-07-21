@@ -32,6 +32,7 @@ import Toast from 'react-native-toast-message';
 import CreateAndConfirmPIN from './components/CreateAndConfirmPIN.tsx';
 import InputFullName from './components/InputFullName.tsx';
 import crashlytics from '@react-native-firebase/crashlytics';
+import { identifyPostHogUser, trackPostHogEvent } from '@/analytics/posthog';
 
 export interface PhoneNumberFormValues {
   phoneNumber: string;
@@ -397,6 +398,8 @@ export const AuthEntry = ({ route }) => {
           const { phoneNumber, countryCode } = phoneNumbData;
           const formattedPhone = (countryCode + phoneNumber).replace('+', '');
 
+          console.warn('[Auth] about to call loginMutate');
+
           loginMutate(
             {
               phoneNumber: formattedPhone,
@@ -407,6 +410,13 @@ export const AuthEntry = ({ route }) => {
                 crashlytics().log('User login success');
                 crashlytics().setUserId(formattedPhone);
                 console.log('Login success:', res);
+                console.warn('[Auth] login success, calling PostHog identify.');
+                identifyPostHogUser(formattedPhone, {
+                  account_status: 'ACTIVE',
+                });
+                trackPostHogEvent('login_success', {
+                  account_status: 'ACTIVE',
+                });
                 Toast.show({
                   type: 'success',
                   text1: 'Berhasil login',
@@ -448,6 +458,11 @@ export const AuthEntry = ({ route }) => {
         const formattedPhone = (countryCode + phoneNumber).replace('+', '');
 
         if (!isLoginState) {
+          trackPostHogEvent('signup_started', {
+            signup_step: 'phone_start',
+            account_status: 'PENDING_APPROVAL',
+          });
+
           registerRequestOTP(
             {
               phoneNumber: formattedPhone,

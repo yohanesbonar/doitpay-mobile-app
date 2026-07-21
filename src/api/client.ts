@@ -9,9 +9,26 @@ import { Platform } from 'react-native';
 import perf, { FirebasePerformanceTypes } from '@react-native-firebase/perf';
 import crashlytics from '@react-native-firebase/crashlytics';
 import NetInfo from '@react-native-community/netinfo';
+import DeviceInfo from 'react-native-device-info';
 
 let isRefreshing = false;
 let failedQueue: any[] = [];
+
+const getAppVersionHeader = () => {
+  const configVersion = Config.VERSION_NAME || Config.APP_VERSION;
+
+  if (typeof configVersion === 'string' && configVersion.trim().length > 0) {
+    return configVersion.trim();
+  }
+
+  const nativeVersion = DeviceInfo.getVersion();
+
+  if (typeof nativeVersion === 'string' && nativeVersion.trim().length > 0) {
+    return nativeVersion.trim();
+  }
+
+  return '1.0.0';
+};
 
 const processQueue = (error: any, token: string | null = null) => {
   failedQueue.forEach((prom) => {
@@ -55,15 +72,17 @@ apiClient.interceptors.request.use(
 
       const controller = new AbortController();
       config.signal = controller.signal;
-      controller.abort('No internet connection available.');
+      controller.abort();
       return config;
     }
 
     const deviceId = await getDeviceFingerprint();
+    const appVersion = getAppVersionHeader();
 
     config.headers['X-Platform'] = Platform.OS;
     config.headers['X-App-Type'] = 'mobile';
     config.headers['X-Device-ID'] = deviceId;
+    config.headers['X-App-Version'] = appVersion;
 
     // --- Firebase Performance Start ---
     if (!__DEV__) {
@@ -103,6 +122,7 @@ apiClient.interceptors.request.use(
                   'X-Platform': Platform.OS,
                   'X-App-Type': 'mobile',
                   'X-Device-ID': deviceId,
+                  'X-App-Version': appVersion,
                 },
               },
             );
@@ -215,6 +235,7 @@ apiClient.interceptors.response.use(
       try {
         const refreshToken = existingRefreshToken;
         const deviceId = await getDeviceFingerprint();
+        const appVersion = getAppVersionHeader();
 
         const response = await axios.post(
           `${Config.API_URL}/v1/auth/refresh`,
@@ -226,6 +247,7 @@ apiClient.interceptors.response.use(
               'X-Platform': Platform.OS,
               'X-App-Type': 'mobile',
               'X-Device-ID': deviceId,
+              'X-App-Version': appVersion,
             },
           },
         );

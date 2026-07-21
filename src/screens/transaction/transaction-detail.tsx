@@ -1,4 +1,5 @@
 import { TransactionDetail } from '@/features/transaction/transaction-detail';
+import { TransactionType } from '@/features/transaction/types';
 import { TransactionReceiptData } from '@/features/transaction/api/transaction';
 import { transferApi } from '@/api/transfer';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -68,6 +69,15 @@ export const TransactionDetailScreen = () => {
       type={type}
       status={status}
       onPressBack={() => navigation.goBack()}
+      onPressReportIssue={() =>
+        navigation.navigate('DisputeReportCenter', {
+          transactionId,
+          orderReferenceId: referenceId || transactionId,
+          recipientName: '',
+          amount: 0,
+          disputeType: type === TransactionType.RECEIVE_IN ? 'RECEIVE' : 'TRANSFER',
+        })
+      }
       onContinuePayment={handleContinuePayment}
       isLoadingContinue={isLoadingContinue}
     />

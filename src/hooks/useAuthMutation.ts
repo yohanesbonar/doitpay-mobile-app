@@ -35,11 +35,12 @@ import { Platform } from 'react-native';
 import { getMessaging, getToken } from '@react-native-firebase/messaging';
 import { useUpdateDeviceToken } from './useDeviceMutation';
 import Toast from 'react-native-toast-message';
+import { identifyPostHogUser } from '@/analytics/posthog';
 
 export const useRegisterRequestOtp = () => {
   return useMutation<RegisterOtpResponse, Error, RegisterOtpRequestPayload>({
     mutationFn: (payload) => authApi.registerRequestOtp(payload),
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       console.log('useRegisterRequestOtp data.message:', data.message);
       console.log('useRegisterRequestOtp data', data);
     },
@@ -103,7 +104,7 @@ export const useRegisterPinSetup = () => {
 
   return useMutation<RegisterPinSetupResponse, Error, RegisterPinSetupPayload>({
     mutationFn: (payload) => authApi.registerPinSetup(payload),
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       console.log('useRegisterPinSetup data.message:', data?.message);
       console.log('useRegisterPinSetup data', data);
 
@@ -127,6 +128,12 @@ export const useRegisterPinSetup = () => {
       if (session?.accessToken) {
         sendFcmTokenToBackend();
       }
+      console.log('[AuthHook] register success, fallback PostHog identify from hook.');
+      identifyPostHogUser(variables.phoneNumber, {
+        account_status: 'ACTIVE',
+      });
+
+      sendFcmTokenToBackend();
     },
     onError: (error) => {
       console.log('error useRegisterPinSetup', error);
@@ -138,7 +145,7 @@ export const useRegisterPinSetup = () => {
 export const useLoginRequestOtp = () => {
   return useMutation<LoginOtpResponse, Error, LoginOtpRequestPayload>({
     mutationFn: (payload) => authApi.loginRequestOtp(payload),
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       console.log('useLoginRequestOtp data.message:', data.message);
       console.log('useLoginRequestOtp data', data);
     },
@@ -210,7 +217,7 @@ export const useLogin = () => {
 
   return useMutation<LoginResponse, Error, LoginPayload>({
     mutationFn: (payload) => authApi.login(payload),
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       console.log('LOGIN data.message:', data.message);
       console.log('LOGIN data', data);
 
@@ -225,6 +232,11 @@ export const useLogin = () => {
       if (session?.expiresAt) {
         setExpiresAt(session.expiresAt);
       }
+
+      console.warn('[AuthHook] login success, fallback PostHog identify from hook.');
+      identifyPostHogUser(variables.phoneNumber, {
+        account_status: 'ACTIVE',
+      });
 
       sendFcmTokenToBackend();
     },

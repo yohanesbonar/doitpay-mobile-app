@@ -1,11 +1,16 @@
 import { useNavigation } from '@react-navigation/native';
 import { HomeView } from '../../../features/main/home';
 import React from 'react';
+import { trackPostHogEvent } from '@/analytics/posthog';
 
 const HomeScreen = () => {
   const navigation = useNavigation<any>();
 
   const goToSearchAccount = () => {
+    trackPostHogEvent('transfer_started', {
+      entry_point: 'home_search_account',
+    });
+
     navigation.navigate('SearchAccount');
   };
 
@@ -40,6 +45,11 @@ const HomeScreen = () => {
     accountData: any;
     beneficiaryId: string;
   }) => {
+    trackPostHogEvent('transfer_started', {
+      entry_point: 'home_recent_beneficiary',
+      destination_bank: params.bankData?.shortName || params.bankData?.name || 'unknown',
+    });
+
     navigation.navigate('TransferDetail', params);
   };
 
