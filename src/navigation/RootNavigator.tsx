@@ -41,6 +41,9 @@ import DisputeDetailScreen from '@/screens/dispute/detail';
 import DisputeAddResponseScreen from '@/screens/dispute/addResponse';
 import DisputeReportCenterScreen from '@/screens/dispute/reportCenter';
 import ActivateQrisScreen from '@/screens/kyc/activateQris';
+import CaptureKtpScreen from '@/screens/kyc/captureKtp';
+import CaptureSelfieScreen from '@/screens/kyc/captureSelfie';
+import ConfirmDataScreen from '@/screens/kyc/confirmData';
 import { useGetProfileMeQuery } from '@/features/user/hooks/useGetProfileMeQuery';
 
 const Stack = createNativeStackNavigator();
@@ -165,6 +168,9 @@ export default function RootNavigator({
               <Stack.Screen name="DisputeDetail" component={DisputeDetailScreen} />
               <Stack.Screen name="DisputeAddResponse" component={DisputeAddResponseScreen} />
               <Stack.Screen name="ActivateQris" component={ActivateQrisScreen} />
+              <Stack.Screen name="CaptureKtp" component={CaptureKtpScreen} />
+              <Stack.Screen name="CaptureSelfie" component={CaptureSelfieScreen} />
+              <Stack.Screen name="ConfirmKycData" component={ConfirmDataScreen} />
             </Stack.Group>
           )
         ) : (

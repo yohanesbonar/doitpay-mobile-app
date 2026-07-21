@@ -35,6 +35,8 @@
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>
+	<key>NSCameraUsageDescription</key>
+	<string>Aplikasi ini membutuhkan akses kamera untuk mengambil foto.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Aplikasi ini membutuhkan akses galeri untuk menyimpan gambar QRIS Pembayaran.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

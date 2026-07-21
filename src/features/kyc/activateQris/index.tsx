@@ -9,12 +9,14 @@ export type ActivateQrisKycStatus = 'approved' | 'pending' | 'rejected';
 
 interface ActivateQrisViewProps {
   onPressBack: () => void;
+  onPressContinueKyc: () => void;
   kycStatus?: ActivateQrisKycStatus;
   rejectionReason?: string;
 }
 
 export const ActivateQrisView = ({
   onPressBack,
+  onPressContinueKyc,
   kycStatus = 'approved',
   rejectionReason,
 }: ActivateQrisViewProps) => {
@@ -32,9 +34,8 @@ export const ActivateQrisView = ({
     await Linking.openURL(`mailto:support@doitpay.co?subject=${subject}&body=${body}`);
   };
 
-  const onPressContinueKyc = () => {
-    // Placeholder until KYC flow route is defined.
-    onPressBack();
+  const handleContinueKyc = () => {
+    onPressContinueKyc();
   };
 
   const onPressBackToReceiveMoney = () => {
@@ -204,7 +205,7 @@ export const ActivateQrisView = ({
         <>
           <TouchableOpacity
             style={styles.buttonPrimary}
-            onPress={onPressContinueKyc}
+            onPress={handleContinueKyc}
             activeOpacity={0.8}>
             <Text style={styles.buttonPrimaryText}>Lanjutkan Verifikasi KTP</Text>
           </TouchableOpacity>

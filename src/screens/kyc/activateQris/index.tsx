@@ -16,6 +16,7 @@ const ActivateQrisScreen = () => {
   return (
     <ActivateQrisView
       onPressBack={() => navigation.goBack()}
+      onPressContinueKyc={() => navigation.navigate('CaptureKtp')}
       kycStatus={kycStatus}
       rejectionReason={rejectionReason}
     />
