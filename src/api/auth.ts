@@ -13,8 +13,10 @@ export interface RegisterOtpVerifyPayload {
 }
 
 export interface RegisterPinSetupPayload {
-  phoneNumber: string;
   pin: string;
+  fullName: string;
+  continueAsNew: boolean;
+  verifyToken: string;
 }
 
 export type RegisterOtpResponse = {
@@ -42,9 +44,10 @@ export type RegisterPinSetupResponse = {
   status: string;
   message: string;
   data: {
-    accessToken: string;
-    refreshToken: string;
-    expiresAt: string;
+    accessToken?: string;
+    refreshToken?: string;
+    expiresAt?: string;
+    status: 'ACTIVE' | 'ACTIVATION_PENDING';
   };
 };
 
@@ -228,10 +231,16 @@ export const authApi = {
     );
     return data;
   },
-  registerPinSetup: async (payload: RegisterPinSetupPayload): Promise<RegisterPinSetupResponse> => {
+  registerPinSetup: async ({
+    verifyToken,
+    ...body
+  }: RegisterPinSetupPayload): Promise<RegisterPinSetupResponse> => {
     const { data } = await apiClient.post<RegisterPinSetupResponse>(
       '/v1/onboarding/pin-setup',
-      payload,
+      body,
+      {
+        headers: { Authorization: `bearer ${verifyToken}` },
+      },
     );
     return data;
   },

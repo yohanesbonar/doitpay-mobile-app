@@ -57,7 +57,12 @@
     "thingsToPrepare": "Yang perlu disiapkan",
     "originalIDCard": "KTP asli bukan fotokopi atau foto KTP",
     "lightRoom": "Ruangan dengan cahaya yang cukup",
-    "clearFace": "Wajah terlihat jelas, tanpa masker atau kacamata hitam"
+    "clearFace": "Wajah terlihat jelas, tanpa masker atau kacamata hitam",
+    "personalDataTitle": "Data Pribadi",
+    "descPersonalData": "Masukkan nama lengkap sesuai identitas",
+    "fullNameLabel": "Nama Lengkap",
+    "fullNamePlaceholder": "Cth: Bobby Joni",
+    "continue": "Lanjut"
   },
   "bankList": {
     "sendTo": "Kirim ke",

@@ -32,6 +32,7 @@ import { DeleteAccount } from '@/features/main/profile/DeleteAccount';
 import { DeleteAccountStatus } from '@/features/main/profile/DeleteAccountStatus';
 import { ChangePin } from '@/features/main/profile/ChangePin';
 import { useGetProfileMeQuery } from '@/features/user/hooks/useGetProfileMeQuery';
+import { KycPendingStatus } from '@/features/onboarding/kyc/KycPendingStatus';
 
 const Stack = createNativeStackNavigator();
 interface RootNavigatorProps {
@@ -149,6 +150,7 @@ export default function RootNavigator({ navigationRef, onReady, onStateChange }:
             <Stack.Screen name="MainApp" component={Onboarding} />
             <Stack.Screen name="AuthEntry" component={AuthEntry} />
             <Stack.Screen name="ForgotPin" component={ForgotPin} />
+            <Stack.Screen name="KycPendingStatus" component={KycPendingStatus} />
           </Stack.Group>
         )}
       </Stack.Navigator>
