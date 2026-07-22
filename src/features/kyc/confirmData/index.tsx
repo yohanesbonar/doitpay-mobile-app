@@ -6,6 +6,7 @@ import { createStyles } from './styles';
 
 interface ConfirmDataViewProps {
   onPressBack: () => void;
+  onSubmitData?: () => void;
 }
 
 const rows = [
@@ -16,7 +17,7 @@ const rows = [
   { label: 'Alamat', value: 'Jl. Margondar Rayap No. 12, Depok' },
 ];
 
-export const ConfirmDataView = ({ onPressBack }: ConfirmDataViewProps) => {
+export const ConfirmDataView = ({ onPressBack, onSubmitData }: ConfirmDataViewProps) => {
   const styles = createStyles();
 
   return (
@@ -56,7 +57,14 @@ export const ConfirmDataView = ({ onPressBack }: ConfirmDataViewProps) => {
       <View style={styles.footer}>
         <TouchableOpacity
           style={styles.buttonPrimary}
-          onPress={() => Alert.alert('Sukses', 'Data KYC berhasil dikonfirmasi.')}
+          onPress={() => {
+            if (onSubmitData) {
+              onSubmitData();
+              return;
+            }
+
+            Alert.alert('Sukses', 'Data KYC berhasil dikonfirmasi.');
+          }}
           activeOpacity={0.85}>
           <Text style={styles.buttonText}>Submit Data</Text>
         </TouchableOpacity>
