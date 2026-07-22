@@ -7,6 +7,16 @@
   "onboarding": {
     "freeTransfer": "Free Transfer"
   },
+  "welcomeTransfer": {
+    "title": "Welcome",
+    "subtitle": "Your account is ready. Start transferring now.",
+    "sectionTitle": "What you can do now",
+    "cardTransferTitle": "Transfer to 100+ banks",
+    "cardTransferSubtitle": "Free of charge",
+    "cardKycTitle": "KYC Verified",
+    "cardKycSubtitle": "Limit Rp 25,000,000/day",
+    "button": "Start Transfer"
+  },
   "routes": {
     "home": "Home"
   }

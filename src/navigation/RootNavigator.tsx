@@ -20,6 +20,7 @@ import PaymentInstruction from '../screens/transfer/paymentInstruction';
 import TransferProcessing from '../screens/transfer/transferProcessing';
 import PaymentReceipt from '../screens/transfer/paymentReceipt';
 import SearchAccountScreen from '../screens/transfer/searchAccount';
+import WelcomeTransferScreen from '../screens/transfer/welcomeTransfer';
 import { ForgotPin } from '@/features/onboarding/forgot-pin';
 import { BeneficiaryScreen } from '@/screens/main/beneficiary/beneficiary-screen';
 import RequestPaymentScreen from '../screens/transfer/requestPayment';
@@ -126,6 +127,7 @@ export default function RootNavigator({
               <Stack.Screen name="AddBankRecipient" component={AddBankRecipient} />
               <Stack.Screen name="TransferDetail" component={TransferDetail} />
               <Stack.Screen name="PaymentInstruction" component={PaymentInstruction} />
+              <Stack.Screen name="WelcomeTransfer" component={WelcomeTransferScreen} />
               <Stack.Screen
                 name="TransferProcessing"
                 component={TransferProcessing}
