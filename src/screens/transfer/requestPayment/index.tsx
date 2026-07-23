@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { RequestPaymentView } from '@/features/transfer/requestPayment';
-import { qrisApi } from '@/api/qris';
+import { qrisApi } from '@/features/kyc/api/qris';
 
 const RequestPaymentScreen = () => {
   const navigation = useNavigation<any>();
@@ -30,17 +30,24 @@ const RequestPaymentScreen = () => {
 
   const handleSelectQrisMethod = async () => {
     try {
-      const eligibility = await qrisApi.getActivationEligibilitySample();
+      const eligibility = await qrisApi.getActivationEligibility();
 
-      if (!eligibility.hasNmid) {
-        navigation.navigate('ActivateQris', {
-          kycStatus: eligibility.kycStatus,
-          rejectionReason: eligibility.rejectionReason,
-        });
-        return false;
+      switch (eligibility.activationStatus) {
+        case 'ACTIVE':
+          return true;
+        case 'PENDING':
+          navigation.navigate('KycDataSubmitted');
+          return false;
+        case 'KYC_INCOMPLETE':
+        case 'CAN_ACTIVATE':
+        case 'REJECTED':
+        default:
+          navigation.navigate('ActivateQris', {
+            activationStatus: eligibility.activationStatus,
+            rejectionReason: eligibility.rejectionReason,
+          });
+          return false;
       }
-
-      return true;
     } catch (error) {
       return false;
     }

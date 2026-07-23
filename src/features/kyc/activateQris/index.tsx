@@ -4,24 +4,27 @@ import { useTheme } from '@/theme/ThemeProvider';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import { createStyles } from './styles';
 import { Check, CircleAlertIcon, CreditCard, File, Image, X } from 'lucide-react-native';
-
-export type ActivateQrisKycStatus = 'approved' | 'pending' | 'rejected';
+import { QrisActivationStatus } from '@/features/kyc/api/qris';
 
 interface ActivateQrisViewProps {
   onPressBack: () => void;
   onPressContinueKyc: () => void;
-  kycStatus?: ActivateQrisKycStatus;
+  activationStatus?: QrisActivationStatus;
   rejectionReason?: string;
 }
 
 export const ActivateQrisView = ({
   onPressBack,
   onPressContinueKyc,
-  kycStatus = 'approved',
+  activationStatus = 'CAN_ACTIVATE',
   rejectionReason,
 }: ActivateQrisViewProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
+  const isKycIncomplete = activationStatus === 'KYC_INCOMPLETE';
+  const isRejected = activationStatus === 'REJECTED';
+  const isPendingVerification = activationStatus === 'PENDING';
+  const isActivationReady = activationStatus === 'CAN_ACTIVATE' || activationStatus === 'ACTIVE';
 
   const onPressWhatsapp = async () => {
     const message = encodeURIComponent('Halo Doitpay, saya ingin pengajuan aktivasi QRIS.');
@@ -70,7 +73,7 @@ export const ActivateQrisView = ({
   };
 
   const renderStatusBanner = () => {
-    if (kycStatus === 'pending') {
+    if (isKycIncomplete) {
       return (
         <View style={[styles.banner, styles.bannerWarning]}>
           <View style={styles.bannerIconContainer}>
@@ -92,7 +95,23 @@ export const ActivateQrisView = ({
       );
     }
 
-    if (kycStatus === 'rejected') {
+    if (isPendingVerification) {
+      return (
+        <View style={[styles.banner, styles.bannerWarning]}>
+          <View style={styles.bannerIconContainer}>
+            <CircleAlertIcon size={18} color="#FFFFFF" strokeWidth={2.2} />
+          </View>
+          <View style={styles.bannerContent}>
+            <Text style={[styles.bannerTitle, styles.bannerWarningTitle]}>Pengajuan Sedang Diproses</Text>
+            <Text style={[styles.bannerSubtitle, styles.bannerWarningSubtitle]}>
+              Pengajuan aktivasi QRIS kamu sedang diverifikasi. Mohon tunggu notifikasi berikutnya.
+            </Text>
+          </View>
+        </View>
+      );
+    }
+
+    if (isRejected) {
       return (
         <View style={[styles.banner, styles.bannerDanger]}>
           <View style={[styles.bannerIconContainer, styles.bannerDangerIconContainer]}>
@@ -124,7 +143,7 @@ export const ActivateQrisView = ({
   };
 
   const renderMiddleSection = () => {
-    if (kycStatus === 'pending') {
+    if (isKycIncomplete) {
       return (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Yang Perlu Disiapkan</Text>
@@ -147,7 +166,18 @@ export const ActivateQrisView = ({
       );
     }
 
-    if (kycStatus === 'rejected') {
+    if (isPendingVerification) {
+      return (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Status Pengajuan</Text>
+          <Text style={styles.itemDesc}>
+            Dokumen kamu sudah diterima dan sedang ditinjau tim kami. Kamu akan mendapatkan notifikasi setelah proses selesai.
+          </Text>
+        </View>
+      );
+    }
+
+    if (isRejected) {
       return (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Alasan Penolakan</Text>
@@ -159,48 +189,52 @@ export const ActivateQrisView = ({
       );
     }
 
-    return (
-      <>
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Sudah terverifikasi di akunmu</Text>
-          {renderInfoItem({
-            title: 'KTP & Identitas Pribadi',
-            description: 'Sudah diverifikasi melalui KYC',
-            tone: 'success',
-            icon: <Check size={18} color="#16A34A" strokeWidth={3} />,
-          })}
-          {renderInfoItem({
-            title: 'Rekening Settlement',
-            description: 'Rekening bank yang akan menerima dana',
-            tone: 'success',
-            icon: <Check size={18} color="#16A34A" strokeWidth={3} />,
-          })}
-        </View>
+    if (isActivationReady) {
+      return (
+        <>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Sudah terverifikasi di akunmu</Text>
+            {renderInfoItem({
+              title: 'KTP & Identitas Pribadi',
+              description: 'Sudah diverifikasi melalui KYC',
+              tone: 'success',
+              icon: <Check size={18} color="#16A34A" strokeWidth={3} />,
+            })}
+            {renderInfoItem({
+              title: 'Rekening Settlement',
+              description: 'Rekening bank yang akan menerima dana',
+              tone: 'success',
+              icon: <Check size={18} color="#16A34A" strokeWidth={3} />,
+            })}
+          </View>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Yang Perlu Disiapkan</Text>
-          {renderInfoItem({
-            title: 'Data Usaha',
-            description: 'Nama, kategori, alamat, dan deskripsi barang atau jasa',
-            icon: <File size={24} color="#6B7280" strokeWidth={2} />,
-          })}
-          {renderInfoItem({
-            title: 'Foto Bukti Usaha',
-            description: 'Foto produk, tempat usaha, menu, atau aktivitas layanan',
-            icon: <Image size={24} color="#6B7280" strokeWidth={2} />,
-          })}
-          {renderInfoItem({
-            title: 'NPWP',
-            description: 'NPWP pemilik usaha untuk proses verifikasi',
-            icon: <CreditCard size={24} color="#6B7280" strokeWidth={2} />,
-          })}
-        </View>
-      </>
-    );
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Yang Perlu Disiapkan</Text>
+            {renderInfoItem({
+              title: 'Data Usaha',
+              description: 'Nama, kategori, alamat, dan deskripsi barang atau jasa',
+              icon: <File size={24} color="#6B7280" strokeWidth={2} />,
+            })}
+            {renderInfoItem({
+              title: 'Foto Bukti Usaha',
+              description: 'Foto produk, tempat usaha, menu, atau aktivitas layanan',
+              icon: <Image size={24} color="#6B7280" strokeWidth={2} />,
+            })}
+            {renderInfoItem({
+              title: 'NPWP',
+              description: 'NPWP pemilik usaha untuk proses verifikasi',
+              icon: <CreditCard size={24} color="#6B7280" strokeWidth={2} />,
+            })}
+          </View>
+        </>
+      );
+    }
+
+    return null;
   };
 
   const renderActions = () => {
-    if (kycStatus === 'pending') {
+    if (isKycIncomplete) {
       return (
         <>
           <TouchableOpacity
@@ -220,7 +254,18 @@ export const ActivateQrisView = ({
       );
     }
 
-    if (kycStatus === 'rejected') {
+    if (isPendingVerification) {
+      return (
+        <TouchableOpacity
+          style={styles.buttonSecondary}
+          onPress={onPressBackToReceiveMoney}
+          activeOpacity={0.8}>
+          <Text style={styles.buttonSecondaryText}>Kembali ke Terima Uang</Text>
+        </TouchableOpacity>
+      );
+    }
+
+    if (isRejected) {
       return (
         <>
           <TouchableOpacity
@@ -240,20 +285,24 @@ export const ActivateQrisView = ({
       );
     }
 
-    return (
-      <>
-        <TouchableOpacity
-          style={styles.buttonPrimary}
-          onPress={onPressWhatsapp}
-          activeOpacity={0.8}>
-          <Text style={styles.buttonPrimaryText}>Ajukan VIA Whatsapp</Text>
-        </TouchableOpacity>
+    if (isActivationReady) {
+      return (
+        <>
+          <TouchableOpacity
+            style={styles.buttonPrimary}
+            onPress={onPressWhatsapp}
+            activeOpacity={0.8}>
+            <Text style={styles.buttonPrimaryText}>Ajukan VIA Whatsapp</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity style={styles.buttonSecondary} onPress={onPressEmail} activeOpacity={0.8}>
-          <Text style={styles.buttonSecondaryText}>Ajukan VIA Email</Text>
-        </TouchableOpacity>
-      </>
-    );
+          <TouchableOpacity style={styles.buttonSecondary} onPress={onPressEmail} activeOpacity={0.8}>
+            <Text style={styles.buttonSecondaryText}>Ajukan VIA Email</Text>
+          </TouchableOpacity>
+        </>
+      );
+    }
+
+    return null;
   };
 
   return (
