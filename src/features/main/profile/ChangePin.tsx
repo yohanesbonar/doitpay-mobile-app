@@ -95,15 +95,38 @@ export const ChangePin = () => {
         {
           onSuccess: () => {
             Keyboard.dismiss();
-            Toast.show({ type: 'success', text1: 'PIN berhasil diubah' });
-            navigation.goBack();
+            navigation.replace('ChangePinSuccess');
           },
           onError: (err: any) => {
+            const code = err?.response?.data?.error?.code ?? err?.error?.code;
+            const message = err?.response?.data?.error?.message ?? err?.error?.message;
+            const remainingAttempts =
+              err?.response?.data?.error?.remainingAttempts ?? err?.error?.remainingAttempts;
+
             setConfirmationPin('');
             setPin('');
             setOldPin('');
             setCurrentStep(1);
-            Toast.show({ type: 'error', text1: err?.message || 'Gagal mengubah PIN' });
+
+            if (code === 'PIN_LOCKED') {
+              Toast.show({
+                type: 'error',
+                text1: message || 'PIN diblokir sementara',
+                text2: 'Silakan coba lagi nanti',
+                visibilityTime: 4000,
+              });
+              navigation.goBack();
+              return;
+            }
+
+            Toast.show({
+              type: 'error',
+              text1: message || 'Gagal mengubah PIN',
+              text2:
+                typeof remainingAttempts === 'number'
+                  ? `Sisa percobaan: ${remainingAttempts}`
+                  : undefined,
+            });
           },
         },
       );

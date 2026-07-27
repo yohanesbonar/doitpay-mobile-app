@@ -296,7 +296,23 @@ export const useCancelAccountDeletion = () => {
 };
 
 export const useChangePin = () => {
+  const setToken = useAuthStore((state) => state.setToken);
+  const setExpiresAt = useAuthStore((state) => state.setExpiresAt);
+
   return useMutation<ChangePinResponse, Error, ChangePinPayload>({
     mutationFn: (payload) => authApi.changePin(payload),
+    onSuccess: (data) => {
+      const session = data?.data;
+
+      if (session?.accessToken) {
+        setToken(session.accessToken);
+      }
+      if (session?.refreshToken) {
+        setStorageItem(StorageKey.REFRESH_TOKEN, session.refreshToken);
+      }
+      if (session?.expiresAt) {
+        setExpiresAt(session.expiresAt);
+      }
+    },
   });
 };

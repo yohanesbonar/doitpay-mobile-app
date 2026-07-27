@@ -209,7 +209,12 @@ export interface ChangePinPayload {
 export type ChangePinResponse = {
   status: string;
   message: string;
-  data: {};
+  data: {
+    message?: string;
+    accessToken?: string;
+    refreshToken?: string;
+    expiresAt?: string;
+  };
 };
 
 export const authApi = {
@@ -334,6 +339,7 @@ export const authApi = {
   changePin: async (payload: ChangePinPayload): Promise<ChangePinResponse> => {
     const { data } = await apiClient.post<ChangePinResponse>('/v1/pin/change', payload, {
       headers: { 'X-Idempotency-Key': generateUUID() },
+      skipAuthRetry: true,
     });
     return data;
   },
