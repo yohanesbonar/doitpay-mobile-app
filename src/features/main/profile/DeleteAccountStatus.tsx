@@ -9,6 +9,7 @@ import Button from '@/components/atoms/Button';
 import { useCancelAccountDeletion } from '@/hooks/useAuthMutation';
 import AccountDeletionIcon from '@/assets/icons/ic-account-deletion-pending.svg';
 import FastImage from 'react-native-fast-image';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const DISABLED_FEATURES = ['Transfer', 'Terima Pembayaran', 'Rekening Bank'];
 const ALLOWED_FEATURES = ['Login', 'Membatalkan Penghapusan'];
@@ -52,73 +53,70 @@ export const DeleteAccountStatus = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <HeaderToolbar
-        title="Hapus Akun"
-        onPressBack={navigation.canGoBack() ? () => navigation.goBack() : undefined}
-        titlePosition="left"
-        titleStyle="regular"
-      />
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.container}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}>
+          <View style={styles.illustrationContainer}>
+            <FastImage
+              source={require('../../../assets/images/ic-account-deletion-pending.png')}
+              style={{
+                width: 220,
+                height: 220,
+              }}
+            />
+          </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={styles.illustrationContainer}>
-          <FastImage
-            source={require('../../../assets/images/ic-account-deletion-pending.png')}
-            style={{
-              width: 220,
-              height: 220,
-            }}
-          />
-        </View>
+          <Text style={styles.title}>Penghapusan Akun sedang{'\n'}Diproses</Text>
+          <Text style={styles.subtitle}>
+            Akun akan dihapus permanen pada 30 hari setelah pengajuan
+          </Text>
 
-        <Text style={styles.title}>Penghapusan Akun sedang{'\n'}Diproses</Text>
-        <Text style={styles.subtitle}>
-          Akun aka dihapus permanen pada 30 hari setelah pengajuan
-        </Text>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Fitur yang dinonaktifkan</Text>
+            {DISABLED_FEATURES.map((feature) => (
+              <View key={feature} style={styles.featureRow}>
+                <XCircle size={20} color="#E25C5C" strokeWidth={2} />
+                <Text style={styles.featureText}>{feature}</Text>
+              </View>
+            ))}
+          </View>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Fitur yang dinonaktifkan</Text>
-          {DISABLED_FEATURES.map((feature) => (
-            <View key={feature} style={styles.featureRow}>
-              <XCircle size={20} color="#E25C5C" strokeWidth={2} />
-              <Text style={styles.featureText}>{feature}</Text>
-            </View>
-          ))}
-        </View>
+          <View style={[styles.card, styles.cardGreen]}>
+            <Text style={[styles.cardTitle, styles.cardTitleGreen]}>Kamu masih dapat</Text>
+            {ALLOWED_FEATURES.map((feature) => (
+              <View key={feature} style={styles.featureRow}>
+                <CheckCircle2 size={20} color="#16A34A" strokeWidth={2} />
+                <Text style={styles.featureText}>{feature}</Text>
+              </View>
+            ))}
+          </View>
+        </ScrollView>
 
-        <View style={[styles.card, styles.cardGreen]}>
-          <Text style={[styles.cardTitle, styles.cardTitleGreen]}>Kamu masih dapat</Text>
-          {ALLOWED_FEATURES.map((feature) => (
-            <View key={feature} style={styles.featureRow}>
-              <CheckCircle2 size={20} color="#16A34A" strokeWidth={2} />
-              <Text style={styles.featureText}>{feature}</Text>
-            </View>
-          ))}
-        </View>
-      </ScrollView>
-
-      <View style={styles.footer}>
-        <Button
-          type="regular"
-          onPress={handleCancel}
-          loading={isPending || isReloadingProfile}
-          disable={isCancelled}
-          title="Batalkan Penghapusan"
-          color="#4A80F0"
-          textColor="white"
-        />
-        {isCancelled && (
+        <View style={styles.footer}>
           <Button
             type="regular"
-            onPress={handleGoHome}
-            title="Kembali ke Home"
-            color="#16A34A"
+            onPress={handleCancel}
+            loading={isPending || isReloadingProfile}
+            disable={isCancelled}
+            title="Batalkan Penghapusan"
+            color="#4A80F0"
             textColor="white"
-            style={styles.goHomeButton}
           />
-        )}
+          {isCancelled && (
+            <Button
+              type="regular"
+              onPress={handleGoHome}
+              title="Kembali ke Home"
+              color="#16A34A"
+              textColor="white"
+              style={styles.goHomeButton}
+            />
+          )}
+        </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 

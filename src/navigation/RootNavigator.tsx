@@ -32,6 +32,7 @@ import { TransactionHistoryScreen } from '@/screens/main/transaction-history/tra
 import { DeleteAccount } from '@/features/main/profile/DeleteAccount';
 import { DeleteAccountStatus } from '@/features/main/profile/DeleteAccountStatus';
 import { ChangePin } from '@/features/main/profile/ChangePin';
+import { ChangePinSuccess } from '@/features/main/profile/ChangePinSuccess';
 import DisputeHelpCenterScreen from '@/screens/dispute/helpCenter';
 import DisputeIssueTypeScreen from '@/screens/dispute/issueType';
 import DisputeAttachmentScreen from '@/screens/dispute/attachment';
@@ -47,6 +48,7 @@ import CaptureSelfieScreen from '@/screens/kyc/captureSelfie';
 import ConfirmDataScreen from '@/screens/kyc/confirmData';
 import DataSubmittedScreen from '@/screens/kyc/dataSubmitted';
 import { useGetProfileMeQuery } from '@/features/user/hooks/useGetProfileMeQuery';
+import { KycPendingStatus } from '@/features/onboarding/kyc/KycPendingStatus';
 
 const Stack = createNativeStackNavigator();
 interface RootNavigatorProps {
@@ -161,6 +163,11 @@ export default function RootNavigator({
               <Stack.Screen name="DeleteAccount" component={DeleteAccount} />
               <Stack.Screen name="DeleteAccountStatus" component={DeleteAccountStatus} />
               <Stack.Screen name="ChangePin" component={ChangePin} />
+              <Stack.Screen
+                name="ChangePinSuccess"
+                component={ChangePinSuccess}
+                options={{ gestureEnabled: false }}
+              />
               <Stack.Screen name="DisputeHelpCenter" component={DisputeHelpCenterScreen} />
               <Stack.Screen name="DisputeReportCenter" component={DisputeReportCenterScreen} />
               <Stack.Screen name="DisputeIssueType" component={DisputeIssueTypeScreen} />
@@ -182,6 +189,7 @@ export default function RootNavigator({
             <Stack.Screen name="MainApp" component={Onboarding} />
             <Stack.Screen name="AuthEntry" component={AuthEntry} />
             <Stack.Screen name="ForgotPin" component={ForgotPin} />
+            <Stack.Screen name="KycPendingStatus" component={KycPendingStatus} />
           </Stack.Group>
         )}
       </Stack.Navigator>

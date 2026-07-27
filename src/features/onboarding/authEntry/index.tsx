@@ -30,12 +30,17 @@ import InputPhoneNumber from './components/InputPhoneNumber.tsx';
 import InputOTPNumber from './components/InputOTPNumber.tsx';
 import Toast from 'react-native-toast-message';
 import CreateAndConfirmPIN from './components/CreateAndConfirmPIN.tsx';
+import InputFullName from './components/InputFullName.tsx';
 import crashlytics from '@react-native-firebase/crashlytics';
 import { identifyPostHogUser, trackPostHogEvent } from '@/analytics/posthog';
 
 export interface PhoneNumberFormValues {
   phoneNumber: string;
   countryCode: string;
+}
+
+export interface PersonalDataFormValues {
+  fullName: string;
 }
 
 export const AuthEntry = ({ route }) => {
@@ -45,14 +50,14 @@ export const AuthEntry = ({ route }) => {
   const { t } = useTranslation();
   const navigation = useNavigation();
   const [currentStep, setCurrentStep] = useState(1);
-  // total steps set 2 because KYC is not ready
-  const totalSteps = 2;
+  const totalSteps = 3;
 
   const CELL_COUNT_OTP = 6;
   const [bottomSpacing, setBottomSpacing] = useState(32);
   const [valueOTP, setValueOTP] = useState('');
   const [timerOTP, setTimerOTP] = useState(30);
   const [phoneNumbData, setPhoneNumData] = useState({ phoneNumber: '', countryCode: '' });
+  const [verificationToken, setVerificationToken] = useState('');
   const ref = useBlurOnFulfill({ value: valueOTP, cellCount: CELL_COUNT_OTP });
   const [props, getCellOnLayoutHandler] = useClearByFocusCell({
     value: valueOTP,
@@ -93,6 +98,7 @@ export const AuthEntry = ({ route }) => {
   };
 
   const formikRef = useRef<FormikProps<PhoneNumberFormValues>>(null);
+  const personalDataFormikRef = useRef<FormikProps<PersonalDataFormValues>>(null);
 
   useEffect(() => {
     if (currentStep == 3) {
@@ -125,11 +131,13 @@ export const AuthEntry = ({ route }) => {
                 });
                 return;
               }
+              setVerificationToken(res?.data?.verificationToken ?? '');
               setCurrentStep(3);
             },
             onError: (err: any) => {
               setValueOTP('');
-              const msg = err?.response?.data?.error?.message ?? err?.error?.message ?? 'OTP tidak valid';
+              const msg =
+                err?.response?.data?.error?.message ?? err?.error?.message ?? 'OTP tidak valid';
               Toast.show({
                 type: 'error',
                 text1: msg,
@@ -157,7 +165,8 @@ export const AuthEntry = ({ route }) => {
             },
             onError: (err: any) => {
               setValueOTP('');
-              const msg = err?.response?.data?.error?.message ?? err?.error?.message ?? 'OTP tidak valid';
+              const msg =
+                err?.response?.data?.error?.message ?? err?.error?.message ?? 'OTP tidak valid';
               Toast.show({
                 type: 'error',
                 text1: msg,
@@ -196,6 +205,10 @@ export const AuthEntry = ({ route }) => {
 
   const PhoneSchema = Yup.object().shape({
     phoneNumber: Yup.string().min(9, 'Nomor terlalu pendek').required('Wajib diisi'),
+  });
+
+  const FullNameSchema = Yup.object().shape({
+    fullName: Yup.string().min(3, 'Nama terlalu pendek').required('Wajib diisi'),
   });
 
   useEffect(() => {
@@ -255,18 +268,21 @@ export const AuthEntry = ({ route }) => {
             onChangeText={(text) => {
               handlePINChange(text);
             }}
-            onForgotPinPress={isLoginState ? () => (navigation as any).navigate('ForgotPin') : undefined}
+            onForgotPinPress={
+              isLoginState ? () => (navigation as any).navigate('ForgotPin') : undefined
+            }
           />
         );
-      // disable this step because KYC is not ready
-      // case 5:
-      //   return (
-      //     <IdentityVerification
-      //       styles={styles}
-      //       onVerifyNow={() => console.log('Verify Now')}
-      //       onMaybeLater={() => navigation.navigate('BankList')}
-      //     />
-      //   );
+      case 5:
+        return (
+          <Formik<PersonalDataFormValues>
+            innerRef={personalDataFormikRef}
+            initialValues={{ fullName: '' }}
+            validationSchema={FullNameSchema}
+            onSubmit={(values) => console.log('Form Data:', values)}>
+            <InputFullName styles={styles} />
+          </Formik>
+        );
       default:
         return '';
     }
@@ -334,8 +350,23 @@ export const AuthEntry = ({ route }) => {
       } else {
         enableButtonNextRef.current = false;
       }
+    } else if (currentStep == 5) {
+      const isValid = personalDataFormikRef.current?.isValid;
+      const isDirty = personalDataFormikRef.current?.dirty;
+      if (!isValid || !isDirty) {
+        enableButtonNextRef.current = false;
+      } else {
+        enableButtonNextRef.current = true;
+      }
     }
-  }, [formikRef.current?.isValid, formikRef.current?.dirty, currentStep, valueOTP]);
+  }, [
+    formikRef.current?.isValid,
+    formikRef.current?.dirty,
+    personalDataFormikRef.current?.isValid,
+    personalDataFormikRef.current?.dirty,
+    currentStep,
+    valueOTP,
+  ]);
 
   const handlePINChange = (text: string) => {
     if (isErrorPIN) setIsErrorPIN(false);
@@ -356,39 +387,9 @@ export const AuthEntry = ({ route }) => {
       } else {
         if (!isLoginState) {
           if (text === pin) {
-            const { phoneNumber, countryCode } = phoneNumbData;
-            const formattedPhone = (countryCode + phoneNumber).replace('+', '');
-
-            registerSetupPin(
-              {
-                phoneNumber: formattedPhone,
-                pin: text,
-              },
-              {
-                onSuccess: (res) => {
-                  crashlytics().log('User register setup pin');
-                  crashlytics().setUserId(formattedPhone);
-                  console.log('[Auth] register success, calling PostHog identify.');
-                  identifyPostHogUser(formattedPhone, {
-                    account_status: 'ACTIVE',
-                  });
-                  trackPostHogEvent('signup_completed', {
-                    account_status: 'ACTIVE',
-                  });
-                  setTimeout(() => {
-                    navigation.navigate('MainTabs', { isLoginState });
-                  }, 500);
-                  Keyboard.dismiss();
-                },
-                onError: (err: any) => {
-                  setConfirmationPin('');
-                  Toast.show({
-                    type: 'error',
-                    text1: err?.error?.message ?? '',
-                  });
-                },
-              },
-            );
+            setTimeout(() => {
+              setCurrentStep(5);
+            }, 250);
           } else {
             setIsErrorPIN(true);
             setConfirmationPin('');
@@ -425,9 +426,16 @@ export const AuthEntry = ({ route }) => {
                 navigation.navigate('MainTabs', { isLoginState });
               },
               onError: (err: any) => {
-                console.warn('[Auth] loginMutate onError triggered');
+                const code = err?.response?.data?.error?.code ?? err?.error?.code;
+                if (code === 'USER_ACTIVATION_PENDING') {
+                  setConfirmationPin('');
+                  (navigation as any).navigate('KycPendingStatus');
+                  return;
+                }
+
                 setConfirmationPin('');
-                const msg = err?.response?.data?.error?.message ?? err?.error?.message ?? 'PIN salah';
+                const msg =
+                  err?.response?.data?.error?.message ?? err?.error?.message ?? 'PIN salah';
                 Toast.show({
                   type: 'error',
                   text1: msg,
@@ -499,8 +507,36 @@ export const AuthEntry = ({ route }) => {
       return;
     }
 
-    if (currentStep == 5) {
-      navigation.navigate('Home', { isLoginState });
+    if (currentStep === 5) {
+      const fullName = personalDataFormikRef.current?.values?.fullName ?? '';
+      const { phoneNumber, countryCode } = phoneNumbData;
+      const formattedPhone = (countryCode + phoneNumber).replace('+', '');
+
+      registerSetupPin(
+        {
+          pin,
+          fullName,
+          continueAsNew: true,
+          verifyToken: verificationToken,
+        },
+        {
+          onSuccess: (res) => {
+            crashlytics().log('User register setup pin');
+            crashlytics().setUserId(formattedPhone);
+            Keyboard.dismiss();
+            if (res?.data?.status === 'ACTIVATION_PENDING') {
+              (navigation as any).navigate('KycPendingStatus');
+            }
+          },
+          onError: (err: any) => {
+            Toast.show({
+              type: 'error',
+              text1: err?.error?.message ?? '',
+            });
+          },
+        },
+      );
+      return;
     }
     if (currentStep == 1 || currentStep == 2) {
       enableButtonNextRef.current = false;
@@ -521,11 +557,13 @@ export const AuthEntry = ({ route }) => {
   const title = t(
     currentStep == 1
       ? 'authEntry.phoneNumber'
-      : currentStep == 2 || currentStep == 5
+      : currentStep == 2
         ? 'authEntry.verification'
         : currentStep == 3 || currentStep == 4
           ? 'authEntry.pin'
-          : '-',
+          : currentStep == 5
+            ? 'authEntry.personalDataTitle'
+            : '-',
   );
 
   return (
@@ -575,19 +613,32 @@ export const AuthEntry = ({ route }) => {
               left: 16,
               right: 16,
             }}>
-            {currentStep == 3 || currentStep == 4 || currentStep == 5 || currentStep == 2 ? null : (
+            {currentStep == 3 || currentStep == 4 || currentStep == 2 ? null : (
               <Button
                 type="regular"
                 onPress={() => onPressNext()}
-                loading={isRequesting || isVerifying || isLoginRequesting || isLoginVerifying}
-                title={t(currentStep === 1 ? 'authEntry.sendOTPNumber' : 'authEntry.verification')}
+                loading={
+                  isRequesting ||
+                  isVerifying ||
+                  isLoginRequesting ||
+                  isLoginVerifying ||
+                  isSettingPin
+                }
+                title={t(
+                  currentStep === 1
+                    ? 'authEntry.sendOTPNumber'
+                    : currentStep === 5
+                      ? 'authEntry.continue'
+                      : 'authEntry.verification',
+                )}
                 style={{
                   backgroundColor:
                     enableButtonNextRef.current &&
                     !isVerifying &&
                     !isRequesting &&
                     !isLoginRequesting &&
-                    !isLoginVerifying
+                    !isLoginVerifying &&
+                    !isSettingPin
                       ? colors.buttonBlue
                       : colors.disableButton,
                 }}
@@ -598,7 +649,8 @@ export const AuthEntry = ({ route }) => {
                   isVerifying ||
                   isRequesting ||
                   isLoginRequesting ||
-                  isLoginVerifying
+                  isLoginVerifying ||
+                  isSettingPin
                 }
               />
             )}

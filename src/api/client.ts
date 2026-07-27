@@ -49,10 +49,12 @@ const apiClient = axios.create({
 declare module 'axios' {
   export interface AxiosRequestConfig {
     noNeedAuth?: boolean;
+    skipAuthRetry?: boolean;
     _perfMetric?: FirebasePerformanceTypes.HttpMetric;
   }
   export interface InternalAxiosRequestConfig {
     noNeedAuth?: boolean;
+    skipAuthRetry?: boolean;
     _perfMetric?: FirebasePerformanceTypes.HttpMetric;
   }
 }
@@ -217,7 +219,13 @@ apiClient.interceptors.response.use(
 
     // --- Auto Refresh Token Logic (Handling 401) ---
     const existingRefreshToken = getStorageItem(StorageKey.REFRESH_TOKEN);
-    if ((status === 401) && !originalRequest?._retry && !originalRequest?.noNeedAuth && existingRefreshToken) {
+    if (
+      status === 401 &&
+      !originalRequest?._retry &&
+      !originalRequest?.noNeedAuth &&
+      !originalRequest?.skipAuthRetry &&
+      existingRefreshToken
+    ) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });

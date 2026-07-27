@@ -25,6 +25,7 @@ export type UserLimit = {
 export enum UserStatus {
   ACTIVE = 'ACTIVE',
   INACTIVE = 'INACTIVE',
+  ACTIVATION_PENDING = 'ACTIVATION_PENDING',
 }
 
 export enum UserLimitType {

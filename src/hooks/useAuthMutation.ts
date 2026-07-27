@@ -57,14 +57,6 @@ export const useRegisterVerifyOtp = () => {
     onSuccess: (data) => {
       console.log('useRegisterVerifyOtp data.message:', data.message);
       console.log('useRegisterVerifyOtp data', data);
-
-      const session = data?.data;
-
-      if (session?.verificationToken) {
-        setStorageItem(StorageKey.ACCESS_TOKEN, session.verificationToken);
-
-        console.log('useRegisterVerifyOtp ACCESS_TOKEN saved to MMKV');
-      }
     },
     onError: (error) => {
       console.log('error useRegisterVerifyOtp', error);
@@ -133,6 +125,9 @@ export const useRegisterPinSetup = () => {
         setExpiresAt(session.expiresAt);
       }
 
+      if (session?.accessToken) {
+        sendFcmTokenToBackend();
+      }
       console.log('[AuthHook] register success, fallback PostHog identify from hook.');
       identifyPostHogUser(variables.phoneNumber, {
         account_status: 'ACTIVE',
@@ -301,7 +296,23 @@ export const useCancelAccountDeletion = () => {
 };
 
 export const useChangePin = () => {
+  const setToken = useAuthStore((state) => state.setToken);
+  const setExpiresAt = useAuthStore((state) => state.setExpiresAt);
+
   return useMutation<ChangePinResponse, Error, ChangePinPayload>({
     mutationFn: (payload) => authApi.changePin(payload),
+    onSuccess: (data) => {
+      const session = data?.data;
+
+      if (session?.accessToken) {
+        setToken(session.accessToken);
+      }
+      if (session?.refreshToken) {
+        setStorageItem(StorageKey.REFRESH_TOKEN, session.refreshToken);
+      }
+      if (session?.expiresAt) {
+        setExpiresAt(session.expiresAt);
+      }
+    },
   });
 };

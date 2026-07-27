@@ -9,7 +9,7 @@ export type TitlePosition = 'center' | 'left';
 export type TitleWeight = 'bold' | 'medium' | 'regular';
 
 export interface HeaderToolbarProps {
-  title: string;
+  title?: string;
   leftComponent?: React.ReactNode;
   rightComponent?: React.ReactNode;
   onPressBack?: () => void;
