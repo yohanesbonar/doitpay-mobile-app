@@ -128,12 +128,13 @@ export const useRegisterPinSetup = () => {
       if (session?.accessToken) {
         sendFcmTokenToBackend();
       }
-      console.log('[AuthHook] register success, fallback PostHog identify from hook.');
-      identifyPostHogUser(variables.phoneNumber, {
-        account_status: 'ACTIVE',
-      });
+      // TODO: uncomment this when pending state is not needed anymore
+      // console.log('[AuthHook] register success, fallback PostHog identify from hook.');
+      // identifyPostHogUser(variables.phoneNumber, {
+      //   account_status: 'ACTIVE',
+      // });
 
-      sendFcmTokenToBackend();
+      // sendFcmTokenToBackend();
     },
     onError: (error) => {
       console.log('error useRegisterPinSetup', error);
