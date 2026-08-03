@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Modal, Button, Pressable, Alert, Linking } from 'react-native';
+import { View, Text, StyleSheet, Modal, Button, Pressable, Alert, Linking, LogBox } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { I18nextProvider } from 'react-i18next';
@@ -38,6 +38,10 @@ import { posthogClient, trackScreenView } from './src/analytics/posthog';
 
 // Start i18n
 initI18next();
+
+if (__DEV__) {
+  LogBox.ignoreAllLogs();
+}
 
 const messagingInstance = getMessaging();
 // Handle background messages
