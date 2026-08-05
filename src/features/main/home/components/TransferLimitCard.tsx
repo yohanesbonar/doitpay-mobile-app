@@ -23,9 +23,8 @@ export const TransferLimitCard = ({
   maxLimit = 0,
   isKycVerified = false,
 }: Props) => {
-  const percentage = freeTransferQuotaTotal > 0
-    ? (freeTransferQuotaUsed / freeTransferQuotaTotal) * 100
-    : 0;
+  const percentage =
+    freeTransferQuotaTotal > 0 ? (freeTransferQuotaUsed / freeTransferQuotaTotal) * 100 : 0;
 
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -52,7 +51,8 @@ export const TransferLimitCard = ({
             justifyContent: 'space-between',
           }}>
           <Text style={styles.label}>Kuota Transfer Gratis</Text>
-          {!isKycVerified && (
+          {/* TODO: unhide this */}
+          {/* {!isKycVerified && (
             <View
               style={{
                 backgroundColor: '#E5E5E5',
@@ -62,7 +62,7 @@ export const TransferLimitCard = ({
               }}>
               <Text style={{ color: '#737373', fontSize: 12 }}>Belum Verifikasi</Text>
             </View>
-          )}
+          )} */}
         </View>
 
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -81,7 +81,8 @@ export const TransferLimitCard = ({
             <Text style={styles.labelLimit}>Limit Harian</Text>
             <Text style={styles.amount}>Rp {formatCurrency(maxLimit)}</Text>
           </View>
-          {!isKycVerified && (
+          {/* TODO: unhide this */}
+          {/* {!isKycVerified && (
             <TouchableOpacity
               style={{
                 backgroundColor: '#FFFFFF',
@@ -91,7 +92,7 @@ export const TransferLimitCard = ({
               }}>
               <Text style={{ color: '#0A0A0A', fontSize: 12 }}>Verifikasi KYC</Text>
             </TouchableOpacity>
-          )}
+          )} */}
         </View>
       </View>
     </LinearGradient>

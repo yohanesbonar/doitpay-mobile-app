@@ -61,9 +61,9 @@ export const Settings = ({ navigation }: any) => {
           <ScrollView
             showsVerticalScrollIndicator={false}
             contentContainerStyle={[styles.content, { paddingBottom: 40 }]}>
-            <Text style={styles.sectionTitle}>UMUM</Text>
+            {/* <Text style={styles.sectionTitle}>UMUM</Text>
             <SettingItem title="Bahasa" sub="Bahasa Indonesia" icon={Globe} />
-            <SettingItem title="Zona Waktu" sub="WIB (GMT+7)" icon={Clock} />
+            <SettingItem title="Zona Waktu" sub="WIB (GMT+7)" icon={Clock} /> */}
 
             <Text style={[styles.sectionTitle, { marginTop: 24 }]}>NOTIFIKASI</Text>
             <SettingItem

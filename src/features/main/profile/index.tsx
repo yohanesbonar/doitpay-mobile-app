@@ -32,8 +32,6 @@ export const Profile = () => {
 
   const isLoading = loadingProfile || loadingLimit;
 
-  console.log(profileData, 'PROFILE');
-
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
