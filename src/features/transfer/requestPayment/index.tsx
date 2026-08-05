@@ -278,7 +278,9 @@ export const RequestPaymentView = ({
               onSelectBank={(val) => setBankPayment(val)}
               initialBankPayment={initialBankPayment}
               isVAEnabled={paymentMethodAvailability.vaEnabled}
-              isQRISEnabled={paymentMethodAvailability.qrisEnabled}
+              // isQRISEnabled={paymentMethodAvailability.qrisEnabled}
+              // TODO: Enable QRIS when the feature is ready
+              isQRISEnabled={false}
               isLoading={paymentMethodAvailability.isLoading}
             />
           </ScrollView>
