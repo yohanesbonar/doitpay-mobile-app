@@ -26,6 +26,7 @@ import PaymentInstruction from '../screens/transfer/paymentInstruction';
 import TransferProcessing from '../screens/transfer/transferProcessing';
 import PaymentReceipt from '../screens/transfer/paymentReceipt';
 import SearchAccountScreen from '../screens/transfer/searchAccount';
+import WelcomeTransferScreen from '../screens/transfer/welcomeTransfer';
 import { ForgotPin } from '@/features/onboarding/forgot-pin';
 import { BeneficiaryScreen } from '@/screens/main/beneficiary/beneficiary-screen';
 import RequestPaymentScreen from '../screens/transfer/requestPayment';
@@ -47,6 +48,11 @@ import DisputeListScreen from '@/screens/dispute/list';
 import DisputeDetailScreen from '@/screens/dispute/detail';
 import DisputeAddResponseScreen from '@/screens/dispute/addResponse';
 import DisputeReportCenterScreen from '@/screens/dispute/reportCenter';
+import ActivateQrisScreen from '@/screens/kyc/activateQris';
+import CaptureKtpScreen from '@/screens/kyc/captureKtp';
+import CaptureSelfieScreen from '@/screens/kyc/captureSelfie';
+import ConfirmDataScreen from '@/screens/kyc/confirmData';
+import DataSubmittedScreen from '@/screens/kyc/dataSubmitted';
 import { useGetProfileMeQuery } from '@/features/user/hooks/useGetProfileMeQuery';
 import { KycPendingStatus } from '@/features/onboarding/kyc/KycPendingStatus';
 
@@ -86,7 +92,7 @@ export default function RootNavigator({
   // Handle redirect DeleteAccountStatus dengan aman setelah NavigationContainer benar-benar ready
   useEffect(() => {
     if (!isNavReady || !isAuthenticated || isProfileLoading || !isPendingDeletion) return;
-    
+
     if (navigationRef.current?.isReady()) {
       const currentRoute = navigationRef.current.getCurrentRoute()?.name;
       if (currentRoute !== 'DeleteAccountStatus') {
@@ -113,9 +119,7 @@ export default function RootNavigator({
         backgroundColor={colors.background}
         barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
       />
-      <Stack.Navigator
-        initialRouteName={initialRouteName}
-        screenOptions={{ headerShown: false }}>
+      <Stack.Navigator initialRouteName={initialRouteName} screenOptions={{ headerShown: false }}>
         {!isAuthenticated ? (
           <Stack.Group>
             <Stack.Screen name="MainApp" component={Onboarding} />
@@ -191,6 +195,11 @@ export default function RootNavigator({
             <Stack.Screen name="DisputeList" component={DisputeListScreen} />
             <Stack.Screen name="DisputeDetail" component={DisputeDetailScreen} />
             <Stack.Screen name="DisputeAddResponse" component={DisputeAddResponseScreen} />
+            <Stack.Screen name="ActivateQris" component={ActivateQrisScreen} />
+            <Stack.Screen name="CaptureKtp" component={CaptureKtpScreen} />
+            <Stack.Screen name="CaptureSelfie" component={CaptureSelfieScreen} />
+            <Stack.Screen name="ConfirmKycData" component={ConfirmDataScreen} />
+            <Stack.Screen name="KycDataSubmitted" component={DataSubmittedScreen} />
           </Stack.Group>
         )}
       </Stack.Navigator>

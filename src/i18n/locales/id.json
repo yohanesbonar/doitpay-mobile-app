@@ -21,6 +21,16 @@
     "openWithGmail": "Masuk dengan Gmail", 
     "accountQuestion": "Sudah punya akun? Masuk"
   },
+  "welcomeTransfer": {
+    "title": "Selamat Datang",
+    "subtitle": "Akun kamu siap. Mulai transfer sekarang.",
+    "sectionTitle": "Yang bisa kamu lakukan sekarang",
+    "cardTransferTitle": "Transfer ke 100+ Bank",
+    "cardTransferSubtitle": "Biaya gratis",
+    "cardKycTitle": "KYC Verified",
+    "cardKycSubtitle": "Limit Rp 25,000,000/hari",
+    "button": "Mulai Transfer"
+  },
   "routes": {
     "home": "Home"
   }, 
