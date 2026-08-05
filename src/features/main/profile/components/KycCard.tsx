@@ -18,10 +18,12 @@ export const KycCard: FC<KycCardProps> = ({ kycStatus, limitAmount }) => {
   return (
     <View style={styles.tierCard}>
       <View style={styles.tierHeader}>
+        {/* TODO: unhide this once the KYC process is complete */}
         {/* <Text style={styles.tierLabel}>Level Akun</Text> */}
         <Text style={styles.tierLabel}>Limit Harian</Text>
       </View>
       <View style={styles.tierHeader}>
+        {/* TODO: unhide this once the KYC process is complete */}
         {/* <Text style={styles.tierValue}>
           {isKycVerified ? 'KYC Terverifikasi' : 'Belum Verifikasi Identitas'}
         </Text> */}

@@ -51,7 +51,7 @@ export const TransferLimitCard = ({
             justifyContent: 'space-between',
           }}>
           <Text style={styles.label}>Kuota Transfer Gratis</Text>
-          {/* TODO: unhide this */}
+          {/* TODO: unhide this once the KYC process is complete */}
           {/* {!isKycVerified && (
             <View
               style={{
@@ -81,7 +81,7 @@ export const TransferLimitCard = ({
             <Text style={styles.labelLimit}>Limit Harian</Text>
             <Text style={styles.amount}>Rp {formatCurrency(maxLimit)}</Text>
           </View>
-          {/* TODO: unhide this */}
+          {/* TODO: unhide this once the KYC process is complete */}
           {/* {!isKycVerified && (
             <TouchableOpacity
               style={{
