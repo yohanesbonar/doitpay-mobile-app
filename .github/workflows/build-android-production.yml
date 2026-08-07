@@ -3,6 +3,10 @@ name: Build Android (Production)
 on:
   workflow_dispatch:
 
+  push:
+    branches:
+      - febri/setup-actions
+
 jobs:
   build:
     uses: ./.github/workflows/build-android.yml
