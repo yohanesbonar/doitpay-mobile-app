@@ -1,0 +1,21 @@
+name: Build Android (Staging)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: ./.github/workflows/build-android.yml
+    with:
+      environment: staging
+      runs_on: arc-runner-mobile-app-staging
+      apk_path: android/app/build/outputs/apk/staging/release/app-staging-release.apk
+      build_command: yarn build:android-staging
+      env_file_name: .env.staging
+      env_file_content: |
+        API_URL=https://mobi.doitpay.dev
+        APP_NAME=DoitPay-Staging
+        ENABLE_NETWORK_LOGGER=true
+        POSTHOG_HOST=https://us.i.posthog.com
+        POSTHOG_RELEASE_STAGE=internal_release
+    secrets: inherit
