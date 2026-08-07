@@ -3,12 +3,16 @@ name: Build Android (Staging)
 on:
   workflow_dispatch:
 
+  push:
+    branches:
+      - febri/setup-actions
+
 jobs:
   build:
     uses: ./.github/workflows/build-android.yml
     with:
       environment: staging
-      runs-on: arc-runner-staging
+      runs-on: ubuntu-latest
       apk_path: android/app/build/outputs/apk/staging/release/app-staging-release.apk
       build_command: yarn build:android-staging
       env_file_name: .env.staging
