@@ -8,7 +8,7 @@ jobs:
     uses: ./.github/workflows/build-android.yml
     with:
       environment: production
-      runs_on: arc-runner-production
+      runs_on: self-hosted
       apk_path: android/app/build/outputs/apk/production/release/app-production-release.apk
       build_command: yarn build:android-production
       env_file_name: .env.production
