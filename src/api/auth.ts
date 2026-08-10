@@ -250,25 +250,25 @@ export const authApi = {
     return data;
   },
   loginRequestOtp: async (payload: LoginOtpRequestPayload): Promise<LoginOtpResponse> => {
-    const { data } = await apiClient.post<LoginOtpResponse>('v1/auth/login/otp/request', payload, {
+    const { data } = await apiClient.post<LoginOtpResponse>('/v1/auth/login/otp/request', payload, {
       noNeedAuth: true,
     });
     return data;
   },
   loginVerifyOtp: async (payload: LoginOtpVerifyPayload): Promise<LoginOtpVerifyResponse> => {
     const { data } = await apiClient.post<LoginOtpVerifyResponse>(
-      'v1/auth/login/otp/verify',
+      '/v1/auth/login/otp/verify',
       payload,
       { noNeedAuth: true },
     );
     return data;
   },
   login: async (payload: LoginPayload): Promise<LoginResponse> => {
-    const { data } = await apiClient.post<LoginResponse>('v1/auth/login', payload);
+    const { data } = await apiClient.post<LoginResponse>('/v1/auth/login', payload);
     return data;
   },
   refreshToken: async (payload: RefreshTokenPayload): Promise<RefreshTokenResponse> => {
-    const { data } = await apiClient.post<RefreshTokenResponse>('v1/auth/refresh', payload);
+    const { data } = await apiClient.post<RefreshTokenResponse>('/v1/auth/refresh', payload);
     return data;
   },
   forgotPinRequestOtp: async (
