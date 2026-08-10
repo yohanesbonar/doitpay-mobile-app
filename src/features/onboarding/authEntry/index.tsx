@@ -71,6 +71,16 @@ export const AuthEntry = ({ route }) => {
   const PIN_LENGTH = 6;
   const enableButtonNextRef = useRef(false);
 
+  const getErrorMessage = (err: any, fallback: string) => {
+    return (
+      err?.response?.data?.error?.message ??
+      err?.response?.data?.message ??
+      err?.error?.message ??
+      err?.message ??
+      fallback
+    );
+  };
+
   const { mutate: registerRequestOTP, isPending: isRequesting } = useRegisterRequestOtp();
   const { mutate: registerVerifyOTP, isPending: isVerifying } = useRegisterVerifyOtp();
   const { mutate: registerSetupPin, isPending: isSettingPin } = useRegisterPinSetup();
@@ -303,11 +313,11 @@ export const AuthEntry = ({ route }) => {
             setTimerOTP(res.data.retryAfterSeconds || 30);
             setCurrentStep(2);
           },
-          onError: (err) => {
+          onError: (err: any) => {
             console.error('error registerRequestOTP', err);
             Toast.show({
               type: 'error',
-              text1: err?.error?.message ?? '',
+              text1: getErrorMessage(err, 'Gagal mengirim OTP'),
             });
           },
         },
@@ -323,11 +333,11 @@ export const AuthEntry = ({ route }) => {
             setTimerOTP(res.data.retryAfterSeconds || 30);
             setCurrentStep(2);
           },
-          onError: (err) => {
+          onError: (err: any) => {
             console.error('error loginRequestOTP', err);
             Toast.show({
               type: 'error',
-              text1: err?.error?.message ?? '',
+              text1: getErrorMessage(err, 'Gagal mengirim OTP'),
             });
           },
         },
@@ -473,11 +483,11 @@ export const AuthEntry = ({ route }) => {
                 setTimerOTP(res.data.retryAfterSeconds || 30);
                 setCurrentStep(2);
               },
-              onError: (err) => {
-                console.error('error registerRequestOTP', err?.error?.message);
+              onError: (err: any) => {
+                console.error('error registerRequestOTP', err?.message ?? err?.error?.message);
                 Toast.show({
                   type: 'error',
-                  text1: err?.error?.message ?? '',
+                  text1: getErrorMessage(err, 'Gagal mengirim OTP'),
                 });
               },
             },
@@ -493,11 +503,11 @@ export const AuthEntry = ({ route }) => {
                 setTimerOTP(res.data.retryAfterSeconds || 30);
                 setCurrentStep(2);
               },
-              onError: (err) => {
-                console.error('error registerRequestOTP', err?.error?.message);
+              onError: (err: any) => {
+                console.error('error loginRequestOTP', err?.message ?? err?.error?.message);
                 Toast.show({
                   type: 'error',
-                  text1: err?.error?.message ?? '',
+                  text1: getErrorMessage(err, 'Gagal mengirim OTP'),
                 });
               },
             },
@@ -531,7 +541,7 @@ export const AuthEntry = ({ route }) => {
           onError: (err: any) => {
             Toast.show({
               type: 'error',
-              text1: err?.error?.message ?? '',
+              text1: getErrorMessage(err, 'Gagal menyimpan PIN'),
             });
           },
         },
