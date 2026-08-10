@@ -32,7 +32,7 @@ export const createStyles = (colors: any) => {
     },
     formWrapper: {
       width: '100%',
-      paddingVertical: 10,
+      paddingTop: 10,
       marginTop: 16,
     },
     label: {
@@ -298,6 +298,52 @@ export const createStyles = (colors: any) => {
       fontSize: 16,
       color: '#000',
       backgroundColor: '#F9F9F9',
+    },
+    occupationDropdown: {
+      height: 56,
+      borderWidth: 1,
+      borderColor: '#dedede',
+      borderRadius: 12,
+      paddingHorizontal: 16,
+      backgroundColor: '#FFFFFF',
+    },
+    occupationDropdownContainer: {
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: '#E5E7EB',
+      marginTop: 6,
+      overflow: 'hidden',
+    },
+    occupationPlaceholder: {
+      fontSize: 16,
+      color: '#A9A9A9',
+      fontFamily: 'Switzer-Regular',
+    },
+    occupationSelectedText: {
+      fontSize: 16,
+      color: '#000',
+      fontFamily: 'Switzer-Regular',
+    },
+    occupationItemText: {
+      fontSize: 16,
+      color: '#000',
+      fontFamily: 'Switzer-Regular',
+    },
+    occupationErrorRow: {
+      marginTop: 8,
+      flexDirection: 'row',
+      alignItems: 'center',
+      columnGap: 8,
+    },
+    occupationErrorText: {
+      fontSize: 12,
+      color: '#D14343',
+      fontFamily: 'Switzer-Regular',
+    },
+    occupationRetryText: {
+      fontSize: 12,
+      color: '#2D6CE5',
+      fontFamily: 'Switzer-Semibold',
     },
   });
 };

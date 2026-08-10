@@ -7,6 +7,13 @@
   "onboarding": {
     "freeTransfer": "Free Transfer"
   },
+  "authEntry": {
+    "occupationLabel": "Occupation",
+    "occupationPlaceholder": "Select occupation",
+    "loadingOccupation": "Loading occupations...",
+    "occupationLoadError": "Failed to load occupations.",
+    "retry": "Retry"
+  },
   "welcomeTransfer": {
     "title": "Welcome",
     "subtitle": "Your account is ready. Start transferring now.",

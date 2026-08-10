@@ -41,6 +41,7 @@ export interface PhoneNumberFormValues {
 
 export interface PersonalDataFormValues {
   fullName: string;
+  occupationId: string;
 }
 
 export const AuthEntry = ({ route }) => {
@@ -70,6 +71,7 @@ export const AuthEntry = ({ route }) => {
   const inputRef = useRef<TextInput>(null);
   const PIN_LENGTH = 6;
   const enableButtonNextRef = useRef(false);
+  const [personalDataInput, setPersonalDataInput] = useState({ fullName: '', occupationId: '' });
 
   const getErrorMessage = (err: any, fallback: string) => {
     return (
@@ -219,6 +221,7 @@ export const AuthEntry = ({ route }) => {
 
   const FullNameSchema = Yup.object().shape({
     fullName: Yup.string().min(3, 'Nama terlalu pendek').required('Wajib diisi'),
+    occupationId: Yup.string().required('Wajib diisi'),
   });
 
   useEffect(() => {
@@ -287,10 +290,10 @@ export const AuthEntry = ({ route }) => {
         return (
           <Formik<PersonalDataFormValues>
             innerRef={personalDataFormikRef}
-            initialValues={{ fullName: '' }}
+            initialValues={{ fullName: '', occupationId: '' }}
             validationSchema={FullNameSchema}
             onSubmit={(values) => console.log('Form Data:', values)}>
-            <InputFullName styles={styles} />
+            <InputFullName styles={styles} onPersonalDataChange={setPersonalDataInput} />
           </Formik>
         );
       default:
@@ -362,8 +365,10 @@ export const AuthEntry = ({ route }) => {
       }
     } else if (currentStep == 5) {
       const isValid = personalDataFormikRef.current?.isValid;
-      const isDirty = personalDataFormikRef.current?.dirty;
-      if (!isValid || !isDirty) {
+      const isFullNameFilled = personalDataInput.fullName.trim().length > 0;
+      const isOccupationFilled = personalDataInput.occupationId.trim().length > 0;
+
+      if (!isValid || !isFullNameFilled || !isOccupationFilled) {
         enableButtonNextRef.current = false;
       } else {
         enableButtonNextRef.current = true;
@@ -374,6 +379,8 @@ export const AuthEntry = ({ route }) => {
     formikRef.current?.dirty,
     personalDataFormikRef.current?.isValid,
     personalDataFormikRef.current?.dirty,
+    personalDataInput.fullName,
+    personalDataInput.occupationId,
     currentStep,
     valueOTP,
   ]);
@@ -519,13 +526,19 @@ export const AuthEntry = ({ route }) => {
 
     if (currentStep === 5) {
       const fullName = personalDataFormikRef.current?.values?.fullName ?? '';
+      const occupationId = Number(personalDataFormikRef.current?.values?.occupationId ?? 0);
       const { phoneNumber, countryCode } = phoneNumbData;
       const formattedPhone = (countryCode + phoneNumber).replace('+', '');
+
+      trackPostHogEvent('signup_personal_data_submitted', {
+        occupationId,
+      });
 
       registerSetupPin(
         {
           pin,
           fullName,
+          occupationId,
           continueAsNew: true,
           verifyToken: verificationToken,
         },

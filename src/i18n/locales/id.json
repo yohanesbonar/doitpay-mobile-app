@@ -72,6 +72,11 @@
     "descPersonalData": "Masukkan nama lengkap sesuai identitas",
     "fullNameLabel": "Nama Lengkap",
     "fullNamePlaceholder": "Cth: Bobby Joni",
+    "occupationLabel": "Pekerjaan",
+    "occupationPlaceholder": "Pilih pekerjaan",
+    "loadingOccupation": "Memuat pekerjaan...",
+    "occupationLoadError": "Gagal memuat daftar pekerjaan.",
+    "retry": "Coba lagi",
     "continue": "Lanjut"
   },
   "bankList": {

@@ -15,6 +15,7 @@ export interface RegisterOtpVerifyPayload {
 export interface RegisterPinSetupPayload {
   pin: string;
   fullName: string;
+  occupationId: number;
   continueAsNew: boolean;
   verifyToken: string;
 }
