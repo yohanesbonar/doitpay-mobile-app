@@ -7,7 +7,21 @@ export interface TransferPayload {
   payMethod: string;
   pin: string;
   remark: string;
+  transactionPurpose?: string;
+  transactionPurposeOther?: string;
 }
+
+export interface TransactionPurposeItem {
+  code: string;
+  id: number;
+  name: string;
+}
+
+export interface TransactionPurposesData {
+  items: TransactionPurposeItem[];
+}
+
+export type TransactionPurposesResponse = BaseResponse<TransactionPurposesData>;
 
 export interface PaymentInstrument {
   amount: number;
@@ -186,6 +200,10 @@ export const transferApi = {
   },
   getTransferReceipt: async (payload: { id: string }): Promise<GetTransferDetailResponse> => {
     const { data } = await apiClient.get<GetTransferDetailResponse>(`/v1/transfers/${payload.id}/receipt`);
+    return data;
+  },
+  getTransactionPurposes: async (): Promise<TransactionPurposesResponse> => {
+    const { data } = await apiClient.get<TransactionPurposesResponse>('/v1/transaction-purposes');
     return data;
   },
   getReceiveReceipt: async (payload: PaymentStatusPayload): Promise<PaymentStatusResponse> => {

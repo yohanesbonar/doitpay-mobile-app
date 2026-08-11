@@ -4,6 +4,7 @@ import {
   TransferPayload,
   GetTransferDetailResponse,
   PaymentStatusResponse,
+  TransactionPurposesResponse,
   VAMethodsPayload,
 } from '@/api/transfer';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -100,5 +101,13 @@ export const useReceiveStatusQuery = (id: string | undefined) => {
     queryFn: () => transferApi.getReceiveReceipt({ id: id! }),
     enabled: !!id,
     refetchOnWindowFocus: true,
+  });
+};
+
+export const useTransactionPurposes = () => {
+  return useQuery<TransactionPurposesResponse>({
+    queryKey: ['transaction-purposes'],
+    queryFn: () => transferApi.getTransactionPurposes(),
+    staleTime: 5 * 60 * 1000,
   });
 };

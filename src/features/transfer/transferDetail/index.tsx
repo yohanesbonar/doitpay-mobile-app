@@ -7,6 +7,8 @@ import {
   ScrollView,
   TouchableWithoutFeedback,
   ActivityIndicator,
+  Modal,
+  FlatList,
 } from 'react-native';
 import { useRoute, useNavigation, useIsFocused } from '@react-navigation/native';
 import { styles } from './styles';
@@ -14,12 +16,16 @@ import PaymentMethod from './components/PaymentMethod';
 import QuickAmount from './components/QuickAmount';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import { formatNumber } from '@/utils/Common';
-import { useReceive, useTransfer } from '../../../hooks/useTransferMutation';
+import {
+  useReceive,
+  useTransfer,
+  useTransactionPurposes,
+} from '../../../hooks/useTransferMutation';
 import _ from 'lodash';
 import Button from '../../../components/atoms/Button/index.tsx';
 import Toast from 'react-native-toast-message';
 import { paymentApi, PaymentCalculatePayload } from './api/payment-calculate-api';
-import { Info, TriangleAlert } from 'lucide-react-native';
+import { Info, TriangleAlert, ChevronDown, Check } from 'lucide-react-native';
 import { usePaymentMethodAvailability } from '../hooks/usePaymentMethodAvailability';
 import { getAmountRange, trackPostHogEvent } from '@/analytics/posthog';
 
@@ -72,7 +78,10 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
   const { accountNumber, bankName, accountHolderName } = accountData || {};
 
   const [amount, setAmount] = useState(initialAmount || '');
-  const [note, setNote] = useState('');
+  const [selectedPurpose, setSelectedPurpose] = useState<{ code: string; name: string } | null>(
+    null,
+  );
+  const [isPurposeModalVisible, setIsPurposeModalVisible] = useState(false);
   const [methodPayment, setMethodPayment] = useState<'VA' | 'QRIS'>(initialPaymentMethod || 'VA');
   const [bankPayment, setBankPayment] = useState(initialBankPayment || null);
   const [isDisableConfirm, setIsDisableConfirm] = useState(true);
@@ -82,6 +91,8 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
   const paymentMethodAvailability = usePaymentMethodAvailability('TRANSFER');
 
   const { mutate: postTransfer, isPending: isLoadingTransfer } = useTransfer();
+  const { data: purposesData, isLoading: isLoadingPurposes } = useTransactionPurposes();
+  const purposes = purposesData?.data?.items ?? [];
   const hasTrackedValidAmountRef = useRef(false);
   const hasTrackedReviewViewRef = useRef(false);
 
@@ -196,8 +207,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
       destination_bank: bankData?.shortName || bankData?.name || 'unknown',
       source_bank: bankPayment?.code || bankData?.shortName || 'unknown',
       pay_method: methodPayment,
-      fee_status:
-        calculateData?.isFreeTransfer || calculateData?.fee === 0 ? 'free_quota' : 'paid',
+      fee_status: calculateData?.isFreeTransfer || calculateData?.fee === 0 ? 'free_quota' : 'paid',
     });
 
     let payload = {
@@ -206,7 +216,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
       beneficiaryId: props.beneficiaryId,
       payChannel: methodPayment == 'VA' ? bankPayment?.code : methodPayment,
       payMethod: methodPayment == 'VA' ? 'VIRTUAL_ACCOUNT' : methodPayment,
-      remark: note,
+      transactionPurpose: selectedPurpose?.code,
     };
     let idempotencyKey = new Date().getTime().toString();
 
@@ -250,6 +260,8 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
       isDisable = true;
     } else if (methodPayment == 'VA' && (_.isEmpty(bankPayment) || !amount)) {
       isDisable = true;
+    } else if (!selectedPurpose) {
+      isDisable = true;
     } else if (isLoadingCalculate) {
       isDisable = true;
     } else {
@@ -261,6 +273,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
     bankPayment,
     amount,
     numericAmount,
+    selectedPurpose,
     isLoadingCalculate,
     paymentMethodAvailability.isLoading,
     paymentMethodAvailability.hasAnyEnabled,
@@ -325,24 +338,115 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
         <QuickAmount currentAmount={amount} onAmountPress={(val) => setAmount(val)} />
 
         <Text style={[styles.label, { marginTop: 10, paddingHorizontal: 20 }]}>
-          Catatan (Opsional)
+          Tujuan Transaksi
         </Text>
-        <TextInput
+        <TouchableOpacity
           style={{
             borderColor: '#E5E5E5',
             borderWidth: 1,
             backgroundColor: '#FFF',
             padding: 16,
             borderRadius: 12,
-            fontFamily: 'Switzer-Regular',
-            minHeight: 50,
             marginHorizontal: 20,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            minHeight: 50,
           }}
-          placeholder="Contoh: uang bulanan"
-          placeholderTextColor={'#737373'}
-          value={note}
-          onChangeText={setNote}
-        />
+          onPress={() => setIsPurposeModalVisible(true)}
+          activeOpacity={0.7}>
+          <Text
+            style={{
+              fontFamily: 'Switzer-Regular',
+              color: selectedPurpose ? '#0A0A0A' : '#737373',
+              fontSize: 15,
+              flex: 1,
+            }}>
+            {selectedPurpose ? selectedPurpose.name : 'Pilih Tujuan'}
+          </Text>
+          {isLoadingPurposes ? (
+            <ActivityIndicator size="small" color="#3B82F6" />
+          ) : (
+            <ChevronDown size={18} color="#9CA3AF" />
+          )}
+        </TouchableOpacity>
+
+        <Modal
+          visible={isPurposeModalVisible}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setIsPurposeModalVisible(false)}>
+          <TouchableOpacity
+            style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' }}
+            activeOpacity={1}
+            onPress={() => setIsPurposeModalVisible(false)}
+          />
+          <View
+            style={{
+              backgroundColor: '#FFF',
+              borderTopLeftRadius: 20,
+              borderTopRightRadius: 20,
+              paddingBottom: 32,
+              maxHeight: '60%',
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+            }}>
+            <View
+              style={{
+                alignItems: 'center',
+                paddingTop: 12,
+                paddingBottom: 16,
+                borderBottomWidth: 1,
+                borderBottomColor: '#F3F4F6',
+              }}>
+              <View
+                style={{
+                  width: 36,
+                  height: 4,
+                  borderRadius: 2,
+                  backgroundColor: '#E5E7EB',
+                  marginBottom: 12,
+                }}
+              />
+              <Text style={{ fontFamily: 'Switzer-Bold', fontSize: 16, color: '#0A0A0A' }}>
+                Tujuan Transaksi
+              </Text>
+            </View>
+            <FlatList
+              data={purposes}
+              keyExtractor={(item) => item.code}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    paddingHorizontal: 20,
+                    paddingVertical: 16,
+                    borderBottomWidth: 1,
+                    borderBottomColor: '#F9FAFB',
+                  }}
+                  onPress={() => {
+                    setSelectedPurpose({ code: item.code, name: item.name });
+                    setIsPurposeModalVisible(false);
+                  }}>
+                  <Text
+                    style={{
+                      fontFamily: 'Switzer-Regular',
+                      fontSize: 15,
+                      color: '#0A0A0A',
+                      flex: 1,
+                    }}>
+                    {item.name}
+                  </Text>
+                  {selectedPurpose?.code === item.code && <Check size={18} color="#3B82F6" />}
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </Modal>
 
         <PaymentMethod
           selectedMethod={methodPayment}
