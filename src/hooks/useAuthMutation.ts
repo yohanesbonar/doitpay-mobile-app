@@ -103,7 +103,10 @@ export const useRegisterPinSetup = () => {
   };
 
   return useMutation<RegisterPinSetupResponse, Error, RegisterPinSetupPayload>({
-    mutationFn: (payload) => authApi.registerPinSetup(payload),
+    mutationFn: async (payload) => {
+      const fcmToken = await requestFcmToken();
+      return authApi.registerPinSetup({ ...payload, fcmToken: fcmToken ?? undefined });
+    },
     onSuccess: (data, variables) => {
       console.log('useRegisterPinSetup data.message:', data?.message);
       console.log('useRegisterPinSetup data', data);
