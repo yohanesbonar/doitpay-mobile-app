@@ -18,6 +18,7 @@ export interface RegisterPinSetupPayload {
   occupationId: number;
   continueAsNew: boolean;
   verifyToken: string;
+  fcmToken?: string;
 }
 
 export type RegisterOtpResponse = {
@@ -239,11 +240,12 @@ export const authApi = {
   },
   registerPinSetup: async ({
     verifyToken,
+    fcmToken,
     ...body
   }: RegisterPinSetupPayload): Promise<RegisterPinSetupResponse> => {
     const { data } = await apiClient.post<RegisterPinSetupResponse>(
       '/v1/onboarding/pin-setup',
-      body,
+      { ...body, fcm_token: fcmToken },
       {
         headers: { Authorization: `bearer ${verifyToken}` },
       },
