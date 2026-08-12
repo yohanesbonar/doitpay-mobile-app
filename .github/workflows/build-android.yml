@@ -121,6 +121,18 @@ jobs:
       - name: Install Dependencies
         run: yarn install --immutable
 
+      - name: Setup Keystore
+        shell: bash
+        run: |
+          printf '%s' "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | tr -d '[:space:]' | base64 -d > android/app/doitpay-release.keystore
+          chmod 600 android/app/doitpay-release.keystore
+          # Verify keystore is valid and non-empty
+          if [ ! -s android/app/doitpay-release.keystore ]; then
+            echo "ERROR: Keystore file is empty or missing"
+            exit 1
+          fi
+          echo "✅ Keystore size: $(wc -c < android/app/doitpay-release.keystore) bytes"
+
       - name: Create Environment File
         shell: bash
         run: |
@@ -131,7 +143,15 @@ jobs:
           chmod 600 "${{ inputs.env_file_name }}"
 
       - name: Build APK
-        run: ${{ inputs.build_command }}
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx3072m -XX:MaxMetaspaceSize=512m -XX:+UseG1GC"
+          RELEASE_STORE_FILE: doitpay-release.keystore
+          RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+        run: |
+          cd android && ./gradlew clean --no-daemon
+          ${{ inputs.build_command }}
 
       - name: Install Firebase CLI
         run: npm install -g firebase-tools@${{ env.FIREBASE_TOOLS_VERSION }}
@@ -165,6 +185,7 @@ jobs:
         shell: bash
         run: |
           rm -f "${{ inputs.env_file_name }}"
+          rm -f android/app/doitpay-release.keystore
           rm -rf \
             android/app/build \
             android/build

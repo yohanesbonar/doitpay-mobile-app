@@ -1,4 +1,4 @@
-package com.doitpay
+package co.doitpay.app
 
 import android.app.Application
 import com.facebook.react.PackageList
