@@ -1,36 +1,28 @@
-name: Build Android
+name: Build Android Bundle (Production)
 
 on:
-  workflow_call:
-    inputs:
-      environment:
-        description: "GitHub Environment name (e.g. staging, production)"
-        required: true
-        type: string
-      apk_path:
-        description: "Path to the built APK (e.g. android/app/build/outputs/apk/staging/release/app-staging-release.apk)"
-        required: true
-        type: string
-      build_command:
-        description: "Command to build the APK (e.g. yarn build:android-staging)"
-        required: true
-        type: string
-      env_file_name:
-        description: "Name of the environment file to create (e.g. .env.staging)"
-        required: true
-        type: string
-      env_file_content:
-        description: "Full content of the environment file (multiline string)"
-        required: true
-        type: string
-      runs_on:
-        description: "Runner label"
-        required: false
-        type: string
-        default: "ubuntu-latest"
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: ./.github/workflows/build-android.yml
+    with:
+      environment: production
+      runs_on: arc-runner-mobile-app-production
+      apk_path: android/app/build/outputs/bundle/productionRelease/app-production-release.aab
+      build_command: yarn build-bundle:android-production:clean
+      env_file_name: .env.production
+      env_file_content: |
+        API_URL=https://mobi.doitpay.co
+        APP_NAME=DoitPay-Production
+        ENABLE_NETWORK_LOGGER=false
+        POSTHOG_HOST=https://us.i.posthog.com
+        POSTHOG_RELEASE_STAGE=public_release
+    secrets: inherit
+
 
 concurrency:
-  group: android-${{ inputs.environment }}-${{ github.ref }}
+  group: android-bundle-production-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -44,16 +36,13 @@ env:
   CMDLINE_TOOLS_VERSION: "15859902"
   ANDROID_PLATFORM: "platforms;android-36"
   ANDROID_BUILD_TOOLS: "build-tools;36.0.0"
-  FIREBASE_TOOLS_VERSION: "15.25.1"
-  FIREBASE_APP_ID: "1:302181848541:android:e3980c6c0c215e4a3fd234"
-  FIREBASE_GROUPS: "tech-&-pm"
 
 jobs:
   build:
-    name: Build APK ${{ inputs.environment }}
-    runs-on: ${{ inputs.runs_on }}
-    environment: ${{ inputs.environment }}
-    timeout-minutes: 30
+    name: Build AAB Production
+    runs-on: arc-runner-mobile-app-production
+    environment: production
+    timeout-minutes: 45
     permissions:
       contents: read
     steps:
@@ -78,11 +67,11 @@ jobs:
         with:
           username: GitHub
           webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
-          embed-title: "🚀 Building Android (APK) Started"
+          embed-title: "🚀 Building Android Bundle (AAB) Started"
           embed-color: 3447003
           embed-url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           embed-description: |
-            **Environment:** ${{ inputs.environment }}
+            **Environment:** production
             **Branch:** `${{ github.ref_name }}`
             **Actor:** ${{ github.actor }}
             **Commit:** `${{ steps.commit.outputs.sha }}`
@@ -130,57 +119,40 @@ jobs:
       - name: Create Environment File
         shell: bash
         run: |
-          cat > "${{ inputs.env_file_name }}" <<'EOF'
-          ${{ inputs.env_file_content }}
+          cat > .env.production <<'EOF'
+          API_URL=https://mobi.doitpay.co
+          APP_NAME=DoitPay-Production
+          ENABLE_NETWORK_LOGGER=false
+          POSTHOG_HOST=https://us.i.posthog.com
+          POSTHOG_RELEASE_STAGE=public_release
           POSTHOG_API_KEY=${{ secrets.POSTHOG_API_KEY }}
           EOF
-          chmod 600 "${{ inputs.env_file_name }}"
+          chmod 600 .env.production
 
-      - name: Build APK
+      - name: Build Bundle
         env:
           MYAPP_RELEASE_STORE_FILE: doitpay-release.keystore
           MYAPP_RELEASE_STORE_PASSWORD: ${{ secrets.MYAPP_RELEASE_STORE_PASSWORD }}
           MYAPP_RELEASE_KEY_ALIAS: ${{ secrets.MYAPP_RELEASE_KEY_ALIAS }}
           MYAPP_RELEASE_KEY_PASSWORD: ${{ secrets.MYAPP_RELEASE_KEY_PASSWORD }}
-        run: ${{ inputs.build_command }}
+        run: yarn build-bundle:android-production:clean
 
-      - name: Install Firebase CLI
-        run: npm install -g firebase-tools@${{ env.FIREBASE_TOOLS_VERSION }}
-
-      - name: Create GCP Service Account
-        shell: bash
-        run: |
-          echo '${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}' > firebase.json
-
-      - name: Upload APK to Firebase
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: firebase.json
-        run: |
-          firebase appdistribution:distribute \
-            "${{ inputs.apk_path }}" \
-            --app "${{ env.FIREBASE_APP_ID }}" \
-            --groups "${{ env.FIREBASE_GROUPS }}" \
-            --release-notes "[${{ inputs.environment }}]
-          Build: #${{ github.run_number }}
-          Branch: ${{ github.ref_name }}
-          Triggered by: @${{ github.actor }}
-          Commit: ${{ steps.commit.outputs.sha }}
-          Message:
-          ${{ steps.commit.outputs.body }}
-          Workflow:
-          ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          "
+      - name: Upload AAB Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-production-release-${{ steps.commit.outputs.sha }}.aab
+          path: android/app/build/outputs/bundle/productionRelease/app-production-release.aab
+          retention-days: 7
 
       - name: Cleanup Workspace
         if: always()
         shell: bash
         run: |
-          rm -f "${{ inputs.env_file_name }}"
+          rm -f .env.production
           rm -f android/app/doitpay-release.keystore
           rm -rf \
             android/app/build \
             android/build
-          rm -rf firebase.json
 
       - name: Notify Success
         if: success()
@@ -188,11 +160,11 @@ jobs:
         with:
           username: GitHub
           webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
-          embed-title: "✅ Building Android (APK) Finished"
+          embed-title: "✅ Android Bundle (AAB) Ready"
           embed-color: 3066993
           embed-url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           embed-description: |
-            **Environment:** ${{ inputs.environment }}
+            **Environment:** production
             **Branch:** `${{ github.ref_name }}`
             **Actor:** ${{ github.actor }}
             **Commit:** `${{ steps.commit.outputs.sha }}`
@@ -200,6 +172,7 @@ jobs:
             ```
             ${{ steps.commit.outputs.subject }}
             ```
+            **Artifact:** `app-production-release-${{ steps.commit.outputs.sha }}.aab` (available for 7 days)
           embed-footer-text: "${{ github.repository }}"
 
       - name: Notify Failure
@@ -208,11 +181,11 @@ jobs:
         with:
           username: GitHub
           webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
-          embed-title: "❌ Building Android (APK) Failed"
+          embed-title: "❌ Android Bundle (AAB) Failed"
           embed-color: 15158332
           embed-url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           embed-description: |
-            **Environment:** ${{ inputs.environment }}
+            **Environment:** production
             **Branch:** `${{ github.ref_name }}`
             **Actor:** ${{ github.actor }}
             **Commit:** `${{ steps.commit.outputs.sha }}`
