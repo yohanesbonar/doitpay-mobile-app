@@ -93,7 +93,7 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.doitpay"
+    namespace "co.doitpay.app"
     defaultConfig {
         applicationId "co.doitpay.app"
         minSdkVersion rootProject.ext.minSdkVersion
@@ -129,11 +129,11 @@ android {
     productFlavors {
         staging {
             dimension "default"
-            resValue "string", "build_config_package", "com.doitpay"
+            resValue "string", "build_config_package", "co.doitpay.app"
         }
         production {
             dimension "default"
-            resValue "string", "build_config_package", "com.doitpay"
+            resValue "string", "build_config_package", "co.doitpay.app"
         }
     }
 }

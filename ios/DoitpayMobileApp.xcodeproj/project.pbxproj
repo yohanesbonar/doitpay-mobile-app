@@ -470,7 +470,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.doitpay;
+				PRODUCT_BUNDLE_IDENTIFIER = co.doitpay.app;
 				PRODUCT_NAME = DoitpayMobileApp;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -504,7 +504,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.doitpay;
+				PRODUCT_BUNDLE_IDENTIFIER = co.doitpay.app;
 				PRODUCT_NAME = DoitpayMobileApp;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
