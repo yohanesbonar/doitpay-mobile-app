@@ -144,12 +144,14 @@ jobs:
 
       - name: Build APK
         env:
-          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m"
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx3072m -XX:MaxMetaspaceSize=512m -XX:+UseG1GC"
           RELEASE_STORE_FILE: doitpay-release.keystore
           RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
           RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
           RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
-        run: ${{ inputs.build_command }}
+        run: |
+          cd android && ./gradlew clean --no-daemon
+          ${{ inputs.build_command }}
 
       - name: Install Firebase CLI
         run: npm install -g firebase-tools@${{ env.FIREBASE_TOOLS_VERSION }}
