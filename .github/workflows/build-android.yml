@@ -124,8 +124,14 @@ jobs:
       - name: Setup Keystore
         shell: bash
         run: |
-          echo "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | base64 --decode > android/app/doitpay-release.keystore
+          printf '%s' "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | tr -d '[:space:]' | base64 -d > android/app/doitpay-release.keystore
           chmod 600 android/app/doitpay-release.keystore
+          # Verify keystore is valid and non-empty
+          if [ ! -s android/app/doitpay-release.keystore ]; then
+            echo "ERROR: Keystore file is empty or missing"
+            exit 1
+          fi
+          echo "✅ Keystore size: $(wc -c < android/app/doitpay-release.keystore) bytes"
 
       - name: Create Environment File
         shell: bash
