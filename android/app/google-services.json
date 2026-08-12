@@ -26,9 +26,9 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:302181848541:android:e3980c6c0c215e4a3fd234",
+        "mobilesdk_app_id": "1:302181848541:android:b5ad4d39813e940b3fd234",
         "android_client_info": {
-          "package_name": "com.doitpay"
+          "package_name": "co.doitpay.app"
         }
       },
       "oauth_client": [],
