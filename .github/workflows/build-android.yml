@@ -45,7 +45,7 @@ env:
   ANDROID_PLATFORM: "platforms;android-36"
   ANDROID_BUILD_TOOLS: "build-tools;36.0.0"
   FIREBASE_TOOLS_VERSION: "15.25.1"
-  FIREBASE_APP_ID: "1:302181848541:android:e3980c6c0c215e4a3fd234"
+  FIREBASE_APP_ID: "1:302181848541:android:b5ad4d39813e940b3fd234"
   FIREBASE_GROUPS: "tech-&-pm"
 
 jobs:
