@@ -70,7 +70,7 @@ export const AuthEntry = ({ route }) => {
   const [isErrorPIN, setIsErrorPIN] = useState(false);
   const inputRef = useRef<TextInput>(null);
   const PIN_LENGTH = 6;
-  const enableButtonNextRef = useRef(false);
+  const [isNextButtonEnabled, setIsNextButtonEnabled] = useState(false);
   const [personalDataInput, setPersonalDataInput] = useState({ fullName: '', occupationId: '' });
 
   const getErrorMessage = (err: any, fallback: string) => {
@@ -353,15 +353,15 @@ export const AuthEntry = ({ route }) => {
       const isValid = formikRef.current?.isValid;
       const isDirty = formikRef.current?.dirty;
       if (!isValid || !isDirty) {
-        enableButtonNextRef.current = false;
+        setIsNextButtonEnabled(false);
       } else {
-        enableButtonNextRef.current = true;
+        setIsNextButtonEnabled(true);
       }
     } else if (currentStep == 2) {
       if (valueOTP.length == 6) {
-        enableButtonNextRef.current = true;
+        setIsNextButtonEnabled(true);
       } else {
-        enableButtonNextRef.current = false;
+        setIsNextButtonEnabled(false);
       }
     } else if (currentStep == 5) {
       const isValid = personalDataFormikRef.current?.isValid;
@@ -369,9 +369,9 @@ export const AuthEntry = ({ route }) => {
       const isOccupationFilled = personalDataInput.occupationId.trim().length > 0;
 
       if (!isValid || !isFullNameFilled || !isOccupationFilled) {
-        enableButtonNextRef.current = false;
+        setIsNextButtonEnabled(false);
       } else {
-        enableButtonNextRef.current = true;
+        setIsNextButtonEnabled(true);
       }
     }
   }, [
@@ -562,7 +562,7 @@ export const AuthEntry = ({ route }) => {
       return;
     }
     if (currentStep == 1 || currentStep == 2) {
-      enableButtonNextRef.current = false;
+      setIsNextButtonEnabled(false);
     }
     if (!isLoginState) {
       console.log('bonlog 1');
@@ -656,7 +656,7 @@ export const AuthEntry = ({ route }) => {
                 )}
                 style={{
                   backgroundColor:
-                    enableButtonNextRef.current &&
+                    isNextButtonEnabled &&
                     !isVerifying &&
                     !isRequesting &&
                     !isLoginRequesting &&
@@ -668,7 +668,7 @@ export const AuthEntry = ({ route }) => {
                 color={colors.buttonBlue}
                 textColor="white"
                 disable={
-                  !enableButtonNextRef.current ||
+                  !isNextButtonEnabled ||
                   isVerifying ||
                   isRequesting ||
                   isLoginRequesting ||
