@@ -25,7 +25,22 @@
     "build:android-production:clean": "export ENVFILE=.env.production && rm -rf android/app/build && cd android && ./gradlew assembleProductionRelease --rerun-tasks && cd ..",
     "build-bundle:android-staging:clean": "export ENVFILE=.env.staging && rm -rf android/app/build && cd android && ./gradlew bundleStagingRelease --rerun-tasks && cd ..",
     "build-bundle:android-production:clean": "export ENVFILE=.env.production && rm -rf android/app/build && cd android && ./gradlew bundleProductionRelease --rerun-tasks && cd ..",
-    "clean:android": "cd android && ./gradlew clean && cd .."
+    "clean:android": "cd android && ./gradlew clean && cd ..",
+
+    "ios:pod": "cd ios && pod install && cd ..",
+    "ios:clean": "rm -rf ios/build && cd ios && xcodebuild clean && cd ..",
+
+    "// --- COMPILE CHECK (Output: ios/build/Build/Products/Release-iphoneos/) ---": "",
+    "build:ios-staging": "ENVFILE=.env.staging cd ios && xcodebuild -workspace DoitPayMobileApp.xcworkspace -scheme Staging -configuration Release -sdk iphoneos -derivedDataPath build -allowProvisioningUpdates && cd ..",
+    "build:ios-production": "ENVFILE=.env.production cd ios && xcodebuild -workspace DoitPayMobileApp.xcworkspace -scheme Production -configuration Release -sdk iphoneos -derivedDataPath build -allowProvisioningUpdates && cd ..",
+
+    "// --- ARCHIVE (Output: ios/build/Staging.xcarchive & Production.xcarchive) ---": "",
+    "archive:ios-staging": "ENVFILE=.env.staging cd ios && xcodebuild -workspace DoitPayMobileApp.xcworkspace -scheme Staging -configuration Release archive -archivePath build/Staging.xcarchive -allowProvisioningUpdates && cd ..",
+    "archive:ios-production": "ENVFILE=.env.production cd ios && xcodebuild -workspace DoitPayMobileApp.xcworkspace -scheme Production -configuration Release archive -archivePath build/Production.xcarchive -allowProvisioningUpdates && cd ..",
+
+    "// --- GENERATE IPA (Output: ios/build/StagingIPA/ & ProductionIPA/) ---": "",
+    "ipa:ios-staging": "yarn archive:ios-staging && cd ios && xcodebuild -exportArchive -archivePath build/Staging.xcarchive -exportPath build/StagingIPA -exportOptionsPlist ExportOptions.plist -allowProvisioningUpdates && cd ..",
+    "ipa:ios-production": "yarn archive:ios-production && cd ios && xcodebuild -exportArchive -archivePath build/Production.xcarchive -exportPath build/ProductionIPA -exportOptionsPlist ExportOptions.plist -allowProvisioningUpdates && cd .."
   },
   "dependencies": {
     "@expo/html-elements": "^0.10.1",
