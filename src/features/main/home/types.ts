@@ -39,6 +39,7 @@ export interface TransferQuota {
   freeTransferQuotaTotal: number;
   freeTransferQuotaUsed: number;
   transferFee: number;
+  freeQuotaResetType: 'DAILY' | 'LIFETIME';
 }
 
 export interface HomeAggregate {

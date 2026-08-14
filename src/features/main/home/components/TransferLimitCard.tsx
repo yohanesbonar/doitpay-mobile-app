@@ -15,6 +15,7 @@ interface Props {
   transferFee: number;
   maxLimit: number;
   isKycVerified?: boolean;
+  freeQuotaResetType?: TransferQuota['freeQuotaResetType'];
 }
 
 export const TransferLimitCard = ({
@@ -22,6 +23,7 @@ export const TransferLimitCard = ({
   freeTransferQuotaUsed = 0,
   maxLimit = 0,
   isKycVerified = false,
+  freeQuotaResetType = 'DAILY',
 }: Props) => {
   const percentage =
     freeTransferQuotaTotal > 0 ? (freeTransferQuotaUsed / freeTransferQuotaTotal) * 100 : 0;
@@ -69,7 +71,7 @@ export const TransferLimitCard = ({
           <Text style={styles.quotaAmount}>
             {freeTransferQuotaUsed}/{freeTransferQuotaTotal}
           </Text>
-          <Text style={styles.percentageText}>per hari</Text>
+          {freeQuotaResetType === 'DAILY' && <Text style={styles.percentageText}>per hari</Text>}
         </View>
 
         <View style={styles.progressBg} onLayout={handleLayout}>

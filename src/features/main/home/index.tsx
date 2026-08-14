@@ -11,7 +11,11 @@ import { RecentRecipient } from './components/RecentRecipient.tsx';
 import { SearchBar } from './components/SearchBar.tsx';
 import { UnprotectedAccount } from './components/UnprotectedAccount.tsx';
 import { DeletionInProgressBanner } from './components/DeletionInProgressBanner.tsx';
-import { RecentActivitySkeleton, RecentBeneficiarySkeleton, TransferLimitSkeleton } from './components/HomeSkeletons.tsx';
+import {
+  RecentActivitySkeleton,
+  RecentBeneficiarySkeleton,
+  TransferLimitSkeleton,
+} from './components/HomeSkeletons.tsx';
 import { NotificationIconWithBadge } from '@/components/molecules/NotificationIconWithBadge';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { EmailBottomsheet } from '@/components/molecules/EmailBottomsheet';
@@ -135,6 +139,7 @@ export const HomeView = (props: HomeViewProps) => {
                 transferFee={transferQuota?.transferFee ?? 0}
                 maxLimit={transferLimit?.maxAmount ?? 0}
                 isKycVerified={!hasKycPending}
+                freeQuotaResetType={transferQuota?.freeQuotaResetType}
               />
             )}
           </View>
