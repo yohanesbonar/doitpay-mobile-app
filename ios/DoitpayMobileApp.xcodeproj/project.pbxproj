@@ -64,6 +64,7 @@
 		59E6AC80EA2E4D4DBDC78C30 /* Switzer-Medium.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Switzer-Medium.otf"; path = "../src/assets/fonts/Switzer-Medium.otf"; sourceTree = "<group>"; };
 		618DD59567204DFCBEF0574F /* Switzer-MediumItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Switzer-MediumItalic.otf"; path = "../src/assets/fonts/Switzer-MediumItalic.otf"; sourceTree = "<group>"; };
 		6770B2290AED41EDB3719194 /* Manrope-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Regular.ttf"; path = "../src/assets/fonts/Manrope-Regular.ttf"; sourceTree = "<group>"; };
+		6A8BCD2A94E83D88216A27A1 /* Pods-DoitpayMobileApp.stagingrelease.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DoitpayMobileApp.stagingrelease.xcconfig"; path = "Target Support Files/Pods-DoitpayMobileApp/Pods-DoitpayMobileApp.stagingrelease.xcconfig"; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = DoitpayMobileApp/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = DoitpayMobileApp/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		81C3BBCE1DF74B5EBD9419B6 /* Switzer-Semibold.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Switzer-Semibold.otf"; path = "../src/assets/fonts/Switzer-Semibold.otf"; sourceTree = "<group>"; };
@@ -199,6 +200,7 @@
 			children = (
 				1DDD042D2E518E1414647614 /* Pods-DoitpayMobileApp.debug.xcconfig */,
 				49EA8A44587D77639AA98613 /* Pods-DoitpayMobileApp.release.xcconfig */,
+				6A8BCD2A94E83D88216A27A1 /* Pods-DoitpayMobileApp.stagingrelease.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -502,25 +504,6 @@
 			};
 			name = Release;
 		};
-		B69229D52F8F4BA200E1FF31 /* StagingRelease */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 49EA8A44587D77639AA98613 /* Pods-DoitpayMobileApp.release.xcconfig */;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = DoitpayMobileApp/DoitpayMobileApp.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 8643BUJ833;
-				INFOPLIST_FILE = DoitpayMobileApp/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
-				PRODUCT_BUNDLE_IDENTIFIER = co.doitpay.app;
-				PRODUCT_NAME = DoitpayMobileApp;
-				SWIFT_VERSION = 5.0;
-			};
-			name = StagingRelease;
-		};
 		83CBBA201A601CBA00E9B192 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = B653DFD42F90C2BB0002E2E2 /* Config.xcconfig */;
@@ -715,12 +698,42 @@
 			};
 			name = Release;
 		};
+		B69229D52F8F4BA200E1FF31 /* StagingRelease */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6A8BCD2A94E83D88216A27A1 /* Pods-DoitpayMobileApp.stagingrelease.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = DoitpayMobileApp/DoitpayMobileApp.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8643BUJ833;
+				INFOPLIST_FILE = DoitpayMobileApp/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				PRODUCT_BUNDLE_IDENTIFIER = co.doitpay.app;
+				PRODUCT_NAME = DoitpayMobileApp;
+				SWIFT_VERSION = 5.0;
+			};
+			name = StagingRelease;
+		};
 		B69229D62F8F4BA200E1FF31 /* StagingRelease */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = B653DFD42F90C2BB0002E2E2 /* Config.xcconfig */;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CLANG_ENABLE_MODULES = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				OTHER_CFLAGS = (
+					"$(inherited)",
+					"-DRCT_REMOVE_LEGACY_ARCH=1",
+				);
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(inherited)",
+					"-DRCT_REMOVE_LEGACY_ARCH=1",
+				);
+				PODFILE_DIR = "$(SRCROOT)";
+				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
 				USE_HERMES = true;
