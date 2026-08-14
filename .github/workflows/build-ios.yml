@@ -1,0 +1,300 @@
+name: Build iOS
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: "GitHub Environment name (e.g. staging, production)"
+        required: true
+        type: string
+
+      xcode_scheme:
+        description: "Xcode Scheme (e.g. Staging, Production)"
+        required: true
+        type: string
+
+      env_file_name:
+        description: "Name of the environment file to create (e.g. .env.staging)"
+        required: true
+        type: string
+
+      env_file_content:
+        description: "Full content of the environment file (multiline string)"
+        required: true
+        type: string
+
+env:
+  FIREBASE_TOOLS_VERSION: "15.25.1"
+  FIREBASE_APP_ID: "1:302181848541:ios:f7d80fb07eb2ca5b3fd234"
+  FIREBASE_GROUPS: "tech-&-pm"
+
+jobs:
+  build-ios:
+    runs-on: macos-26
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+
+      - name: Get commit info
+        id: commit
+        run: |
+          echo "sha=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+          echo "subject=$(git log -1 --pretty=%s)" >> "$GITHUB_OUTPUT"
+          {
+            echo "body<<EOF"
+            git log -1 --pretty=%B
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Notify Discord - Started
+        uses: tsickert/discord-webhook@v7.0.0
+        with:
+          username: GitHub
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
+          embed-title: "🚀 Building iOS Started"
+          embed-color: 3447003
+          embed-url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          embed-description: |
+            **Environment:** ${{ inputs.environment }}
+            **Branch:** `${{ github.ref_name }}`
+            **Actor:** ${{ github.actor }}
+            **Commit:** `${{ steps.commit.outputs.sha }}`
+            **Commit Message:**
+            ```
+            ${{ steps.commit.outputs.subject }}
+            ```
+          embed-footer-text: "${{ github.repository }}"
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: yarn
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Install CocoaPods
+        run: |
+          cd ios
+          pod install
+
+      - name: Install Apple certificate
+        env:
+          IOS_CERTIFICATE_BASE64: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
+          IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+        run: |
+          CERTIFICATE_PATH="$RUNNER_TEMP/certificate.p12"
+          KEYCHAIN_PATH="$RUNNER_TEMP/build.keychain-db"
+
+          echo "$IOS_CERTIFICATE_BASE64" | base64 --decode > "$CERTIFICATE_PATH"
+
+          security create-keychain \
+            -p "" \
+            "$KEYCHAIN_PATH"
+
+          security set-keychain-settings \
+            -lut 21600 \
+            "$KEYCHAIN_PATH"
+
+          security unlock-keychain \
+            -p "" \
+            "$KEYCHAIN_PATH"
+
+          security import "$CERTIFICATE_PATH" \
+            -P "$IOS_CERTIFICATE_PASSWORD" \
+            -A \
+            -t cert \
+            -f pkcs12 \
+            -k "$KEYCHAIN_PATH"
+
+          security list-keychain \
+            -d user \
+            -s "$KEYCHAIN_PATH"
+
+          security set-key-partition-list \
+            -S apple-tool:,apple: \
+            -s \
+            -k "" \
+            "$KEYCHAIN_PATH"
+
+      - name: Install provisioning profile
+        env:
+          IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+        run: |
+          PROFILE_PATH="$RUNNER_TEMP/profile.mobileprovision"
+
+          echo "$IOS_PROVISIONING_PROFILE_BASE64" | base64 --decode > "$PROFILE_PATH"
+
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+
+          cp "$PROFILE_PATH" \
+            "$HOME/Library/MobileDevice/Provisioning Profiles/"
+
+          security cms -D -i "$PROFILE_PATH" > "$RUNNER_TEMP/profile.plist"
+
+          echo "=== Provisioning Profile ==="
+          /usr/libexec/PlistBuddy -c "Print :Name" "$RUNNER_TEMP/profile.plist"
+          /usr/libexec/PlistBuddy -c "Print :TeamIdentifier" "$RUNNER_TEMP/profile.plist"
+          /usr/libexec/PlistBuddy -c "Print :Entitlements:application-identifier" "$RUNNER_TEMP/profile.plist"
+          /usr/libexec/PlistBuddy -c "Print :Entitlements:aps-environment" "$RUNNER_TEMP/profile.plist"
+
+
+      - name: Check signing certificate
+        run: |
+          security find-identity \
+            -v \
+            -p codesigning \
+            "$RUNNER_TEMP/build.keychain-db"
+
+      - name: Create Environment File
+        shell: bash
+        run: |
+          cat > "${{ inputs.env_file_name }}" <<'EOF'
+          ${{ inputs.env_file_content }}
+          POSTHOG_API_KEY=${{ secrets.POSTHOG_API_KEY }}
+          EOF
+          chmod 600 "${{ inputs.env_file_name }}"
+
+      - name: Check Xcode signing settings
+        run: |
+          cd ios
+
+          xcodebuild \
+            -workspace DoitPayMobileApp.xcworkspace \
+            -scheme ${{ inputs.xcode_scheme }} \
+            -configuration Release \
+            -showBuildSettings | \
+            grep -E "PRODUCT_BUNDLE_IDENTIFIER|CODE_SIGN|PROVISIONING_PROFILE"
+
+      - name: Archive iOS
+        env:
+          ENVFILE: "${{ inputs.env_file_name }}"
+        run: |
+          cd ios
+
+          xcodebuild \
+            -workspace DoitPayMobileApp.xcworkspace \
+            -scheme ${{ inputs.xcode_scheme }} \
+            -configuration Release \
+            -sdk iphoneos \
+            -archivePath "$RUNNER_TEMP/${{ inputs.xcode_scheme }}.xcarchive" \
+            archive \
+            DEVELOPMENT_TEAM="${{ secrets.APPLE_TEAM_ID }}" \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            PROVISIONING_PROFILE_SPECIFIER="ios-appstore-doitpay"
+
+      - name: Create ExportOptions.plist
+        run: |
+          cat > ios/ExportOptions.plist <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>method</key>
+              <string>app-store</string>
+
+              <key>signingStyle</key>
+              <string>manual</string>
+
+              <key>teamID</key>
+              <string>${{ secrets.APPLE_TEAM_ID }}</string>
+
+              <key>provisioningProfiles</key>
+              <dict>
+                  <key>co.doitpay.app</key>
+                  <string>ios-appstore-doitpay</string>
+              </dict>
+          </dict>
+          </plist>
+          EOF
+
+      - name: Export IPA
+        env:
+          ENVFILE: "${{ inputs.env_file_name }}"
+        run: |
+          cd ios
+
+          xcodebuild \
+            -exportArchive \
+            -archivePath "$RUNNER_TEMP/${{ inputs.xcode_scheme }}.xcarchive" \
+            -exportPath "$RUNNER_TEMP/${{ inputs.xcode_scheme }}IPA" \
+            -exportOptionsPlist ExportOptions.plist
+
+      - name: Show IPA
+        run: |
+          find "$RUNNER_TEMP/${{ inputs.xcode_scheme }}IPA" -name "*.ipa" -print
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools@${{ env.FIREBASE_TOOLS_VERSION }}
+
+      - name: Create GCP Service Account
+        shell: bash
+        run: |
+          echo '${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}' > firebase.json
+
+      - name: Upload IPA to Firebase
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: firebase.json
+        run: |
+          firebase appdistribution:distribute \
+            "${{ runner.temp }}/${{ inputs.xcode_scheme }}IPA/DoitpayMobileApp.ipa" \
+            --app "${{ env.FIREBASE_APP_ID }}" \
+            --groups "${{ env.FIREBASE_GROUPS }}" \
+            --release-notes "[${{ inputs.environment }}]
+          Build: #${{ github.run_number }}
+          Branch: ${{ github.ref_name }}
+          Triggered by: @${{ github.actor }}
+          Commit: ${{ steps.commit.outputs.sha }}
+          Message:
+          ${{ steps.commit.outputs.body }}
+          Workflow:
+          ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          "
+
+      - name: Notify Success
+        if: success()
+        uses: tsickert/discord-webhook@v7.0.0
+        with:
+          username: GitHub
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
+          embed-title: "✅ Building iOS Finished"
+          embed-color: 3066993
+          embed-url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          embed-description: |
+            **Environment:** ${{ inputs.environment }}
+            **Branch:** `${{ github.ref_name }}`
+            **Actor:** ${{ github.actor }}
+            **Commit:** `${{ steps.commit.outputs.sha }}`
+            **Commit Message:**
+            ```
+            ${{ steps.commit.outputs.subject }}
+            ```
+          embed-footer-text: "${{ github.repository }}"
+
+      - name: Notify Failure
+        if: failure()
+        uses: tsickert/discord-webhook@v7.0.0
+        with:
+          username: GitHub
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
+          embed-title: "❌ Building iOS Failed"
+          embed-color: 15158332
+          embed-url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          embed-description: |
+            **Environment:** ${{ inputs.environment }}
+            **Branch:** `${{ github.ref_name }}`
+            **Actor:** ${{ github.actor }}
+            **Commit:** `${{ steps.commit.outputs.sha }}`
+            **Commit Message:**
+            ```
+            ${{ steps.commit.outputs.subject }}
+            ```
+          embed-footer-text: "${{ github.repository }}"
