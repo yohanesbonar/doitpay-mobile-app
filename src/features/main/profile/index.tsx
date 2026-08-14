@@ -14,7 +14,6 @@ import { KycCard } from './components/KycCard';
 import { ProfileCardSkeleton } from './components/ProfileCardSkeleton';
 import { KycCardSkeleton } from './components/KycCardSkeleton';
 import { useGetLimitMeQuery } from '@/features/user/hooks/useGetLimitMeQuery';
-import { UserLimitType } from '@/features/user/types';
 import DeviceInfo from 'react-native-device-info';
 import { LogoutConfirmationModal } from './components/LogoutConfirmationModal';
 
@@ -48,9 +47,7 @@ export const Profile = () => {
           <KycCardSkeleton />
         ) : (
           <KycCard
-            limitAmount={
-              limitData.data.items?.find((i) => i.type === UserLimitType.TRANSFER)?.amountLimit || 0
-            }
+            limitAmount={limitData?.data?.dailyLimitTotal || 0}
             kycStatus={profileData.data.kycStatus}
           />
         )}

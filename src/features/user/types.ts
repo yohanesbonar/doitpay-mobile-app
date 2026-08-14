@@ -15,11 +15,13 @@ export type User = {
 };
 
 export type UserLimit = {
-  amountLimit: number;
-  amountUsed: number;
-  countLimit: number;
-  countUsed: number;
-  type: UserLimitType;
+  dailyLimitTotal: number;
+  dailyLimitUsed: number;
+  fee: number;
+  feePerTransaction: number;
+  freeQuotaRemaining: number;
+  freeQuotaTotal: number;
+  isFreeTransfer: boolean;
 };
 
 export enum UserStatus {
