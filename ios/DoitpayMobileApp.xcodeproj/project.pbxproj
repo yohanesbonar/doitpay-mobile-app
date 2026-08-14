@@ -502,6 +502,25 @@
 			};
 			name = Release;
 		};
+		B69229D52F8F4BA200E1FF31 /* StagingRelease */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 49EA8A44587D77639AA98613 /* Pods-DoitpayMobileApp.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = DoitpayMobileApp/DoitpayMobileApp.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8643BUJ833;
+				INFOPLIST_FILE = DoitpayMobileApp/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				PRODUCT_BUNDLE_IDENTIFIER = co.doitpay.app;
+				PRODUCT_NAME = DoitpayMobileApp;
+				SWIFT_VERSION = 5.0;
+			};
+			name = StagingRelease;
+		};
 		83CBBA201A601CBA00E9B192 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = B653DFD42F90C2BB0002E2E2 /* Config.xcconfig */;
@@ -696,6 +715,18 @@
 			};
 			name = Release;
 		};
+		B69229D62F8F4BA200E1FF31 /* StagingRelease */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = B653DFD42F90C2BB0002E2E2 /* Config.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				SDKROOT = iphoneos;
+				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
+				USE_HERMES = true;
+			};
+			name = StagingRelease;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -704,6 +735,7 @@
 			buildConfigurations = (
 				13B07F941A680F5B00A75B9A /* Debug */,
 				13B07F951A680F5B00A75B9A /* Release */,
+				B69229D52F8F4BA200E1FF31 /* StagingRelease */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -713,6 +745,7 @@
 			buildConfigurations = (
 				83CBBA201A601CBA00E9B192 /* Debug */,
 				83CBBA211A601CBA00E9B192 /* Release */,
+				B69229D62F8F4BA200E1FF31 /* StagingRelease */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

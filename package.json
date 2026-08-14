@@ -31,11 +31,11 @@
     "ios:clean": "rm -rf ios/build && cd ios && xcodebuild clean && cd ..",
 
     "// --- COMPILE CHECK (Output: ios/build/Build/Products/Release-iphoneos/) ---": "",
-    "build:ios-staging": "ENVFILE=.env.staging cd ios && xcodebuild -workspace DoitPayMobileApp.xcworkspace -scheme Staging -configuration Release -sdk iphoneos -derivedDataPath build -allowProvisioningUpdates CODE_SIGN_ENTITLEMENTS=DoitpayMobileApp/DoitpayMobileApp.entitlements && cd ..",
+    "build:ios-staging": "ENVFILE=.env.staging cd ios && xcodebuild -workspace DoitPayMobileApp.xcworkspace -scheme Staging -configuration StagingRelease -sdk iphoneos -derivedDataPath build -allowProvisioningUpdates && cd ..",
     "build:ios-production": "ENVFILE=.env.production cd ios && xcodebuild -workspace DoitPayMobileApp.xcworkspace -scheme Production -configuration Release -sdk iphoneos -derivedDataPath build -allowProvisioningUpdates CODE_SIGN_ENTITLEMENTS=DoitpayMobileApp/DoitpayMobileApp.production.entitlements && cd ..",
 
     "// --- ARCHIVE (Output: ios/build/Staging.xcarchive & Production.xcarchive) ---": "",
-    "archive:ios-staging": "ENVFILE=.env.staging cd ios && xcodebuild -workspace DoitPayMobileApp.xcworkspace -scheme Staging -configuration Release archive -archivePath build/Staging.xcarchive -allowProvisioningUpdates CODE_SIGN_ENTITLEMENTS=DoitpayMobileApp/DoitpayMobileApp.entitlements && cd ..",
+    "archive:ios-staging": "ENVFILE=.env.staging cd ios && xcodebuild -workspace DoitPayMobileApp.xcworkspace -scheme Staging -configuration StagingRelease archive -archivePath build/Staging.xcarchive -allowProvisioningUpdates && cd ..",
     "archive:ios-production": "ENVFILE=.env.production cd ios && xcodebuild -workspace DoitPayMobileApp.xcworkspace -scheme Production -configuration Release archive -archivePath build/Production.xcarchive -allowProvisioningUpdates CODE_SIGN_ENTITLEMENTS=DoitpayMobileApp/DoitpayMobileApp.production.entitlements && cd ..",
 
     "// --- GENERATE IPA (Output: ios/build/StagingIPA/ & ProductionIPA/) ---": "",
