@@ -11,8 +11,8 @@
     "android-production": "export ENVFILE=.env.production && npx react-native run-android --mode productiondebug",
     "android-production:clean": "export ENVFILE=.env.production && cd android && ./gradlew clean && cd .. && npx react-native run-android --mode productiondebug",
     "android-production-release": "export ENVFILE=.env.production && npx react-native run-android --mode productionrelease",
-    "ios-staging": "export ENVFILE=.env.staging  && npx react-native run-ios --scheme Staging --simulator=\"iPhone 17 Pro\"",
-    "ios-production": "export ENVFILE=.env.production  && npx react-native run-ios --scheme Production --simulator=\"iPhone 17 Pro\"",
+    "ios-staging": "export ENVFILE=.env.staging  && npx react-native run-ios --scheme Staging --mode Debug --simulator=\"iPhone 17 Pro\"",
+    "ios-production": "export ENVFILE=.env.production  && npx react-native run-ios --scheme Production --mode Release --simulator=\"iPhone 17 Pro\"",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
@@ -31,12 +31,12 @@
     "ios:clean": "rm -rf ios/build && cd ios && xcodebuild clean && cd ..",
 
     "// --- COMPILE CHECK (Output: ios/build/Build/Products/Release-iphoneos/) ---": "",
-    "build:ios-staging": "ENVFILE=.env.staging cd ios && xcodebuild -workspace DoitPayMobileApp.xcworkspace -scheme Staging -configuration Release -sdk iphoneos -derivedDataPath build -allowProvisioningUpdates && cd ..",
-    "build:ios-production": "ENVFILE=.env.production cd ios && xcodebuild -workspace DoitPayMobileApp.xcworkspace -scheme Production -configuration Release -sdk iphoneos -derivedDataPath build -allowProvisioningUpdates && cd ..",
+    "build:ios-staging": "ENVFILE=.env.staging cd ios && xcodebuild -workspace DoitPayMobileApp.xcworkspace -scheme Staging -configuration Release -sdk iphoneos -derivedDataPath build -allowProvisioningUpdates CODE_SIGN_ENTITLEMENTS=DoitpayMobileApp/DoitpayMobileApp.entitlements && cd ..",
+    "build:ios-production": "ENVFILE=.env.production cd ios && xcodebuild -workspace DoitPayMobileApp.xcworkspace -scheme Production -configuration Release -sdk iphoneos -derivedDataPath build -allowProvisioningUpdates CODE_SIGN_ENTITLEMENTS=DoitpayMobileApp/DoitpayMobileApp.production.entitlements && cd ..",
 
     "// --- ARCHIVE (Output: ios/build/Staging.xcarchive & Production.xcarchive) ---": "",
-    "archive:ios-staging": "ENVFILE=.env.staging cd ios && xcodebuild -workspace DoitPayMobileApp.xcworkspace -scheme Staging -configuration Release archive -archivePath build/Staging.xcarchive -allowProvisioningUpdates && cd ..",
-    "archive:ios-production": "ENVFILE=.env.production cd ios && xcodebuild -workspace DoitPayMobileApp.xcworkspace -scheme Production -configuration Release archive -archivePath build/Production.xcarchive -allowProvisioningUpdates && cd ..",
+    "archive:ios-staging": "ENVFILE=.env.staging cd ios && xcodebuild -workspace DoitPayMobileApp.xcworkspace -scheme Staging -configuration Release archive -archivePath build/Staging.xcarchive -allowProvisioningUpdates CODE_SIGN_ENTITLEMENTS=DoitpayMobileApp/DoitpayMobileApp.entitlements && cd ..",
+    "archive:ios-production": "ENVFILE=.env.production cd ios && xcodebuild -workspace DoitPayMobileApp.xcworkspace -scheme Production -configuration Release archive -archivePath build/Production.xcarchive -allowProvisioningUpdates CODE_SIGN_ENTITLEMENTS=DoitpayMobileApp/DoitpayMobileApp.production.entitlements && cd ..",
 
     "// --- GENERATE IPA (Output: ios/build/StagingIPA/ & ProductionIPA/) ---": "",
     "ipa:ios-staging": "yarn archive:ios-staging && cd ios && xcodebuild -exportArchive -archivePath build/Staging.xcarchive -exportPath build/StagingIPA -exportOptionsPlist ExportOptions.plist -allowProvisioningUpdates && cd ..",
