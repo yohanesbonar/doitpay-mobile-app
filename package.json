@@ -39,8 +39,8 @@
     "archive:ios-production": "ENVFILE=.env.production cd ios && xcodebuild -workspace DoitPayMobileApp.xcworkspace -scheme Doitpay-Production -configuration Release archive -archivePath build/Doitpay-Production.xcarchive -allowProvisioningUpdates CODE_SIGN_ENTITLEMENTS=DoitpayMobileApp/DoitpayMobileApp.production.entitlements && cd ..",
 
     "// --- GENERATE IPA (Output: ios/build/StagingIPA/ & ProductionIPA/) ---": "",
-    "ipa:ios-staging": "yarn archive:ios-staging && cd ios && xcodebuild -exportArchive -archivePath build/Doitpay-Staging.xcarchive -exportPath build/Doitpay-StagingIPA -exportOptionsPlist ExportOptions.plist -allowProvisioningUpdates && cd ..",
-    "ipa:ios-production": "yarn archive:ios-production && cd ios && xcodebuild -exportArchive -archivePath build/Doitpay-Production.xcarchive -exportPath build/Doitpay-ProductionIPA -exportOptionsPlist ExportOptions.plist -allowProvisioningUpdates && cd .."
+    "ipa:ios-staging": "yarn archive:ios-staging && cd ios && xcodebuild -exportArchive -archivePath build/Doitpay-Staging.xcarchive -exportPath build/Doitpay-StagingIPA -exportOptionsPlist ExportOptions-Staging.plist -allowProvisioningUpdates && mv build/Doitpay-StagingIPA/DoitpayMobileApp.ipa build/Doitpay-StagingIPA/DoitpayMobileAppStaging.ipa && cd ..",
+    "ipa:ios-production": "yarn archive:ios-production && cd ios && xcodebuild -exportArchive -archivePath build/Doitpay-Production.xcarchive -exportPath build/Doitpay-ProductionIPA -exportOptionsPlist ExportOptions-Production.plist -allowProvisioningUpdates && mv build/Doitpay-ProductionIPA/DoitpayMobileApp.ipa build/Doitpay-ProductionIPA/DoitpayMobileAppProduction.ipa && cd .."
   },
   "dependencies": {
     "@expo/html-elements": "^0.10.1",
