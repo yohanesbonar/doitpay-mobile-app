@@ -209,6 +209,7 @@ jobs:
             ```
             ${{ steps.commit.outputs.subject }}
             ```
+            **Ready to test via Firebase App Distribution**
           embed-footer-text: "${{ github.repository }}"
 
       - name: Notify Failure

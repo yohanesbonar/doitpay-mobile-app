@@ -23,6 +23,18 @@ on:
         required: true
         type: string
 
+      upload_firebase:
+        description: "Upload to Firebase App Distribution"
+        required: true
+        type: boolean
+        default: true
+
+      upload_testflight:
+        description: "Upload to TestFlight"
+        required: true
+        type: boolean
+        default: false
+
 env:
   FIREBASE_TOOLS_VERSION: "15.25.1"
   FIREBASE_APP_ID: "1:302181848541:ios:f7d80fb07eb2ca5b3fd234"
@@ -189,7 +201,8 @@ jobs:
             DEVELOPMENT_TEAM="${{ secrets.APPLE_TEAM_ID }}" \
             CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="Apple Distribution" \
-            PROVISIONING_PROFILE_SPECIFIER="ios-appstore-doitpay"
+            PROVISIONING_PROFILE_SPECIFIER="ios-appstore-doitpay" \
+            CURRENT_PROJECT_VERSION="${{ github.run_number }}"
 
       - name: Create ExportOptions.plist
         run: |
@@ -233,14 +246,17 @@ jobs:
           find "$RUNNER_TEMP/${{ inputs.xcode_scheme }}IPA" -name "*.ipa" -print
 
       - name: Install Firebase CLI
+        if: ${{ inputs.upload_firebase }}
         run: npm install -g firebase-tools@${{ env.FIREBASE_TOOLS_VERSION }}
 
       - name: Create GCP Service Account
+        if: ${{ inputs.upload_firebase }}
         shell: bash
         run: |
           echo '${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}' > firebase.json
 
       - name: Upload IPA to Firebase
+        if: ${{ inputs.upload_firebase }}
         env:
           GOOGLE_APPLICATION_CREDENTIALS: firebase.json
         run: |
@@ -259,6 +275,23 @@ jobs:
           ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           "
 
+      - name: Upload to TestFlight
+        if: ${{ inputs.upload_testflight }}
+        env:
+          API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          API_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/.appstoreconnect/private_keys
+          printf '%s' "$API_PRIVATE_KEY" \
+            > ~/.appstoreconnect/private_keys/AuthKey_${API_KEY_ID}.p8
+          xcrun altool \
+            --upload-app \
+            --type ios \
+            --file "${{ runner.temp }}/${{ inputs.xcode_scheme }}IPA/DoitpayMobileApp.ipa" \
+            --apiKey "$API_KEY_ID" \
+            --apiIssuer "$API_ISSUER_ID"
+
       - name: Notify Success
         if: success()
         uses: tsickert/discord-webhook@v7.0.0
@@ -270,6 +303,7 @@ jobs:
           embed-url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           embed-description: |
             **Environment:** ${{ inputs.environment }}
+            **Build number:** #${{ github.run_number }}
             **Branch:** `${{ github.ref_name }}`
             **Actor:** ${{ github.actor }}
             **Commit:** `${{ steps.commit.outputs.sha }}`
@@ -277,6 +311,7 @@ jobs:
             ```
             ${{ steps.commit.outputs.subject }}
             ```
+            **Ready to test via TestFlight / Firebase App Distribution**
           embed-footer-text: "${{ github.repository }}"
 
       - name: Notify Failure
