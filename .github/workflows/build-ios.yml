@@ -97,6 +97,9 @@ jobs:
           cd ios
           pod install
 
+      - name: Clean Old Provisioning Profiles
+        run: rm -rf $HOME/Library/MobileDevice/Provisioning\ Profiles/*
+
       - name: Install Apple certificate
         env:
           IOS_CERTIFICATE_BASE64: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
