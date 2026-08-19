@@ -1,269 +1,126 @@
-## Features
+# Doitpay Mobile App
 
-- ⚡ Built with React Native 0.85.0
-- ⚛️ React 19.2.0 support
-- 🧩 TypeScript for type safety
-- 🧭 React Navigation v7 with ready-to-use navigation structure
-- 🌗 Dark/Light theme support with ThemeProvider
-- 🌐 Internationalization (i18n) with language switching
-- 💾 MMKV storage for fast data persistence
-- 🔄 State management with Zustand
-- 🛡️ Safe Area handling
-- 📱 Well-structured project architecture
-- 🧹 ESLint and prettier configuration for code quality
-- 📏 Consistent metrics system for responsive layouts
-- 🎨 Vector Icons integration for beautiful UI elements
-- 🧰 Pre-configured UI components ready to use
-- 🚀 New Architecture (Fabric & TurboModules) ready
+React Native (New Architecture) mobile payment app — onboarding & KYC, transfers, transaction history, disputes, notifications, and profile management, with staging/production environments for both Android and iOS.
 
-## Project Structure
+## Prerequisites
 
-```
-src/
-├── assets/           # Fonts, images, and other static files
-│   └── fonts/        # Custom fonts
-├── components/       # Reusable UI components
-│   ├── Button/       # Button component
-│   ├── SizedBox/     # Spacing component
-│   └── TextField/    # Text input component
-├── i18n/             # Internationalization
-│   ├── locales/      # Translation files
-│   └── initI18next.ts # i18n configuration
-├── navigation/       # Navigation setup
-│   ├── page-navigators/  # Individual navigators
-│   │   ├── HomeStackNavigator.tsx
-│   │   ├── AppNavigator.tsx
-│   │   └── RootNavigator.tsx
-├── screens/          # App screens
-│   └── home/         # Home screen
-│       ├── index.tsx # Screen component
-│       └── styles.ts # Screen styles
-├── storage/          # Storage utilities
-│   └── index.ts      # MMKV setup
-├── store/            # State management
-│   └── useStore.ts   # Zustand store
-└── theme/            # Theming system
-    ├── colors.ts     # Color palette
-    ├── metrics.ts    # Consistent sizing
-    ├── ThemeProvider.tsx # Theme context
-    └── typography.ts # Text styles
-```
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js >= 20
+- Node.js >= 22.11.0
+- Yarn
 - JDK 17 or newer
-- Android Studio (for Android development)
-- Xcode (for iOS development)
-- CocoaPods (for iOS dependencies)
-- Ruby (for iOS development)
+- Android Studio, with the Android SDK installed and `ANDROID_HOME`/`JAVA_HOME` set in your shell profile ([RN environment setup guide](https://reactnative.dev/docs/set-up-your-environment))
+- Xcode with Command Line Tools, and at least one iOS Simulator installed
+- Ruby & Bundler + CocoaPods (for iOS dependencies)
 
-### Development Commands
+Firebase config files (`android/app/google-services.json`, `ios/GoogleService-Info.plist`) and the Android debug keystore are already committed to this repo, so no extra setup is needed for a debug build.
 
-Once your project is set up, you can use these commands:
+## Setup
+
+```bash
+# 1. Install JS dependencies
+yarn install
+
+# 2. Install Ruby gems (CocoaPods, fastlane, etc.)
+bundle install
+
+# 3. Install iOS pods
+cd ios && bundle exec pod install && cd ..
+```
+
+### Environment files
+
+The app uses [`react-native-config`](https://github.com/luggit/react-native-config). Create these files at the project root (ask a teammate for values, or copy from an existing teammate's setup):
+
+- `.env` — local/default
+- `.env.staging`
+- `.env.production`
+
+Each needs:
+
+```
+API_URL=...
+APP_NAME=...
+```
+
+## Running the app
 
 ```bash
 # Start Metro bundler
 yarn start
 
-# Run on iOS (iPhone 17 Pro simulator by default)
-yarn ios
+# Run on Android (staging)
+yarn android-staging
 
-# Run on Android
-yarn android
+# Run on Android (staging), clean build
+yarn android-staging:clean
 
-# Install iOS dependencies (if needed later)
-cd ios && bundle exec pod install && cd ..
+# Run on Android (production)
+yarn android-production
 
-# Link new font assets (if you add fonts later)
-npx react-native-asset
+# Run on iOS (staging) — iPhone 17 Pro simulator by default
+yarn ios-staging
+
+# Run on iOS (production)
+yarn ios-production
 ```
 
-> **Note:** The iOS command runs on iPhone 17 Pro simulator by default. You can customize this in `package.json`.
+> To use a different simulator, edit the `--simulator` flag in the `ios-staging` / `ios-production` scripts in `package.json`.
 
-## Customization
+## Other useful commands
 
-### Customizing the Simulator
+```bash
+yarn lint          # lint
+yarn lint:fix       # lint and auto-fix
+yarn format         # prettier
+yarn test           # jest
 
-In `package.json`, you can change the iOS simulator by modifying:
-
-```json
-"ios": "react-native run-ios --simulator=\"iPhone 17 Pro\" --terminal powershell"
+npx react-native-asset   # link new font/asset files after adding them
 ```
 
-Replace "iPhone 17 Pro" with your preferred simulator device.
+## Building release binaries
 
-### Changing Theme Colors
+> These are not needed to just run the app in development — only for producing signed release builds. They won't run as-is on a fresh clone; see the notes below.
 
-Edit the theme color palette in `src/theme/colors.ts` to match your brand's color scheme.
+```bash
+# Android APK
+yarn build:android-staging
+yarn build:android-production
 
-### Using the Metrics System
+# Android App Bundle (AAB)
+yarn build-bundle:android-staging:clean
+yarn build-bundle:android-production:clean
 
-The boilerplate includes a powerful metrics system in `src/theme/metrics.ts` that provides consistent spacing, sizing, and responsive values across your app:
+# iOS archive (.xcarchive)
+yarn archive:ios-staging
+yarn archive:ios-production
 
-```typescript
-// Example usage in your styles
-import {metrics} from '../theme/metrics';
-import typography from "./typography";
-import {colors} from "./colors";
-
-const styles = StyleSheet.create({
-    container: {
-        paddingHorizontal: metrics.scale(10),
-        marginBottom: metrics.verticalScale(15),
-    },
-    title: {
-        fontSize: metrics.moderateScale(14),
-        fontFamily: typography.BOLD,
-        color: colors.primary,
-    },
-});
+# iOS IPA export
+yarn ipa:ios-staging
+yarn ipa:ios-production
 ```
 
-This ensures your UI looks consistent across different device sizes and orientations.
-
-### Navigation Structure
-
-This boilerplate comes with a fully configured navigation system using React Navigation v7, including:
-
-- Stack Navigator for screen transitions
-- Bottom Tab Navigator for main navigation
-- Safe Area integrated navigation
-- Type-safe navigation with TypeScript
-
-Simply start using the pre-configured navigators or extend them for your specific needs.
-
-### Vector Icons Usage
-
-The project includes React Native Vector Icons, giving you access to thousands of customizable icons:
-
-```typescript
-import Icon from 'react-native-vector-icons/MaterialIcons';
-
-// In your component
-<Icon name="home" size={metrics.moderateScale(24)} color="#000000" />
-```
-
-### Font System
-
-This boilerplate comes with the complete Montserrat font family pre-installed with various weights and styles:
-
-- Manrope-Regular
-- Manrope-Bold
-- Manrope-ExtraLight
-- Manrope-ExtraBold
-- Manrope-Medium
-- Manrope-Light
-- Manrope-SemiBold
-
-The `setup` script (mentioned in the Installation section) automatically links these fonts for both Android and iOS platforms, making them immediately ready to use.
-
-#### Using the built-in fonts:
-
-```typescript
-import {typography} from '../theme/typography';
-import metrics from "./metrics";
-
-const styles = StyleSheet.create({
-    title: {
-        fontFamily: typography.BOLD,
-        fontSize: metrics.moderateScale(14),
-    },
-    body: {
-        fontFamily: typography.REGULAR,
-        fontSize: metrics.moderateScale(12),
-    }
-});
-```
-
-#### Adding Custom Fonts
-
-If you want to use different fonts:
-
-1. Add your font files to `src/assets/fonts/`
-2. Run `npx react-native-asset` to link them automatically
-3. Update `src/theme/typography.ts` to include your new fonts
-4. Run `cd ios && pod install && cd ..` for iOS
-
-### Adding Translation Keys
-
-Add or edit translation keys in the locale files located in `src/i18n/locales/`.
+- **Android release** signing needs `RELEASE_STORE_FILE`, `RELEASE_STORE_PASSWORD`, `RELEASE_KEY_ALIAS`, `RELEASE_KEY_PASSWORD` (as env vars, or filled in in `android/gradle.properties`) plus the actual release keystore file — none of these are in the repo, ask a teammate.
+- **iOS IPA export** needs `ios/ExportOptions.plist`, which also isn't in the repo yet — ask a teammate or create one for your Apple signing setup before running `yarn ipa:ios-*`.
 
 ## Troubleshooting
 
-### iOS Build Issues
-
-If you encounter "Could not build module" errors during iOS build, follow these steps:
+### iOS "Could not build module" errors
 
 ```bash
-# 1. Clean pod cache
 cd ios
 pod cache clean --all
-
-# 2. Remove Podfile.lock and Pods folder
 rm -rf Podfile.lock Pods
-
-# 3. Update pod repo
 pod repo update
-
-# 4. Reinstall pods
-pod install
-
-# 5. Return to root and clear Metro cache
+bundle exec pod install
 cd ..
 yarn start --reset-cache
 ```
 
-**In Xcode:**
-1. Close Xcode
-2. Clean Derived Data: `rm -rf ~/Library/Developer/Xcode/DerivedData/*`
-3. Reopen Xcode
-4. Product → Clean Build Folder (⇧⌘K)
+In Xcode: Close Xcode → clean Derived Data (`rm -rf ~/Library/Developer/Xcode/DerivedData/*`) → reopen → Product → Clean Build Folder (⇧⌘K).
 
-The Podfile is already configured with proper deployment target settings for React Native 0.83.0.
-
-## Project Setup
-
-### Setup Script
-
-The boilerplate includes a convenient setup script that automates the project initialization process and supports project renaming. To use it, add this script to your package.json:
-
-```json
-"scripts": {
-  "setup": "node setup.js",
-  // other scripts...
-}
-```
-
-The enhanced `setup.js` file supports command line arguments for project renaming:
+### Android build issues
 
 ```bash
-# Setup with project renaming
-yarn setup --project-name "YourAppName" --bundle-name com.yourcompany.yourapp
-
-# Setup without renaming
-yarn setup
-```
-
-The setup script includes:
-- Command line argument parsing for project renaming
-- Automatic react-native-rename execution
-- Dependency installation
-- Font asset linking
-- iOS pod installation
-- Complete project configuration
-
-Also, create a `react-native.config.js` file in your project root:
-
-```javascript
-// react-native.config.js
-module.exports = {
-  project: {
-    ios: {},
-    android: {},
-  },
-  assets: ['./src/assets/fonts/'],
-};
+yarn clean:android
+# or, for a full reset (removes node_modules and yarn.lock too):
+yarn clean-run-android
 ```
