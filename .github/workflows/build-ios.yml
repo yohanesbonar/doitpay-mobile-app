@@ -61,24 +61,24 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
-      - name: Notify Discord - Started
-        uses: tsickert/discord-webhook@v7.0.0
-        with:
-          username: GitHub
-          webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
-          embed-title: "🚀 Building iOS Started"
-          embed-color: 3447003
-          embed-url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          embed-description: |
-            **Environment:** ${{ inputs.environment }}
-            **Branch:** `${{ github.ref_name }}`
-            **Actor:** ${{ github.actor }}
-            **Commit:** `${{ steps.commit.outputs.sha }}`
-            **Commit Message:**
-            ```
-            ${{ steps.commit.outputs.subject }}
-            ```
-          embed-footer-text: "${{ github.repository }}"
+      # - name: Notify Discord - Started
+      #   uses: tsickert/discord-webhook@v7.0.0
+      #   with:
+      #     username: GitHub
+      #     webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
+      #     embed-title: "🚀 Building iOS Started"
+      #     embed-color: 3447003
+      #     embed-url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+      #     embed-description: |
+      #       **Environment:** ${{ inputs.environment }}
+      #       **Branch:** `${{ github.ref_name }}`
+      #       **Actor:** ${{ github.actor }}
+      #       **Commit:** `${{ steps.commit.outputs.sha }}`
+      #       **Commit Message:**
+      #       ```
+      #       ${{ steps.commit.outputs.subject }}
+      #       ```
+      #     embed-footer-text: "${{ github.repository }}"
 
       - name: Setup Node
         uses: actions/setup-node@v7
