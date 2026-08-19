@@ -3,11 +3,12 @@ name: Build iOS (Staging)
 on:
   workflow_dispatch:
     inputs:
-      upload_firebase:
-        description: "Upload IPA to Firebase App Distribution"
+      upload:
+        description: "Select upload destination"
         required: true
-        type: boolean
-        default: true
+        type: choice
+        options:
+          - firebase
 
 jobs:
   build:
@@ -23,5 +24,5 @@ jobs:
         POSTHOG_HOST=https://us.i.posthog.com
         POSTHOG_RELEASE_STAGE=internal_release
       upload_testflight: false
-      upload_firebase: ${{ inputs.upload_firebase }}
+      upload_firebase: ${{ inputs.upload == 'firebase' }}
     secrets: inherit

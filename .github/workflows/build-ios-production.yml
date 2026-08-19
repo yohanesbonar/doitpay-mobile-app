@@ -3,16 +3,13 @@ name: Build iOS (Production)
 on:
   workflow_dispatch:
     inputs:
-      upload_firebase:
-        description: "Upload IPA to Firebase App Distribution"
+      upload:
+        description: "Select upload destination"
         required: true
-        type: boolean
-        default: true
-      upload_testflight:
-        description: "Upload IPA to TestFlight"
-        required: true
-        type: boolean
-        default: false
+        type: choice
+        options:
+          - firebase
+          - testflight
 
 jobs:
   build:
@@ -27,6 +24,6 @@ jobs:
         ENABLE_NETWORK_LOGGER=false
         POSTHOG_HOST=https://us.i.posthog.com
         POSTHOG_RELEASE_STAGE=public_release
-      upload_firebase: ${{ inputs.upload_firebase }}
-      upload_testflight: ${{ inputs.upload_testflight }}
+      upload_firebase: ${{ inputs.upload == 'firebase' }}
+      upload_testflight: ${{ inputs.upload == 'testflight' }}
     secrets: inherit
