@@ -146,17 +146,13 @@ jobs:
           PROFILES_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
           PROFILE_PATH="$RUNNER_TEMP/profile.mobileprovision"
 
-          # 1. Bersihkan folder profile lama agar tidak ada stale cache
           rm -rf "$PROFILES_DIR"
           mkdir -p "$PROFILES_DIR"
 
-          # 2. Decode file profile baru dari secret
           echo "$IOS_PROVISIONING_PROFILE_BASE64" | base64 --decode > "$PROFILE_PATH"
 
-          # 3. Copy file profile ke directory sistem
           cp "$PROFILE_PATH" "$PROFILES_DIR/"
 
-          # 4. Debugging & verifikasi metadata profile
           security cms -D -i "$PROFILE_PATH" > "$RUNNER_TEMP/profile.plist"
 
           echo "=== Installed Provisioning Profile Info ==="
