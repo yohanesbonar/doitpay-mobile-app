@@ -349,8 +349,6 @@ const PaymentReceiptView = ({
 
   return (
     <View style={styles.container}>
-      {/* <HeaderToolbar title="" titlePosition="left" titleStyle="regular" /> */}
-
       <ViewShot
         ref={viewShotRef}
         options={{ format: 'png', quality: 1.0 }}

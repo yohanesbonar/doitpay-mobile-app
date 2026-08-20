@@ -60,20 +60,23 @@ export const BankListView = ({
 
   const { mutate: getProfile, isPending: isLoadingProfile } = useGetProfile();
 
-  const fetchBanksFromApi = useCallback((searchQuery: string) => {
-    mutateBanks(
-      { name: searchQuery.trim() },
-      {
-        onSuccess: (data) => {
-          setAllBanks(data?.data?.all || []);
-          setPopularBanks(data?.data?.popular || []);
+  const fetchBanksFromApi = useCallback(
+    (searchQuery: string) => {
+      mutateBanks(
+        { name: searchQuery.trim() },
+        {
+          onSuccess: (data) => {
+            setAllBanks(data?.data?.all || []);
+            setPopularBanks(data?.data?.popular || []);
+          },
+          onError: (error) => {
+            console.error('Error fetching banks:', error);
+          },
         },
-        onError: (error) => {
-          console.error('Error fetching banks:', error);
-        },
-      },
-    );
-  }, [mutateBanks]);
+      );
+    },
+    [mutateBanks],
+  );
 
   const debouncedSearch = useCallback(
     _.debounce((text: string) => {
@@ -143,10 +146,10 @@ export const BankListView = ({
   return (
     <View style={styles.container}>
       <HeaderToolbar
-        title={t('bankList.rekening')}
+        title={t('bankList.sendTo')}
         onPressBack={onPressBack}
         titlePosition={fromTabBar || fromProfile ? 'left' : 'center'}
-        titleStyle="normal"
+        titleStyle="medium"
       />
       <Formik initialValues={{ selectedBank: '', searchQuery: '' }} onSubmit={onPressNext}>
         {({ values, setFieldValue, handleSubmit }) => {
@@ -184,6 +187,7 @@ export const BankListView = ({
                     setFieldValue('searchQuery', text);
                     debouncedSearch(text);
                   }}
+                  placeholderTextColor="#A9A9A9"
                 />
               </View>
 

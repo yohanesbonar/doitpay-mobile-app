@@ -253,10 +253,10 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
               height: 52,
               marginBottom: 16,
             }}>
-            <Search size={20} color="#9CA3AF" />
+            <Search size={20} color="#A9A9A9" />
             <TextInput
               placeholder="Nama, bank atau nomor rekening"
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor="#A9A9A9"
               style={{ flex: 1, marginLeft: 10, fontFamily: 'Switzer-Regular', fontSize: 15 }}
               value={searchQuery}
               onChangeText={(text) => {
@@ -298,7 +298,12 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
                   }}>
                   <Image
                     source={{ uri: item?.logoUrl }}
-                    style={{ width: '100%', height: '100%', resizeMode: 'contain', borderRadius: 8 }}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      resizeMode: 'contain',
+                      borderRadius: 8,
+                    }}
                   />
                 </View>
 

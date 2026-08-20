@@ -244,7 +244,7 @@ const PaymentInstructionView = ({
         title={method === 'receive' ? 'Terima Pembayaran' : 'Pembayaran'}
         onPressBack={onPressBack}
         titlePosition="left"
-        titleStyle="regular"
+        titleStyle="medium"
       />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>

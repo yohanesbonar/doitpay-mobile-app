@@ -225,7 +225,12 @@ export const RequestPaymentView = ({
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <View style={styles.container}>
-          <HeaderToolbar title="Terima Pembayaran" onPressBack={onPressBack} titlePosition="left" />
+          <HeaderToolbar
+            title="Terima Pembayaran"
+            onPressBack={onPressBack}
+            titlePosition="left"
+            titleStyle="medium"
+          />
 
           <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
             <View style={{ paddingHorizontal: 16 }}>

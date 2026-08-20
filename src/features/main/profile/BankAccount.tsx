@@ -149,7 +149,7 @@ export const BankAccounts = ({ navigation }: any) => {
         title="Rekening Bank"
         onPressBack={() => navigation.goBack()}
         titlePosition="left"
-        titleStyle="Regular"
+        titleStyle="medium"
       />
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>

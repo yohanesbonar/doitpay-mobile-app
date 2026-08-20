@@ -365,7 +365,12 @@ export const TransactionDetail = ({
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
-      <HeaderToolbar title="Detail Transaksi" onPressBack={onPressBack} titlePosition="left" />
+      <HeaderToolbar
+        title="Detail Transaksi"
+        onPressBack={onPressBack}
+        titlePosition="left"
+        titleStyle="medium"
+      />
 
       <View style={{ flex: 1 }}>
         {isLoading ? (

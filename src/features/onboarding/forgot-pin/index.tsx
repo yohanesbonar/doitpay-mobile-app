@@ -267,7 +267,7 @@ export const ForgotPin = () => {
               else navigation.goBack();
             }}
             titlePosition="center"
-            titleStyle="regular"
+            titleStyle="medium"
           />
 
           {stepContent()}

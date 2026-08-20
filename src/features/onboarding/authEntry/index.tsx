@@ -616,7 +616,7 @@ export const AuthEntry = ({ route }) => {
                   }
             }
             titlePosition="center"
-            titleStyle="regular"
+            titleStyle="medium"
           />
           {!isLoginState ? (
             <FlowIndicator

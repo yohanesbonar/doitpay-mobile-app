@@ -300,7 +300,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
       <HeaderToolbar
         title={'Jumlah & Konfirmasi'}
         onPressBack={onPressBack}
-        titleStyle="regular"
+        titleStyle="medium"
         titlePosition={'left'}
       />
       <ScrollView contentContainerStyle={{ paddingBottom: 190 }} style={styles.container}>
