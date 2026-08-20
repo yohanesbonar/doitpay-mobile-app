@@ -130,13 +130,25 @@ export const TransactionDetail = ({
   } = STATUS_CONFIG[resolvedStatus] ?? STATUS_CONFIG[TransactionStatus.SUCCESS_TRANSFER];
 
   const isReceiveIn = type === TransactionType.RECEIVE_IN;
+  const isQris = receipt?.paymentMethod?.toUpperCase() === 'QRIS';
 
   const senderName = receipt?.senderName || '-';
   const senderBank = receipt?.paymentMethod || '-';
   const senderLogoUri = receipt?.paymentMethodLogoUrl;
 
+  const maskAccountNumber = (accountNumber?: string) => {
+    if (!accountNumber || accountNumber.length <= 3) {
+      return accountNumber || '';
+    }
+
+    const lastThree = accountNumber.slice(-3);
+    return `${'*'.repeat(accountNumber.length - 3)}${lastThree}`;
+  };
+
   const recipientName = receipt?.beneficiaryName || '-';
-  const recipientBank = receipt?.beneficiaryBankName || '-';
+  const recipientBank = receipt?.beneficiaryAccountNumber
+    ? `${receipt?.beneficiaryBankName || '-'} - ${maskAccountNumber(receipt.beneficiaryAccountNumber)}`
+    : receipt?.beneficiaryBankName || '-';
   const recipientLogoUri = receipt?.beneficiaryBankLogo;
 
   // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -271,9 +283,6 @@ export const TransactionDetail = ({
               )}
             </View>
             <View style={receiptStyles.partyInfo}>
-              <Text style={receiptStyles.partyName} numberOfLines={1}>
-                {senderName}
-              </Text>
               <Text style={receiptStyles.partyBank}>{senderBank}</Text>
             </View>
           </View>

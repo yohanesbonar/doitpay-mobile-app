@@ -216,6 +216,11 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
   }, [amount, methodPayment, bankPayment, isFocused, paymentMethodAvailability.isLoading]);
 
   const onPressConfirm = () => {
+    if (!selectedPurpose) {
+      setIsPurposeModalVisible(true);
+      return;
+    }
+
     trackPostHogEvent('transfer_confirmed', {
       amount_range: getAmountRange(amount),
       destination_bank: bankData?.shortName || bankData?.name || 'unknown',
@@ -274,8 +279,6 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
       isDisable = true;
     } else if (methodPayment == 'VA' && (_.isEmpty(bankPayment) || !amount)) {
       isDisable = true;
-    } else if (!selectedPurpose) {
-      isDisable = true;
     } else if (isLoadingCalculate) {
       isDisable = true;
     } else {
@@ -287,7 +290,6 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
     bankPayment,
     amount,
     numericAmount,
-    selectedPurpose,
     isLoadingCalculate,
     paymentMethodAvailability.isLoading,
     paymentMethodAvailability.hasAnyEnabled,
@@ -356,7 +358,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
         />
 
         <Text style={[styles.label, { marginTop: 10, paddingHorizontal: 20 }]}>
-          Tujuan Transaksi
+          Tujuan Transaksi <Text style={{ color: '#9CA3AF' }}>(wajib)</Text>
         </Text>
         <TouchableOpacity
           style={{

@@ -1,4 +1,4 @@
-import { formatNumber } from '@/utils/Common';
+import { formatShortAmount } from '@/utils/Common';
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 
@@ -58,7 +58,7 @@ const QuickAmount: React.FC<QuickAmountProps> = ({
                 fontSize: 16,
                 color: isSelected ? '#2F80ED' : '#1A1A1A',
               }}>
-              {formatNumber(val)}
+              {formatShortAmount(val)}
             </Text>
           </TouchableOpacity>
         );

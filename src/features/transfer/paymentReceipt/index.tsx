@@ -107,17 +107,30 @@ const PaymentReceiptView = ({
   const effectiveTotalAmount = receiptData?.totalAmount;
   const effectiveBeneficiaryBankName = receiptData?.beneficiaryBankName;
   const effectiveBeneficiaryBankLogo = receiptData?.beneficiaryBankLogo;
+  const effectiveBeneficiaryAccountNumber = receiptData?.beneficiaryAccountNumber;
   const effectiveSenderName = receiptData?.senderName;
   const effectivePaymentMethodName = receiptData?.paymentMethodName;
 
   const isReceiveIn = method === 'receive';
+  const isQris = effectivePaymentMethodLabel?.toUpperCase() === 'QRIS';
 
   const senderName = effectiveSenderName || '-';
   const senderBank = effectivePaymentMethodName || effectivePaymentMethodLabel || '-';
   const senderLogoUri = effectivePaymentMethodLogoUrl;
 
+  const maskAccountNumber = (accountNumber?: string) => {
+    if (!accountNumber || accountNumber.length <= 3) {
+      return accountNumber || '';
+    }
+
+    const lastThree = accountNumber.slice(-3);
+    return `${'*'.repeat(accountNumber.length - 3)}${lastThree}`;
+  };
+
   const recipientName = effectiveRecipient || '-';
-  const recipientBank = effectiveBeneficiaryBankName || '-';
+  const recipientBank = effectiveBeneficiaryAccountNumber
+    ? `${effectiveBeneficiaryBankName || '-'} - ${maskAccountNumber(effectiveBeneficiaryAccountNumber)}`
+    : effectiveBeneficiaryBankName || '-';
   const recipientLogoUri = effectiveBeneficiaryBankLogo;
 
   // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -257,9 +270,6 @@ const PaymentReceiptView = ({
               )}
             </View>
             <View style={receiptStyles.partyInfo}>
-              <Text style={receiptStyles.partyName} numberOfLines={1}>
-                {senderName}
-              </Text>
               <Text style={receiptStyles.partyBank}>{senderBank}</Text>
             </View>
           </View>

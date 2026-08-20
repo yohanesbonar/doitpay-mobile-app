@@ -15,7 +15,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { createStyles } from './styles';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import Button from '../../../components/atoms/Button/index.tsx';
-import { formatNumber } from '@/utils/Common';
+import { formatNumber, formatShortAmount } from '@/utils/Common';
 import { useTranslation } from 'react-i18next';
 import { useReceive } from '@/hooks/useTransferMutation.ts';
 import Toast from 'react-native-toast-message';
@@ -260,7 +260,7 @@ export const RequestPaymentView = ({
             <View style={styles.chipContainer}>
               {quickAmounts.map((item) => (
                 <TouchableOpacity key={item} style={styles.chip} onPress={() => setAmount(item)}>
-                  <Text style={styles.chipText}>{formatNumber(item)}</Text>
+                  <Text style={styles.chipText}>{formatShortAmount(item)}</Text>
                 </TouchableOpacity>
               ))}
             </View>
