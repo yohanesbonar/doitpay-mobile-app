@@ -27,6 +27,7 @@ import Toast from 'react-native-toast-message';
 import { paymentApi, PaymentCalculatePayload } from './api/payment-calculate-api';
 import { Info, TriangleAlert, ChevronDown, Check } from 'lucide-react-native';
 import { usePaymentMethodAvailability } from '../hooks/usePaymentMethodAvailability';
+import { useQuickAmounts } from '../hooks/useQuickAmounts';
 import { getAmountRange, trackPostHogEvent } from '@/analytics/posthog';
 
 interface TransferDetailViewProps {
@@ -89,10 +90,23 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
   const [calculateData, setCalculateData] = useState<any>(null);
   const [isLoadingCalculate, setIsLoadingCalculate] = useState(false);
   const paymentMethodAvailability = usePaymentMethodAvailability('TRANSFER');
+  const quickAmounts = useQuickAmounts('TRANSFER');
 
   const { mutate: postTransfer, isPending: isLoadingTransfer } = useTransfer();
-  const { data: purposesData, isLoading: isLoadingPurposes } = useTransactionPurposes();
+  const {
+    data: purposesData,
+    isLoading: isLoadingPurposes,
+    isError: isPurposesError,
+    error: purposesError,
+  } = useTransactionPurposes();
   const purposes = purposesData?.data?.items ?? [];
+
+  useEffect(() => {
+    if (isPurposesError) {
+      console.log('useTransactionPurposes error', purposesError);
+    }
+  }, [isPurposesError, purposesError]);
+
   const hasTrackedValidAmountRef = useRef(false);
   const hasTrackedReviewViewRef = useRef(false);
 
@@ -335,7 +349,11 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
           </Text>
         ) : null}
 
-        <QuickAmount currentAmount={amount} onAmountPress={(val) => setAmount(val)} />
+        <QuickAmount
+          currentAmount={amount}
+          onAmountPress={(val) => setAmount(val)}
+          amounts={quickAmounts}
+        />
 
         <Text style={[styles.label, { marginTop: 10, paddingHorizontal: 20 }]}>
           Tujuan Transaksi
@@ -417,6 +435,23 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
             <FlatList
               data={purposes}
               keyExtractor={(item) => item.code}
+              ListEmptyComponent={
+                <Text
+                  style={{
+                    fontFamily: 'Switzer-Regular',
+                    fontSize: 14,
+                    color: '#737373',
+                    textAlign: 'center',
+                    paddingVertical: 24,
+                    paddingHorizontal: 20,
+                  }}>
+                  {isLoadingPurposes
+                    ? 'Memuat tujuan transaksi...'
+                    : isPurposesError
+                      ? 'Gagal memuat tujuan transaksi. Silakan coba lagi.'
+                      : 'Tujuan transaksi tidak tersedia.'}
+                </Text>
+              }
               renderItem={({ item }) => (
                 <TouchableOpacity
                   style={{

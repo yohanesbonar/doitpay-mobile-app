@@ -27,8 +27,7 @@ import {
 import { Info, TriangleAlert } from 'lucide-react-native';
 import { useIsFocused } from '@react-navigation/native';
 import { usePaymentMethodAvailability } from '../hooks/usePaymentMethodAvailability';
-
-const QUICK_AMOUNTS = ['50000', '100000', '200000', '500000', '1000000', '2000000'];
+import { useQuickAmounts } from '../hooks/useQuickAmounts';
 
 interface RequestPaymentViewProps {
   onPressBack: () => void;
@@ -70,6 +69,7 @@ export const RequestPaymentView = ({
   const [calculateData, setCalculateData] = useState<any>(null);
   const [isLoadingCalculate, setIsLoadingCalculate] = useState(false);
   const paymentMethodAvailability = usePaymentMethodAvailability('RECEIVE');
+  const quickAmounts = useQuickAmounts('RECEIVE');
 
   const isInputEmpty = amount === '';
   const { mutate: postReceive, isPending: isLoadingReceive } = useReceive();
@@ -258,7 +258,7 @@ export const RequestPaymentView = ({
             )}
 
             <View style={styles.chipContainer}>
-              {QUICK_AMOUNTS.map((item) => (
+              {quickAmounts.map((item) => (
                 <TouchableOpacity key={item} style={styles.chip} onPress={() => setAmount(item)}>
                   <Text style={styles.chipText}>{formatNumber(item)}</Text>
                 </TouchableOpacity>

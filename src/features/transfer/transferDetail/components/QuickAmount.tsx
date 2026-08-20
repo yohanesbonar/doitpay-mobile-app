@@ -2,14 +2,28 @@ import { formatNumber } from '@/utils/Common';
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 
+const DEFAULT_AMOUNTS = [
+  '10000',
+  '20000',
+  '50000',
+  '100000',
+  '200000',
+  '500000',
+  '1000000',
+  '2000000',
+];
+
 interface QuickAmountProps {
   onAmountPress: (amount: string) => void;
   currentAmount: string;
+  amounts?: string[];
 }
 
-const AMOUNTS = ['50000', '100000', '200000', '500000', '1000000', '2000000'];
-
-const QuickAmount: React.FC<QuickAmountProps> = ({ onAmountPress, currentAmount }) => {
+const QuickAmount: React.FC<QuickAmountProps> = ({
+  onAmountPress,
+  currentAmount,
+  amounts = DEFAULT_AMOUNTS,
+}) => {
   return (
     <View
       style={{
@@ -19,7 +33,7 @@ const QuickAmount: React.FC<QuickAmountProps> = ({ onAmountPress, currentAmount 
         alignItems: 'center',
         paddingHorizontal: 20,
       }}>
-      {AMOUNTS.map((val) => {
+      {amounts.map((val) => {
         const rawVal = val.replace(/\./g, '');
         const isSelected = currentAmount === rawVal;
 
