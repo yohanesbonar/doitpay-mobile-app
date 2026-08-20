@@ -302,6 +302,8 @@ jobs:
       - name: Notify Success
         if: success()
         uses: tsickert/discord-webhook@v7.0.0
+        env:
+          UPLOAD_DESTINATION: ${{ inputs.upload_testflight && 'TestFlight' || inputs.upload_firebase && 'Firebase App Distribution' || 'the configured destination' }}
         with:
           username: GitHub
           webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
@@ -318,7 +320,7 @@ jobs:
             ```
             ${{ steps.commit.outputs.subject }}
             ```
-            **Ready to test via TestFlight / Firebase App Distribution**
+            **Ready to test via ${{ env.UPLOAD_DESTINATION }}**
           embed-footer-text: "${{ github.repository }}"
 
       - name: Notify Failure
