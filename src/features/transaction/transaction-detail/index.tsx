@@ -399,7 +399,7 @@ export const TransactionDetail = ({
         )}
 
         <View style={styles.footerContainer}>
-          {status === 'PENDING' && !isReceiveIn ? (
+          {status === 'PENDING' ? (
             <TouchableOpacity
               style={[styles.continuePaymentButton, isLoadingContinue && { opacity: 0.6 }]}
               onPress={() => receipt && onContinuePayment?.(receipt)}
