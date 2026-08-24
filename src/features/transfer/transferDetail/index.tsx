@@ -98,6 +98,8 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
     isLoading: isLoadingPurposes,
     isError: isPurposesError,
     error: purposesError,
+    isFetching: isFetchingPurposes,
+    refetch: refetchPurposes,
   } = useTransactionPurposes();
   const purposes = purposesData?.data?.items ?? [];
 
@@ -438,21 +440,45 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
               data={purposes}
               keyExtractor={(item) => item.code}
               ListEmptyComponent={
-                <Text
+                <View
                   style={{
-                    fontFamily: 'Switzer-Regular',
-                    fontSize: 14,
-                    color: '#737373',
-                    textAlign: 'center',
+                    alignItems: 'center',
                     paddingVertical: 24,
                     paddingHorizontal: 20,
                   }}>
-                  {isLoadingPurposes
-                    ? 'Memuat tujuan transaksi...'
-                    : isPurposesError
-                      ? 'Gagal memuat tujuan transaksi. Silakan coba lagi.'
-                      : 'Tujuan transaksi tidak tersedia.'}
-                </Text>
+                  <Text
+                    style={{
+                      fontFamily: 'Switzer-Regular',
+                      fontSize: 14,
+                      color: '#737373',
+                      textAlign: 'center',
+                    }}>
+                    {isLoadingPurposes
+                      ? 'Memuat tujuan transaksi...'
+                      : isPurposesError
+                        ? 'Gagal memuat tujuan transaksi. Silakan coba lagi.'
+                        : 'Tujuan transaksi tidak tersedia.'}
+                  </Text>
+                  {isPurposesError && (
+                    <TouchableOpacity
+                      onPress={() => refetchPurposes()}
+                      disabled={isFetchingPurposes}
+                      style={{ marginTop: 12, paddingVertical: 8, paddingHorizontal: 16 }}>
+                      {isFetchingPurposes ? (
+                        <ActivityIndicator size="small" color="#3B82F6" />
+                      ) : (
+                        <Text
+                          style={{
+                            fontFamily: 'Switzer-Bold',
+                            fontSize: 14,
+                            color: '#3B82F6',
+                          }}>
+                          Coba Lagi
+                        </Text>
+                      )}
+                    </TouchableOpacity>
+                  )}
+                </View>
               }
               renderItem={({ item }) => (
                 <TouchableOpacity
