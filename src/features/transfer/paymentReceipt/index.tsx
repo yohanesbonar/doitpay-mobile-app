@@ -10,6 +10,7 @@ import {
   PermissionsAndroid,
   Image,
   Dimensions,
+  NativeModules,
 } from 'react-native';
 import { CheckCircle2, Download, Share2 } from 'lucide-react-native';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
@@ -214,7 +215,11 @@ const PaymentReceiptView = ({
           await Linking.openURL('calshow://');
         }
       } else {
-        await Linking.openURL('content://media/internal/images/media');
+        try {
+          await NativeModules.GalleryModule.openGallery();
+        } catch (e) {
+          await Linking.openURL('content://media/internal/images/media');
+        }
       }
     } catch (error) {
       console.log('Gagal membuka galeri otomatis:', error);

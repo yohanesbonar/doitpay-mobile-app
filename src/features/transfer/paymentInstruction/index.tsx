@@ -9,6 +9,7 @@ import {
   PermissionsAndroid,
   Platform,
   Linking,
+  NativeModules,
 } from 'react-native';
 import { ChevronDown, Clock, Copy, Download, Share2 } from 'lucide-react-native';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
@@ -163,7 +164,13 @@ const PaymentInstructionView = ({
           await Linking.openURL('calshow://');
         }
       } else {
-        await Linking.openURL('content://media/internal/images/media');
+        // Use native intent helper to open gallery reliably across devices
+        try {
+          await NativeModules.GalleryModule.openGallery();
+        } catch (e) {
+          // fallback to content URI if native module fails
+          await Linking.openURL('content://media/internal/images/media');
+        }
       }
     } catch (error) {
       console.log('Gagal membuka galeri otomatis:', error);
