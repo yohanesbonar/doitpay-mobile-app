@@ -137,11 +137,13 @@ const PaymentInstructionView = ({
   const viewShotRef = useRef<any>(null);
 
   const hasAndroidPermission = async () => {
-    const getCheckPermission =
-      Platform.Version >= 33
-        ? PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES
-        : PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE;
+    // For Android 13+ we avoid requesting READ_MEDIA_IMAGES just to save an image.
+    // Modern CameraRoll implementations use MediaStore APIs and should not require READ_MEDIA_IMAGES for saving.
+    if (Platform.Version >= 33) {
+      return true;
+    }
 
+    const getCheckPermission = PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE;
     const hasPermission = await PermissionsAndroid.check(getCheckPermission);
     if (hasPermission) return true;
 

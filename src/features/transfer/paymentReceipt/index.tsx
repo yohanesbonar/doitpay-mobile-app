@@ -137,11 +137,12 @@ const PaymentReceiptView = ({
   const doitpayLogo = require('../../../assets/images/ic-doitpay-white.png');
 
   const hasAndroidPermission = async () => {
-    const getCheckPermission =
-      Number(Platform.Version) >= 33
-        ? PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES
-        : PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE;
+    // For Android 13+ we avoid requesting READ_MEDIA_IMAGES when saving images to gallery.
+    if (Number(Platform.Version) >= 33) {
+      return true;
+    }
 
+    const getCheckPermission = PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE;
     const hasPermission = await PermissionsAndroid.check(getCheckPermission);
     if (hasPermission) return true;
 
