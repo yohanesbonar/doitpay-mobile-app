@@ -13,13 +13,14 @@ class MainApplication : Application(), ReactApplication {
   override val reactHost: ReactHost by lazy {
       getDefaultReactHost(
         context = applicationContext,
-        packageList =
-          PackageList(this).packages.apply {
-            // Packages that cannot be autolinked yet can be added manually here, for example:
-            // add(MyReactNativePackage())
-            // Add our gallery helper package so we can launch gallery intents reliably across devices
-            add(GalleryPackage())
-          },
+        packageList = run {
+          val packages = PackageList(this).packages.toMutableList()
+          // Packages that cannot be autolinked yet can be added manually here, for example:
+          // packages.add(MyReactNativePackage())
+          // Add our gallery helper package so we can launch gallery intents reliably across devices
+          packages.add(GalleryPackage())
+          packages
+        },
       )
     }
 

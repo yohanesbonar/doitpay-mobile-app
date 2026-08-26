@@ -6,11 +6,13 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.uimanager.ViewManager
 
 class GalleryPackage : ReactPackage {
-  override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> {
-    return listOf(GalleryModule(reactContext))
+  override fun createNativeModules(reactContext: ReactApplicationContext): MutableList<NativeModule> {
+    val modules = ArrayList<NativeModule>()
+    modules.add(GalleryModule(reactContext))
+    return modules
   }
 
-  override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> {
-    return emptyList()
+  override fun createViewManagers(reactContext: ReactApplicationContext): MutableList<ViewManager<*, *>> {
+    return ArrayList()
   }
 }

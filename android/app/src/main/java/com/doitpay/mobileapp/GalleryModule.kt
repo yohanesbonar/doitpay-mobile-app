@@ -16,7 +16,7 @@ class GalleryModule(reactContext: ReactApplicationContext) : ReactContextBaseJav
 
   @ReactMethod
   fun openImagePicker(promise: Promise) {
-    val activity = currentActivity
+    val activity = getCurrentActivity()
     if (activity == null) {
       promise.reject("NO_ACTIVITY", "Activity not available")
       return
@@ -35,7 +35,7 @@ class GalleryModule(reactContext: ReactApplicationContext) : ReactContextBaseJav
 
   @ReactMethod
   fun openGallery(promise: Promise) {
-    val activity = currentActivity
+    val activity = getCurrentActivity()
     if (activity == null) {
       promise.reject("NO_ACTIVITY", "Activity not available")
       return
