@@ -2,15 +2,25 @@ name: Build Android (Staging)
 
 on:
   workflow_dispatch:
+    inputs:
+      artifact_type:
+        description: "Build artifact type"
+        required: true
+        type: choice
+        default: apk
+        options:
+          - apk
+          - aab
 
 jobs:
   build:
     uses: ./.github/workflows/build-android.yml
     with:
+      artifact_type: ${{ inputs.artifact_type }}
       environment: staging
       runs_on: arc-runner-mobile-app-staging
-      apk_path: android/app/build/outputs/apk/staging/release/app-staging-release.apk
-      build_command: yarn build:android-staging
+      build_command: ${{ inputs.artifact_type == 'aab' && 'yarn build-bundle:android-staging' || 'yarn build:android-staging' }}
+      artifact_path: ${{ inputs.artifact_type == 'aab' && 'android/app/build/outputs/bundle/stagingRelease/app-staging-release.aab' || 'android/app/build/outputs/apk/staging/release/app-staging-release.apk' }}
       env_file_name: .env.staging
       env_file_content: |
         API_URL=https://mobi.doitpay.dev
