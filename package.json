@@ -1,9 +1,14 @@
 {
   "name": "doitpaymobileapp",
-  "version": "0.0.1",
+  "version": "1.0.3",
   "private": true,
   "scripts": {
     "setup": "node setup.js",
+    "// --- VERSIONING (bumps package.json, syncs android/ios native version, auto-increments build number) ---": "",
+    "release:patch": "npm version patch",
+    "release:minor": "npm version minor",
+    "release:major": "npm version major",
+    "postversion": "react-native-version --target android --never-amend && node scripts/sync-ios-version.js",
     "android-staging": "export ENVFILE=.env.staging && npx react-native run-android --mode stagingdebug",
     "android-staging:clean": "export ENVFILE=.env.staging && cd android && ./gradlew clean && cd .. && npx react-native run-android --mode stagingdebug",
     "android-staging-release": "export ENVFILE=.env.staging && npx react-native run-android --mode stagingrelease",
@@ -26,18 +31,14 @@
     "build-bundle:android-staging:clean": "export ENVFILE=.env.staging && rm -rf android/app/build && cd android && ./gradlew bundleStagingRelease --rerun-tasks && cd ..",
     "build-bundle:android-production:clean": "export ENVFILE=.env.production && rm -rf android/app/build && cd android && ./gradlew bundleProductionRelease --rerun-tasks && cd ..",
     "clean:android": "cd android && ./gradlew clean && cd ..",
-
     "ios:pod": "cd ios && pod install && cd ..",
     "ios:clean": "rm -rf ios/build && cd ios && xcodebuild clean && cd ..",
-
     "// --- COMPILE CHECK (Output: ios/build/Build/Products/Release-iphoneos/) ---": "",
     "build:ios-staging": "ENVFILE=.env.staging cd ios && xcodebuild -workspace DoitPayMobileApp.xcworkspace -scheme Doitpay-Staging -configuration StagingRelease -sdk iphoneos -derivedDataPath build -allowProvisioningUpdates && cd ..",
     "build:ios-production": "ENVFILE=.env.production cd ios && xcodebuild -workspace DoitPayMobileApp.xcworkspace -scheme Doitpay-Production -configuration Release -sdk iphoneos -derivedDataPath build -allowProvisioningUpdates CODE_SIGN_ENTITLEMENTS=DoitpayMobileApp/DoitpayMobileApp.production.entitlements && cd ..",
-
     "// --- ARCHIVE (Output: ios/build/Staging.xcarchive & Production.xcarchive) ---": "",
     "archive:ios-staging": "ENVFILE=.env.staging cd ios && xcodebuild -workspace DoitPayMobileApp.xcworkspace -scheme Doitpay-Staging -configuration StagingRelease archive -archivePath build/Doitpay-Staging.xcarchive -allowProvisioningUpdates && cd ..",
     "archive:ios-production": "ENVFILE=.env.production cd ios && xcodebuild -workspace DoitPayMobileApp.xcworkspace -scheme Doitpay-Production -configuration Release archive -archivePath build/Doitpay-Production.xcarchive -allowProvisioningUpdates CODE_SIGN_ENTITLEMENTS=DoitpayMobileApp/DoitpayMobileApp.production.entitlements && cd ..",
-
     "// --- GENERATE IPA (Output: ios/build/StagingIPA/ & ProductionIPA/) ---": "",
     "ipa:ios-staging": "yarn archive:ios-staging && cd ios && xcodebuild -exportArchive -archivePath build/Doitpay-Staging.xcarchive -exportPath build/Doitpay-StagingIPA -exportOptionsPlist ExportOptions-Staging.plist -allowProvisioningUpdates && mv build/Doitpay-StagingIPA/DoitpayMobileApp.ipa build/Doitpay-StagingIPA/DoitpayMobileAppStaging.ipa && cd ..",
     "ipa:ios-production": "yarn archive:ios-production && cd ios && xcodebuild -exportArchive -archivePath build/Doitpay-Production.xcarchive -exportPath build/Doitpay-ProductionIPA -exportOptionsPlist ExportOptions-Production.plist -allowProvisioningUpdates && mv build/Doitpay-ProductionIPA/DoitpayMobileApp.ipa build/Doitpay-ProductionIPA/DoitpayMobileAppProduction.ipa && cd .."
@@ -152,6 +153,7 @@
     "react-native-asset": "^2.2.14",
     "react-native-css-interop": "^0.2.4",
     "react-native-svg-transformer": "^1.5.3",
+    "react-native-version": "^4.0.0",
     "react-test-renderer": "19.2.0",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.8.3",
