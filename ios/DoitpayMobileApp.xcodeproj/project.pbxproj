@@ -446,7 +446,7 @@
 				CODE_SIGN_ENTITLEMENTS = DoitpayMobileApp/DoitpayMobileApp.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 8643BUJ833;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = DoitpayMobileApp/Info.plist;
@@ -456,7 +456,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.0.2;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -481,7 +481,7 @@
 				CODE_SIGN_ENTITLEMENTS = DoitpayMobileApp/DoitpayMobileApp.production.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 8643BUJ833;
 				INFOPLIST_FILE = DoitpayMobileApp/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Doitpay-Production";
@@ -490,7 +490,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.0.2;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -707,12 +707,12 @@
 				CODE_SIGN_ENTITLEMENTS = DoitpayMobileApp/DoitpayMobileApp.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 8643BUJ833;
 				INFOPLIST_FILE = DoitpayMobileApp/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Doitpay-Staging";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = co.doitpay.app;
 				PRODUCT_NAME = DoitpayMobileApp;
 				SWIFT_VERSION = 5.0;
