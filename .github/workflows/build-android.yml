@@ -3,16 +3,20 @@ name: Build Android
 on:
   workflow_call:
     inputs:
+      artifact_type:
+        description: "Artifact type to build"
+        required: true
+        type: string
       environment:
         description: "GitHub Environment name (e.g. staging, production)"
         required: true
         type: string
-      apk_path:
-        description: "Path to the built APK (e.g. android/app/build/outputs/apk/staging/release/app-staging-release.apk)"
+      build_command:
+        description: "Command to build the selected artifact"
         required: true
         type: string
-      build_command:
-        description: "Command to build the APK (e.g. yarn build:android-staging)"
+      artifact_path:
+        description: "Path to the built artifact"
         required: true
         type: string
       env_file_name:
@@ -50,12 +54,14 @@ env:
 
 jobs:
   build:
-    name: Build APK ${{ inputs.environment }}
+    name: Build ${{ inputs.artifact_type }} ${{ inputs.environment }}
     runs-on: ${{ inputs.runs_on }}
     environment: ${{ inputs.environment }}
     timeout-minutes: 30
     permissions:
       contents: read
+    env:
+      ARTIFACT_LABEL: ${{ inputs.artifact_type == 'aab' && 'AAB' || 'APK' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -78,7 +84,7 @@ jobs:
       #   with:
       #     username: GitHub
       #     webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
-      #     embed-title: "🚀 Building Android (APK) Started"
+      #     embed-title: "🚀 Building Android (${{ env.ARTIFACT_LABEL }}) Started"
       #     embed-color: 3447003
       #     embed-url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
       #     embed-description: |
@@ -142,7 +148,7 @@ jobs:
           EOF
           chmod 600 "${{ inputs.env_file_name }}"
 
-      - name: Build APK
+      - name: Build Artifact
         env:
           GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx3072m -XX:MaxMetaspaceSize=512m -XX:+UseG1GC"
           RELEASE_STORE_FILE: doitpay-release.keystore
@@ -161,15 +167,16 @@ jobs:
         run: |
           echo '${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}' > firebase.json
 
-      - name: Upload APK to Firebase
+      - name: Upload Artifact to Firebase
         env:
           GOOGLE_APPLICATION_CREDENTIALS: firebase.json
         run: |
           firebase appdistribution:distribute \
-            "${{ inputs.apk_path }}" \
+            "${{ inputs.artifact_path }}" \
             --app "${{ env.FIREBASE_APP_ID }}" \
             --groups "${{ env.FIREBASE_GROUPS }}" \
             --release-notes "[${{ inputs.environment }}]
+          Artifact: ${{ env.ARTIFACT_LABEL }}
           Build: #${{ github.run_number }}
           Branch: ${{ github.ref_name }}
           Triggered by: @${{ github.actor }}
@@ -197,7 +204,7 @@ jobs:
         with:
           username: GitHub
           webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
-          embed-title: "✅ Building Android (APK) Finished"
+          embed-title: "✅ Building Android (${{ env.ARTIFACT_LABEL }}) Finished"
           embed-color: 3066993
           embed-url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           embed-description: |
@@ -218,7 +225,7 @@ jobs:
         with:
           username: GitHub
           webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
-          embed-title: "❌ Building Android (APK) Failed"
+          embed-title: "❌ Building Android (${{ env.ARTIFACT_LABEL }}) Failed"
           embed-color: 15158332
           embed-url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           embed-description: |

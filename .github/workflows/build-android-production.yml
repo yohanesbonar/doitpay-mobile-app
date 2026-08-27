@@ -2,15 +2,25 @@ name: Build Android (Production)
 
 on:
   workflow_dispatch:
+    inputs:
+      artifact_type:
+        description: "Build artifact type"
+        required: true
+        type: choice
+        default: apk
+        options:
+          - apk
+          - aab
 
 jobs:
   build:
     uses: ./.github/workflows/build-android.yml
     with:
+      artifact_type: ${{ inputs.artifact_type }}
       environment: production
       runs_on: arc-runner-mobile-app-production
-      apk_path: android/app/build/outputs/apk/production/release/app-production-release.apk
-      build_command: yarn build:android-production
+      build_command: ${{ inputs.artifact_type == 'aab' && 'yarn build-bundle:android-production' || 'yarn build:android-production' }}
+      artifact_path: ${{ inputs.artifact_type == 'aab' && 'android/app/build/outputs/bundle/productionRelease/app-production-release.aab' || 'android/app/build/outputs/apk/production/release/app-production-release.apk' }}
       env_file_name: .env.production
       env_file_content: |
         API_URL=https://mobi.doitpay.co

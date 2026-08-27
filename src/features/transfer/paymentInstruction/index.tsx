@@ -9,6 +9,7 @@ import {
   PermissionsAndroid,
   Platform,
   Linking,
+  NativeModules,
 } from 'react-native';
 import { ChevronDown, Clock, Copy, Download, Share2 } from 'lucide-react-native';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
@@ -137,11 +138,13 @@ const PaymentInstructionView = ({
   const viewShotRef = useRef<any>(null);
 
   const hasAndroidPermission = async () => {
-    const getCheckPermission =
-      Platform.Version >= 33
-        ? PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES
-        : PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE;
+    // For Android 13+ we avoid requesting READ_MEDIA_IMAGES just to save an image.
+    // Modern CameraRoll implementations use MediaStore APIs and should not require READ_MEDIA_IMAGES for saving.
+    if (Platform.Version >= 33) {
+      return true;
+    }
 
+    const getCheckPermission = PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE;
     const hasPermission = await PermissionsAndroid.check(getCheckPermission);
     if (hasPermission) return true;
 
@@ -161,7 +164,13 @@ const PaymentInstructionView = ({
           await Linking.openURL('calshow://');
         }
       } else {
-        await Linking.openURL('content://media/internal/images/media');
+        // Use native intent helper to open gallery reliably across devices
+        try {
+          await NativeModules.GalleryModule.openGallery();
+        } catch (e) {
+          // fallback to content URI if native module fails
+          await Linking.openURL('content://media/internal/images/media');
+        }
       }
     } catch (error) {
       console.log('Gagal membuka galeri otomatis:', error);
