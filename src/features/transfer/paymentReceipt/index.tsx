@@ -163,15 +163,10 @@ const PaymentReceiptView = ({
         }
 
         await CameraRoll.saveAsset(targetUri, { type: 'photo' });
-        Alert.alert('Sukses', 'Bukti disimpan ke Galeri Foto.', [
-          {
-            text: 'OK',
-            style: 'cancel',
-          },
-          {
-            text: 'Buka Galeri',
-            onPress: () => openGalleryApp(),
-          },
+
+        Alert.alert('Sukses', 'Bukti berhasil disimpan ke Galeri Foto.', [
+          { text: 'OK', style: 'cancel' },
+          { text: 'Buka Galeri', onPress: () => openGalleryApp() },
         ]);
       } else {
         const hasPermission = await hasAndroidPermission();
@@ -180,23 +175,27 @@ const PaymentReceiptView = ({
           return;
         }
 
-        await CameraRoll.saveAsset(targetUri, { type: 'photo' });
+        const savedUri = await CameraRoll.saveAsset(targetUri, { type: 'photo' });
+
+        try {
+          if (typeof savedUri === 'string' && savedUri.startsWith('file://')) {
+            const filePath = savedUri.replace('file://', '');
+            await NativeModules.GalleryModule.scanFile(filePath);
+          }
+        } catch (e) {
+          // ignore
+        }
 
         Alert.alert('Sukses', 'Bukti berhasil disimpan ke Galeri Foto.', [
-          {
-            text: 'OK',
-            style: 'cancel',
-          },
-          {
-            text: 'Buka Galeri',
-            onPress: () => openGalleryApp(),
-          },
+          { text: 'OK', style: 'cancel' },
+          { text: 'Buka Galeri', onPress: () => openGalleryApp() },
         ]);
       }
     } catch (error: any) {
       console.error('Download error:', error);
 
       if (Platform.OS === 'ios') {
+        // no-op
       } else {
         Alert.alert('Gagal', 'Gagal menyimpan Bukti ke galeri');
       }

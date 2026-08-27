@@ -336,6 +336,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
                 onBlur={() => setIsFocusedInput(false)}
                 onChangeText={(val) => setAmount(val.replace(/[^0-9]/g, ''))}
                 blurOnSubmit={false}
+                placeholderTextColor={"#A9A9A9"}
               />
             </View>
           </TouchableWithoutFeedback>

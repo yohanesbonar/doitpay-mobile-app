@@ -190,15 +190,10 @@ const PaymentInstructionView = ({
         }
 
         await CameraRoll.saveAsset(targetUri, { type: 'photo' });
+
         Alert.alert('Sukses', 'QRIS berhasil disimpan ke Galeri Foto.', [
-          {
-            text: 'OK',
-            style: 'cancel',
-          },
-          {
-            text: 'Buka Galeri',
-            onPress: () => openGalleryApp(),
-          },
+          { text: 'OK', style: 'cancel' },
+          { text: 'Buka Galeri', onPress: () => openGalleryApp() },
         ]);
       } else {
         const hasPermission = await hasAndroidPermission();
@@ -207,7 +202,16 @@ const PaymentInstructionView = ({
           return;
         }
 
-        await CameraRoll.saveAsset(targetUri, { type: 'photo' });
+        const savedUri = await CameraRoll.saveAsset(targetUri, { type: 'photo' });
+
+        try {
+          if (typeof savedUri === 'string' && savedUri.startsWith('file://')) {
+            const filePath = savedUri.replace('file://', '');
+            await NativeModules.GalleryModule.scanFile(filePath);
+          }
+        } catch (e) {
+          // ignore
+        }
 
         Alert.alert('Sukses', 'QRIS berhasil disimpan ke Galeri Foto.', [
           {
@@ -224,6 +228,7 @@ const PaymentInstructionView = ({
       console.error('Download error:', error);
 
       if (Platform.OS === 'ios') {
+        // no-op
       } else {
         Alert.alert('Gagal', 'Gagal menyimpan QRIS ke galeri');
       }
