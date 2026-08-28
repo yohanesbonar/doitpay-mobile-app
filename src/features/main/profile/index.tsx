@@ -91,7 +91,7 @@ export const Profile = () => {
           }>
           <Text style={styles.logoutText}>Keluar</Text>
         </TouchableOpacity>
-        <View style={{ alignItems: 'center', marginTop: 20 }}>
+        <View style={{ alignItems: 'center', marginTop: 20, marginBottom: 200 }}>
           <Text style={{ fontSize: 14 }}>Versi {appVersion}</Text>
         </View>
       </ScrollView>
