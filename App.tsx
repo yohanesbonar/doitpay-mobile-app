@@ -35,6 +35,7 @@ import { UpdateAppBottomSheet, UpdateAppData } from '@/components/molecules/Upda
 import { updateAppApi } from '@/api/updateApp';
 import { PostHogProvider } from 'posthog-react-native';
 import { posthogClient, trackScreenView } from './src/analytics/posthog';
+import DeviceInfo from 'react-native-device-info';
 
 // Start i18n
 initI18next();
@@ -102,8 +103,9 @@ const App = () => {
     try {
       const isJailBrokenOrRooted = JailMonkey.isJailBroken();
       const isHookedWithFakeGPS = JailMonkey.canMockLocation();
+      const isSimulator = DeviceInfo.isEmulatorSync();
 
-      if ((isJailBrokenOrRooted || isHookedWithFakeGPS) && !__DEV__) {
+      if ((isJailBrokenOrRooted || isHookedWithFakeGPS) && !__DEV__ && !isSimulator) {
         setIsDeviceCompromised(true);
 
         if (!__DEV__) {
