@@ -4,9 +4,8 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
 
-    <!-- Remove broad storage/media permissions to comply with Android 13+ and Play policies.
-         We keep CAMERA/INTERNET but prevent merged libraries from adding these permissions. -->
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="remove" />
+    <!-- Allow WRITE_EXTERNAL_STORAGE only for Android 12 and below. Android 13+ uses MediaStore. -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" tools:node="remove" />
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" tools:node="remove" />
@@ -40,6 +39,9 @@
       android:name="com.google.firebase.messaging.default_notification_icon"
       android:resource="@drawable/ic_notification"
     />
+    <!-- Disable Ad ID collection for Firebase Analytics to comply with "NO" declaration -->
+    <meta-data android:name="google_analytics_adid_collection_enabled" android:value="false" tools:replace="android:value" />
+    <meta-data android:name="google_analytics_default_allow_ad_personalization_signals" android:value="false" tools:replace="android:value" />
 
     </application>
 </manifest>
