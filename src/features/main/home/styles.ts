@@ -14,7 +14,6 @@ export const createStyles = (colors: typeof themeColors.light) => {
     },
     dailyLimitWrapper: {
       paddingHorizontal: 24,
-      paddingTop: 10,
       paddingBottom: 12,
     },
     mainWrapper: {

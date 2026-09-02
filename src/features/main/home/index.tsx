@@ -126,9 +126,6 @@ export const HomeView = (props: HomeViewProps) => {
           refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}>
           <DeletionInProgressBanner isShow={profile?.data?.isRequestDeleteAccount ?? false} />
           <View style={styles.dailyLimitWrapper}>
-            <Text style={{ fontSize: 20, marginBottom: 4, fontFamily: 'Switzer-Semibold' }}>
-              {t('home.dailyLimitTransfer')}
-            </Text>
             {isLoading || !homeData ? (
               <TransferLimitSkeleton />
             ) : (
