@@ -5,7 +5,7 @@ import { useTheme } from '../../../../theme/ThemeProvider';
 import { TransferQuota } from '../types';
 
 const formatCurrency = (value: number): string => {
-  return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 };
 
 interface Props {
@@ -14,6 +14,7 @@ interface Props {
   freeTransferQuotaUsed: number;
   transferFee: number;
   maxLimit: number;
+  amountReceived?: number;
   isKycVerified?: boolean;
   freeQuotaResetType?: TransferQuota['freeQuotaResetType'];
 }
@@ -22,6 +23,7 @@ export const TransferLimitCard = ({
   freeTransferQuotaTotal = 0,
   freeTransferQuotaUsed = 0,
   maxLimit = 0,
+  amountReceived = 0,
   isKycVerified = false,
   freeQuotaResetType = 'DAILY',
 }: Props) => {
@@ -45,56 +47,65 @@ export const TransferLimitCard = ({
       end={{ x: 1, y: 0 }}
       style={styles.card}>
       <View style={{ padding: 16 }}>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            marginBottom: 5,
-            justifyContent: 'space-between',
-          }}>
-          <Text style={styles.label}>Kuota Transfer Gratis</Text>
-          {/* TODO: unhide this once the KYC process is complete */}
-          {/* {!isKycVerified && (
-            <View
-              style={{
-                backgroundColor: '#E5E5E5',
-                paddingVertical: 5,
-                paddingHorizontal: 8,
-                borderRadius: 8,
-              }}>
-              <Text style={{ color: '#737373', fontSize: 12 }}>Belum Verifikasi</Text>
-            </View>
-          )} */}
-        </View>
+        <Text style={styles.labelBalance}>Balance Tersedia</Text>
+        <Text style={styles.balanceAmount}>Rp {formatCurrency(amountReceived)}</Text>
 
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <Text style={styles.quotaAmount}>
-            {freeTransferQuotaUsed}/{freeTransferQuotaTotal}
-          </Text>
-          {freeQuotaResetType === 'DAILY' && <Text style={styles.percentageText}>per hari</Text>}
-        </View>
-
-        <View style={styles.progressBg} onLayout={handleLayout}>
-          <View style={[styles.progressFill, { width: fillWidth }]} />
-        </View>
+        <View style={styles.divider} />
 
         <View style={styles.rowBetween}>
-          <View style={{}}>
+          <View style={styles.column}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginBottom: 5,
+                justifyContent: 'space-between',
+              }}>
+              <Text style={styles.label}>Kuota Transfer Gratis</Text>
+              {/* TODO: unhide this once the KYC process is complete */}
+              {/* {!isKycVerified && (
+                <View
+                  style={{
+                    backgroundColor: '#E5E5E5',
+                    paddingVertical: 5,
+                    paddingHorizontal: 8,
+                    borderRadius: 8,
+                  }}>
+                  <Text style={{ color: '#737373', fontSize: 12 }}>Belum Verifikasi</Text>
+                </View>
+              )} */}
+            </View>
+
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Text style={styles.quotaAmount}>
+                {freeTransferQuotaUsed}/{freeTransferQuotaTotal}
+              </Text>
+              <Text style={styles.percentageText}>per hari</Text>
+            </View>
+
+            <View style={styles.progressBg} onLayout={handleLayout}>
+              <View style={[styles.progressFill, { width: fillWidth }]} />
+            </View>
+          </View>
+
+          <View style={styles.column}>
             <Text style={styles.labelLimit}>Limit Harian</Text>
             <Text style={styles.amount}>Rp {formatCurrency(maxLimit)}</Text>
+            {/* TODO: unhide this once the KYC process is complete */}
+            {/* {!isKycVerified && (
+              <TouchableOpacity
+                style={{
+                  backgroundColor: '#FFFFFF',
+                  paddingVertical: 5,
+                  paddingHorizontal: 8,
+                  borderRadius: 8,
+                  marginTop: 8,
+                  alignSelf: 'flex-start',
+                }}>
+                <Text style={{ color: '#0A0A0A', fontSize: 12 }}>Verifikasi KYC</Text>
+              </TouchableOpacity>
+            )} */}
           </View>
-          {/* TODO: unhide this once the KYC process is complete */}
-          {/* {!isKycVerified && (
-            <TouchableOpacity
-              style={{
-                backgroundColor: '#FFFFFF',
-                paddingVertical: 5,
-                paddingHorizontal: 8,
-                borderRadius: 8,
-              }}>
-              <Text style={{ color: '#0A0A0A', fontSize: 12 }}>Verifikasi KYC</Text>
-            </TouchableOpacity>
-          )} */}
         </View>
       </View>
     </LinearGradient>
@@ -118,6 +129,12 @@ const createStyles = (colors: any) =>
       fontFamily: 'Switzer-Regular',
       opacity: 0.9,
     },
+    labelBalance: {
+      color: colors.textWhite,
+      fontSize: 14,
+      fontFamily: 'Switzer-Medium',
+      opacity: 0.9,
+    },
     labelReceived: {
       color: colors.textWhite,
       fontSize: 14,
@@ -128,17 +145,21 @@ const createStyles = (colors: any) =>
     rowBetween: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      alignItems: 'center',
+      alignItems: 'flex-start',
+    },
+    column: {
+      flex: 1,
+      paddingRight: 12,
     },
     quotaAmount: {
       color: colors.textWhite,
-      fontSize: 28,
-      fontFamily: 'Switzer-Semibold',
+      fontSize: 18,
+      fontFamily: 'Switzer-Medium',
     },
     amount: {
       color: colors.textWhite,
-      fontSize: 16,
-      fontFamily: 'Switzer-Regular',
+      fontSize: 18,
+      fontFamily: 'Switzer-Medium',
     },
     labelLimit: {
       color: colors.textWhite,
@@ -149,12 +170,12 @@ const createStyles = (colors: any) =>
     },
     percentageText: {
       color: colors.textWhite,
-      fontSize: 14,
+      fontSize: 16,
       fontFamily: 'Switzer-Regular',
     },
     progressBg: {
-      height: 8,
-      backgroundColor: 'rgba(255,255,255,0.2)',
+      height: 5,
+      backgroundColor: '#FFF',
       borderRadius: 4,
       marginTop: 12,
       marginBottom: 8,
@@ -170,5 +191,16 @@ const createStyles = (colors: any) =>
       fontSize: 14,
       fontFamily: 'Switzer-Regular',
       opacity: 0.9,
+    },
+    balanceAmount: {
+      color: colors.textWhite,
+      fontSize: 32,
+      fontFamily: 'Switzer-Semibold',
+      marginTop: 4,
+    },
+    divider: {
+      height: 1,
+      backgroundColor: '#FFF',
+      marginVertical: 16,
     },
   });
