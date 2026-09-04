@@ -267,7 +267,11 @@ export const authApi = {
     return data;
   },
   login: async (payload: LoginPayload): Promise<LoginResponse> => {
-    const { data } = await apiClient.post<LoginResponse>('/v1/auth/login', payload);
+    // skipAuthRetry: a 401 here means the submitted PIN is wrong (business validation),
+    // not an expired/invalid session, so it must not trigger the global forced logout.
+    const { data } = await apiClient.post<LoginResponse>('/v1/auth/login', payload, {
+      skipAuthRetry: true,
+    });
     return data;
   },
   refreshToken: async (payload: RefreshTokenPayload): Promise<RefreshTokenResponse> => {

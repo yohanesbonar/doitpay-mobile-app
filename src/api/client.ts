@@ -4,6 +4,7 @@ import { isBefore, subSeconds } from 'date-fns';
 import { getDeviceFingerprint } from '../utils/Device/Device.ts';
 import { getStorageItem, setStorageItem, StorageKey } from '../storage/index.ts';
 import { useAuthStore } from '../storage/useAuthStore.ts';
+import { queryClient } from './queryClient';
 import Toast from 'react-native-toast-message';
 import { Platform } from 'react-native';
 import perf, { FirebasePerformanceTypes } from '@react-native-firebase/perf';
@@ -36,6 +37,23 @@ const processQueue = (error: any, token: string | null = null) => {
     else prom.resolve(token);
   });
   failedQueue = [];
+};
+
+// Clears the session and cached queries so the app falls back to the onboarding flow
+// instead of getting stuck with a stale/invalid token. `showToast` should stay disabled for
+// silent cleanups (e.g. an abandoned login/OTP flow whose leftover token was never a real
+// session) and only be enabled when an actual established session expired.
+const forceLogout = (showToast: boolean = true) => {
+  useAuthStore.getState().logout();
+  queryClient.clear();
+
+  if (showToast) {
+    Toast.show({
+      type: 'error',
+      text1: 'Sesi Telah Berakhir',
+      text2: 'Silakan masuk kembali untuk melanjutkan.',
+    });
+  }
 };
 
 const apiClient = axios.create({
@@ -144,7 +162,7 @@ apiClient.interceptors.request.use(
             return config;
           } catch (refreshError) {
             processQueue(refreshError, null);
-            useAuthStore.getState().logout();
+            forceLogout();
             return Promise.reject(refreshError);
           } finally {
             isRefreshing = false;
@@ -290,16 +308,27 @@ apiClient.interceptors.response.use(
           console.log('-------------------------------');
         }
 
-        useAuthStore.getState().logout();
-        Toast.show({
-          type: 'error',
-          text1: 'Sesi Telah Berakhir',
-          text2: 'Silakan masuk kembali untuk melanjutkan.',
-        });
+        forceLogout();
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
       }
+    }
+
+    // --- Unrecoverable 401 (no refresh token available, or a refreshed request still
+    // fails auth) --- force logout so the app returns to onboarding instead of getting
+    // stuck with a stale/invalid session.
+    if (
+      status === 401 &&
+      !originalRequest?.noNeedAuth &&
+      !originalRequest?.skipAuthRetry &&
+      (!existingRefreshToken || originalRequest?._retry)
+    ) {
+      // A retried request still failing after a token refresh means a real, established
+      // session expired - show the toast. No refresh token at all means the leftover
+      // token was never a completed session (e.g. an abandoned login/OTP flow), so clean
+      // up silently instead of showing a "session expired" message.
+      forceLogout(!!originalRequest?._retry);
     }
 
     // --- Firebase Crashlytics Logging (Filter Noise) ---
