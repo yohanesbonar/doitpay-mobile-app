@@ -12,8 +12,20 @@ import {
 export const Security = ({ navigation }: any) => {
   const [isBiometricActive, setIsBiometricActive] = useState(false);
 
-  const SecurityItem = ({ title, sub, icon: Icon, type = 'arrow', value, onValueChange, onPress }: any) => (
-    <TouchableOpacity style={styles.item} activeOpacity={0.7} disabled={type === 'switch'} onPress={onPress}>
+  const SecurityItem = ({
+    title,
+    sub,
+    icon: Icon,
+    type = 'arrow',
+    value,
+    onValueChange,
+    onPress,
+  }: any) => (
+    <TouchableOpacity
+      style={styles.item}
+      activeOpacity={0.7}
+      disabled={type === 'switch'}
+      onPress={onPress}>
       <View style={styles.row}>
         <View style={styles.iconBox}>
           <Icon size={22} color="#1A1A1A" />
@@ -58,12 +70,12 @@ export const Security = ({ navigation }: any) => {
           type="switch"
           value={isBiometricActive}
           onValueChange={setIsBiometricActive}
-        />
+          />*/}
         <SecurityItem
           title="Perangkat Terpercaya"
           sub="1 perangkat aktif"
           icon={MonitorSmartphone}
-        />*/}
+        />
       </View>
     </SafeAreaView>
   );
