@@ -242,7 +242,7 @@ const App = () => {
               {!isInternetConnected && (
                 <View style={styles.noInternetBanner}>
                   <Text style={styles.noInternetText}>
-                    Connection lost. Checking your network...
+                    Koneksi terputus. Memeriksa jaringan Anda…
                   </Text>
                 </View>
               )}
