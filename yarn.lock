@@ -7601,8 +7601,8 @@ __metadata:
     react-native-localize: ^3.7.0
     react-native-mmkv: ^4.3.1
     react-native-network-logger: ^3.0.0
-    react-native-nitro-image: ^0.15.1
-    react-native-nitro-modules: ^0.36.3
+    react-native-nitro-image: 0.15.2
+    react-native-nitro-modules: 0.37.0
     react-native-qrcode-svg: ^6.3.21
     react-native-reanimated: 4.5.3
     react-native-reanimated-skeleton: ^1.6.0
@@ -13002,24 +13002,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-nitro-image@npm:^0.15.1":
-  version: 0.15.1
-  resolution: "react-native-nitro-image@npm:0.15.1"
+"react-native-nitro-image@npm:0.15.2":
+  version: 0.15.2
+  resolution: "react-native-nitro-image@npm:0.15.2"
   peerDependencies:
     react: "*"
     react-native: "*"
     react-native-nitro-modules: "*"
-  checksum: c8ce8850b3386a768292a89d27e9c481ca80465eb777f91e30afce5fc43976c76ffaffd24704986ec749617065461a3cfa068476e50caa60450b089429785e58
+  peerDependenciesMeta:
+    react-native-nitro-modules:
+      optional: true
+  checksum: 04313b5995c402e173ddea286f9a40777b69d7f2f36e6b7b4566acf4a7279de695320bab95f6a8cb199e5ac52bf609214c2bcb6c574c83cf71357f9a6f97e87e
   languageName: node
   linkType: hard
 
-"react-native-nitro-modules@npm:^0.36.3":
-  version: 0.36.5
-  resolution: "react-native-nitro-modules@npm:0.36.5"
+"react-native-nitro-modules@npm:0.37.0":
+  version: 0.37.0
+  resolution: "react-native-nitro-modules@npm:0.37.0"
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 4739190a0ffd2a11ed8d506b24fb168fd7d5070617a2a0734e5ac8aa26df5d5a49be6c55b7bf94b8eac8439d896c1c6257f3b04cbfbca06d7d8f0c186c97f2e3
+  checksum: b11bee4cceb34cb6bd9e3e0d48b90065738a638610711868e2fabd315e4f8a0d1a5a9b58775383ae0b6703abda2063e5ce3a40ab8c5a734b73715650328d16f1
   languageName: node
   linkType: hard
 

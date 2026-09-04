@@ -18,7 +18,6 @@ export const FilterBottomSheet = ({
 }: FilterBottomSheetProps) => {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const snapPoints = useMemo(() => ['75%'], []);
-  const [isMounted, setIsMounted] = useState(false);
   const [tempFilters, setTempFilters] = useState(filters);
   const [showPaymentOptions, setShowPaymentOptions] = useState(false);
   const [showTransactionOptions, setShowTransactionOptions] = useState(false);
@@ -28,20 +27,11 @@ export const FilterBottomSheet = ({
       setTempFilters(filters);
       setShowPaymentOptions(false);
       setShowTransactionOptions(false);
-      setIsMounted(true);
+      bottomSheetRef.current?.present();
     }
   }, [isVisible]);
 
-  useEffect(() => {
-    if (isMounted) {
-      requestAnimationFrame(() => {
-        bottomSheetRef.current?.present();
-      });
-    }
-  }, [isMounted]);
-
   const handleDismiss = () => {
-    setIsMounted(false);
     onClose();
   };
 
@@ -104,7 +94,7 @@ export const FilterBottomSheet = ({
     </View>
   );
 
-  return isMounted ? (
+  return (
     <BottomSheetModal
       ref={bottomSheetRef}
       snapPoints={snapPoints}
@@ -140,7 +130,7 @@ export const FilterBottomSheet = ({
         </TouchableOpacity>
       </BottomSheetView>
     </BottomSheetModal>
-  ) : null;
+  );
 };
 
 const styles = StyleSheet.create({
