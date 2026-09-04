@@ -39,6 +39,7 @@ export const TransferLimitCard = ({
   };
 
   const fillWidth = trackWidth * (Math.min(Math.max(percentage, 0), 100) / 100);
+  const displayFillWidth = percentage > 0 ? Math.max(fillWidth, 4) : 0;
 
   return (
     <LinearGradient
@@ -86,7 +87,7 @@ export const TransferLimitCard = ({
             </View>
 
             <View style={styles.progressBg} onLayout={handleLayout}>
-              <View style={[styles.progressFill, { width: fillWidth }]} />
+              <View style={[styles.progressFill, { width: displayFillWidth }]} />
             </View>
           </View>
 

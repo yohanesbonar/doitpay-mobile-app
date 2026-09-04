@@ -1,9 +1,12 @@
 import React from 'react';
-import { View, Text, TextInput, Image } from 'react-native';
+import { View, Text, TextInput, Image, Linking } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import { useTranslation } from 'react-i18next';
 import { useFormikContext } from 'formik';
 import { PhoneNumberFormValues } from '../../authEntry';
+
+const TERMS_AND_CONDITIONS_URL = 'https://app.doitpay.co/syarat-ketentuan/';
+const PRIVACY_POLICY_URL = 'https://app.doitpay.co/kebijakan-privasi/';
 
 interface InputPhoneNumberProps {
   styles: any;
@@ -22,6 +25,14 @@ const InputPhoneNumber: React.FC<InputPhoneNumberProps> = ({ styles }) => {
       flag: require('../../../../assets/images/ic-indonesia-flag.png'),
     },
   ];
+
+  const openTermsAndConditions = () => {
+    Linking.openURL(TERMS_AND_CONDITIONS_URL);
+  };
+
+  const openPrivacyPolicy = () => {
+    Linking.openURL(PRIVACY_POLICY_URL);
+  };
 
   return (
     <View style={{ flex: 1, marginHorizontal: 16 }}>
@@ -75,8 +86,14 @@ const InputPhoneNumber: React.FC<InputPhoneNumberProps> = ({ styles }) => {
 
       <View style={styles.termsContainer}>
         <Text style={styles.termsText}>
-          {t('authEntry.descTerms1')} <Text style={styles.link}>{t('authEntry.descTerms2')}</Text>{' '}
-          {t('authEntry.descTerms3')} <Text style={styles.link}>{t('authEntry.descTerms4')}</Text>{' '}
+          {t('authEntry.descTerms1')}{' '}
+          <Text style={styles.link} onPress={openTermsAndConditions}>
+            {t('authEntry.descTerms2')}
+          </Text>{' '}
+          {t('authEntry.descTerms3')}{' '}
+          <Text style={styles.link} onPress={openPrivacyPolicy}>
+            {t('authEntry.descTerms4')}
+          </Text>{' '}
           {t('authEntry.descTerms5')}
         </Text>
       </View>
