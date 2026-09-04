@@ -61,14 +61,14 @@ export const HelpCenter = ({ navigation }: any) => {
       />
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.searchBar}>
+        {/*<View style={styles.searchBar}>
           <Search size={20} color="#737373" />
           <TextInput
             placeholder="Cari pertanyaan"
             placeholderTextColor="#9CA3AF"
             style={styles.searchInput}
           />
-        </View>
+        </View>*/}
 
         <View style={styles.menuList}>
           <TouchableOpacity style={styles.menuCard} activeOpacity={0.8}>
