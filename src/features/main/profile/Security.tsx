@@ -34,15 +34,16 @@ export const Security = ({ navigation }: any) => {
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.sub}>{sub}</Text>
         </View>
-        {type === 'arrow' ? (
-          <ChevronRight size={20} color="#737373" />
-        ) : (
-          <Switch
-            value={value}
-            onValueChange={onValueChange}
-            trackColor={{ false: '#E5E5E5', true: '#4F84F6' }}
-          />
-        )}
+        {onPress &&
+          (type === 'arrow' ? (
+            <ChevronRight size={20} color="#737373" />
+          ) : (
+            <Switch
+              value={value}
+              onValueChange={onValueChange}
+              trackColor={{ false: '#E5E5E5', true: '#4F84F6' }}
+            />
+          ))}
       </View>
     </TouchableOpacity>
   );
