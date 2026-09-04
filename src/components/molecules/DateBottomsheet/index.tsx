@@ -18,26 +18,16 @@ export const DateBottomSheet = ({
 }: DateBottomSheetProps) => {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const snapPoints = useMemo(() => ['55%'], []);
-  const [isMounted, setIsMounted] = useState(false);
   const [tempDate, setTempDate] = useState(selectedDate);
 
   useEffect(() => {
     if (isVisible) {
       setTempDate(selectedDate);
-      setIsMounted(true);
+      bottomSheetRef.current?.present();
     }
   }, [isVisible]);
 
-  useEffect(() => {
-    if (isMounted) {
-      requestAnimationFrame(() => {
-        bottomSheetRef.current?.present();
-      });
-    }
-  }, [isMounted]);
-
   const handleDismiss = () => {
-    setIsMounted(false);
     onClose();
   };
 
@@ -70,7 +60,7 @@ export const DateBottomSheet = ({
     bottomSheetRef.current?.dismiss();
   };
 
-  return isMounted ? (
+  return (
     <BottomSheetModal
       ref={bottomSheetRef}
       snapPoints={snapPoints}
@@ -108,7 +98,7 @@ export const DateBottomSheet = ({
         </TouchableOpacity>
       </BottomSheetView>
     </BottomSheetModal>
-  ) : null;
+  );
 };
 
 const styles = StyleSheet.create({
