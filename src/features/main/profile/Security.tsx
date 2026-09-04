@@ -51,7 +51,7 @@ export const Security = ({ navigation }: any) => {
           icon={Lock}
           onPress={() => navigation.navigate('ChangePin')}
         />
-        <SecurityItem
+        {/*<SecurityItem
           title="Biometrik"
           sub="Fingerprint/ Face ID untuk login cepat"
           icon={Fingerprint}
@@ -63,7 +63,7 @@ export const Security = ({ navigation }: any) => {
           title="Perangkat Terpercaya"
           sub="1 perangkat aktif"
           icon={MonitorSmartphone}
-        />
+        />*/}
       </View>
     </SafeAreaView>
   );
