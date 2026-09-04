@@ -255,7 +255,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
             }}>
             <Search size={20} color="#A9A9A9" />
             <TextInput
-              placeholder="Nama, bank atau nomor rekening"
+              placeholder="Nama bank"
               placeholderTextColor="#A9A9A9"
               style={{ flex: 1, marginLeft: 10, fontFamily: 'Switzer-Regular', fontSize: 15 }}
               value={searchQuery}
