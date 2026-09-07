@@ -161,7 +161,7 @@ export const ForgotPin = () => {
           },
           onError: (err: any) => {
             setConfirmationPin('');
-            Toast.show({ type: 'error', text1: err?.message || 'Gagal mereset PIN' });
+            Toast.show({ type: 'error', text1: err?.message || err?.error?.message || 'Gagal mereset PIN' });
           },
         },
       );
