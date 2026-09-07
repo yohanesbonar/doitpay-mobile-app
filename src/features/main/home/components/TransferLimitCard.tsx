@@ -20,6 +20,7 @@ interface Props {
 }
 
 export const TransferLimitCard = ({
+  freeTransferQuotaRemaining = 0,
   freeTransferQuotaTotal = 0,
   freeTransferQuotaUsed = 0,
   maxLimit = 0,
@@ -28,7 +29,7 @@ export const TransferLimitCard = ({
   freeQuotaResetType = 'DAILY',
 }: Props) => {
   const percentage =
-    freeTransferQuotaTotal > 0 ? (freeTransferQuotaUsed / freeTransferQuotaTotal) * 100 : 0;
+    freeTransferQuotaTotal > 0 ? (freeTransferQuotaRemaining / freeTransferQuotaTotal) * 100 : 0;
 
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -79,7 +80,7 @@ export const TransferLimitCard = ({
 
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               <Text style={styles.quotaAmount}>
-                {freeTransferQuotaUsed}/{freeTransferQuotaTotal}
+                {freeTransferQuotaRemaining}/{freeTransferQuotaTotal}
               </Text>
               {freeQuotaResetType === 'DAILY' && (
                 <Text style={styles.percentageText}>per hari</Text>
@@ -183,6 +184,8 @@ const createStyles = (colors: any) =>
       marginTop: 12,
       marginBottom: 8,
       overflow: 'hidden',
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
     },
     progressFill: {
       height: 8,
