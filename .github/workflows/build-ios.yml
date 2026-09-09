@@ -287,46 +287,46 @@ jobs:
             --apiKey "$API_KEY_ID" \
             --apiIssuer "$API_ISSUER_ID"
 
-      # - name: Notify Success
-      #   if: success()
-      #   uses: tsickert/discord-webhook@v7.0.0
-      #   env:
-      #     UPLOAD_DESTINATION: ${{ inputs.upload_testflight && 'TestFlight' || inputs.upload_firebase && 'Firebase App Distribution' || 'the configured destination' }}
-      #   with:
-      #     username: GitHub
-      #     webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
-      #     embed-title: "✅ Building iOS Finished"
-      #     embed-color: 3066993
-      #     embed-url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-      #     embed-description: |
-      #       **Environment:** ${{ inputs.environment }}
-      #       **Build number:** #${{ github.run_number }}
-      #       **Branch:** `${{ github.ref_name }}`
-      #       **Actor:** ${{ github.actor }}
-      #       **Commit:** `${{ steps.commit.outputs.sha }}`
-      #       **Commit Message:**
-      #       ```
-      #       ${{ steps.commit.outputs.subject }}
-      #       ```
-      #       **Ready to test via ${{ env.UPLOAD_DESTINATION }}**
-      #     embed-footer-text: "${{ github.repository }}"
+      - name: Notify Success
+        if: success()
+        uses: tsickert/discord-webhook@v7.0.0
+        env:
+          UPLOAD_DESTINATION: ${{ inputs.upload_testflight && 'TestFlight' || inputs.upload_firebase && 'Firebase App Distribution' || 'the configured destination' }}
+        with:
+          username: GitHub
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
+          embed-title: "✅ Building iOS Finished"
+          embed-color: 3066993
+          embed-url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          embed-description: |
+            **Environment:** ${{ inputs.environment }}
+            **Build number:** #${{ github.run_number }}
+            **Branch:** `${{ github.ref_name }}`
+            **Actor:** ${{ github.actor }}
+            **Commit:** `${{ steps.commit.outputs.sha }}`
+            **Commit Message:**
+            ```
+            ${{ steps.commit.outputs.subject }}
+            ```
+            **Ready to test via ${{ env.UPLOAD_DESTINATION }}**
+          embed-footer-text: "${{ github.repository }}"
 
-      # - name: Notify Failure
-      #   if: failure()
-      #   uses: tsickert/discord-webhook@v7.0.0
-      #   with:
-      #     username: GitHub
-      #     webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
-      #     embed-title: "❌ Building iOS Failed"
-      #     embed-color: 15158332
-      #     embed-url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-      #     embed-description: |
-      #       **Environment:** ${{ inputs.environment }}
-      #       **Branch:** `${{ github.ref_name }}`
-      #       **Actor:** ${{ github.actor }}
-      #       **Commit:** `${{ steps.commit.outputs.sha }}`
-      #       **Commit Message:**
-      #       ```
-      #       ${{ steps.commit.outputs.subject }}
-      #       ```
-      #     embed-footer-text: "${{ github.repository }}"
+      - name: Notify Failure
+        if: failure()
+        uses: tsickert/discord-webhook@v7.0.0
+        with:
+          username: GitHub
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
+          embed-title: "❌ Building iOS Failed"
+          embed-color: 15158332
+          embed-url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          embed-description: |
+            **Environment:** ${{ inputs.environment }}
+            **Branch:** `${{ github.ref_name }}`
+            **Actor:** ${{ github.actor }}
+            **Commit:** `${{ steps.commit.outputs.sha }}`
+            **Commit Message:**
+            ```
+            ${{ steps.commit.outputs.subject }}
+            ```
+          embed-footer-text: "${{ github.repository }}"
