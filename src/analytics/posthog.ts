@@ -6,7 +6,19 @@ import PostHog from 'posthog-react-native';
 const apiKey = Config.POSTHOG_API_KEY?.trim();
 const host = Config.POSTHOG_HOST?.trim() || 'https://us.i.posthog.com';
 
-export const posthogClient = apiKey
+export const releaseStage = Config.POSTHOG_RELEASE_STAGE?.trim() || 'internal_release';
+
+// -----------------------------------------------------------------------------
+// ENVIRONMENT CHECK: PostHog will ONLY be initialized in production builds.
+// Adjust `Config.ENV` or `releaseStage` to match your project's .env variable.
+// -----------------------------------------------------------------------------
+const isProduction = Config.ENV === 'production' || releaseStage === 'public_release'
+
+/**
+ * Singleton PostHog client instance.
+ * Returns `null` if the app is running in non-production environments or if the API key is missing.
+ */
+export const posthogClient = isProduction && apiKey
   ? new PostHog(apiKey, {
       host,
       captureAppLifecycleEvents: true,
@@ -15,12 +27,22 @@ export const posthogClient = apiKey
     })
   : null;
 
-if (posthogClient) {
-  posthogClient.debug(true);
+// Temporary verification log
+if (__DEV__) {
+  console.log('--------------------------------------------------');
+  console.log(`📊 [PostHog Status] Active: ${Boolean(posthogClient)}`);
+  console.log(`📊 [PostHog Env] Config.ENV: ${Config.ENV} | Stage: ${releaseStage}`);
+  console.log('--------------------------------------------------');
 }
 
-export const releaseStage = Config.POSTHOG_RELEASE_STAGE?.trim() || 'internal_release';
+// Disable debug logs for production stability
+if (posthogClient) {
+  posthogClient.debug(false);
+}
 
+/**
+ * Default global properties attached to every tracked event.
+ */
 const commonProperties = {
   release_stage: releaseStage,
   platform: Platform.OS,
@@ -28,9 +50,15 @@ const commonProperties = {
   app_build: DeviceInfo.getBuildNumber(),
 };
 
+/**
+ * Safely captures a custom analytics event to PostHog.
+ * No-op if `posthogClient` is not initialized (e.g., in development/staging).
+ *
+ * @param eventName - The name of the event to track.
+ * @param properties - Additional metadata payload.
+ */
 export const trackPostHogEvent = (eventName: string, properties: Record<string, unknown> = {}) => {
   if (!posthogClient) {
-    console.log(`[PostHog] Failed to trigger event "${eventName}" because the apiKey is not configured.`);
     return;
   }
 
@@ -42,6 +70,12 @@ export const trackPostHogEvent = (eventName: string, properties: Record<string, 
   posthogClient.flush();
 };
 
+/**
+ * Safely tracks screen view navigation events.
+ *
+ * @param screenName - The identifier/name of the rendered screen.
+ * @param properties - Optional screen-related context (e.g., previous_screen_name).
+ */
 export const trackScreenView = (screenName: string, properties: Record<string, unknown> = {}) => {
   trackPostHogEvent('screen_viewed', {
     screen_name: screenName,
@@ -49,8 +83,14 @@ export const trackScreenView = (screenName: string, properties: Record<string, u
   });
 };
 
+/**
+ * Strips non-numeric characters from a raw phone string.
+ */
 const normalizePhoneNumber = (phone: string) => phone.replace(/[^0-9]/g, '');
 
+/**
+ * Masks a phone number for privacy logging purposes (e.g., "0812****5678").
+ */
 const maskPhoneNumber = (phone: string) => {
   const normalized = normalizePhoneNumber(phone);
 
@@ -61,26 +101,27 @@ const maskPhoneNumber = (phone: string) => {
   return `${normalized.slice(0, 2)}${'*'.repeat(Math.max(normalized.length - 4, 0))}${normalized.slice(-2)}`;
 };
 
+/**
+ * Identifies the current user in PostHog using their normalized phone number as distinct ID.
+ *
+ * @param phoneNumber - The user's phone number.
+ * @param properties - Additional user profile traits.
+ */
 export const identifyPostHogUser = (
   phoneNumber: string,
   properties: Record<string, unknown> = {},
 ) => {
-  console.log('[PostHog Debug] identifyPostHogUser called with parameter:', phoneNumber);
-
   if (!posthogClient) {
-    console.log('[PostHog] Identify failed: posthogClient is not initialized.');
     return;
   }
 
   const normalizedPhone = normalizePhoneNumber(phoneNumber);
 
   if (!normalizedPhone) {
-    console.log('[PostHog] Identify failed: phone number is empty or invalid.');
     return;
   }
 
   const maskedPhone = maskPhoneNumber(normalizedPhone);
-  console.log(`[PostHog] Identify starting. phone_number_masked=${maskedPhone}`);
 
   try {
     posthogClient.identify(normalizedPhone, {
@@ -90,12 +131,19 @@ export const identifyPostHogUser = (
     });
 
     posthogClient.flush();
-    console.log(`[PostHog] Identify success. phone_number_masked=${maskedPhone}`);
   } catch (error) {
-    console.error('[PostHog] Identify failed to send phone number.', error);
+    if (__DEV__) {
+      console.error('[PostHog] Failed to identify user:', error);
+    }
   }
 };
 
+/**
+ * Categorizes a monetary value into predefined statistical ranges for analytics segmenting.
+ *
+ * @param value - The numerical or string amount.
+ * @returns Range string descriptor.
+ */
 export const getAmountRange = (value?: string | number | null) => {
   const amount = typeof value === 'string' ? Number(value) : (value ?? 0);
 
