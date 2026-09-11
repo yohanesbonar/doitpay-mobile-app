@@ -70,6 +70,23 @@ export const trackPostHogEvent = (eventName: string, properties: Record<string, 
   posthogClient.flush();
 };
 
+export type PaymentMethod = 'VA' | 'QRIS';
+export type PaymentFlowMethod = 'transfer' | 'receive';
+export type PaymentFunnelStage = 'started' | 'submitted' | 'success' | 'failed';
+
+export const trackPaymentFunnelEvent = (
+  paymentMethod: PaymentMethod,
+  method: PaymentFlowMethod,
+  stage: PaymentFunnelStage,
+  properties: Record<string, unknown> = {},
+) => {
+  trackPostHogEvent(`payment_${paymentMethod.toLowerCase()}_${stage}`, {
+    payment_method: paymentMethod,
+    method,
+    ...properties,
+  });
+};
+
 /**
  * Safely tracks screen view navigation events.
  *

@@ -6,7 +6,11 @@ import {
   usePaymentStatusMutation,
 } from '@/hooks/useTransferMutation';
 import { formatApiDateToLocal } from '@/utils/Common';
-import { getAmountRange, trackPostHogEvent } from '@/analytics/posthog';
+import {
+  getAmountRange,
+  trackPaymentFunnelEvent,
+  trackPostHogEvent,
+} from '@/analytics/posthog';
 
 const PaymentInstructionScreen = () => {
   const navigation = useNavigation<any>();
@@ -129,6 +133,18 @@ const PaymentInstructionScreen = () => {
     lastUpdatedRef.current = serverTimestamp;
 
     if (currentServerStatus === 'PAID') {
+      trackPaymentFunnelEvent(
+        paymentMethod,
+        method === 'receive' ? 'receive' : 'transfer',
+        'success',
+        {
+          amount_range: getAmountRange(amount),
+          destination_bank: bankData?.shortName || bankData?.name || 'unknown',
+          source_bank: bankPayment?.code || bankData?.shortName || 'unknown',
+          transfer_id: activeId,
+        },
+      );
+
       if (method !== 'receive') {
         trackPostHogEvent('va_payment_detected', {
           amount_range: getAmountRange(amount),
@@ -164,6 +180,19 @@ const PaymentInstructionScreen = () => {
         });
       }
     } else if (currentServerStatus === 'EXPIRED' || currentServerStatus === 'FAILED') {
+      trackPaymentFunnelEvent(
+        paymentMethod,
+        method === 'receive' ? 'receive' : 'transfer',
+        'failed',
+        {
+          amount_range: getAmountRange(amount),
+          destination_bank: bankData?.shortName || bankData?.name || 'unknown',
+          source_bank: bankPayment?.code || bankData?.shortName || 'unknown',
+          failure_reason: currentServerStatus === 'EXPIRED' ? 'expired' : 'failed',
+          transfer_id: activeId,
+        },
+      );
+
       trackPostHogEvent(currentServerStatus === 'EXPIRED' ? 'va_expired' : 'transfer_failed', {
         amount_range: getAmountRange(amount),
         destination_bank: bankData?.shortName || bankData?.name || 'unknown',

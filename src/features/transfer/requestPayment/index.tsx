@@ -28,6 +28,7 @@ import { Info, TriangleAlert } from 'lucide-react-native';
 import { useIsFocused } from '@react-navigation/native';
 import { usePaymentMethodAvailability } from '../hooks/usePaymentMethodAvailability';
 import { useQuickAmounts } from '../hooks/useQuickAmounts';
+import { getAmountRange, trackPaymentFunnelEvent } from '@/analytics/posthog';
 
 interface RequestPaymentViewProps {
   onPressBack: () => void;
@@ -77,6 +78,17 @@ export const RequestPaymentView = ({
   const isFirstMount = useRef(true);
   const prevMethodPayment = useRef(methodPayment);
   const prevBankPayment = useRef(bankPayment?.code);
+  const hasTrackedStartedRef = useRef(false);
+
+  useEffect(() => {
+    if (hasTrackedStartedRef.current) return;
+
+    trackPaymentFunnelEvent(methodPayment, 'receive', 'started', {
+      amount_range: getAmountRange(amount),
+      source_bank: bankPayment?.code || 'unknown',
+    });
+    hasTrackedStartedRef.current = true;
+  }, [amount, bankPayment?.code, methodPayment]);
 
   useEffect(() => {
     const { vaEnabled, qrisEnabled, defaultMethod } = paymentMethodAvailability;
@@ -105,12 +117,24 @@ export const RequestPaymentView = ({
       {
         onSuccess: (data) => {
           let receiveData = data?.data ?? {};
+          trackPaymentFunnelEvent(methodPayment, 'receive', 'submitted', {
+            amount_range: getAmountRange(amount),
+            source_bank: bankPayment?.code || 'unknown',
+            transfer_id: receiveData?.id,
+          });
+
           if (methodPayment == 'QRIS')
             onGenerateQR(methodPayment, amount, receiveData, bankPayment);
           else gotoPaymentInstruction(methodPayment, amount, receiveData, bankPayment);
         },
         onError: (error: any) => {
           console.error('error postReceive', error?.error?.message);
+          trackPaymentFunnelEvent(methodPayment, 'receive', 'failed', {
+            amount_range: getAmountRange(amount),
+            source_bank: bankPayment?.code || 'unknown',
+            failure_reason: 'payment_creation_failed',
+          });
+
           Toast.show({
             type: 'error',
             text1: error?.error?.message ?? '',

@@ -28,7 +28,11 @@ import { paymentApi, PaymentCalculatePayload } from './api/payment-calculate-api
 import { Info, TriangleAlert, ChevronDown, Check } from 'lucide-react-native';
 import { usePaymentMethodAvailability } from '../hooks/usePaymentMethodAvailability';
 import { useQuickAmounts } from '../hooks/useQuickAmounts';
-import { getAmountRange, trackPostHogEvent } from '@/analytics/posthog';
+import {
+  getAmountRange,
+  trackPaymentFunnelEvent,
+  trackPostHogEvent,
+} from '@/analytics/posthog';
 
 interface TransferDetailViewProps {
   accountData: {
@@ -118,6 +122,14 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
 
   useEffect(() => {
     if (hasTrackedReviewViewRef.current) return;
+
+    if (method === 'send') {
+      trackPaymentFunnelEvent(methodPayment, 'transfer', 'started', {
+        amount_range: getAmountRange(amount),
+        destination_bank: bankData?.shortName || bankData?.name || 'unknown',
+        source_bank: bankPayment?.code || bankData?.shortName || 'unknown',
+      });
+    }
 
     trackPostHogEvent('transfer_review_viewed', {
       amount_range: getAmountRange(amount),
@@ -250,10 +262,30 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
         onSuccess: (data) => {
           let transferData = data?.data ?? {};
           console.log('postTransfer onSuccess bankPayment', bankPayment);
+
+          if (method === 'send') {
+            trackPaymentFunnelEvent(methodPayment, 'transfer', 'submitted', {
+              amount_range: getAmountRange(amount),
+              destination_bank: bankData?.shortName || bankData?.name || 'unknown',
+              source_bank: bankPayment?.code || bankData?.shortName || 'unknown',
+              transfer_id: transferData?.id,
+            });
+          }
+
           gotoPaymentInstruction(methodPayment, amount, transferData, bankPayment);
         },
         onError: (error) => {
           console.log('postTransfer onError', error);
+
+          if (method === 'send') {
+            trackPaymentFunnelEvent(methodPayment, 'transfer', 'failed', {
+              amount_range: getAmountRange(amount),
+              destination_bank: bankData?.shortName || bankData?.name || 'unknown',
+              source_bank: bankPayment?.code || bankData?.shortName || 'unknown',
+              failure_reason: 'payment_creation_failed',
+            });
+          }
+
           if (error?.error?.message) {
             Toast.show({
               type: 'error',
