@@ -26,6 +26,7 @@ import {
   useLoginVerifyOtp,
   useLogin,
 } from '../../../hooks/useAuthMutation.ts';
+import type { LoginOtpResponse } from '../../../api/auth.ts';
 import InputPhoneNumber from './components/InputPhoneNumber.tsx';
 import InputOTPNumber from './components/InputOTPNumber.tsx';
 import Toast from 'react-native-toast-message';
@@ -59,6 +60,8 @@ export const AuthEntry = ({ route }) => {
   const [timerOTP, setTimerOTP] = useState(30);
   const [phoneNumbData, setPhoneNumData] = useState({ phoneNumber: '', countryCode: '' });
   const [verificationToken, setVerificationToken] = useState('');
+  // Trusted device: OTP step (step 2) was never shown, which the back handler has to know.
+  const [isOtpSkipped, setIsOtpSkipped] = useState(false);
   const ref = useBlurOnFulfill({ value: valueOTP, cellCount: CELL_COUNT_OTP });
   const [props, getCellOnLayoutHandler] = useClearByFocusCell({
     value: valueOTP,
@@ -301,6 +304,23 @@ export const AuthEntry = ({ route }) => {
     }
   };
 
+  // Trusted device: BE answers `otpSkipped` on the OTP request itself, so the choice between
+  // showing the OTP step and jumping straight to PIN entry is made here - one place for both
+  // call sites below.
+  const handleLoginOtpRequested = (res: LoginOtpResponse) => {
+    const otpSkipped = res?.data?.otpSkipped === true;
+    setIsOtpSkipped(otpSkipped);
+
+    if (otpSkipped) {
+      // useLoginRequestOtp has already stored the verification token, so step 2 is not needed.
+      setCurrentStep(4);
+      return;
+    }
+
+    setTimerOTP(res.data.retryAfterSeconds || 30);
+    setCurrentStep(2);
+  };
+
   const handleSendOtp = () => {
     const { phoneNumber, countryCode } = phoneNumbData;
     const formattedPhone = (countryCode + phoneNumber).replace('+', '');
@@ -332,10 +352,7 @@ export const AuthEntry = ({ route }) => {
           method: 'SMS',
         },
         {
-          onSuccess: (res) => {
-            setTimerOTP(res.data.retryAfterSeconds || 30);
-            setCurrentStep(2);
-          },
+          onSuccess: handleLoginOtpRequested,
           onError: (err: any) => {
             console.error('error loginRequestOTP', err);
             Toast.show({
@@ -506,10 +523,7 @@ export const AuthEntry = ({ route }) => {
               method: 'SMS',
             },
             {
-              onSuccess: (res) => {
-                setTimerOTP(res.data.retryAfterSeconds || 30);
-                setCurrentStep(2);
-              },
+              onSuccess: handleLoginOtpRequested,
               onError: (err: any) => {
                 console.error('error loginRequestOTP', err?.message ?? err?.error?.message);
                 Toast.show({
@@ -607,7 +621,11 @@ export const AuthEntry = ({ route }) => {
                         setCurrentStep((prev) => Math.max(prev - 1, 1));
                       } else {
                         if (currentStep == 4) {
-                          setCurrentStep((prev) => Math.max(prev - 2, 1));
+                          // Normally step 4 (PIN) is reached from step 2 (OTP), so back skips
+                          // over the unused step 3. On a trusted device step 2 never happened,
+                          // so going back there would strand the user on an OTP screen they
+                          // were never shown - return to the phone number input instead.
+                          setCurrentStep(isOtpSkipped ? 1 : 2);
                         } else {
                           setCurrentStep((prev) => Math.max(prev - 1, 1));
                         }

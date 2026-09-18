@@ -29,7 +29,14 @@ import {
   ChangePinPayload,
   ChangePinResponse,
 } from '../api/auth';
-import { setStorageItem, storage, StorageKey } from '../storage';
+import {
+  clearDeviceToken,
+  getDeviceToken,
+  setDeviceToken,
+  setStorageItem,
+  storage,
+  StorageKey,
+} from '../storage';
 import { useAuthStore } from '../storage/useAuthStore';
 import { Platform } from 'react-native';
 import { getMessaging, getToken } from '@react-native-firebase/messaging';
@@ -152,6 +159,26 @@ export const useLoginRequestOtp = () => {
     onSuccess: (data, variables) => {
       console.log('useLoginRequestOtp data.message:', data.message);
       console.log('useLoginRequestOtp data', data);
+
+      const session = data?.data;
+
+      if (session?.otpSkipped && session?.verificationToken) {
+        // Trusted device: BE already issued the verification token that authorises
+        // /v1/auth/login, so the OTP step is skipped entirely.
+        //
+        // Stored with setStorageItem and NOT setToken - exactly as useLoginVerifyOtp does -
+        // so the zustand `accessToken` stays null and the app cannot slip into the
+        // authenticated stack before the PIN has been entered.
+        setStorageItem(StorageKey.ACCESS_TOKEN, session.verificationToken);
+
+        console.log('useLoginRequestOtp OTP skipped, verification token saved to MMKV');
+      } else if (session?.otpSkipped === false && getDeviceToken()) {
+        // BE is the source of truth: it saw our token and still demands an OTP, so the local
+        // copy is stale (revoked or dormant). Drop it and let the OTP flow mint a fresh one.
+        clearDeviceToken();
+
+        console.log('useLoginRequestOtp device token rejected by BE, cleared from MMKV');
+      }
     },
     onError: (error) => {
       console.log('error useLoginRequestOtp', error);
@@ -235,6 +262,13 @@ export const useLogin = () => {
       }
       if (session?.expiresAt) {
         setExpiresAt(session.expiresAt);
+      }
+
+      // Trusted Device: BE re-issues the token on every successful login, whether this login
+      // went through an OTP or skipped it, so storing it here covers both paths and refreshes
+      // the dormancy window each time.
+      if (session?.deviceToken) {
+        setDeviceToken(session.deviceToken, session.deviceTokenExpiresAt);
       }
 
       console.warn('[AuthHook] login success, fallback PostHog identify from hook.');

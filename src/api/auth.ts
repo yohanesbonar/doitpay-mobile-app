@@ -1,5 +1,6 @@
 import apiClient from './client';
 import { generateUUID } from '@/utils/uuid';
+import { getDeviceToken } from '../storage';
 
 // REGISTER
 export interface RegisterOtpRequestPayload {
@@ -74,6 +75,11 @@ export type LoginOtpResponse = {
   message: string;
   data: {
     retryAfterSeconds: number;
+    // Trusted Device: when true, BE recognised the device from `X-Device-Token` and already
+    // issued `verificationToken` (verifyMethod: TRUSTED_DEVICE), so there is no OTP to enter.
+    otpSkipped?: boolean;
+    verificationToken?: string;
+    expiresAt?: string;
   };
 };
 
@@ -97,6 +103,10 @@ export type LoginResponse = {
     accessToken: string;
     refreshToken: string;
     expiresAt: string;
+    // Trusted Device token, re-issued on every successful login. Its expiry is the dormancy
+    // window after which the next login is challenged with an OTP again.
+    deviceToken?: string;
+    deviceTokenExpiresAt?: string;
   };
 };
 
@@ -253,8 +263,14 @@ export const authApi = {
     return data;
   },
   loginRequestOtp: async (payload: LoginOtpRequestPayload): Promise<LoginOtpResponse> => {
+    // X-Device-Token is attached here rather than in the global request interceptor: this is
+    // the only endpoint that acts on it, and the trust credential should not be broadcast to
+    // every request. Absent/expired token simply means BE challenges with an OTP as before.
+    const deviceToken = getDeviceToken();
+
     const { data } = await apiClient.post<LoginOtpResponse>('/v1/auth/login/otp/request', payload, {
       noNeedAuth: true,
+      ...(deviceToken ? { headers: { 'X-Device-Token': deviceToken } } : {}),
     });
     return data;
   },
