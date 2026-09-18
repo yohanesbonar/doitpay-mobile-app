@@ -15,6 +15,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useGetProfile } from '@/hooks/useMeMutation.ts';
 import _ from 'lodash';
 import { BankListSkeleton } from './BankListSkeleton.tsx';
+import { useTransferFeatureAvailability } from '../hooks/useTransferFeatureAvailability.ts';
 
 interface BankListViewProps {
   onPressBack: () => void;
@@ -54,6 +55,13 @@ export const BankListView = ({
   const [activeTab, setActiveTab] = useState<'send' | 'receive'>('send');
   const [allBanks, setAllBanks] = useState<any[]>([]);
   const [popularBanks, setPopularBanks] = useState<any[]>([]);
+  const {
+    transferEnabled,
+    receiveEnabled,
+    isLoading: isFeatureLoading,
+  } = useTransferFeatureAvailability();
+  const showTransferTab = isFeatureLoading || transferEnabled;
+  const showReceiveTab = isFeatureLoading || receiveEnabled;
 
   const { mutate: mutateBanks, isPending: isPendingBank } = useBanks();
   const [isAccountSheetMounted, setIsAccountSheetMounted] = useState(false);
@@ -93,6 +101,18 @@ export const BankListView = ({
 
   useFocusEffect(
     useCallback(() => {
+      if (isFeatureLoading) {
+        return;
+      }
+
+      if (!transferEnabled) {
+        if (receiveEnabled) {
+          goToRequestPayment();
+        }
+
+        return;
+      }
+
       setActiveTab('send');
       fetchBanksFromApi('');
 
@@ -112,7 +132,15 @@ export const BankListView = ({
           },
         },
       );
-    }, [fetchBanksFromApi, getProfile, fromProfile]),
+    }, [
+      fetchBanksFromApi,
+      fromProfile,
+      getProfile,
+      goToRequestPayment,
+      isFeatureLoading,
+      receiveEnabled,
+      transferEnabled,
+    ]),
   );
 
   useEffect(() => {
@@ -156,109 +184,121 @@ export const BankListView = ({
           return (
             <View style={{ flex: 1 }}>
               {!fromProfile && (
-                <View style={styles.tabContainer}>
-                  <TouchableOpacity
-                    style={[styles.tabButton, activeTab === 'send' && styles.activeTab]}
-                    onPress={() => setActiveTab('send')}>
-                    <ArrowUpRight size={18} color={activeTab === 'send' ? '#FFF' : '#000'} />
-                    <Text style={[styles.tabText, activeTab === 'send' && styles.activeTabText]}>
-                      Kirim
-                    </Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[styles.tabButton, activeTab === 'receive' && styles.activeTab]}
-                    onPress={() => onPressReceive()}>
-                    <ArrowDownLeft size={18} color={activeTab === 'receive' ? '#FFF' : '#000'} />
-                    <Text style={[styles.tabText, activeTab === 'receive' && styles.activeTabText]}>
-                      Terima
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-
-              <View style={styles.searchContainer}>
-                <Search size={20} color="#A9A9A9" style={styles.searchIcon} />
-                <TextInput
-                  style={styles.searchInput}
-                  placeholder={t('bankList.nameBankAccount')}
-                  value={values.searchQuery}
-                  onChangeText={(text) => {
-                    setFieldValue('searchQuery', text);
-                    debouncedSearch(text);
-                  }}
-                  placeholderTextColor="#A9A9A9"
-                />
-              </View>
-
-              {isPendingBank ? (
-                <BankListSkeleton styles={styles} t={t} />
-              ) : (
-                <FlatList
-                  data={allBanks}
-                  keyExtractor={(item, index) => index.toString()}
-                  ListHeaderComponent={
-                    <View>
-                      {popularBanks.length > 0 && (
-                        <Text style={[styles.sectionTitle, { marginTop: 2 }]}>
-                          {t('bankList.populerBank')}
-                        </Text>
-                      )}
-                      <View style={styles.gridContainer}>
-                        {popularBanks.map((bank, index) => (
-                          <TouchableOpacity
-                            key={index}
-                            style={[
-                              styles.gridBox,
-                              values.selectedBank === bank.id && styles.selectedBox,
-                            ]}
-                            onPress={() => {
-                              setFieldValue('selectedBank', bank);
-                              onSelectBank(bank, activeTab);
-                            }}>
-                            <FastImage
-                              style={styles.logoGrid}
-                              source={{
-                                uri: bank?.logoUrl,
-                                priority: FastImage.priority.normal,
-                                cache: FastImage.cacheControl.immutable,
-                              }}
-                              resizeMode={FastImage.resizeMode.contain}
-                            />
-                          </TouchableOpacity>
-                        ))}
-                      </View>
-                      {allBanks.length > 0 && (
-                        <Text style={styles.sectionTitle}>{t('bankList.allBank')}</Text>
-                      )}
-                    </View>
-                  }
-                  renderItem={({ item }) => (
+                <View
+                  style={[
+                    styles.tabContainer,
+                    { marginTop: showTransferTab && showReceiveTab ? 15 : 0 },
+                  ]}>
+                  {showTransferTab && showReceiveTab && (
                     <TouchableOpacity
-                      style={styles.listItem}
-                      onPress={() => {
-                        setFieldValue('selectedBank', item);
-                        onSelectBank(item, activeTab);
-                      }}>
-                      <View style={styles.listLogoContainer}>
-                        <FastImage
-                          style={styles.logoList}
-                          source={{
-                            uri: item?.logoUrl,
-                            priority: FastImage.priority.normal,
-                            cache: FastImage.cacheControl.immutable,
-                          }}
-                          resizeMode={FastImage.resizeMode.contain}
-                        />
-                      </View>
-                      <Text style={styles.listText} numberOfLines={2} ellipsizeMode="tail">
-                        {item?.shortName}
+                      style={[styles.tabButton, activeTab === 'send' && styles.activeTab]}
+                      onPress={() => setActiveTab('send')}>
+                      <ArrowUpRight size={18} color={activeTab === 'send' ? '#FFF' : '#000'} />
+                      <Text style={[styles.tabText, activeTab === 'send' && styles.activeTabText]}>
+                        Kirim
                       </Text>
                     </TouchableOpacity>
                   )}
-                  contentContainerStyle={styles.listPadding}
-                />
+
+                  {showReceiveTab && (
+                    <TouchableOpacity
+                      style={[styles.tabButton, activeTab === 'receive' && styles.activeTab]}
+                      onPress={() => onPressReceive()}>
+                      <ArrowDownLeft size={18} color={activeTab === 'receive' ? '#FFF' : '#000'} />
+                      <Text
+                        style={[styles.tabText, activeTab === 'receive' && styles.activeTabText]}>
+                        Terima
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
               )}
+
+              {showTransferTab && (
+                <View style={styles.searchContainer}>
+                  <Search size={20} color="#A9A9A9" style={styles.searchIcon} />
+                  <TextInput
+                    style={styles.searchInput}
+                    placeholder={t('bankList.nameBankAccount')}
+                    value={values.searchQuery}
+                    onChangeText={(text) => {
+                      setFieldValue('searchQuery', text);
+                      debouncedSearch(text);
+                    }}
+                    placeholderTextColor="#A9A9A9"
+                  />
+                </View>
+              )}
+
+              {showTransferTab &&
+                (isPendingBank ? (
+                  <BankListSkeleton styles={styles} t={t} />
+                ) : (
+                  <FlatList
+                    data={allBanks}
+                    keyExtractor={(item, index) => index.toString()}
+                    ListHeaderComponent={
+                      <View>
+                        {popularBanks.length > 0 && (
+                          <Text style={[styles.sectionTitle, { marginTop: 2 }]}>
+                            {t('bankList.populerBank')}
+                          </Text>
+                        )}
+                        <View style={styles.gridContainer}>
+                          {popularBanks.map((bank, index) => (
+                            <TouchableOpacity
+                              key={index}
+                              style={[
+                                styles.gridBox,
+                                values.selectedBank === bank.id && styles.selectedBox,
+                              ]}
+                              onPress={() => {
+                                setFieldValue('selectedBank', bank);
+                                onSelectBank(bank, activeTab);
+                              }}>
+                              <FastImage
+                                style={styles.logoGrid}
+                                source={{
+                                  uri: bank?.logoUrl,
+                                  priority: FastImage.priority.normal,
+                                  cache: FastImage.cacheControl.immutable,
+                                }}
+                                resizeMode={FastImage.resizeMode.contain}
+                              />
+                            </TouchableOpacity>
+                          ))}
+                        </View>
+                        {allBanks.length > 0 && (
+                          <Text style={styles.sectionTitle}>{t('bankList.allBank')}</Text>
+                        )}
+                      </View>
+                    }
+                    renderItem={({ item }) => (
+                      <TouchableOpacity
+                        style={styles.listItem}
+                        onPress={() => {
+                          setFieldValue('selectedBank', item);
+                          onSelectBank(item, activeTab);
+                        }}>
+                        <View style={styles.listLogoContainer}>
+                          <FastImage
+                            style={styles.logoList}
+                            source={{
+                              uri: item?.logoUrl,
+                              priority: FastImage.priority.normal,
+                              cache: FastImage.cacheControl.immutable,
+                            }}
+                            resizeMode={FastImage.resizeMode.contain}
+                          />
+                        </View>
+                        <Text style={styles.listText} numberOfLines={2} ellipsizeMode="tail">
+                          {item?.shortName}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                    contentContainerStyle={styles.listPadding}
+                  />
+                ))}
 
               {!fromTabBar && !fromProfile && (
                 <View style={styles.footer}>

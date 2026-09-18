@@ -51,7 +51,7 @@ const BankListScreen = () => {
   };
 
   const goToRequestPayment = () => {
-    navigation.navigate('RequestPayment');
+    navigation.dispatch(StackActions.replace('RequestPayment'));
   };
 
   return (

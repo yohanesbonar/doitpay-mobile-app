@@ -1,11 +1,22 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Modal, Button, Pressable, Alert, Linking, LogBox } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Modal,
+  Button,
+  Pressable,
+  Alert,
+  Linking,
+  LogBox,
+} from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { I18nextProvider } from 'react-i18next';
 import i18next from 'i18next';
 import Toast from 'react-native-toast-message';
 import { getMessaging, setBackgroundMessageHandler } from '@react-native-firebase/messaging';
+import analytics from '@react-native-firebase/analytics';
 import notifee, { EventType } from '@notifee/react-native';
 import perf from '@react-native-firebase/perf';
 import crashlytics from '@react-native-firebase/crashlytics';
@@ -45,6 +56,25 @@ if (__DEV__) {
 }
 
 const messagingInstance = getMessaging();
+
+const appEnvironment = Config.ENV?.trim().toLowerCase() === 'production' ? 'production' : 'staging';
+if (__DEV__) {
+  console.log('ENV :', appEnvironment);
+}
+
+analytics()
+  .setUserProperty('app_environment', appEnvironment)
+  .then(() => {
+    if (__DEV__) {
+      console.log('✅ [Analytics] App environment set successfully:', appEnvironment);
+    }
+  })
+  .catch((error) => {
+    if (__DEV__) {
+      console.error('❌ [Analytics] Failed to set app environment:', error);
+    }
+  });
+
 // Handle background messages
 setBackgroundMessageHandler(messagingInstance, async (remoteMessage) => {
   // console.log('Message handled in the background!', remoteMessage);
@@ -147,7 +177,8 @@ const App = () => {
 
   const onNavigationStateChange = async () => {
     const previousRouteName = routeNameRef.current;
-    const currentRouteName = (navigationRef.getCurrentRoute() as { name?: string } | undefined)?.name;
+    const currentRouteName = (navigationRef.getCurrentRoute() as { name?: string } | undefined)
+      ?.name;
 
     if (previousRouteName !== currentRouteName) {
       if (currentRouteName) {

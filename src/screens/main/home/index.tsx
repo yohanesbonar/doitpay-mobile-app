@@ -2,9 +2,13 @@ import { useNavigation } from '@react-navigation/native';
 import { HomeView } from '../../../features/main/home';
 import React from 'react';
 import { trackPostHogEvent } from '@/analytics/posthog';
+import { useTransferFeatureAvailability } from '@/features/transfer/hooks/useTransferFeatureAvailability';
 
 const HomeScreen = () => {
   const navigation = useNavigation<any>();
+  const { transferEnabled, isLoading: isFeatureLoading } = useTransferFeatureAvailability();
+
+  const canTransfer = isFeatureLoading || transferEnabled;
 
   const goToSearchAccount = () => {
     trackPostHogEvent('transfer_started', {
@@ -45,6 +49,10 @@ const HomeScreen = () => {
     accountData: any;
     beneficiaryId: string;
   }) => {
+    if (!canTransfer) {
+      return;
+    }
+
     trackPostHogEvent('transfer_started', {
       entry_point: 'home_recent_beneficiary',
       destination_bank: params.bankData?.shortName || params.bankData?.name || 'unknown',
