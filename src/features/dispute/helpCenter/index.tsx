@@ -20,7 +20,7 @@ interface DisputeHelpCenterViewProps {
 }
 
 const REMOTE_CONFIG_DEFAULTS = {
-  support_whatsapp_number: '081153508883',
+  support_whatsapp_number: '+6281153508883',
   support_email: 'support-customer@doitpay.co',
 };
 
@@ -113,10 +113,13 @@ export const DisputeHelpCenterView = ({
 
     try {
       if (await Linking.canOpenURL(whatsappUrl)) {
-        await Linking.openURL(whatsappUrl);
-      } else {
-        await Linking.openURL(fallbackUrl);
+        try {
+          await Linking.openURL(whatsappUrl);
+          return;
+        } catch {}
       }
+
+      await Linking.openURL(fallbackUrl);
     } catch {
       Alert.alert('Gagal', 'WhatsApp tidak dapat dibuka di perangkat ini.');
     }
