@@ -1,21 +1,30 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Text, TouchableOpacity, View, StyleSheet, TextInput, ScrollView } from 'react-native';
-import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import {
-  ChevronDown,
-  ChevronLeft,
-  ChevronUp,
-  Mail,
-  MessageSquare,
-  Search,
-  FileText,
-} from 'lucide-react-native';
+  Alert,
+  Linking,
+  Text,
+  TouchableOpacity,
+  View,
+  StyleSheet,
+  TextInput,
+  ScrollView,
+} from 'react-native';
+import remoteConfig from '@react-native-firebase/remote-config';
+import HeaderToolbar from '@/components/molecules/HeaderToolbar';
+import { ChevronDown, ChevronUp, Mail, MessageSquare, Search, FileText } from 'lucide-react-native';
 
 interface DisputeHelpCenterViewProps {
   onPressBack: () => void;
   onPressReportCenter: () => void;
 }
+
+const REMOTE_CONFIG_DEFAULTS = {
+  support_whatsapp_number: '081153508883',
+  support_email: 'support-customer@doitpay.co',
+};
+
+const normalizePhoneNumber = (value: string) => value.replace(/[^\d]/g, '');
 
 const FAQS = [
   {
@@ -50,7 +59,83 @@ export const DisputeHelpCenterView = ({
   onPressBack,
   onPressReportCenter,
 }: DisputeHelpCenterViewProps) => {
-  const [expandedIndex, setExpandedIndex] = React.useState<number | null>(0);
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(0);
+  const [supportWhatsappNumber, setSupportWhatsappNumber] = useState(
+    REMOTE_CONFIG_DEFAULTS.support_whatsapp_number,
+  );
+  const [supportEmail, setSupportEmail] = useState(REMOTE_CONFIG_DEFAULTS.support_email);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadSupportConfig = async () => {
+      try {
+        const rc = remoteConfig();
+
+        await rc.setConfigSettings({
+          fetchTimeMillis: 10_000,
+          minimumFetchIntervalMillis: __DEV__ ? 0 : 3_600_000,
+        });
+        await rc.setDefaults(REMOTE_CONFIG_DEFAULTS);
+        await rc.activate();
+
+        const applyConfig = () => {
+          if (!isMounted) {
+            return;
+          }
+
+          const whatsappNumber = rc.getValue('support_whatsapp_number').asString().trim();
+          const email = rc.getValue('support_email').asString().trim();
+
+          setSupportWhatsappNumber(
+            whatsappNumber || REMOTE_CONFIG_DEFAULTS.support_whatsapp_number,
+          );
+          setSupportEmail(email || REMOTE_CONFIG_DEFAULTS.support_email);
+        };
+
+        applyConfig();
+        await rc.fetchAndActivate();
+        applyConfig();
+      } catch {}
+    };
+
+    loadSupportConfig();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const onPressWhatsapp = async () => {
+    const phoneNumber = normalizePhoneNumber(supportWhatsappNumber);
+    const whatsappUrl = `whatsapp://send?phone=${phoneNumber}`;
+    const fallbackUrl = `https://wa.me/${phoneNumber}`;
+
+    try {
+      if (await Linking.canOpenURL(whatsappUrl)) {
+        await Linking.openURL(whatsappUrl);
+      } else {
+        await Linking.openURL(fallbackUrl);
+      }
+    } catch {
+      Alert.alert('Gagal', 'WhatsApp tidak dapat dibuka di perangkat ini.');
+    }
+  };
+
+  const onPressEmail = async () => {
+    const mailtoUrl = `mailto:${supportEmail}`;
+    const browserUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(supportEmail)}`;
+
+    try {
+      await Linking.openURL(mailtoUrl);
+    } catch {
+      try {
+        await Linking.openURL(browserUrl);
+      } catch {
+        Alert.alert('Gagal', 'Email tidak dapat dibuka di perangkat ini.');
+      }
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['bottom']}>
@@ -72,7 +157,7 @@ export const DisputeHelpCenterView = ({
           />
         </View>
 
-        <TouchableOpacity style={styles.menuCard} activeOpacity={0.8}>
+        <TouchableOpacity style={styles.menuCard} activeOpacity={0.8} onPress={onPressWhatsapp}>
           <View style={styles.menuIconWrapper}>
             <MessageSquare size={18} color="#6B7280" />
           </View>
@@ -82,13 +167,13 @@ export const DisputeHelpCenterView = ({
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuCard} activeOpacity={0.8}>
+        <TouchableOpacity style={styles.menuCard} activeOpacity={0.8} onPress={onPressEmail}>
           <View style={styles.menuIconWrapper}>
             <Mail size={18} color="#6B7280" />
           </View>
           <View style={styles.menuContent}>
             <Text style={styles.menuTitle}>Email</Text>
-            <Text style={styles.menuSubtitle}>help@doitpay.co</Text>
+            <Text style={styles.menuSubtitle}>{supportEmail}</Text>
           </View>
         </TouchableOpacity>
 
