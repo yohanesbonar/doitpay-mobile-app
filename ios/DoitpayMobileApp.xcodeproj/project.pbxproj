@@ -462,7 +462,7 @@
 				CODE_SIGN_ENTITLEMENTS = DoitpayMobileApp/DoitpayMobileApp.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 24;
+				CURRENT_PROJECT_VERSION = 25;
 				DEVELOPMENT_TEAM = 8643BUJ833;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = DoitpayMobileApp/Info.plist;
@@ -497,7 +497,7 @@
 				CODE_SIGN_ENTITLEMENTS = DoitpayMobileApp/DoitpayMobileApp.production.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 24;
+				CURRENT_PROJECT_VERSION = 25;
 				DEVELOPMENT_TEAM = 8643BUJ833;
 				INFOPLIST_FILE = DoitpayMobileApp/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Doitpay-Production";
@@ -717,7 +717,7 @@
 				CODE_SIGN_ENTITLEMENTS = DoitpayMobileApp/DoitpayMobileApp.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 24;
+				CURRENT_PROJECT_VERSION = 25;
 				DEVELOPMENT_TEAM = 8643BUJ833;
 				INFOPLIST_FILE = DoitpayMobileApp/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Doitpay-Staging";
