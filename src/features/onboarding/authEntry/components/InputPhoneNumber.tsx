@@ -18,6 +18,11 @@ const InputPhoneNumber: React.FC<InputPhoneNumberProps> = ({ styles }) => {
   const { handleChange, handleBlur, setFieldValue, values, errors } =
     useFormikContext<PhoneNumberFormValues>();
 
+  const normalizePhoneNumber = (value: string) => {
+    const digits = value.replace(/\D/g, '');
+    return digits.startsWith('0') ? digits.replace(/^0+/, '') : digits;
+  };
+
   const countryData = [
     {
       label: 'Indonesia (+62)',
@@ -74,7 +79,11 @@ const InputPhoneNumber: React.FC<InputPhoneNumberProps> = ({ styles }) => {
             placeholder="Ex: 8132193203101"
             placeholderTextColor="#A9A9A9"
             keyboardType="phone-pad"
-            onChangeText={handleChange('phoneNumber')}
+            maxLength={16}
+            onChangeText={(text) => {
+              const normalized = normalizePhoneNumber(text);
+              setFieldValue('phoneNumber', normalized);
+            }}
             onBlur={handleBlur('phoneNumber')}
             value={values.phoneNumber}
             autoFocus
