@@ -47,7 +47,7 @@ export const FilterBottomSheet = ({
 
   const handleApply = () => {
     setFilters(tempFilters);
-    onClose();
+    bottomSheetRef.current?.dismiss();
   };
 
   const renderDropdown = (
@@ -99,6 +99,7 @@ export const FilterBottomSheet = ({
       ref={bottomSheetRef}
       snapPoints={snapPoints}
       enablePanDownToClose
+      enableDynamicSizing={false}
       backdropComponent={renderBackdrop}
       onDismiss={handleDismiss}
       handleIndicatorStyle={{ backgroundColor: '#E5E5E5', width: 40 }}>
