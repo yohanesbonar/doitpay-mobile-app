@@ -277,7 +277,7 @@ const App = () => {
                   </Text>
                 </View>
               )}
-              <Toast config={toastConfig} />
+              <Toast config={toastConfig} position="bottom" />
               {isLoggerEnabled && isButtonVisible && (
                 <Pressable
                   style={styles.floatingDebugButton}

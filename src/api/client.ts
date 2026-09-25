@@ -84,8 +84,8 @@ apiClient.interceptors.request.use(
     if (!netState.isConnected && !netState.isInternetReachable) {
       Toast.show({
         type: 'error',
-        position: 'top',
-        topOffset: 70,
+        position: 'bottom',
+        bottomOffset: 70,
         text1: 'No Internet Connection',
         text2: 'Please check your network and try again.',
       });
