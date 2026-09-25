@@ -257,12 +257,19 @@ export const createStyles = (colors: any) => {
       lineHeight: 20,
     },
     dropdown: {
-      width: 100,
-      paddingVertical: 16,
+      width: 115,
+      height: 56,
+      flexShrink: 0,
       borderWidth: 1,
       borderColor: '#E0E0E0',
       borderRadius: 12,
-      paddingHorizontal: 10,
+      paddingHorizontal: 16,
+    },
+    dropdownSelectedText: {
+      flexShrink: 0,
+      fontSize: 16,
+      fontFamily: 'Switzer-Medium',
+      color: '#000',
     },
     dropdownContainer: {
       borderRadius: 12,

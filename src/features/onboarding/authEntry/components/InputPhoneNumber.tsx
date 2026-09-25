@@ -50,6 +50,7 @@ const InputPhoneNumber: React.FC<InputPhoneNumberProps> = ({ styles }) => {
         <View style={styles.inputGroup}>
           <Dropdown
             style={styles.dropdown}
+            selectedTextStyle={styles.dropdownSelectedText}
             containerStyle={styles.dropdownContainer}
             data={countryData}
             search
