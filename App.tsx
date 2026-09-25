@@ -42,6 +42,9 @@ import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { queryClient } from './src/api/queryClient';
 import { navigationRef } from '@/navigation/navigationRef.ts';
 import { SecurityBlocker } from '@/components/organisms/SecurityBlocker/index.tsx';
+import { AppLockScreen } from '@/components/organisms/AppLockScreen/index.tsx';
+import { startAppLockWatcher } from '@/utils/AppLock/appLockManager.ts';
+import { useAuthStore } from '@/storage/useAuthStore.ts';
 import { UpdateAppBottomSheet, UpdateAppData } from '@/components/molecules/UpdateAppBottomSheet';
 import { updateAppApi } from '@/api/updateApp';
 import { PostHogProvider } from 'posthog-react-native';
@@ -106,6 +109,41 @@ const App = () => {
 
   const routeNameRef = useRef<string | undefined>(undefined);
   const traceRef = useRef<any>(null);
+
+  // PRD B1: cold start (the app process was killed, not just backgrounded) of an
+  // already-logged-in user must also hit the PIN lock before anything else is visible - never
+  // straight to the home screen just because a session token still exists in storage. The
+  // lazy initializer runs exactly once, at the very first mount of this component, which is
+  // precisely what "cold start" means here: it can only be true the instant the JS engine has
+  // just booted, never as a result of a later state change while the app keeps running.
+  //
+  // RootNavigator is free to resolve to MainTabs underneath in parallel (so profile data etc.
+  // is already loaded by the time the PIN is confirmed) - this overlay is what actually keeps
+  // it off-screen until then, same mechanism as the background-timeout lock below.
+  const [isPinLocked, setIsPinLocked] = useState<boolean>(
+    () => !!useAuthStore.getState().accessToken,
+  );
+  const accessToken = useAuthStore((state) => state.accessToken);
+
+  // PRD Feature B: App Session Re-Authentication (PIN on reopen). The watcher only reports
+  // "the app came back after being away too long" - it knows nothing about auth state, so
+  // whether that should actually lock the screen is decided here via getState() (not the
+  // `accessToken` above) so the check always reflects the moment of resume, not whatever the
+  // value was when this effect first mounted.
+  useEffect(() => {
+    return startAppLockWatcher(() => {
+      if (useAuthStore.getState().accessToken) {
+        setIsPinLocked(true);
+      }
+    });
+  }, []);
+
+  // Covers both a correct-PIN unlock and a forced logout from the lock screen itself (PIN_LOCKED
+  // exhaustion, or the "Lupa PIN" escape hatch) - either way the overlay should not linger once
+  // there is no session left to guard.
+  useEffect(() => {
+    if (!accessToken) setIsPinLocked(false);
+  }, [accessToken]);
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener((state) => {
@@ -269,6 +307,7 @@ const App = () => {
                   onStateChange={onNavigationStateChange}
                 />
                 <AppInitializer />
+                {isPinLocked && <AppLockScreen onUnlocked={() => setIsPinLocked(false)} />}
               </ThemeProvider>
               {!isInternetConnected && (
                 <View style={styles.noInternetBanner}>

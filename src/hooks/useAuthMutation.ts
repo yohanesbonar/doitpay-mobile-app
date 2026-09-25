@@ -28,6 +28,8 @@ import {
   CancelAccountDeletionResponse,
   ChangePinPayload,
   ChangePinResponse,
+  PinValidatePayload,
+  PinValidateResponse,
 } from '../api/auth';
 import {
   clearDeviceToken,
@@ -330,6 +332,12 @@ export const useDeleteAccount = () => {
 export const useCancelAccountDeletion = () => {
   return useMutation<CancelAccountDeletionResponse, Error, void>({
     mutationFn: () => authApi.cancelAccountDeletion(),
+  });
+};
+
+export const useValidatePin = () => {
+  return useMutation<PinValidateResponse, Error, PinValidatePayload>({
+    mutationFn: (payload) => authApi.validatePin(payload),
   });
 };
 

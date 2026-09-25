@@ -75,6 +75,10 @@ export default function RootNavigator({
 
   const accessToken = useAuthStore((state) => state.accessToken);
   const isAuthenticated = !!accessToken;
+  const pendingForgotPinRedirect = useAuthStore((state) => state.pendingForgotPinRedirect);
+  const clearPendingForgotPinRedirect = useAuthStore(
+    (state) => state.clearPendingForgotPinRedirect,
+  );
 
   const { data: profileData, isLoading: isProfileLoading } = useGetProfileMeQuery({
     enabled: isAuthenticated,
@@ -103,6 +107,21 @@ export default function RootNavigator({
       }
     }
   }, [isNavReady, isAuthenticated, isProfileLoading, isPendingDeletion, navigationRef]);
+
+  useEffect(() => {
+    if (!isNavReady || isAuthenticated || !pendingForgotPinRedirect) return;
+
+    if (navigationRef.current?.isReady()) {
+      navigationRef.current.reset({ index: 0, routes: [{ name: 'ForgotPin' }] });
+      clearPendingForgotPinRedirect();
+    }
+  }, [
+    isNavReady,
+    isAuthenticated,
+    pendingForgotPinRedirect,
+    navigationRef,
+    clearPendingForgotPinRedirect,
+  ]);
 
   const handleOnReady = () => {
     setIsNavReady(true);
