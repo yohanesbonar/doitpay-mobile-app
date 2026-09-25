@@ -1,5 +1,6 @@
-import React, { useState, useMemo, FC } from 'react';
+import React, { useCallback, useEffect, useMemo, useState, FC } from 'react';
 import {
+  AppState,
   View,
   Text,
   SectionList,
@@ -18,7 +19,7 @@ import { FilterButton } from '@/components/molecules/FilterButton';
 import { FilterBottomSheet } from '@/components/molecules/FilterBottomsheet';
 import { DateBottomSheet } from '@/components/molecules/DateBottomsheet';
 import { Calendar, X } from 'lucide-react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useIsFocused, useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { useDebounce } from '@/hooks/useDebounce';
 import { HistoryListSkeleton } from './components/HistoryItemSkeleton';
@@ -99,6 +100,7 @@ export const History: FC<HistoryProps> = ({ navigateToDetail }) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [activeFilters, setActiveFilters] = useState(initialFilters);
   const [selectedDate, setSelectedDate] = useState(initialDate);
+  const [isPullRefreshing, setIsPullRefreshing] = useState(false);
 
   const queryParams = useMemo<Omit<GetTransactionsQueries, 'cursor'>>(() => {
     const params: Omit<GetTransactionsQueries, 'cursor'> = {
@@ -125,12 +127,41 @@ export const History: FC<HistoryProps> = ({ navigateToDetail }) => {
   const {
     data: transactionHistoriesData,
     isLoading,
-    isRefetching,
     refetch,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
   } = useGetTransactionsQuery(queryParams);
+  const isHistoryFocused = useIsFocused();
+
+  const refreshHistoryData = useCallback(() => {
+    void refetch();
+  }, [refetch]);
+
+  const handlePullRefresh = useCallback(async () => {
+    setIsPullRefreshing(true);
+    try {
+      await refetch();
+    } finally {
+      setIsPullRefreshing(false);
+    }
+  }, [refetch]);
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshHistoryData();
+    }, [refreshHistoryData]),
+  );
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (nextAppState === 'active' && isHistoryFocused) {
+        refreshHistoryData();
+      }
+    });
+
+    return () => subscription.remove();
+  }, [isHistoryFocused, refreshHistoryData]);
 
   const transactions = useMemo(
     () => transactionHistoriesData?.pages.flatMap((page) => page?.data?.items ?? []) ?? [],
@@ -224,8 +255,8 @@ export const History: FC<HistoryProps> = ({ navigateToDetail }) => {
             }}
             stickySectionHeadersEnabled={false}
             showsVerticalScrollIndicator={false}
-            refreshing={isRefetching}
-            onRefresh={refetch}
+            refreshing={isPullRefreshing}
+            onRefresh={handlePullRefresh}
             onEndReached={() => {
               if (hasNextPage && !isFetchingNextPage) fetchNextPage();
             }}

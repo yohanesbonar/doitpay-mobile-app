@@ -1,5 +1,6 @@
-import { Image, Text, View, ScrollView, RefreshControl } from 'react-native';
+import { AppState, Image, Text, View, ScrollView, RefreshControl } from 'react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { useTheme } from '../../../theme/ThemeProvider.tsx';
 import { createStyles } from './styles.ts';
 import { useTranslation } from 'react-i18next';
@@ -51,10 +52,41 @@ export const HomeView = (props: HomeViewProps) => {
   const [isSheetMounted, setIsSheetMounted] = useState(false);
   const emailSheetRef = useRef<BottomSheetModal>(null);
   const [isAccountSheetMounted, setIsAccountSheetMounted] = useState(false);
+  const [isPullRefreshing, setIsPullRefreshing] = useState(false);
   const { isNewUser, setIsNewUser } = useAuthStore();
 
-  const { data: homeAggregate, isLoading, isRefetching, refetch } = useGetHomeAggregateQuery();
-  const { data: profile } = useGetProfileMeQuery();
+  const { data: homeAggregate, isLoading, refetch } = useGetHomeAggregateQuery();
+  const { data: profile, refetch: refetchProfile } = useGetProfileMeQuery();
+  const isHomeFocused = useIsFocused();
+
+  const refreshHomeData = useCallback(() => {
+    void refetch();
+  }, [refetch]);
+
+  const handlePullRefresh = useCallback(async () => {
+    setIsPullRefreshing(true);
+    try {
+      await Promise.all([refetch(), refetchProfile()]);
+    } finally {
+      setIsPullRefreshing(false);
+    }
+  }, [refetch, refetchProfile]);
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshHomeData();
+    }, [refreshHomeData]),
+  );
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (nextAppState === 'active' && isHomeFocused) {
+        refreshHomeData();
+      }
+    });
+
+    return () => subscription.remove();
+  }, [isHomeFocused, refreshHomeData]);
 
   const homeData = homeAggregate?.data;
   const transferLimit = homeData?.transferLimit;
@@ -123,7 +155,9 @@ export const HomeView = (props: HomeViewProps) => {
           style={{ flex: 1 }}
           contentContainerStyle={{ paddingBottom: 30 }}
           showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}>
+          refreshControl={
+            <RefreshControl refreshing={isPullRefreshing} onRefresh={handlePullRefresh} />
+          }>
           <DeletionInProgressBanner isShow={profile?.data?.isRequestDeleteAccount ?? false} />
           <View style={styles.dailyLimitWrapper}>
             {isLoading || !homeData ? (
