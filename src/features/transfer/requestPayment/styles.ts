@@ -113,7 +113,7 @@ export const createStyles = (colors: any) =>
     textError: {
       color: colors.error,
       marginTop: 6,
-      fontSize: 12,
+      fontSize: 14,
       marginBottom: 16,
       fontFamily: 'Switzer-Regular',
       marginLeft: 34,

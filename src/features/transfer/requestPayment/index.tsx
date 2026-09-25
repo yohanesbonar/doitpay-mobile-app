@@ -65,6 +65,7 @@ export const RequestPaymentView = ({
   const { t } = useTranslation();
   const [methodPayment, setMethodPayment] = useState<'VA' | 'QRIS'>(initialPaymentMethod || 'VA');
   const [bankPayment, setBankPayment] = useState(initialBankPayment || null);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
   const [isDisableConfirm, setIsDisableConfirm] = useState(false);
   const [isErrorMinimumReached, setIsErrorMinimumReached] = useState(false);
   const [calculateData, setCalculateData] = useState<any>(null);
@@ -75,6 +76,9 @@ export const RequestPaymentView = ({
   const isInputEmpty = amount === '';
   const { mutate: postReceive, isPending: isLoadingReceive } = useReceive();
   const isFocused = useIsFocused();
+  const inputRef = useRef<TextInput>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
+  const paymentMethodOffsetRef = useRef(0);
   const isFirstMount = useRef(true);
   const prevMethodPayment = useRef(methodPayment);
   const prevBankPayment = useRef(bankPayment?.code);
@@ -101,6 +105,23 @@ export const RequestPaymentView = ({
   }, [methodPayment, paymentMethodAvailability]);
 
   const onPressConfirm = () => {
+    setHasSubmitted(true);
+    const numericAmount = amount ? parseInt(amount, 10) : 0;
+
+    if (numericAmount < 10000) {
+      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+      inputRef.current?.focus();
+      return;
+    }
+
+    if (methodPayment === 'VA' && !bankPayment?.code) {
+      scrollViewRef.current?.scrollTo({
+        y: Math.max(paymentMethodOffsetRef.current - 20, 0),
+        animated: true,
+      });
+      return;
+    }
+
     let payload = {
       amount: parseInt(amount),
       payChannel: methodPayment == 'VA' ? bankPayment?.code : methodPayment,
@@ -218,10 +239,6 @@ export const RequestPaymentView = ({
       isDisable = true;
     } else if (!paymentMethodAvailability.hasAnyEnabled) {
       isDisable = true;
-    } else if (methodPayment == 'QRIS' && errorMinimumReached) {
-      isDisable = true;
-    } else if (methodPayment == 'VA' && (!bankPayment || errorMinimumReached)) {
-      isDisable = true;
     } else if (isLoadingCalculate) {
       isDisable = true;
     } else {
@@ -243,6 +260,9 @@ export const RequestPaymentView = ({
     setAmount(cleanNumber);
   };
 
+  const showRequiredAmountError = hasSubmitted && isInputEmpty;
+  const showRequiredBankError = hasSubmitted && methodPayment === 'VA' && !bankPayment?.code;
+
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
       <KeyboardAvoidingView
@@ -256,7 +276,10 @@ export const RequestPaymentView = ({
             titleStyle="medium"
           />
 
-          <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
+          <ScrollView
+            ref={scrollViewRef}
+            style={styles.content}
+            contentContainerStyle={styles.contentContainer}>
             <View style={{ paddingHorizontal: 16 }}>
               <Text style={styles.title}>{t('requestPayment.inputNominal')}</Text>
               <Text style={styles.subtitle}>{t('requestPayment.descInputNominal')}</Text>
@@ -265,14 +288,16 @@ export const RequestPaymentView = ({
             <View
               style={[
                 styles.inputAmountWrapper,
-                { marginBottom: isErrorMinimumReached && !isInputEmpty ? 0 : 16 },
+                { marginBottom: isErrorMinimumReached && !isInputEmpty || showRequiredAmountError? 0 : 16 },
               ]}>
               <Text style={styles.inputCurrencyPrefix}>Rp</Text>
               <TextInput
+                ref={inputRef}
                 style={[
                   styles.amountInput,
                   amount.length === 0 ? styles.amountInputPlaceholder : styles.amountInputActive,
                   isErrorMinimumReached && !isInputEmpty && {},
+                  showRequiredAmountError && { borderColor: '#D32F2F', borderWidth: 1.5 },
                 ]}
                 placeholder="Masukkan Nominal"
                 placeholderTextColor="#9CA3AF"
@@ -282,9 +307,11 @@ export const RequestPaymentView = ({
               />
             </View>
 
-            {isErrorMinimumReached && !isInputEmpty && (
+            {showRequiredAmountError ? (
+              <Text style={styles.textError}>Wajib diisi.</Text>
+            ) : isErrorMinimumReached && !isInputEmpty ? (
               <Text style={styles.textError}>{t('requestPayment.minimal')}</Text>
-            )}
+            ) : null}
 
             <View style={styles.chipContainer}>
               {quickAmounts.map((item) => (
@@ -307,10 +334,12 @@ export const RequestPaymentView = ({
               onSelectBank={(val) => setBankPayment(val)}
               initialBankPayment={initialBankPayment}
               isVAEnabled={paymentMethodAvailability.vaEnabled}
-              // isQRISEnabled={paymentMethodAvailability.qrisEnabled}
-              // TODO: Enable QRIS when the feature is ready
-              isQRISEnabled={false}
+              isQRISEnabled={paymentMethodAvailability.qrisEnabled}
               isLoading={paymentMethodAvailability.isLoading}
+              showBankError={showRequiredBankError}
+              onLayout={(event) => {
+                paymentMethodOffsetRef.current = event.nativeEvent.layout.y;
+              }}
             />
           </ScrollView>
 

@@ -1,5 +1,13 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput, Image, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  TextInput,
+  Image,
+  ActivityIndicator,
+  LayoutChangeEvent,
+} from 'react-native';
 import { styles } from '../styles';
 import { Search, CreditCard, QrCode, CheckCircle2, Circle } from 'lucide-react-native';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -22,6 +30,8 @@ interface PaymentMethodProps {
   isVAEnabled?: boolean;
   isQRISEnabled?: boolean;
   isLoading?: boolean;
+  showBankError?: boolean;
+  onLayout?: (event: LayoutChangeEvent) => void;
 }
 
 const PaymentMethod: React.FC<PaymentMethodProps> = ({
@@ -33,6 +43,8 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
   isVAEnabled = true,
   isQRISEnabled = true,
   isLoading = false,
+  showBankError = false,
+  onLayout,
 }) => {
   const [selectedBank, setSelectedBank] = useState(initialBankPayment?.id || '');
   const [searchQuery, setSearchQuery] = useState('');
@@ -118,7 +130,8 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
           paddingHorizontal: 20,
         },
         styleProps,
-      ]}>
+      ]}
+      onLayout={onLayout}>
       <Text
         style={[styles.label, { fontSize: 20, marginBottom: 16, fontFamily: 'Switzer-Medium' }]}>
         Metode Pembayaran
@@ -240,7 +253,14 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
       ) : null}
 
       {!isLoading && selectedMethod === 'VA' && isVAEnabled ? (
-        <View style={{ paddingBottom: 70 }}>
+        <View
+          style={{
+            paddingBottom: 70,
+            borderWidth: showBankError ? 1.5 : 0,
+            borderColor: '#D32F2F',
+            borderRadius: 14,
+            padding: showBankError ? 10 : 0,
+          }}>
           <View
             style={{
               flexDirection: 'row',
@@ -331,6 +351,16 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
               </TouchableOpacity>
             );
           })}
+          {showBankError ? (
+            <Text
+              style={{
+                color: '#D32F2F',
+                marginTop: 4,
+                fontFamily: 'Switzer-Regular',
+              }}>
+              Wajib diisi.
+            </Text>
+          ) : null}
         </View>
       ) : !isLoading && selectedMethod === 'QRIS' && isQRISEnabled ? (
         <View

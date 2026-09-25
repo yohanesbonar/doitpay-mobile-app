@@ -21,7 +21,6 @@ import {
   useTransfer,
   useTransactionPurposes,
 } from '../../../hooks/useTransferMutation';
-import _ from 'lodash';
 import Button from '../../../components/atoms/Button/index.tsx';
 import Toast from 'react-native-toast-message';
 import { paymentApi, PaymentCalculatePayload } from './api/payment-calculate-api';
@@ -63,6 +62,8 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
   const navigation = useNavigation<any>();
   const [isFocusedInput, setIsFocusedInput] = useState(false);
   const inputRef = useRef<TextInput>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
+  const fieldOffsetsRef = useRef({ purpose: 0, paymentMethod: 0 });
 
   const handleFocusInput = () => {
     inputRef.current?.focus();
@@ -89,6 +90,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
   const [isPurposeModalVisible, setIsPurposeModalVisible] = useState(false);
   const [methodPayment, setMethodPayment] = useState<'VA' | 'QRIS'>(initialPaymentMethod || 'VA');
   const [bankPayment, setBankPayment] = useState(initialBankPayment || null);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
   const [isDisableConfirm, setIsDisableConfirm] = useState(true);
 
   const [calculateData, setCalculateData] = useState<any>(null);
@@ -230,8 +232,29 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
   }, [amount, methodPayment, bankPayment, isFocused, paymentMethodAvailability.isLoading]);
 
   const onPressConfirm = () => {
+    setHasSubmitted(true);
+    const numericAmount = amount ? parseInt(amount, 10) : 0;
+
+    if (numericAmount < 10000) {
+      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+      inputRef.current?.focus();
+      return;
+    }
+
     if (!selectedPurpose) {
+      scrollViewRef.current?.scrollTo({
+        y: Math.max(fieldOffsetsRef.current.purpose - 20, 0),
+        animated: true,
+      });
       setIsPurposeModalVisible(true);
+      return;
+    }
+
+    if (methodPayment === 'VA' && !bankPayment?.code) {
+      scrollViewRef.current?.scrollTo({
+        y: Math.max(fieldOffsetsRef.current.paymentMethod - 20, 0),
+        animated: true,
+      });
       return;
     }
 
@@ -298,6 +321,9 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
   };
 
   const numericAmount = amount ? parseInt(amount, 10) : 0;
+  const showRequiredAmountError = hasSubmitted && !amount;
+  const showRequiredPurposeError = hasSubmitted && !selectedPurpose;
+  const showRequiredBankError = hasSubmitted && methodPayment === 'VA' && !bankPayment?.code;
   const showMinAmountError = amount !== '' && numericAmount > 0 && numericAmount < 10000;
 
   useEffect(() => {
@@ -306,12 +332,6 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
     if (paymentMethodAvailability.isLoading) {
       isDisable = true;
     } else if (!paymentMethodAvailability.hasAnyEnabled) {
-      isDisable = true;
-    } else if (numericAmount < 10000) {
-      isDisable = true;
-    } else if (methodPayment == 'QRIS' && !amount) {
-      isDisable = true;
-    } else if (methodPayment == 'VA' && (_.isEmpty(bankPayment) || !amount)) {
       isDisable = true;
     } else if (isLoadingCalculate) {
       isDisable = true;
@@ -337,7 +357,10 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
         titleStyle="medium"
         titlePosition={'left'}
       />
-      <ScrollView contentContainerStyle={{ paddingBottom: 190 }} style={styles.container}>
+      <ScrollView
+        ref={scrollViewRef}
+        contentContainerStyle={{ paddingBottom: 190 }}
+        style={styles.container}>
         <View style={styles.recipientCard}>
           <View style={styles.avatar}>
             <Text style={styles.avatarText}>
@@ -357,7 +380,12 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
           <Text style={[styles.labelRp, { marginRight: 12 }]}>Rp</Text>
 
           <TouchableWithoutFeedback onPress={handleFocusInput}>
-            <View style={[styles.inputContainer, isFocusedInput && styles.inputContainerFocused]}>
+            <View
+              style={[
+                styles.inputContainer,
+                isFocusedInput && styles.inputContainerFocused,
+                showRequiredAmountError && { borderColor: '#D32F2F', borderWidth: 1.5 },
+              ]}>
               <TextInput
                 ref={inputRef}
                 style={[styles.inputAmount, { fontSize: amount.length > 0 ? 32 : 16 }]}
@@ -374,13 +402,25 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
           </TouchableWithoutFeedback>
         </View>
 
-        {showMinAmountError ? (
+        {showRequiredAmountError ? (
           <Text
             style={{
               color: '#D32F2F',
-              marginLeft: 20,
+              marginLeft: 58,
               marginTop: 8,
               fontFamily: 'Switzer-Regular',
+              fontSize: 14,
+            }}>
+            Wajib diisi.
+          </Text>
+        ) : showMinAmountError ? (
+          <Text
+            style={{
+              color: '#D32F2F',
+              marginLeft: 34,
+              marginTop: 8,
+              fontFamily: 'Switzer-Regular',
+              fontSize: 14,
             }}>
             Minimal transfer Rp 10.000
           </Text>
@@ -397,7 +437,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
         </Text>
         <TouchableOpacity
           style={{
-            borderColor: '#E5E5E5',
+            borderColor: showRequiredPurposeError ? '#D32F2F' : '#E5E5E5',
             borderWidth: 1,
             backgroundColor: '#FFF',
             padding: 16,
@@ -407,6 +447,9 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
             alignItems: 'center',
             justifyContent: 'space-between',
             minHeight: 50,
+          }}
+          onLayout={(event) => {
+            fieldOffsetsRef.current.purpose = event.nativeEvent.layout.y;
           }}
           onPress={() => setIsPurposeModalVisible(true)}
           activeOpacity={0.7}>
@@ -425,6 +468,17 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
             <ChevronDown size={18} color="#9CA3AF" />
           )}
         </TouchableOpacity>
+        {showRequiredPurposeError ? (
+          <Text
+            style={{
+              color: '#D32F2F',
+              marginHorizontal: 20,
+              marginTop: 8,
+              fontFamily: 'Switzer-Regular',
+            }}>
+            Wajib diisi.
+          </Text>
+        ) : null}
 
         <Modal
           visible={isPurposeModalVisible}
@@ -553,6 +607,10 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
           isVAEnabled={paymentMethodAvailability.vaEnabled}
           isQRISEnabled={paymentMethodAvailability.qrisEnabled}
           isLoading={paymentMethodAvailability.isLoading}
+          showBankError={showRequiredBankError}
+          onLayout={(event) => {
+            fieldOffsetsRef.current.paymentMethod = event.nativeEvent.layout.y;
+          }}
         />
       </ScrollView>
 
