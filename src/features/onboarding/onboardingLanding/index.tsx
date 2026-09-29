@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 import React from 'react';
-import { Text, Image, View, TouchableOpacity, ScrollView } from 'react-native';
+import { Text, Image, View, ScrollView } from 'react-native';
 import { useTheme } from '../../../theme/ThemeProvider.tsx';
 import { createStyles } from './styles.ts';
 import { useTranslation } from 'react-i18next';
@@ -10,10 +10,9 @@ import Toast from 'react-native-toast-message';
 
 interface OnboardingViewProps {
   onGetStarted: () => void;
-  onLoginRedirect: () => void;
 }
 
-export const OnboardingView = ({ onGetStarted, onLoginRedirect }: OnboardingViewProps) => {
+export const OnboardingView = ({ onGetStarted }: OnboardingViewProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const { t } = useTranslation();
@@ -58,9 +57,6 @@ export const OnboardingView = ({ onGetStarted, onLoginRedirect }: OnboardingView
             borderColor={colors.lightPrimary}
             sourceIcon={require('../../../assets/images/ic-gmail.png')}
           />
-          <TouchableOpacity onPress={onLoginRedirect}>
-            <Text style={styles.accountQuestionText}>{t('onboarding.accountQuestion')}</Text>
-          </TouchableOpacity>
         </View>
       </ScrollView>
     </View>

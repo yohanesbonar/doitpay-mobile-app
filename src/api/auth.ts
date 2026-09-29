@@ -241,7 +241,25 @@ export type ChangePinResponse = {
   };
 };
 
+export interface PhoneCheckRequestPayload {
+  phoneNumber: string;
+}
+
+export type PhoneCheckResponse = {
+  status: string;
+  message: string;
+  data: {
+    isExists: boolean;
+  };
+};
+
 export const authApi = {
+  checkPhoneNumber: async (payload: PhoneCheckRequestPayload): Promise<PhoneCheckResponse> => {
+    const { data } = await apiClient.post<PhoneCheckResponse>('/v1/auth/phone/check', payload, {
+      noNeedAuth: true,
+    });
+    return data;
+  },
   registerRequestOtp: async (payload: RegisterOtpRequestPayload): Promise<RegisterOtpResponse> => {
     const { data } = await apiClient.post<RegisterOtpResponse>(
       '/v1/onboarding/otp/request',

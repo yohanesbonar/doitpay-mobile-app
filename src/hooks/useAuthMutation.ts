@@ -30,6 +30,8 @@ import {
   ChangePinResponse,
   PinValidatePayload,
   PinValidateResponse,
+  PhoneCheckRequestPayload,
+  PhoneCheckResponse,
 } from '../api/auth';
 import {
   clearDeviceToken,
@@ -45,6 +47,12 @@ import { getMessaging, getToken } from '@react-native-firebase/messaging';
 import { useUpdateDeviceToken } from './useDeviceMutation';
 import Toast from 'react-native-toast-message';
 import { identifyPostHogUser } from '@/analytics/posthog';
+
+export const useCheckPhoneNumber = () => {
+  return useMutation<PhoneCheckResponse, Error, PhoneCheckRequestPayload>({
+    mutationFn: (payload) => authApi.checkPhoneNumber(payload),
+  });
+};
 
 export const useRegisterRequestOtp = () => {
   return useMutation<RegisterOtpResponse, Error, RegisterOtpRequestPayload>({
