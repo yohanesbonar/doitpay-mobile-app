@@ -96,7 +96,7 @@ jobs:
       - name: Install CocoaPods
         run: |
           cd ios
-          pod install
+          pod install --repo-update
 
       - name: Clean Provisioning Profiles
         run: rm -rf $HOME/Library/MobileDevice/Provisioning\ Profiles/*
