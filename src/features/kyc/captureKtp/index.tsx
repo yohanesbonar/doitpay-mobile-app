@@ -28,7 +28,8 @@ export const CaptureKtpView = ({ onPressBack, onSubmitCapturedKtp }: CaptureKtpV
   const [frameLayout, setFrameLayout] = useState<LayoutRectangle | null>(null);
   const [guidanceFrameLayout, setGuidanceFrameLayout] = useState<LayoutRectangle | null>(null);
   const device = useCameraDevice('back');
-  const photoOutput = usePhotoOutput();
+  // JPEG explicitly: 'native' (the default) is HEIC on most iPhones, and KYC submit sends image/jpeg.
+  const photoOutput = usePhotoOutput({ containerFormat: 'jpeg' });
   const { hasPermission, requestPermission } = useCameraPermission();
 
   const hasPreview = useMemo(() => !!capturedUri, [capturedUri]);

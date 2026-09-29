@@ -11,6 +11,7 @@ export const ProfileCard: FC<ProfileCardProps> = ({ fullName, phoneNumber, kycSt
   const styles = createStyles(colors);
 
   const isKycVerified = kycStatus === KycStatus.VERIFIED;
+  const isKycPending = kycStatus === KycStatus.PENDING;
 
   const initials = fullName
     ? fullName
@@ -33,12 +34,25 @@ export const ProfileCard: FC<ProfileCardProps> = ({ fullName, phoneNumber, kycSt
           numberOfLines={1}
           ellipsizeMode="tail">{`+${phoneNumber}`}</Text>
       </View>
-      <View style={isKycVerified ? styles.verifiedBadge : styles.unverifiedBadge}>
+      <View
+        style={
+          isKycVerified
+            ? styles.verifiedBadge
+            : isKycPending
+              ? styles.pendingBadge
+              : styles.unverifiedBadge
+        }>
         <Text
-          style={isKycVerified ? styles.verifiedText : styles.unverifiedText}
+          style={
+            isKycVerified
+              ? styles.verifiedText
+              : isKycPending
+                ? styles.pendingText
+                : styles.unverifiedText
+          }
           numberOfLines={1}
           ellipsizeMode="tail">
-          {isKycVerified ? 'Terverifikasi' : 'Belum Verifikasi'}
+          {isKycVerified ? 'Terverifikasi' : isKycPending ? 'Sedang Diverifikasi' : 'Belum Verifikasi'}
         </Text>
       </View>
     </View>

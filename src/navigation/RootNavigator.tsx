@@ -53,6 +53,7 @@ import CaptureKtpScreen from '@/screens/kyc/captureKtp';
 import CaptureSelfieScreen from '@/screens/kyc/captureSelfie';
 import ConfirmDataScreen from '@/screens/kyc/confirmData';
 import DataSubmittedScreen from '@/screens/kyc/dataSubmitted';
+import KycIntroScreen from '@/screens/kyc/kycIntro';
 import { useGetProfileMeQuery } from '@/features/user/hooks/useGetProfileMeQuery';
 import { KycPendingStatus } from '@/features/onboarding/kyc/KycPendingStatus';
 
@@ -79,6 +80,8 @@ export default function RootNavigator({
   const clearPendingForgotPinRedirect = useAuthStore(
     (state) => state.clearPendingForgotPinRedirect,
   );
+  const pendingKycRedirect = useAuthStore((state) => state.pendingKycRedirect);
+  const setPendingKycRedirect = useAuthStore((state) => state.setPendingKycRedirect);
 
   const { data: profileData, isLoading: isProfileLoading } = useGetProfileMeQuery({
     enabled: isAuthenticated,
@@ -121,6 +124,33 @@ export default function RootNavigator({
     pendingForgotPinRedirect,
     navigationRef,
     clearPendingForgotPinRedirect,
+  ]);
+
+  // Newly registered user who got an access token from pin-setup continues into KYC. Waits for the
+  // profile so it runs after the authed stack (MainTabs) has mounted; MainTabs stays underneath so
+  // back from KYC lands on home.
+  useEffect(() => {
+    if (!isNavReady || !isAuthenticated || isProfileLoading || !pendingKycRedirect) return;
+    if (isPendingDeletion) {
+      setPendingKycRedirect(false);
+      return;
+    }
+
+    if (navigationRef.current?.isReady()) {
+      navigationRef.current.reset({
+        index: 1,
+        routes: [{ name: 'MainTabs' }, { name: 'KycIntro' }],
+      });
+      setPendingKycRedirect(false);
+    }
+  }, [
+    isNavReady,
+    isAuthenticated,
+    isProfileLoading,
+    isPendingDeletion,
+    pendingKycRedirect,
+    navigationRef,
+    setPendingKycRedirect,
   ]);
 
   const handleOnReady = () => {
@@ -215,6 +245,7 @@ export default function RootNavigator({
             <Stack.Screen name="DisputeDetail" component={DisputeDetailScreen} />
             <Stack.Screen name="DisputeAddResponse" component={DisputeAddResponseScreen} />
             <Stack.Screen name="ActivateQris" component={ActivateQrisScreen} />
+            <Stack.Screen name="KycIntro" component={KycIntroScreen} />
             <Stack.Screen name="CaptureKtp" component={CaptureKtpScreen} />
             <Stack.Screen name="CaptureSelfie" component={CaptureSelfieScreen} />
             <Stack.Screen name="ConfirmKycData" component={ConfirmDataScreen} />

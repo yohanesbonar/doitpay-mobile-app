@@ -561,7 +561,9 @@ export const AuthEntry = ({ route }) => {
             crashlytics().log('User register setup pin');
             crashlytics().setUserId(formattedPhone);
             Keyboard.dismiss();
-            if (res?.data?.status === 'ACTIVATION_PENDING') {
+            // With an access token the auth stack is swapped out and RootNavigator redirects to KYC
+            // (see pendingKycRedirect). Without one, the user waits for admin approval.
+            if (!res?.data?.accessToken) {
               (navigation as any).navigate('KycPendingStatus');
             }
           },

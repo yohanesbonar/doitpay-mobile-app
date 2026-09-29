@@ -8,7 +8,7 @@ const CaptureKtpScreen = () => {
   return (
     <CaptureKtpView
       onPressBack={() => navigation.goBack()}
-      onSubmitCapturedKtp={() => navigation.navigate('CaptureSelfie')}
+      onSubmitCapturedKtp={(ktpUri) => navigation.navigate('CaptureSelfie', { ktpUri })}
     />
   );
 };

@@ -27,7 +27,8 @@ export const CaptureSelfieView = ({
   const [isCapturing, setIsCapturing] = useState(false);
   const [isPermissionLoading, setIsPermissionLoading] = useState(false);
   const device = useCameraDevice('front');
-  const photoOutput = usePhotoOutput();
+  // JPEG explicitly: 'native' (the default) is HEIC on most iPhones, and KYC submit sends image/jpeg.
+  const photoOutput = usePhotoOutput({ containerFormat: 'jpeg' });
   const { hasPermission, requestPermission } = useCameraPermission();
   const hasPreview = useMemo(() => !!capturedUri, [capturedUri]);
 
