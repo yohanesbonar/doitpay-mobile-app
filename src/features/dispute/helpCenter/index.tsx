@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useIsFocused } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Alert,
@@ -59,6 +60,7 @@ export const DisputeHelpCenterView = ({
   onPressBack,
   onPressReportCenter,
 }: DisputeHelpCenterViewProps) => {
+  const isFocused = useIsFocused();
   const [expandedIndex, setExpandedIndex] = useState<number | null>(0);
   const [supportWhatsappNumber, setSupportWhatsappNumber] = useState(
     REMOTE_CONFIG_DEFAULTS.support_whatsapp_number,
@@ -68,13 +70,19 @@ export const DisputeHelpCenterView = ({
   useEffect(() => {
     let isMounted = true;
 
+    if (!isFocused) {
+      return () => {
+        isMounted = false;
+      };
+    }
+
     const loadSupportConfig = async () => {
       try {
         const rc = remoteConfig();
 
         await rc.setConfigSettings({
           fetchTimeMillis: 10_000,
-          minimumFetchIntervalMillis: __DEV__ ? 0 : 3_600_000,
+          minimumFetchIntervalMillis: 0,
         });
         await rc.setDefaults(REMOTE_CONFIG_DEFAULTS);
         await rc.activate();
@@ -104,7 +112,7 @@ export const DisputeHelpCenterView = ({
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [isFocused]);
 
   const onPressWhatsapp = async () => {
     const phoneNumber = normalizePhoneNumber(supportWhatsappNumber);

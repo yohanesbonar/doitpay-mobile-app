@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import remoteConfig from '@react-native-firebase/remote-config';
+import { useIsFocused } from '@react-navigation/native';
 
 interface TransferFeatureAvailability {
   transferEnabled: boolean;
@@ -13,6 +14,7 @@ const REMOTE_CONFIG_DEFAULTS = {
 };
 
 export const useTransferFeatureAvailability = (): TransferFeatureAvailability => {
+  const isFocused = useIsFocused();
   const [transferEnabled, setTransferEnabled] = useState(true);
   const [receiveEnabled, setReceiveEnabled] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
@@ -20,13 +22,19 @@ export const useTransferFeatureAvailability = (): TransferFeatureAvailability =>
   useEffect(() => {
     let isMounted = true;
 
+    if (!isFocused) {
+      return () => {
+        isMounted = false;
+      };
+    }
+
     const loadConfig = async () => {
       try {
         const rc = remoteConfig();
 
         await rc.setConfigSettings({
           fetchTimeMillis: 10_000,
-          minimumFetchIntervalMillis: __DEV__ ? 0 : 3_600_000,
+          minimumFetchIntervalMillis: 0,
         });
 
         await rc.setDefaults(REMOTE_CONFIG_DEFAULTS);
@@ -38,8 +46,8 @@ export const useTransferFeatureAvailability = (): TransferFeatureAvailability =>
           setIsLoading(false);
         }
 
-        const fetched = await rc.fetchAndActivate();
-        if (fetched && isMounted) {
+        await rc.fetchAndActivate();
+        if (isMounted) {
           setTransferEnabled(rc.getValue('transfer_feature_enabled').asBoolean());
           setReceiveEnabled(rc.getValue('receive_feature_enabled').asBoolean());
         }
@@ -48,8 +56,6 @@ export const useTransferFeatureAvailability = (): TransferFeatureAvailability =>
           return;
         }
 
-        setTransferEnabled(true);
-        setReceiveEnabled(true);
         setIsLoading(false);
       }
     };
@@ -59,7 +65,7 @@ export const useTransferFeatureAvailability = (): TransferFeatureAvailability =>
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [isFocused]);
 
   return useMemo(
     () => ({
