@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import remoteConfig from '@react-native-firebase/remote-config';
 import Config from 'react-native-config';
+import { useIsFocused } from '@react-navigation/native';
 
 export type QuickAmountProductType = 'TRANSFER' | 'RECEIVE';
 
@@ -54,10 +55,17 @@ const parseAmounts = (raw: string): string[] => {
 };
 
 export const useQuickAmounts = (productType: QuickAmountProductType): string[] => {
+  const isFocused = useIsFocused();
   const [amounts, setAmounts] = useState<string[]>(DEFAULT_AMOUNTS);
 
   useEffect(() => {
     let isMounted = true;
+
+    if (!isFocused) {
+      return () => {
+        isMounted = false;
+      };
+    }
 
     const loadConfig = async () => {
       try {
@@ -65,27 +73,24 @@ export const useQuickAmounts = (productType: QuickAmountProductType): string[] =
 
         await rc.setConfigSettings({
           fetchTimeMillis: 10_000,
-          minimumFetchIntervalMillis: __DEV__ ? 0 : 3_600_000,
+          minimumFetchIntervalMillis: 0,
         });
 
         await rc.setDefaults(REMOTE_CONFIG_DEFAULTS);
 
-        await rc.fetchAndActivate();
-
-        if (!isMounted) {
-          return;
-        }
-
         const key = REMOTE_CONFIG_KEYS[productType];
-        const rawValue = rc.getValue(key).asString();
+        const applyConfig = () => {
+          if (isMounted) {
+            setAmounts(parseAmounts(rc.getValue(key).asString()));
+          }
+        };
 
-        setAmounts(parseAmounts(rawValue));
-      } catch (error) {
-        if (!isMounted) {
-          return;
-        }
-
-        setAmounts(DEFAULT_AMOUNTS);
+        await rc.activate();
+        applyConfig();
+        await rc.fetchAndActivate();
+        applyConfig();
+      } catch {
+        // Keep the cached amounts if the fresh fetch fails.
       }
     };
 
@@ -94,7 +99,7 @@ export const useQuickAmounts = (productType: QuickAmountProductType): string[] =
     return () => {
       isMounted = false;
     };
-  }, [productType]);
+  }, [isFocused, productType]);
 
   return useMemo(() => amounts, [amounts]);
 };

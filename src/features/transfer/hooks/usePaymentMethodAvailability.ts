@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import remoteConfig from '@react-native-firebase/remote-config';
+import { useIsFocused } from '@react-navigation/native';
 
 export type PaymentMethodType = 'VA' | 'QRIS';
 export type PaymentProductType = 'TRANSFER' | 'RECEIVE';
@@ -48,12 +49,19 @@ const resolveDefaultMethod = (
 export const usePaymentMethodAvailability = (
   productType: PaymentProductType,
 ): PaymentMethodAvailability => {
+  const isFocused = useIsFocused();
   const [vaEnabled, setVaEnabled] = useState(true);
   const [qrisEnabled, setQrisEnabled] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
+
+    if (!isFocused) {
+      return () => {
+        isMounted = false;
+      };
+    }
 
     const loadConfig = async () => {
       try {
@@ -78,8 +86,8 @@ export const usePaymentMethodAvailability = (
         }
 
         // 2. Fetch fresh config from server and update state if changed
-        const fetched = await rc.fetchAndActivate();
-        if (fetched && isMounted) {
+        await rc.fetchAndActivate();
+        if (isMounted) {
           setVaEnabled(rc.getValue(keys.VA).asBoolean());
           setQrisEnabled(rc.getValue(keys.QRIS).asBoolean());
         }
@@ -88,9 +96,7 @@ export const usePaymentMethodAvailability = (
           return;
         }
 
-        // Fallback to secure defaults when network/remote config fails
-        setVaEnabled(true);
-        setQrisEnabled(true);
+        // Keep the active cached values when a fresh fetch fails.
         setIsLoading(false);
       }
     };
@@ -100,7 +106,7 @@ export const usePaymentMethodAvailability = (
     return () => {
       isMounted = false;
     };
-  }, [productType]);
+  }, [isFocused, productType]);
 
   return useMemo(() => {
     const defaultMethod = resolveDefaultMethod(vaEnabled, qrisEnabled);

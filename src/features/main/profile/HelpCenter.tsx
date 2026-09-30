@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useIsFocused } from '@react-navigation/native';
 import {
   Alert,
   Linking,
@@ -84,6 +85,7 @@ const FAQItem = ({
 );
 
 export const HelpCenter = ({ navigation }: any) => {
+  const isFocused = useIsFocused();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [supportWhatsappNumber, setSupportWhatsappNumber] = useState(
@@ -95,13 +97,19 @@ export const HelpCenter = ({ navigation }: any) => {
   useEffect(() => {
     let isMounted = true;
 
+    if (!isFocused) {
+      return () => {
+        isMounted = false;
+      };
+    }
+
     const loadSupportConfig = async () => {
       try {
         const rc = remoteConfig();
 
         await rc.setConfigSettings({
           fetchTimeMillis: 10_000,
-          minimumFetchIntervalMillis: __DEV__ ? 0 : 3_600_000,
+          minimumFetchIntervalMillis: 0,
         });
         await rc.setDefaults(REMOTE_CONFIG_DEFAULTS);
         await rc.activate();
@@ -131,7 +139,7 @@ export const HelpCenter = ({ navigation }: any) => {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [isFocused]);
 
   const onPressWhatsapp = async () => {
     const phoneNumber = normalizePhoneNumber(supportWhatsappNumber);
