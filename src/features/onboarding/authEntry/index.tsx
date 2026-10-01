@@ -25,6 +25,7 @@ import {
   useLoginRequestOtp,
   useLoginVerifyOtp,
   useLogin,
+  useCheckPhoneNumber,
 } from '../../../hooks/useAuthMutation.ts';
 import type { LoginOtpResponse } from '../../../api/auth.ts';
 import InputPhoneNumber from './components/InputPhoneNumber.tsx';
@@ -45,14 +46,14 @@ export interface PersonalDataFormValues {
   occupationId: string;
 }
 
-export const AuthEntry = ({ route }) => {
-  const { isLoginState } = route.params;
+export const AuthEntry = () => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const { t } = useTranslation();
   const navigation = useNavigation();
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 3;
+  const [isLoginState, setIsLoginState] = useState(false);
 
   const CELL_COUNT_OTP = 6;
   const [bottomSpacing, setBottomSpacing] = useState(32);
@@ -93,6 +94,7 @@ export const AuthEntry = ({ route }) => {
   const { mutate: loginRequestOTP, isPending: isLoginRequesting } = useLoginRequestOtp();
   const { mutate: loginVerifyOTP, isPending: isLoginVerifying } = useLoginVerifyOtp();
   const { mutate: loginMutate, isPending: isSettingPinLogin } = useLogin();
+  const { mutate: checkPhoneNumber, isPending: isCheckingPhoneNumber } = useCheckPhoneNumber();
 
   const handlePressPIN = () => {
     inputRef.current?.focus();
@@ -321,36 +323,10 @@ export const AuthEntry = ({ route }) => {
     setCurrentStep(2);
   };
 
-  const handleSendOtp = () => {
-    const { phoneNumber, countryCode } = phoneNumbData;
-    const formattedPhone = (countryCode + phoneNumber).replace('+', '');
-
-    if (!isLoginState) {
-      registerRequestOTP(
-        {
-          phoneNumber: formattedPhone,
-          method: 'SMS',
-        },
-        {
-          onSuccess: (res) => {
-            setTimerOTP(res.data.retryAfterSeconds || 30);
-            setCurrentStep(2);
-          },
-          onError: (err: any) => {
-            console.error('error registerRequestOTP', err);
-            Toast.show({
-              type: 'error',
-              text1: getErrorMessage(err, 'Gagal mengirim OTP'),
-            });
-          },
-        },
-      );
-    } else {
+  const requestOtpForPhone = (formattedPhone: string, loginState: boolean) => {
+    if (loginState) {
       loginRequestOTP(
-        {
-          phoneNumber: formattedPhone,
-          method: 'SMS',
-        },
+        { phoneNumber: formattedPhone, method: 'SMS' },
         {
           onSuccess: handleLoginOtpRequested,
           onError: (err: any) => {
@@ -362,7 +338,35 @@ export const AuthEntry = ({ route }) => {
           },
         },
       );
+      return;
     }
+
+    trackPostHogEvent('signup_started', {
+      signup_step: 'phone_start',
+      account_status: 'PENDING_APPROVAL',
+    });
+    registerRequestOTP(
+      { phoneNumber: formattedPhone, method: 'SMS' },
+      {
+        onSuccess: (res) => {
+          setTimerOTP(res.data.retryAfterSeconds || 30);
+          setCurrentStep(2);
+        },
+        onError: (err: any) => {
+          console.error('error registerRequestOTP', err);
+          Toast.show({
+            type: 'error',
+            text1: getErrorMessage(err, 'Gagal mengirim OTP'),
+          });
+        },
+      },
+    );
+  };
+
+  const handleSendOtp = () => {
+    const { phoneNumber, countryCode } = phoneNumbData;
+    const formattedPhone = (countryCode + phoneNumber).replace('+', '');
+    requestOtpForPhone(formattedPhone, isLoginState);
   };
 
   useEffect(() => {
@@ -491,49 +495,23 @@ export const AuthEntry = ({ route }) => {
         const { phoneNumber, countryCode } = values;
         const formattedPhone = (countryCode + phoneNumber).replace('+', '');
 
-        if (!isLoginState) {
-          trackPostHogEvent('signup_started', {
-            signup_step: 'phone_start',
-            account_status: 'PENDING_APPROVAL',
-          });
-
-          registerRequestOTP(
-            {
-              phoneNumber: formattedPhone,
-              method: 'SMS',
+        checkPhoneNumber(
+          { phoneNumber: formattedPhone },
+          {
+            onSuccess: (res) => {
+              const accountExists = res.data.isExists;
+              setIsLoginState(accountExists);
+              requestOtpForPhone(formattedPhone, accountExists);
             },
-            {
-              onSuccess: (res) => {
-                setTimerOTP(res.data.retryAfterSeconds || 30);
-                setCurrentStep(2);
-              },
-              onError: (err: any) => {
-                console.error('error registerRequestOTP', err?.message ?? err?.error?.message);
-                Toast.show({
-                  type: 'error',
-                  text1: getErrorMessage(err, 'Gagal mengirim OTP'),
-                });
-              },
+            onError: (err: any) => {
+              console.error('error checkPhoneNumber', err);
+              Toast.show({
+                type: 'error',
+                text1: getErrorMessage(err, 'Gagal memeriksa nomor handphone'),
+              });
             },
-          );
-        } else {
-          loginRequestOTP(
-            {
-              phoneNumber: formattedPhone,
-              method: 'SMS',
-            },
-            {
-              onSuccess: handleLoginOtpRequested,
-              onError: (err: any) => {
-                console.error('error loginRequestOTP', err?.message ?? err?.error?.message);
-                Toast.show({
-                  type: 'error',
-                  text1: getErrorMessage(err, 'Gagal mengirim OTP'),
-                });
-              },
-            },
-          );
-        }
+          },
+        );
       }
       return;
     }
@@ -636,15 +614,15 @@ export const AuthEntry = ({ route }) => {
             titlePosition="center"
             titleStyle="medium"
           />
-          {!isLoginState ? (
+          {isLoginState ? (
+            <View style={{ marginBottom: -22 }} />
+          ) : currentStep > 1 ? (
             <FlowIndicator
               totalSteps={totalSteps}
               currentStep={Math.ceil(currentStep / 2)}
               barStep={currentStep}
             />
-          ) : (
-            <View style={{ marginBottom: -22 }} />
-          )}
+          ) : null}
 
           {detailStep()}
           <View
@@ -660,6 +638,7 @@ export const AuthEntry = ({ route }) => {
                 onPress={() => onPressNext()}
                 loading={
                   isRequesting ||
+                  isCheckingPhoneNumber ||
                   isVerifying ||
                   isLoginRequesting ||
                   isLoginVerifying ||
@@ -687,6 +666,7 @@ export const AuthEntry = ({ route }) => {
                 textColor="white"
                 disable={
                   !isNextButtonEnabled ||
+                  isCheckingPhoneNumber ||
                   isVerifying ||
                   isRequesting ||
                   isLoginRequesting ||

@@ -42,8 +42,7 @@ export const SecurityBlocker = () => {
         <Text style={styles.title}>Device Not Supported</Text>
         <Text style={styles.subtitle}>
           For your financial security and account protection, this application cannot run on a
-          {Platform.OS === 'ios' ? ' jailbroken' : ' rooted'} device or a device utilizing mock
-          location parameters.
+          {Platform.OS === 'ios' ? ' jailbroken' : ' rooted'} device.
         </Text>
       </View>
       <View style={styles.footer}>

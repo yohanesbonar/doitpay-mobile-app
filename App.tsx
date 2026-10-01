@@ -173,7 +173,7 @@ const App = () => {
       const isHookedWithFakeGPS = JailMonkey.canMockLocation();
       const isSimulator = DeviceInfo.isEmulatorSync();
 
-      if ((isJailBrokenOrRooted || isHookedWithFakeGPS) && !__DEV__ && !isSimulator) {
+      if (isJailBrokenOrRooted && !__DEV__ && !isSimulator) {
         setIsDeviceCompromised(true);
 
         if (!__DEV__) {

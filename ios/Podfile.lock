@@ -1776,28 +1776,6 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - react-native-blur (4.4.1):
-    - hermes-engine
-    - RCTRequired
-    - RCTTypeSafety
-    - React-Core
-    - React-Core-prebuilt
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - ReactNativeDependencies
-    - Yoga
   - react-native-cameraroll (7.10.2):
     - hermes-engine
     - RCTRequired
@@ -1911,7 +1889,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - react-native-safe-area-context (5.10.1):
+  - react-native-safe-area-context (5.10.0):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -1923,8 +1901,8 @@ PODS:
     - React-graphics
     - React-ImageManager
     - React-jsi
-    - react-native-safe-area-context/common (= 5.10.1)
-    - react-native-safe-area-context/fabric (= 5.10.1)
+    - react-native-safe-area-context/common (= 5.10.0)
+    - react-native-safe-area-context/fabric (= 5.10.0)
     - React-NativeModulesApple
     - React-RCTFabric
     - React-renderercss
@@ -1935,7 +1913,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - react-native-safe-area-context/common (5.10.1):
+  - react-native-safe-area-context/common (5.10.0):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -1957,7 +1935,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - react-native-safe-area-context/fabric (5.10.1):
+  - react-native-safe-area-context/fabric (5.10.0):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -2511,7 +2489,7 @@ PODS:
     - Yoga
   - RNDeviceInfo (15.0.2):
     - React-Core
-  - RNFastImage (8.18.0):
+  - RNFastImage (8.17.0):
     - React-Core
     - SDWebImage (< 6.0, >= 5.11.1)
     - SDWebImageWebPCoder (< 1.0, >= 0.8.4)
@@ -3102,7 +3080,6 @@ DEPENDENCIES:
   - React-microtasksnativemodule (from `../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)
   - React-mutationobservernativemodule (from `../node_modules/react-native/ReactCommon/react/nativemodule/mutationobserver`)
   - react-native-blob-util (from `../node_modules/react-native-blob-util`)
-  - "react-native-blur (from `../node_modules/@react-native-community/blur`)"
   - "react-native-cameraroll (from `../node_modules/@react-native-camera-roll/camera-roll`)"
   - react-native-config (from `../node_modules/react-native-config`)
   - "react-native-image-editor (from `../node_modules/@react-native-community/image-editor`)"
@@ -3293,8 +3270,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/react/nativemodule/mutationobserver"
   react-native-blob-util:
     :path: "../node_modules/react-native-blob-util"
-  react-native-blur:
-    :path: "../node_modules/@react-native-community/blur"
   react-native-cameraroll:
     :path: "../node_modules/@react-native-camera-roll/camera-roll"
   react-native-config:
@@ -3499,13 +3474,12 @@ SPEC CHECKSUMS:
   React-microtasksnativemodule: 4e4a0a4e42861c767989099d02cd871dbe11736f
   React-mutationobservernativemodule: 6aaa67618b68a616b1293967c20a1dfcc26632a5
   react-native-blob-util: c176703a0576610ca5d400d9dae0fab2e91d1e61
-  react-native-blur: baf5874b4abf3bb8b2012172a3d0905653a1a2b5
   react-native-cameraroll: 76daf9ff17079fba7fbe80e92cab81db6509825a
   react-native-config: cf04902c40bdd5465a3d7093836d20730fab7064
   react-native-image-editor: ac5bac565497e3286f4b9c3ea80cb7870d6b9abe
   react-native-image-picker: 2146157d5d37a34c2063d1d2ed01081b56d0b87b
   react-native-netinfo: 723f91aea0c7b4a8701bc1ede8fc162c8b1cf282
-  react-native-safe-area-context: 3008d0beb06b25790af5005c4521080c9dfbd946
+  react-native-safe-area-context: 7e864376563692eb44cb58d820c44abe411fdb47
   react-native-shake: a5b6191eb11916a624a9ed71ce730e126ff58bf6
   react-native-view-shot: 4889858ecc217aee29c22b1e8d119ae531abe768
   react-native-webview: e3435a0fc192e3adc2eedbe27d50be4fe8bb9296
@@ -3548,7 +3522,7 @@ SPEC CHECKSUMS:
   RNCPicker: 5850b195903c126967b2dffcf9500299c8581177
   RNDateTimePicker: 842af426f91942f5ca5e2599cf4a8126e56fbc7a
   RNDeviceInfo: d79872e11c8e9c4de0d65b0ee6e0cee719f37fea
-  RNFastImage: be7c6abd1c4d569f64c6a835664ee72713ed3979
+  RNFastImage: 26052e529689b5c7fee295744947b156c24b27f2
   RNFBAnalytics: 9bf4f9a4cb987908b67793855e0c96b2f2dc3b33
   RNFBApp: ed845aeb52ca478b897c9abe711ebdafbfff24db
   RNFBCrashlytics: 1bde1d40c99d3b3ca089651029f18f45f6cbe88b
