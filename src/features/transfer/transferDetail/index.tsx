@@ -28,10 +28,11 @@ import { Info, TriangleAlert, ChevronDown, Check } from 'lucide-react-native';
 import { usePaymentMethodAvailability } from '../hooks/usePaymentMethodAvailability';
 import { useQuickAmounts } from '../hooks/useQuickAmounts';
 import {
-  getAmountRange,
-  trackPaymentFunnelEvent,
-  trackPostHogEvent,
-} from '@/analytics/posthog';
+  manualBankApiMock,
+  ManualBankOption,
+  ManualBankTransferData,
+} from './api/manual-bank.mock';
+import { getAmountRange, trackPaymentFunnelEvent, trackPostHogEvent } from '@/analytics/posthog';
 
 interface TransferDetailViewProps {
   accountData: {
@@ -42,13 +43,14 @@ interface TransferDetailViewProps {
     accountHolderName: string;
   };
   bankData: any;
+  bankPayment?: any;
   fromTabBar: boolean;
   isLoginState: boolean;
   beneficiaryId?: string;
   method: 'send' | 'receive';
   onPressBack: () => void;
   gotoPaymentInstruction: (
-    paymentMethod: 'VA' | 'QRIS',
+    paymentMethod: 'VA' | 'QRIS' | 'MANUAL_BANK',
     amount: string,
     transferData: any,
     bankPayment: any,
@@ -88,10 +90,14 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
     null,
   );
   const [isPurposeModalVisible, setIsPurposeModalVisible] = useState(false);
-  const [methodPayment, setMethodPayment] = useState<'VA' | 'QRIS'>(initialPaymentMethod || 'VA');
+  const [methodPayment, setMethodPayment] = useState<'VA' | 'QRIS' | 'MANUAL_BANK'>(
+    initialPaymentMethod || 'VA',
+  );
   const [bankPayment, setBankPayment] = useState(initialBankPayment || null);
+  const [manualBank, setManualBank] = useState<ManualBankOption | null>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [isDisableConfirm, setIsDisableConfirm] = useState(true);
+  const [isCreatingManualTransfer, setIsCreatingManualTransfer] = useState(false);
 
   const [calculateData, setCalculateData] = useState<any>(null);
   const [isLoadingCalculate, setIsLoadingCalculate] = useState(false);
@@ -158,9 +164,13 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
   }, [amount, bankData?.name, bankData?.shortName, methodPayment]);
 
   useEffect(() => {
-    const { vaEnabled, qrisEnabled, defaultMethod } = paymentMethodAvailability;
+    const { vaEnabled, qrisEnabled, manualBankEnabled, defaultMethod } = paymentMethodAvailability;
 
-    if ((methodPayment === 'VA' && !vaEnabled) || (methodPayment === 'QRIS' && !qrisEnabled)) {
+    if (
+      (methodPayment === 'VA' && !vaEnabled) ||
+      (methodPayment === 'QRIS' && !qrisEnabled) ||
+      (methodPayment === 'MANUAL_BANK' && !manualBankEnabled)
+    ) {
       if (defaultMethod) {
         setMethodPayment(defaultMethod);
       }
@@ -183,17 +193,29 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
         amount: amt,
         productType: 'TRANSFER',
         payMethod: methodPayment === 'VA' ? 'VIRTUAL_ACCOUNT' : methodPayment,
-        payChannel: methodPayment === 'VA' ? bankPayment?.code || '' : 'QRIS',
+        payChannel:
+          methodPayment === 'VA'
+            ? bankPayment?.code || ''
+            : methodPayment === 'QRIS'
+              ? 'QRIS'
+              : manualBank?.code || '',
       };
     };
 
     const fetchCalculation = async (amt: number) => {
-      if (methodPayment === 'VA' && !bankPayment?.code && amt >= 10000) return;
+      if (
+        (methodPayment === 'VA' && !bankPayment?.code) ||
+        (methodPayment === 'MANUAL_BANK' && !manualBank?.code)
+      )
+        return;
 
       setIsLoadingCalculate(true);
       try {
         const payload = getCalculatePayload(amt);
-        const res = await paymentApi.calculatePayment(payload);
+        const res =
+          methodPayment === 'MANUAL_BANK'
+            ? { status: 'success', data: await manualBankApiMock.calculate(amt) }
+            : await paymentApi.calculatePayment(payload);
         if (res && res.status === 'success') {
           setCalculateData(res.data);
         }
@@ -218,7 +240,8 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
 
     const isQrisReady = methodPayment === 'QRIS';
     const isVaReady = methodPayment === 'VA' && !!bankPayment?.code;
-    const isPaymentMethodReady = isQrisReady || isVaReady;
+    const isManualBankReady = methodPayment === 'MANUAL_BANK' && !!manualBank?.code;
+    const isPaymentMethodReady = isQrisReady || isVaReady || isManualBankReady;
 
     if (numericAmt >= 10000 && isPaymentMethodReady) {
       setIsLoadingCalculate(true);
@@ -229,7 +252,14 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
 
       return () => clearTimeout(delayDebounceFn);
     }
-  }, [amount, methodPayment, bankPayment, isFocused, paymentMethodAvailability.isLoading]);
+  }, [
+    amount,
+    methodPayment,
+    bankPayment,
+    manualBank,
+    isFocused,
+    paymentMethodAvailability.isLoading,
+  ]);
 
   const onPressConfirm = () => {
     setHasSubmitted(true);
@@ -258,6 +288,14 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
       return;
     }
 
+    if (methodPayment === 'MANUAL_BANK' && !manualBank?.code) {
+      scrollViewRef.current?.scrollTo({
+        y: Math.max(fieldOffsetsRef.current.paymentMethod - 20, 0),
+        animated: true,
+      });
+      return;
+    }
+
     trackPostHogEvent('transfer_confirmed', {
       amount_range: getAmountRange(amount),
       destination_bank: bankData?.shortName || bankData?.name || 'unknown',
@@ -270,10 +308,49 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
       amount: parseInt(amount),
       inquiryId: accountData?.id,
       beneficiaryId: props.beneficiaryId,
-      payChannel: methodPayment == 'VA' ? bankPayment?.code : methodPayment,
-      payMethod: methodPayment == 'VA' ? 'VIRTUAL_ACCOUNT' : methodPayment,
+      payChannel:
+        methodPayment === 'VA'
+          ? bankPayment?.code
+          : methodPayment === 'MANUAL_BANK'
+            ? manualBank?.code
+            : methodPayment,
+      payMethod:
+        methodPayment === 'VA'
+          ? 'VIRTUAL_ACCOUNT'
+          : methodPayment === 'MANUAL_BANK'
+            ? 'MANUAL_BANK'
+            : methodPayment,
       transactionPurpose: selectedPurpose?.code,
     };
+
+    if (methodPayment === 'MANUAL_BANK' && manualBank && calculateData) {
+      setIsCreatingManualTransfer(true);
+      manualBankApiMock
+        .createTransfer({
+          payload: {
+            inquiryId: accountData?.id,
+            amount: numericAmount,
+            transactionPurpose: selectedPurpose?.code ?? '',
+            payMethod: 'MANUAL_BANK',
+            payChannel: manualBank.code,
+          },
+          bank: manualBank,
+          uniqueCode: calculateData.uniqueCode,
+          totalAmount: calculateData.totalAmount,
+        })
+        .then((response) => {
+          navigation.navigate('ManualBankPayment', {
+            transferData: response.data as ManualBankTransferData,
+            accountData,
+            bankData,
+          });
+        })
+        .catch(() => {
+          Toast.show({ type: 'error', text1: 'Gagal membuat transfer. Silakan coba lagi.' });
+        })
+        .finally(() => setIsCreatingManualTransfer(false));
+      return;
+    }
     let idempotencyKey = new Date().getTime().toString();
 
     postTransfer(
@@ -309,10 +386,11 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
             });
           }
 
-          if (error?.error?.message) {
+          const apiErrorMessage = (error as { error?: { message?: string } })?.error?.message;
+          if (apiErrorMessage) {
             Toast.show({
               type: 'error',
-              text1: error?.error?.message,
+              text1: apiErrorMessage,
             });
           }
         },
@@ -323,17 +401,29 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
   const numericAmount = amount ? parseInt(amount, 10) : 0;
   const showRequiredAmountError = hasSubmitted && !amount;
   const showRequiredPurposeError = hasSubmitted && !selectedPurpose;
-  const showRequiredBankError = hasSubmitted && methodPayment === 'VA' && !bankPayment?.code;
+  const showRequiredBankError =
+    hasSubmitted &&
+    ((methodPayment === 'VA' && !bankPayment?.code) ||
+      (methodPayment === 'MANUAL_BANK' && !manualBank?.code));
   const showMinAmountError = amount !== '' && numericAmount > 0 && numericAmount < 10000;
 
   useEffect(() => {
     let isDisable = true;
+    const isManualBankIncomplete =
+      methodPayment === 'MANUAL_BANK' &&
+      (!paymentMethodAvailability.manualBankEnabled ||
+        numericAmount < 10000 ||
+        !selectedPurpose ||
+        !manualBank?.code ||
+        !calculateData);
 
     if (paymentMethodAvailability.isLoading) {
       isDisable = true;
     } else if (!paymentMethodAvailability.hasAnyEnabled) {
       isDisable = true;
     } else if (isLoadingCalculate) {
+      isDisable = true;
+    } else if (isManualBankIncomplete) {
       isDisable = true;
     } else {
       isDisable = false;
@@ -345,6 +435,9 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
     amount,
     numericAmount,
     isLoadingCalculate,
+    calculateData,
+    selectedPurpose,
+    manualBank,
     paymentMethodAvailability.isLoading,
     paymentMethodAvailability.hasAnyEnabled,
   ]);
@@ -396,7 +489,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
                 onBlur={() => setIsFocusedInput(false)}
                 onChangeText={(val) => setAmount(val.replace(/[^0-9]/g, ''))}
                 blurOnSubmit={false}
-                placeholderTextColor={"#A9A9A9"}
+                placeholderTextColor={'#A9A9A9'}
               />
             </View>
           </TouchableWithoutFeedback>
@@ -601,11 +694,14 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
         <PaymentMethod
           selectedMethod={methodPayment}
           onSelect={(val) => setMethodPayment(val)}
-          onSelectBank={(val) => setBankPayment(val)}
+          onSelectBank={(val) =>
+            methodPayment === 'MANUAL_BANK' ? setManualBank(val) : setBankPayment(val)
+          }
           initialBankPayment={initialBankPayment}
           styleProps={{}}
           isVAEnabled={paymentMethodAvailability.vaEnabled}
           isQRISEnabled={paymentMethodAvailability.qrisEnabled}
+          isManualBankEnabled={paymentMethodAvailability.manualBankEnabled}
           isLoading={paymentMethodAvailability.isLoading}
           showBankError={showRequiredBankError}
           onLayout={(event) => {
@@ -655,9 +751,22 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
                 Biaya transfer
               </Text>
               {calculateData.isFreeTransfer || calculateData.fee === 0 ? (
-                <Text style={{ fontFamily: 'Switzer-Medium', color: '#16A34A', fontSize: 14 }}>
-                  GRATIS
-                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  {methodPayment === 'MANUAL_BANK' && calculateData.feePerTransaction > 0 ? (
+                    <Text
+                      style={{
+                        fontFamily: 'Switzer-Regular',
+                        color: '#737373',
+                        fontSize: 14,
+                        textDecorationLine: 'line-through',
+                      }}>
+                      {`Rp ${formatNumber(calculateData.feePerTransaction)}`}
+                    </Text>
+                  ) : null}
+                  <Text style={{ fontFamily: 'Switzer-Medium', color: '#000000', fontSize: 14 }}>
+                    GRATIS
+                  </Text>
+                </View>
               ) : (
                 <Text style={{ fontFamily: 'Switzer-Regular', color: '#000000', fontSize: 14 }}>
                   {`Rp ${formatNumber(calculateData?.fee)}`}
@@ -665,6 +774,17 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
               )}
             </View>
           )}
+
+          {calculateData?.uniqueCode ? (
+            <View style={[styles.rowBetween, { marginTop: 8, alignItems: 'center' }]}>
+              <Text style={{ fontFamily: 'Switzer-Regular', color: '#000000', fontSize: 14 }}>
+                ⓘ Kode Unik
+              </Text>
+              <Text style={{ fontFamily: 'Switzer-Medium', color: '#000000', fontSize: 14 }}>
+                {`Rp ${formatNumber(calculateData.uniqueCode)}`}
+              </Text>
+            </View>
+          ) : null}
 
           {calculateData && (
             <View style={[styles.rowBetween, { marginTop: 8, alignItems: 'center' }]}>
@@ -686,51 +806,56 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
             textStyle={{ color: '#FFF', fontFamily: 'Switzer-Bold', fontSize: 16 }}
             style={[styles.confirmButton, isDisableConfirm && styles.disabledButton]}
             disable={isDisableConfirm}
-            loading={isLoadingTransfer}
+            loading={isLoadingTransfer || isCreatingManualTransfer}
           />
-          <View style={{ marginTop: 12 }}>
-            {isLoadingCalculate ? (
-              <ActivityIndicator
-                size="small"
-                color="#1F2937"
-                style={{ alignSelf: 'flex-start', marginVertical: 2 }}
-              />
-            ) : calculateData ? (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                {calculateData.freeQuotaRemaining === 1 ? (
-                  <>
-                    <TriangleAlert size={20} color="#D97706" />
-                    <Text style={{ fontFamily: 'Switzer-Medium', fontSize: 14, color: '#000000' }}>
-                      Kuota transfer gratis tersisa 1 dari {calculateData.freeQuotaTotal}
-                    </Text>
-                  </>
-                ) : calculateData.freeQuotaRemaining > 0 ? (
-                  <>
-                    <Info size={20} color="#525252" />
-                    <Text style={{ fontFamily: 'Switzer-Medium', fontSize: 14, color: '#1F2937' }}>
-                      Kuota transfer gratis tersisa {calculateData.freeQuotaRemaining} dari{' '}
-                      {calculateData.freeQuotaTotal}
-                    </Text>
-                  </>
-                ) : (
-                  <>
-                    <Info size={20} color="#525252" />
-                    <Text style={{ fontFamily: 'Switzer-Medium', fontSize: 14, color: '#000000' }}>
-                      Kuota gratis habis biaya transfer Rp{' '}
-                      {formatNumber(calculateData.feePerTransaction)}/transaksi
-                    </Text>
-                  </>
-                )}
-              </View>
-            ) : (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <Info size={14} color="#666" />
-                <Text style={{ fontFamily: 'Switzer-Regular', fontSize: 14, color: '#666' }}>
-                  Kuota transfer gratis tersisa 5 dari 5
-                </Text>
-              </View>
-            )}
-          </View>
+          {methodPayment !== 'MANUAL_BANK' ? (
+            <View style={{ marginTop: 12 }}>
+              {isLoadingCalculate ? (
+                <ActivityIndicator
+                  size="small"
+                  color="#1F2937"
+                  style={{ alignSelf: 'flex-start', marginVertical: 2 }}
+                />
+              ) : calculateData ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  {calculateData.freeQuotaRemaining === 1 ? (
+                    <>
+                      <TriangleAlert size={20} color="#D97706" />
+                      <Text
+                        style={{ fontFamily: 'Switzer-Medium', fontSize: 14, color: '#000000' }}>
+                        Kuota transfer gratis tersisa 1 dari {calculateData.freeQuotaTotal}
+                      </Text>
+                    </>
+                  ) : calculateData.freeQuotaRemaining > 0 ? (
+                    <>
+                      <Info size={20} color="#525252" />
+                      <Text
+                        style={{ fontFamily: 'Switzer-Medium', fontSize: 14, color: '#1F2937' }}>
+                        Kuota transfer gratis tersisa {calculateData.freeQuotaRemaining} dari{' '}
+                        {calculateData.freeQuotaTotal}
+                      </Text>
+                    </>
+                  ) : (
+                    <>
+                      <Info size={20} color="#525252" />
+                      <Text
+                        style={{ fontFamily: 'Switzer-Medium', fontSize: 14, color: '#000000' }}>
+                        Kuota gratis habis biaya transfer Rp{' '}
+                        {formatNumber(calculateData.feePerTransaction)}/transaksi
+                      </Text>
+                    </>
+                  )}
+                </View>
+              ) : (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Info size={14} color="#666" />
+                  <Text style={{ fontFamily: 'Switzer-Regular', fontSize: 14, color: '#666' }}>
+                    Kuota transfer gratis tersisa 5 dari 5
+                  </Text>
+                </View>
+              )}
+            </View>
+          ) : null}
         </View>
       </View>
     </View>

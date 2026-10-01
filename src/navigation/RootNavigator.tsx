@@ -23,6 +23,7 @@ import { EStatement } from '../features/main/profile/EStatement';
 import Profile from '../features/main/profile';
 import TransferDetail from '../screens/transfer/transferDetail';
 import PaymentInstruction from '../screens/transfer/paymentInstruction';
+import ManualBankPaymentScreen from '../screens/transfer/manualBankPayment';
 import TransferProcessing from '../screens/transfer/transferProcessing';
 import PaymentReceipt from '../screens/transfer/paymentReceipt';
 import SearchAccountScreen from '../screens/transfer/searchAccount';
@@ -197,6 +198,7 @@ export default function RootNavigator({
             <Stack.Screen name="AddBankRecipient" component={AddBankRecipient} />
             <Stack.Screen name="TransferDetail" component={TransferDetail} />
             <Stack.Screen name="PaymentInstruction" component={PaymentInstruction} />
+            <Stack.Screen name="ManualBankPayment" component={ManualBankPaymentScreen} />
             <Stack.Screen
               name="TransferProcessing"
               component={TransferProcessing}
