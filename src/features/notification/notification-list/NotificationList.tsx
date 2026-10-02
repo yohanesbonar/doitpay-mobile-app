@@ -19,6 +19,10 @@ import { useReadNotificationMutation } from '../hooks/useReadNotificationMutatio
 import NotificationItem from './components/NotificationItem';
 import { NotificationListSkeleton } from './components/NotificationItemSkeleton';
 import { Notification, NotificationGroup, NotificationSubType } from './types';
+import { TransactionType } from '@/features/transaction/types';
+
+// Subtypes where the merchant is receiving money (see payment_method_receive_qris_enabled).
+const RECEIVE_SUBTYPES: NotificationSubType[] = ['incoming', 'qris'];
 
 type Tab = { label: string; value: NotificationSubType | undefined };
 
@@ -62,12 +66,25 @@ const groupByDate = (items: Notification[]): NotificationGroup[] => {
 
 const NotificationItemRow = ({ item }: { item: Notification }) => {
   const { mutate: readNotification } = useReadNotificationMutation();
+  const navigation = useNavigation<any>();
 
   return (
     <NotificationItem
       item={item}
       onPress={() => {
         if (!item.readAt) readNotification(item.id);
+
+        if (item.data?.type === 'TRANSACTION_DETAIL' && item.data.referenceId) {
+          const type = RECEIVE_SUBTYPES.includes(item.subType)
+            ? TransactionType.RECEIVE_IN
+            : TransactionType.TRANSFER_OUT;
+
+          navigation.navigate('TransactionDetail', {
+            transactionId: item.data.referenceId,
+            referenceId: item.data.referenceId,
+            type,
+          });
+        }
       }}
     />
   );

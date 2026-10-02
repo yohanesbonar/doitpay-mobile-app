@@ -1,19 +1,23 @@
-import { navigate } from '../../../navigation/navigationRef';
+import { navigate } from '../../navigation/navigationRef';
+import { TransactionType } from '../../features/transaction/types';
 
-export const handleNotificationNavigation = (remoteMessage: any) => {
-  if (!remoteMessage) return;
+export const handleNotificationNavigation = (payload: any) => {
+  if (!payload) return;
 
-  const type = remoteMessage.data?.type;
-  const id = remoteMessage.data?.id;
+  // Some callers pass the full remoteMessage (`{ data: { type, referenceId, trxType } }`),
+  // others pass the data object directly (`{ type, referenceId, trxType }`) — support both.
+  const data = payload.data ?? payload;
+  const type = data?.type;
+  const referenceId = data?.referenceId;
+  const trxType = data?.trxType;
 
-//   switch (type) {
-//     case 'TRANSACTION_DETAIL':
-//       navigate('TransactionDetail', { transactionId: id });
-//       break;
-//     case 'BANK_LIST':
-//       navigate('BankList'); // Sesuai folder bankList di struktur kamu
-//     default:
-//       navigate('Home');
-//       break;
-//   }
+  switch (type) {
+    case 'TRANSACTION_DETAIL':
+      navigate('TransactionDetail', {
+        transactionId: referenceId,
+        referenceId,
+        type: trxType === 'RECEIVE' ? TransactionType.RECEIVE_IN : TransactionType.TRANSFER_OUT,
+      });
+      break;
+  }
 };
