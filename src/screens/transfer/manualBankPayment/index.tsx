@@ -13,11 +13,21 @@ import {
 import Clipboard from '@react-native-clipboard/clipboard';
 import Toast from 'react-native-toast-message';
 import { launchImageLibrary } from 'react-native-image-picker';
-import { AlertCircle, Camera, Clock, Copy, FileWarning, WifiOff, X } from 'lucide-react-native';
+import {
+  AlertCircle,
+  Camera,
+  ChevronDown,
+  Clock,
+  Copy,
+  FileWarning,
+  WifiOff,
+  X,
+} from 'lucide-react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import Button from '@/components/atoms/Button';
 import { formatNumber } from '@/utils/Common';
+import { generateUUID } from '@/utils/uuid';
 import {
   manualBankApiMock,
   ManualBankTransferData,
@@ -33,10 +43,35 @@ const ManualBankPaymentScreen = () => {
     fileSize?: number | null;
   } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
   const [errorType, setErrorType] = useState<'submission' | 'fileSize' | 'fileFormat' | null>(null);
   const [countdown, setCountdown] = useState('00:00');
+  const [expandedPaymentGuide, setExpandedPaymentGuide] = useState<string | null>(null);
   const manualBank = transferData?.manualBank;
   const isBca = /bca|central asia/i.test(manualBank?.bankName ?? '');
+  const bankDisplayName = isBca ? 'Bank BCA' : manualBank?.bankName || 'bank tujuan';
+  const paymentGuides = [
+    {
+      title: 'Mobile Banking',
+      steps: [
+        'Buka aplikasi mobile banking dan login ke akun kamu.',
+        'Pilih menu Transfer ke rekening bank lain.',
+        `Pilih bank tujuan ${bankDisplayName}, lalu masukkan nomor rekening ${manualBank?.accountNumber || '-'}.`,
+        `Masukkan nominal tepat Rp ${formatNumber(manualBank?.totalAmount ?? 0)}.`,
+        'Periksa kembali nama penerima dan nominal, lalu selesaikan transfer.',
+      ],
+    },
+    {
+      title: 'ATM',
+      steps: [
+        'Masukkan kartu ATM dan PIN kamu.',
+        'Pilih menu Transfer ke rekening bank lain.',
+        `Pilih bank tujuan ${bankDisplayName}, lalu masukkan nomor rekening ${manualBank?.accountNumber || '-'}.`,
+        `Masukkan nominal tepat Rp ${formatNumber(manualBank?.totalAmount ?? 0)}.`,
+        'Pastikan nama penerima dan nominal sudah benar sebelum mengonfirmasi transaksi.',
+      ],
+    },
+  ];
 
   useEffect(() => {
     if (!transferData?.paymentExpiredAt) {
@@ -114,6 +149,32 @@ const ManualBankPaymentScreen = () => {
 
   const handleErrorAction = () => {
     setErrorType(null);
+  };
+
+  const cancelTransfer = async () => {
+    if (!transferData?.id || isCancelling) return;
+
+    setIsCancelling(true);
+    try {
+      const response = await manualBankApiMock.cancelTransfer(transferData.id, generateUUID());
+      if (response.data.statusUser !== 'CANCELLED') return;
+      navigation.goBack();
+    } catch {
+      Alert.alert('Gagal Membatalkan Transfer', 'Silakan coba lagi.');
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
+  const confirmCancelTransfer = () => {
+    Alert.alert(
+      'Batalkan Transfer?',
+      'Transaksi ini akan dibatalkan dan tidak dapat dilanjutkan.',
+      [
+        { text: 'Kembali', style: 'cancel' },
+        { text: 'Batalkan', style: 'destructive', onPress: cancelTransfer },
+      ],
+    );
   };
 
   return (
@@ -226,6 +287,41 @@ const ManualBankPaymentScreen = () => {
             </>
           </TouchableOpacity>
         )}
+        <View style={styles.paymentGuideSection}>
+          <Text style={styles.paymentGuideHeading}>Cara Pembayaran</Text>
+          {paymentGuides.map((guide) => {
+            const isExpanded = expandedPaymentGuide === guide.title;
+
+            return (
+              <View key={guide.title} style={styles.paymentGuideItem}>
+                <TouchableOpacity
+                  accessibilityRole="button"
+                  accessibilityState={{ expanded: isExpanded }}
+                  onPress={() => setExpandedPaymentGuide(isExpanded ? null : guide.title)}
+                  style={styles.paymentGuideTrigger}>
+                  <Text style={styles.paymentGuideTitle}>{guide.title}</Text>
+                  <ChevronDown
+                    size={20}
+                    color="#6B7280"
+                    style={{ transform: [{ rotate: isExpanded ? '180deg' : '0deg' }] }}
+                  />
+                </TouchableOpacity>
+                {isExpanded && (
+                  <View style={styles.paymentGuideSteps}>
+                    {guide.steps.map((step, index) => (
+                      <View key={`${guide.title}-${index}`} style={styles.paymentGuideStep}>
+                        <View style={styles.paymentGuideStepBadge}>
+                          <Text style={styles.paymentGuideStepNumber}>{index + 1}</Text>
+                        </View>
+                        <Text style={styles.paymentGuideStepText}>{step}</Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
+              </View>
+            );
+          })}
+        </View>
       </ScrollView>
       <View style={styles.footer}>
         <Button
@@ -234,7 +330,20 @@ const ManualBankPaymentScreen = () => {
           type="regular"
           color="#3B82F6"
           textColor="white"
-          disable={!receiptAsset || isSubmitting}
+          disable={!receiptAsset || isSubmitting || isCancelling}
+          loading={isSubmitting}
+        />
+        <Button
+          title="Batalkan Transfer"
+          onPress={confirmCancelTransfer}
+          type="regular"
+          color="#FFFFFF"
+          textColor="black"
+          borderColor="#D1D5DB"
+          style={styles.cancelTransferButton}
+          textStyle={styles.cancelTransferButtonText}
+          disable={isSubmitting || isCancelling}
+          loading={isCancelling}
         />
       </View>
       <Modal
@@ -463,6 +572,75 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 6,
   },
+  paymentGuideSection: {
+    marginHorizontal: -20,
+    marginTop: 24,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: '#F9FAFB',
+  },
+  paymentGuideHeading: {
+    fontFamily: 'Switzer-Bold',
+    fontSize: 18,
+    color: '#111827',
+    marginBottom: 16,
+  },
+  paymentGuideItem: {
+    width: '100%',
+    marginBottom: 8,
+  },
+  paymentGuideTrigger: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#FFF',
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    marginBottom: 12,
+  },
+  paymentGuideTitle: {
+    fontFamily: 'Switzer-Medium',
+    fontSize: 15,
+    color: '#111827',
+  },
+  paymentGuideSteps: {
+    backgroundColor: '#F9FAFB',
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 4,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+  },
+  paymentGuideStep: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+    width: '100%',
+  },
+  paymentGuideStepBadge: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#3475E8',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+    marginTop: 2,
+  },
+  paymentGuideStepNumber: {
+    color: '#FFF',
+    fontSize: 11,
+    fontFamily: 'Switzer-Bold',
+  },
+  paymentGuideStepText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#4B5563',
+    fontFamily: 'Switzer-Regular',
+    lineHeight: 18,
+  },
   removeAttachmentButton: {
     position: 'absolute',
     right: 8,
@@ -490,6 +668,13 @@ const styles = StyleSheet.create({
   uploadLabel: { fontFamily: 'Switzer-Medium', marginTop: 8 },
   uploadHint: { color: '#737373', fontSize: 12, marginTop: 8 },
   footer: { padding: 20, borderTopWidth: 1, borderColor: '#F3F4F6' },
+  cancelTransferButton: {
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    minHeight: 50,
+  },
+  cancelTransferButtonText: { fontFamily: 'Switzer-Medium', fontSize: 16 },
   submittingOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',

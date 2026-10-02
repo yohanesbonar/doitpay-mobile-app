@@ -54,15 +54,17 @@ const ManualBankVerificationScreen = () => {
   const { transferData, accountData, bankData } = (route.params || {}) as RouteParams;
   const transferId = transferData?.id;
   const isLocalMock = transferId?.startsWith('mock-transfer-') ?? false;
-  const [mockStatus, setMockStatus] = useState<VerificationStatus>('VERIFYING');
+  const [mockStatus, setMockStatus] = useState<VerificationStatus>(() =>
+    getVerificationStatus(transferData?.manualBank?.status),
+  );
   const hasNavigatedToReceipt = useRef(false);
 
   useEffect(() => {
-    if (!isLocalMock) return;
+    if (!isLocalMock || transferData?.manualBank?.status === 'CANCELLED') return;
 
     const timer = setTimeout(() => setMockStatus('SUCCESS'), 5000);
     return () => clearTimeout(timer);
-  }, [isLocalMock, transferId]);
+  }, [isLocalMock, transferId, transferData?.manualBank?.status]);
 
   const { data } = useQuery<GetTransferDetailResponse>({
     queryKey: ['manualBankTransferStatus', transferId],

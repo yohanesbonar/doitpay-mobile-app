@@ -21,7 +21,14 @@ export interface ManualBankTransferData {
     bankName: string;
     accountNumber: string;
     accountName: string;
-    status: 'PENDING';
+    status: 'PENDING' | 'CANCELLED';
+  };
+}
+
+export interface CancelManualBankTransferResponse {
+  data: {
+    id: string;
+    statusUser: 'CANCELLED';
   };
 }
 
@@ -162,6 +169,17 @@ export const manualBankApiMock = {
     if (!transferId || !fileKey) throw new Error('Transfer ID and file key are required');
     // Simulate POST /v1/transfers/{id}/proof until the endpoint is available in staging.
     return { status: 'success', data: { status: 'VERIFYING', fileKey } };
+  },
+
+  async cancelTransfer(
+    transferId: string,
+    idempotencyKey: string,
+  ): Promise<CancelManualBankTransferResponse> {
+    await wait(400);
+    if (!transferId) throw new Error('Transfer ID is required');
+    if (!idempotencyKey) throw new Error('Idempotency key is required');
+    // Simulate POST /v1/transfers/{id}/cancel until it is available in staging.
+    return { data: { id: transferId, statusUser: 'CANCELLED' } };
   },
 
   async submitProof(
