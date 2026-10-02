@@ -168,7 +168,7 @@ export const HomeView = (props: HomeViewProps) => {
                 freeTransferQuotaTotal={transferQuota?.freeTransferQuotaTotal ?? 0}
                 freeTransferQuotaUsed={transferQuota?.freeTransferQuotaUsed ?? 0}
                 transferFee={transferQuota?.transferFee ?? 0}
-                maxLimit={transferLimit?.maxAmount ?? 0}
+                maxLimit={(transferLimit?.maxAmount ?? 0) - (transferLimit?.usage ?? 0)}
                 amountReceived={transferLimit?.amountReceived ?? 0}
                 isKycVerified={!hasKycPending}
                 freeQuotaResetType={transferQuota?.freeQuotaResetType}

@@ -16,6 +16,7 @@ import { useTheme } from '../../../theme/ThemeProvider';
 import { createStyles } from './styles';
 import { useGetNotificationListQuery } from '../hooks/useGetNotificationListQuery';
 import { useReadNotificationMutation } from '../hooks/useReadNotificationMutation';
+import { useReadAllNotificationsMutation } from '../hooks/useReadAllNotificationsMutation';
 import NotificationItem from './components/NotificationItem';
 import { NotificationListSkeleton } from './components/NotificationItemSkeleton';
 import { Notification, NotificationGroup, NotificationSubType } from './types';
@@ -77,6 +78,7 @@ export const NotificationList = () => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const navigation = useNavigation<any>();
+  const { mutate: readAllNotifications, isPending: isReadingAll } = useReadAllNotificationsMutation();
 
   const [activeTab, setActiveTab] = useState<Tab>(TABS[0]);
 
@@ -95,6 +97,9 @@ export const NotificationList = () => {
             <ChevronLeft size={24} color="#1A1A1A" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Notifikasi</Text>
+          <TouchableOpacity disabled={isReadingAll} onPress={() => readAllNotifications()}>
+            <Text style={styles.readAllText}>Tandai semua dibaca</Text>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.tabContainer}>

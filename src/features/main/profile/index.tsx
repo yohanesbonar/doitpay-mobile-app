@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Settings, CreditCard, ShieldCheck, HelpCircle, FileText } from 'lucide-react-native';
 import { useTheme } from '../../../theme/ThemeProvider';
 import { createStyles } from './styles';
 import ProfileMenuItem from './components/ProfileMenuItem';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { handleLogout } from '@/utils/Common';
 import { NotificationIconWithBadge } from '@/components/molecules/NotificationIconWithBadge';
 import { useGetProfileMeQuery } from '@/features/user/hooks/useGetProfileMeQuery';
@@ -25,11 +25,32 @@ export const Profile = () => {
   const navigation = useNavigation<any>();
 
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isPullRefreshing, setIsPullRefreshing] = useState(false);
 
-  const { data: profileData, isLoading: loadingProfile } = useGetProfileMeQuery();
-  const { data: limitData, isLoading: loadingLimit } = useGetLimitMeQuery();
+  const {
+    data: profileData,
+    isLoading: loadingProfile,
+    refetch: refetchProfile,
+  } = useGetProfileMeQuery();
+  const { data: limitData, isLoading: loadingLimit, refetch: refetchLimit } = useGetLimitMeQuery();
 
   const isLoading = loadingProfile || loadingLimit;
+
+  const handlePullRefresh = useCallback(async () => {
+    setIsPullRefreshing(true);
+    try {
+      await Promise.all([refetchProfile(), refetchLimit()]);
+    } finally {
+      setIsPullRefreshing(false);
+    }
+  }, [refetchProfile, refetchLimit]);
+
+  useFocusEffect(
+    useCallback(() => {
+      refetchProfile();
+      refetchLimit();
+    }, [refetchProfile, refetchLimit]),
+  );
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -37,7 +58,12 @@ export const Profile = () => {
         <Text style={styles.headerTitle}>Profil</Text>
         <NotificationIconWithBadge onPress={() => navigation.navigate('Notification')} />
       </View>
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.container}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={isPullRefreshing} onRefresh={handlePullRefresh} />
+        }>
         {isLoading || !profileData ? (
           <ProfileCardSkeleton />
         ) : (
@@ -47,7 +73,7 @@ export const Profile = () => {
           <KycCardSkeleton />
         ) : (
           <KycCard
-            limitAmount={limitData?.data?.dailyLimitTotal || 0}
+            limitAmount={limitData?.data?.dailyLimitTotal - limitData?.data?.dailyLimitUsed || 0}
             kycStatus={profileData.data.kycStatus}
           />
         )}
