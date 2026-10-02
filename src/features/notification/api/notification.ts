@@ -13,4 +13,8 @@ export const notificationApi = {
   readNotification: async (id: string): Promise<void> => {
     await apiClient.post(`/v1/notifications/${id}/read`);
   },
+
+  readAllNotifications: async (): Promise<void> => {
+    await apiClient.post('/v1/notifications/read-all');
+  },
 };
