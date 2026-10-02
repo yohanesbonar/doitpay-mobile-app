@@ -98,13 +98,13 @@ const ManualBankPaymentScreen = () => {
         receiptAsset.uri,
         receiptAsset.fileName,
       );
-      Alert.alert(
-        'Bukti terkirim',
-        response.data.status === 'VERIFYING'
-          ? 'Bukti transfer diterima dan sedang diverifikasi.'
-          : 'Bukti transfer berhasil dikirim.',
-        [{ text: 'Selesai', onPress: () => navigation.popToTop() }],
-      );
+      if (response.data.status === 'VERIFYING') {
+        navigation.replace('ManualBankVerification', {
+          transferData,
+          accountData: route.params?.accountData,
+          bankData: route.params?.bankData,
+        });
+      }
     } catch {
       setErrorType('submission');
     } finally {

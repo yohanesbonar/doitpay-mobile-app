@@ -82,13 +82,16 @@ export const manualBankApiMock = {
   async calculate(amount: number): Promise<PaymentCalculateData & { uniqueCode: number }> {
     await wait(250);
     const uniqueCode = 123;
+
+    // Temporary response matching the free-transfer calculation while the
+    // backend's MANUAL_BANK calculation support is being prepared.
     return {
       amount,
       dailyLimitTotal: 3_000_000,
       dailyLimitUsed: 1_500_000,
       fee: 0,
       feePerTransaction: 6_500,
-      freeQuotaRemaining: 2,
+      freeQuotaRemaining: 5,
       freeQuotaTotal: 5,
       isFreeTransfer: true,
       uniqueCode,
@@ -157,9 +160,8 @@ export const manualBankApiMock = {
   async confirmProofUpload(transferId: string, fileKey: string): Promise<SubmitProofResponse> {
     await wait(400);
     if (!transferId || !fileKey) throw new Error('Transfer ID and file key are required');
-    // Temporary UI behavior until the proof API is available in staging: simulate
-    // the confirmation request failing so the upload-failed sheet is shown.
-    throw new Error('Mock proof confirmation failed');
+    // Simulate POST /v1/transfers/{id}/proof until the endpoint is available in staging.
+    return { status: 'success', data: { status: 'VERIFYING', fileKey } };
   },
 
   async submitProof(

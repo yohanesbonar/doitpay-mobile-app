@@ -149,6 +149,14 @@ export interface GetTransferDetailResponseData {
   paymentId: string;
   qris: QrisDetailData | null;
   status: 'CREATED' | 'PAID' | 'COMPLETED' | 'CANCELLED' | string;
+  manualBank?: {
+    status: 'PENDING' | 'VERIFYING' | 'REJECTED' | 'EXPIRED' | 'CANCELLED' | string;
+    accountName?: string;
+    accountNumber?: string;
+    bankName?: string;
+    totalAmount?: number;
+    uniqueCode?: number;
+  } | null;
   va: VaDetailData | null;
 }
 

@@ -23,7 +23,11 @@ import {
 } from '../../../hooks/useTransferMutation';
 import Button from '../../../components/atoms/Button/index.tsx';
 import Toast from 'react-native-toast-message';
-import { paymentApi, PaymentCalculatePayload } from './api/payment-calculate-api';
+import {
+  paymentApi,
+  PaymentCalculateData,
+  PaymentCalculatePayload,
+} from './api/payment-calculate-api';
 import { Info, TriangleAlert, ChevronDown, Check } from 'lucide-react-native';
 import { usePaymentMethodAvailability } from '../hooks/usePaymentMethodAvailability';
 import { useQuickAmounts } from '../hooks/useQuickAmounts';
@@ -99,8 +103,9 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
   const [isDisableConfirm, setIsDisableConfirm] = useState(true);
   const [isCreatingManualTransfer, setIsCreatingManualTransfer] = useState(false);
 
-  const [calculateData, setCalculateData] = useState<any>(null);
+  const [calculateData, setCalculateData] = useState<PaymentCalculateData | null>(null);
   const [isLoadingCalculate, setIsLoadingCalculate] = useState(false);
+  const calculateRequestIdRef = useRef(0);
   const paymentMethodAvailability = usePaymentMethodAvailability('TRANSFER');
   const quickAmounts = useQuickAmounts('TRANSFER');
 
@@ -181,6 +186,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
   const isFirstMount = useRef(true);
   const prevMethodPayment = useRef(methodPayment);
   const prevBankPayment = useRef(bankPayment?.code);
+  const prevManualBankCode = useRef(manualBank?.code);
 
   useEffect(() => {
     if (!isFocused) return;
@@ -204,36 +210,53 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
 
     const fetchCalculation = async (amt: number) => {
       if (
+        amt < 10000 ||
         (methodPayment === 'VA' && !bankPayment?.code) ||
         (methodPayment === 'MANUAL_BANK' && !manualBank?.code)
-      )
+      ) {
+        setIsLoadingCalculate(false);
         return;
+      }
 
+      const requestId = ++calculateRequestIdRef.current;
       setIsLoadingCalculate(true);
       try {
         const payload = getCalculatePayload(amt);
-        const res =
-          methodPayment === 'MANUAL_BANK'
-            ? { status: 'success', data: await manualBankApiMock.calculate(amt) }
-            : await paymentApi.calculatePayment(payload);
-        if (res && res.status === 'success') {
-          setCalculateData(res.data);
+        if (methodPayment === 'MANUAL_BANK') {
+          const mockResponse = await manualBankApiMock.calculate(amt);
+          if (requestId === calculateRequestIdRef.current) {
+            setCalculateData(mockResponse);
+          }
+        } else {
+          const res = await paymentApi.calculatePayment(payload);
+          if (requestId === calculateRequestIdRef.current && res?.status === 'success') {
+            setCalculateData(res.data);
+          }
         }
       } catch (error) {
-        console.log('Calculate error:', error);
+        if (requestId === calculateRequestIdRef.current) {
+          setCalculateData(null);
+          console.log('Calculate error:', error);
+        }
       } finally {
-        setIsLoadingCalculate(false);
+        if (requestId === calculateRequestIdRef.current) {
+          setIsLoadingCalculate(false);
+        }
       }
     };
 
     const isMethodChanged = prevMethodPayment.current !== methodPayment;
     const isBankChanged = prevBankPayment.current !== bankPayment?.code;
+    const isManualBankChanged = prevManualBankCode.current !== manualBank?.code;
 
-    if (isFirstMount.current || isMethodChanged || isBankChanged) {
+    if (isFirstMount.current || isMethodChanged || isBankChanged || isManualBankChanged) {
       isFirstMount.current = false;
       prevMethodPayment.current = methodPayment;
       prevBankPayment.current = bankPayment?.code;
+      prevManualBankCode.current = manualBank?.code;
 
+      calculateRequestIdRef.current += 1;
+      setCalculateData(null);
       fetchCalculation(numericAmt);
       return;
     }
@@ -335,7 +358,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
             payChannel: manualBank.code,
           },
           bank: manualBank,
-          uniqueCode: calculateData.uniqueCode,
+          uniqueCode: calculateData.uniqueCode ?? 0,
           totalAmount: calculateData.totalAmount,
         })
         .then((response) => {
@@ -694,9 +717,14 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
         <PaymentMethod
           selectedMethod={methodPayment}
           onSelect={(val) => setMethodPayment(val)}
-          onSelectBank={(val) =>
-            methodPayment === 'MANUAL_BANK' ? setManualBank(val) : setBankPayment(val)
-          }
+          onSelectBank={(val) => {
+            setCalculateData(null);
+            if (methodPayment === 'MANUAL_BANK') {
+              setManualBank(val);
+            } else {
+              setBankPayment(val);
+            }
+          }}
           initialBankPayment={initialBankPayment}
           styleProps={{}}
           isVAEnabled={paymentMethodAvailability.vaEnabled}

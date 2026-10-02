@@ -24,6 +24,7 @@ import Profile from '../features/main/profile';
 import TransferDetail from '../screens/transfer/transferDetail';
 import PaymentInstruction from '../screens/transfer/paymentInstruction';
 import ManualBankPaymentScreen from '../screens/transfer/manualBankPayment';
+import ManualBankVerificationScreen from '../screens/transfer/manualBankVerification';
 import TransferProcessing from '../screens/transfer/transferProcessing';
 import PaymentReceipt from '../screens/transfer/paymentReceipt';
 import SearchAccountScreen from '../screens/transfer/searchAccount';
@@ -199,6 +200,11 @@ export default function RootNavigator({
             <Stack.Screen name="TransferDetail" component={TransferDetail} />
             <Stack.Screen name="PaymentInstruction" component={PaymentInstruction} />
             <Stack.Screen name="ManualBankPayment" component={ManualBankPaymentScreen} />
+            <Stack.Screen
+              name="ManualBankVerification"
+              component={ManualBankVerificationScreen}
+              options={{ headerShown: false }}
+            />
             <Stack.Screen
               name="TransferProcessing"
               component={TransferProcessing}
