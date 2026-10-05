@@ -745,34 +745,36 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
 
       <View style={styles.footerOverlay}>
         <View style={styles.footerContent}>
-          <View
-            style={[
-              styles.rowBetween,
-              {
-                marginBottom: 4,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'flex-start',
-              },
-            ]}>
-            <Text style={{ fontFamily: 'Switzer-Regular', color: '#000000', fontSize: 14 }}>
-              Limit Harian:
-            </Text>
+          {methodPayment !== 'MANUAL_BANK' && (
+            <View
+              style={[
+                styles.rowBetween,
+                {
+                  marginBottom: 4,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'flex-start',
+                },
+              ]}>
+              <Text style={{ fontFamily: 'Switzer-Regular', color: '#000000', fontSize: 14 }}>
+                Limit Harian:
+              </Text>
 
-            <Text style={{ fontFamily: 'Switzer-Regular', color: '#1F2937', fontSize: 14 }}>
-              {calculateData ? (
-                <>
-                  <Text style={{ fontFamily: 'Switzer-Bold' }}>
-                    {`  Rp ${formatNumber(calculateData.dailyLimitUsed)}`}
-                  </Text>
-                  {/* Bagian total limit tetap Regular */}
-                  {` / Rp ${formatNumber(calculateData.dailyLimitTotal)}`}
-                </>
-              ) : (
-                '  -'
-              )}
-            </Text>
-          </View>
+              <Text style={{ fontFamily: 'Switzer-Regular', color: '#1F2937', fontSize: 14 }}>
+                {calculateData ? (
+                  <>
+                    <Text style={{ fontFamily: 'Switzer-Bold' }}>
+                      {`  Rp ${formatNumber(calculateData.dailyLimitUsed)}`}
+                    </Text>
+                    {/* Bagian total limit tetap Regular */}
+                    {` / Rp ${formatNumber(calculateData.dailyLimitTotal)}`}
+                  </>
+                ) : (
+                  '  -'
+                )}
+              </Text>
+            </View>
+          )}
 
           {calculateData && (
             <View
