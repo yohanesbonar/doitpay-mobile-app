@@ -10,6 +10,7 @@ import {
   usePhotoOutput,
 } from 'react-native-vision-camera';
 import { createStyles } from './styles';
+import { KycImageError, prepareKycImage } from '@/features/kyc/utils/prepareKycImage';
 
 interface CaptureSelfieViewProps {
   onPressBack: () => void;
@@ -69,8 +70,13 @@ export const CaptureSelfieView = ({
         return;
       }
 
-      setCapturedUri(uri);
+      setCapturedUri(await prepareKycImage(uri));
     } catch (error) {
+      if (error instanceof KycImageError) {
+        Alert.alert('Foto Tidak Valid', error.message);
+        return;
+      }
+
       const message = error instanceof Error ? error.message : 'Gagal mengambil foto selfie';
       if (message.includes('Camera is closed') || message.includes('abortRequests')) {
         return;
