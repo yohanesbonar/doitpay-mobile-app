@@ -766,7 +766,6 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
                     <Text style={{ fontFamily: 'Switzer-Bold' }}>
                       {`  Rp ${formatNumber(calculateData.dailyLimitUsed)}`}
                     </Text>
-                    {/* Bagian total limit tetap Regular */}
                     {` / Rp ${formatNumber(calculateData.dailyLimitTotal)}`}
                   </>
                 ) : (

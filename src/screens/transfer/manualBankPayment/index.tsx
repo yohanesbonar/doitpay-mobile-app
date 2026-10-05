@@ -98,12 +98,11 @@ const ManualBankPaymentScreen = () => {
     return () => clearInterval(interval);
   }, [transferData?.paymentExpiredAt]);
 
-  const copyValue = (value: string) => {
+  const copyValue = (label: string, value: string) => {
     Clipboard.setString(value);
     Toast.show({
       type: 'success',
-      text1: 'Tersalin',
-      text2: 'Informasi berhasil disalin.',
+      text1: `${label} berhasil disalin.`,
     });
   };
 
@@ -204,7 +203,7 @@ const ManualBankPaymentScreen = () => {
               <Text style={styles.amount}>{formatNumber(manualBank?.totalAmount ?? 0)}</Text>
             </View>
             <TouchableOpacity
-              onPress={() => copyValue(String(manualBank?.totalAmount ?? ''))}
+              onPress={() => copyValue("Nominal Transfer", String(manualBank?.totalAmount ?? ''))}
               style={styles.copyButton}>
               <Copy size={16} color="#FFF" />
               <Text style={styles.copyButtonText}>Salin</Text>
@@ -234,7 +233,7 @@ const ManualBankPaymentScreen = () => {
             <View style={styles.accountNumberRow}>
               <Text style={styles.accountNumber}>{manualBank?.accountNumber}</Text>
               <TouchableOpacity
-                onPress={() => copyValue(manualBank?.accountNumber ?? '')}
+                onPress={() => copyValue("Nomor Rekening", manualBank?.accountNumber ?? '')}
                 style={styles.copyButton}>
                 <Copy size={16} color="#FFF" />
                 <Text style={styles.copyButtonText}>Salin</Text>
