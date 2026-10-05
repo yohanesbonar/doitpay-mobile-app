@@ -754,6 +754,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
                   flexDirection: 'row',
                   alignItems: 'center',
                   justifyContent: 'flex-start',
+                  marginTop: 8,
                 },
               ]}>
               <Text style={{ fontFamily: 'Switzer-Regular', color: '#000000', fontSize: 14 }}>
