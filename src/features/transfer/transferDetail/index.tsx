@@ -94,6 +94,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
     null,
   );
   const [isPurposeModalVisible, setIsPurposeModalVisible] = useState(false);
+  const [isUniqueCodeTooltipVisible, setIsUniqueCodeTooltipVisible] = useState(false);
   const [methodPayment, setMethodPayment] = useState<'VA' | 'QRIS' | 'MANUAL_BANK'>(
     initialPaymentMethod || 'VA',
   );
@@ -466,7 +467,11 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
   ]);
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#FFF' }}>
+    <View
+      style={{ flex: 1, backgroundColor: '#FFF' }}
+      onTouchStart={() => {
+        if (isUniqueCodeTooltipVisible) setIsUniqueCodeTooltipVisible(false);
+      }}>
       <HeaderToolbar
         title={'Jumlah & Konfirmasi'}
         onPressBack={onPressBack}
@@ -804,13 +809,37 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
           )}
 
           {calculateData?.uniqueCode ? (
-            <View style={[styles.rowBetween, { marginTop: 8, alignItems: 'center' }]}>
-              <Text style={{ fontFamily: 'Switzer-Regular', color: '#000000', fontSize: 14 }}>
-                ⓘ Kode Unik
-              </Text>
-              <Text style={{ fontFamily: 'Switzer-Medium', color: '#000000', fontSize: 14 }}>
-                {`Rp ${formatNumber(calculateData.uniqueCode)}`}
-              </Text>
+            <View style={styles.uniqueCodeRowWrapper}>
+              <View style={[styles.rowBetween, { marginTop: 8, alignItems: 'center' }]}>
+                <View style={styles.uniqueCodeLabel}>
+                  <TouchableOpacity
+                    accessibilityRole="button"
+                    accessibilityLabel="Informasi kode unik"
+                    accessibilityState={{ expanded: isUniqueCodeTooltipVisible }}
+                    hitSlop={8}
+                    onPress={() => setIsUniqueCodeTooltipVisible((visible) => !visible)}>
+                    <Info size={18} color="#666666" strokeWidth={2} />
+                  </TouchableOpacity>
+                  <Text style={{ fontFamily: 'Switzer-Regular', color: '#000000', fontSize: 14 }}>
+                    Kode Unik
+                  </Text>
+                </View>
+                <Text style={{ fontFamily: 'Switzer-Medium', color: '#000000', fontSize: 14 }}>
+                  {`Rp ${formatNumber(calculateData.uniqueCode)}`}
+                </Text>
+              </View>
+              {isUniqueCodeTooltipVisible && (
+                <View style={styles.uniqueCodeTooltip}>
+                  <View style={styles.uniqueCodeTooltipArrow} />
+                  <Text style={styles.uniqueCodeTooltipText}>
+                    Kode unik menjadi{' '}
+                    <Text style={styles.uniqueCodeTooltipEmphasis}>
+                      biaya layanan jika transfer berhasil.
+                    </Text>{' '}
+                    Jika gagal, seluruh dana akan dikembalikan.
+                  </Text>
+                </View>
+              )}
             </View>
           ) : null}
 

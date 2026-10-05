@@ -24,16 +24,21 @@ import {
   X,
 } from 'lucide-react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { LogoutConfirmationModal } from '@/features/main/profile/components/LogoutConfirmationModal';
+import { createStyles as createProfileStyles } from '@/features/main/profile/styles';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import Button from '@/components/atoms/Button';
 import { formatNumber } from '@/utils/Common';
 import { generateUUID } from '@/utils/uuid';
+import { useTheme } from '@/theme/ThemeProvider';
 import {
   manualBankApiMock,
   ManualBankTransferData,
 } from '@/features/transfer/transferDetail/api/manual-bank.mock';
 
 const ManualBankPaymentScreen = () => {
+  const { colors } = useTheme();
+  const confirmationModalStyles = createProfileStyles(colors);
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const { transferData } = (route.params || {}) as { transferData: ManualBankTransferData };
@@ -44,6 +49,7 @@ const ManualBankPaymentScreen = () => {
   } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
+  const [isCancelConfirmationVisible, setIsCancelConfirmationVisible] = useState(false);
   const [errorType, setErrorType] = useState<'submission' | 'fileSize' | 'fileFormat' | null>(null);
   const [countdown, setCountdown] = useState('00:00');
   const [expandedPaymentGuide, setExpandedPaymentGuide] = useState<string | null>(null);
@@ -167,14 +173,7 @@ const ManualBankPaymentScreen = () => {
   };
 
   const confirmCancelTransfer = () => {
-    Alert.alert(
-      'Batalkan Transfer?',
-      'Transaksi ini akan dibatalkan dan tidak dapat dilanjutkan.',
-      [
-        { text: 'Kembali', style: 'cancel' },
-        { text: 'Batalkan', style: 'destructive', onPress: cancelTransfer },
-      ],
-    );
+    setIsCancelConfirmationVisible(true);
   };
 
   return (
@@ -405,6 +404,20 @@ const ManualBankPaymentScreen = () => {
           </View>
         </View>
       </Modal>
+      <LogoutConfirmationModal
+        visible={isCancelConfirmationVisible}
+        styles={confirmationModalStyles}
+        colors={colors}
+        title="Batalkan Transfer?"
+        description="Transaksi ini akan dibatalkan dan tidak dapat dilanjutkan."
+        cancelLabel="Kembali"
+        confirmLabel="Batalkan"
+        onClose={() => setIsCancelConfirmationVisible(false)}
+        onConfirm={() => {
+          setIsCancelConfirmationVisible(false);
+          cancelTransfer();
+        }}
+      />
     </View>
   );
 };
