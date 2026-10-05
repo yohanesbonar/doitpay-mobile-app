@@ -3,7 +3,7 @@ import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '@/theme/ThemeProvider';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import { createStyles } from '../activateQris/styles';
-import { CreditCard, File, Image } from 'lucide-react-native';
+import { File, Image } from 'lucide-react-native';
 
 interface KycIntroViewProps {
   onPressBack: () => void;
@@ -62,19 +62,14 @@ export const KycIntroView = ({
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Yang Perlu Disiapkan</Text>
           {renderInfoItem({
-            title: 'Data Usaha',
-            description: 'Nama, kategori, alamat, dan deskripsi barang atau jasa',
+            title: 'KTP',
+            description: 'KTP asli yang masih berlaku dan terlihat jelas',
             icon: <File size={22} color="#6B7280" strokeWidth={2} />,
           })}
           {renderInfoItem({
-            title: 'Foto Bukti Usaha',
-            description: 'Foto produk, tempat usaha, menu, atau aktivitas layanan',
+            title: 'Foto Selfie',
+            description: 'Foto selfie untuk mencocokkan identitasmu dengan KTP',
             icon: <Image size={22} color="#6B7280" strokeWidth={2} />,
-          })}
-          {renderInfoItem({
-            title: 'NPWP (opsional)',
-            description: 'NPWP pemilik usaha untuk proses verifikasi.',
-            icon: <CreditCard size={22} color="#6B7280" strokeWidth={2} />,
           })}
         </View>
       </ScrollView>
