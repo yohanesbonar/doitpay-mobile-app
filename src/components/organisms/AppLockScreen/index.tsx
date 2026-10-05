@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -12,11 +12,13 @@ import {
 } from 'react-native';
 import { BlurView } from '@react-native-community/blur';
 import Toast from 'react-native-toast-message';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme/ThemeProvider';
 import { createStyles } from '@/features/onboarding/authEntry/styles';
 import { useValidatePin } from '@/hooks/useAuthMutation';
 import { useAuthStore } from '@/storage/useAuthStore';
-import { storage } from '@/storage';
+import { PersistentStorageKey, storage } from '@/storage';
+import { getBiometricLoginCredential } from '@/utils/BiometricAuth';
 
 const PIN_LENGTH = 6;
 const DEFAULT_LOCKOUT_SECONDS = 60;
@@ -35,11 +37,16 @@ interface AppLockScreenProps {
 
 export const AppLockScreen = ({ onUnlocked }: AppLockScreenProps) => {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const styles = createStyles(colors);
   const inputRef = useRef<TextInput>(null);
 
   const [pin, setPin] = useState('');
   const [isErrorPIN, setIsErrorPIN] = useState(false);
+  const [isBiometricPending, setIsBiometricPending] = useState(false);
+  const [isBiometricEnabled, setIsBiometricEnabled] = useState(
+    storage.getBoolean(PersistentStorageKey.BIOMETRIC_LOGIN_ENABLED) ?? false,
+  );
 
   const [lockedUntil, setLockedUntil] = useState<number | null>(() => {
     const stored = storage.getNumber(LOCKOUT_UNTIL_KEY);
@@ -47,7 +54,7 @@ export const AppLockScreen = ({ onUnlocked }: AppLockScreenProps) => {
   });
   const [secondsLeft, setSecondsLeft] = useState(0);
 
-  const { mutate: validatePin, isPending } = useValidatePin();
+  const { mutateAsync: validatePin, isPending } = useValidatePin();
 
   useEffect(() => {
     if (!lockedUntil) {
@@ -81,51 +88,110 @@ export const AppLockScreen = ({ onUnlocked }: AppLockScreenProps) => {
       />
     ));
 
+  const handlePinValidationError = useCallback(
+    (err: any) => {
+      const code = err?.response?.data?.error?.code ?? err?.error?.code;
+      const message = err?.response?.data?.error?.message ?? err?.error?.message;
+      const remainingAttempts =
+        err?.response?.data?.error?.remainingAttempts ?? err?.error?.remainingAttempts;
+      const retryAfterSeconds =
+        err?.response?.data?.error?.retryAfterSeconds ??
+        err?.error?.retryAfterSeconds ??
+        DEFAULT_LOCKOUT_SECONDS;
+
+      setIsErrorPIN(true);
+      setPin('');
+
+      if (code === 'PIN_LOCKED') {
+        Keyboard.dismiss();
+        const until = Date.now() + retryAfterSeconds * 1000;
+        storage.set(LOCKOUT_UNTIL_KEY, until);
+        setLockedUntil(until);
+        return;
+      }
+
+      Toast.show({
+        type: 'error',
+        text1: message || t('appLock.pinIncorrect'),
+        text2:
+          typeof remainingAttempts === 'number'
+            ? t('appLock.remainingAttempts', { count: remainingAttempts })
+            : undefined,
+      });
+    },
+    [t],
+  );
+
+  const handleBiometricUnlock = useCallback(async () => {
+    if (!isBiometricEnabled || isBiometricPending || isPending || lockedUntil) return;
+
+    Keyboard.dismiss();
+    setIsBiometricPending(true);
+    try {
+      let credential;
+      try {
+        credential = await getBiometricLoginCredential(t('appLock.biometricPromptTitle'));
+      } catch (error) {
+        console.error('Biometric app unlock authentication failed', error);
+        inputRef.current?.focus();
+        Toast.show({ type: 'error', text1: t('appLock.biometricAuthenticationFailed') });
+        return;
+      }
+
+      if (!credential) {
+        storage.set(PersistentStorageKey.BIOMETRIC_LOGIN_ENABLED, false);
+        setIsBiometricEnabled(false);
+        inputRef.current?.focus();
+        Toast.show({ type: 'error', text1: t('appLock.biometricCredentialUnavailable') });
+        return;
+      }
+
+      try {
+        await validatePin({ pin: credential.pin });
+        onUnlocked();
+      } catch (error) {
+        handlePinValidationError(error);
+        inputRef.current?.focus();
+      }
+    } finally {
+      setIsBiometricPending(false);
+    }
+  }, [
+    handlePinValidationError,
+    isBiometricEnabled,
+    isBiometricPending,
+    isPending,
+    lockedUntil,
+    onUnlocked,
+    t,
+    validatePin,
+  ]);
+
+  const hasStartedBiometricPrompt = useRef(false);
+
+  useEffect(() => {
+    if (!isBiometricEnabled || lockedUntil || hasStartedBiometricPrompt.current) return;
+
+    hasStartedBiometricPrompt.current = true;
+    const promptTimeout = setTimeout(() => {
+      void handleBiometricUnlock();
+    }, 500);
+
+    return () => clearTimeout(promptTimeout);
+  }, [handleBiometricUnlock, isBiometricEnabled, lockedUntil]);
+
   const handlePINChange = (text: string) => {
     if (isErrorPIN) setIsErrorPIN(false);
     if (text.length > PIN_LENGTH || lockedUntil) return;
     setPin(text);
 
     if (text.length === PIN_LENGTH) {
-      validatePin(
-        { pin: text },
-        {
-          onSuccess: () => {
-            Keyboard.dismiss();
-            onUnlocked();
-          },
-          onError: (err: any) => {
-            const code = err?.response?.data?.error?.code ?? err?.error?.code;
-            const message = err?.response?.data?.error?.message ?? err?.error?.message;
-            const remainingAttempts =
-              err?.response?.data?.error?.remainingAttempts ?? err?.error?.remainingAttempts;
-            const retryAfterSeconds =
-              err?.response?.data?.error?.retryAfterSeconds ??
-              err?.error?.retryAfterSeconds ??
-              DEFAULT_LOCKOUT_SECONDS;
-
-            setIsErrorPIN(true);
-            setPin('');
-
-            if (code === 'PIN_LOCKED') {
-              Keyboard.dismiss();
-              const until = Date.now() + retryAfterSeconds * 1000;
-              storage.set(LOCKOUT_UNTIL_KEY, until);
-              setLockedUntil(until);
-              return;
-            }
-
-            Toast.show({
-              type: 'error',
-              text1: message || 'PIN salah',
-              text2:
-                typeof remainingAttempts === 'number'
-                  ? `Sisa percobaan: ${remainingAttempts}`
-                  : undefined,
-            });
-          },
-        },
-      );
+      validatePin({ pin: text })
+        .then(() => {
+          Keyboard.dismiss();
+          onUnlocked();
+        })
+        .catch(handlePinValidationError);
     }
   };
 
@@ -163,14 +229,14 @@ export const AppLockScreen = ({ onUnlocked }: AppLockScreenProps) => {
               keyboardType="number-pad"
               maxLength={PIN_LENGTH}
               style={styles.hiddenInput}
-              autoFocus={!lockedUntil}
+              autoFocus={!lockedUntil && !isBiometricEnabled}
               editable={!isPending && !lockedUntil}
             />
             {!lockedUntil && (
               <Pressable
                 onPress={handleForgotPin}
                 style={{ marginTop: 24, justifyContent: 'center', alignItems: 'center' }}
-                disabled={isPending}>
+                disabled={isPending || isBiometricPending}>
                 <Text style={[styles.descStep, { color: '#4A80F0' }]}>Lupa PIN?</Text>
               </Pressable>
             )}

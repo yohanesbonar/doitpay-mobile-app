@@ -35,7 +35,9 @@ import {
 } from '../api/auth';
 import {
   clearDeviceToken,
+  clearBiometricLoginCredential,
   getDeviceToken,
+  PersistentStorageKey,
   setDeviceToken,
   setStorageItem,
   storage,
@@ -47,6 +49,13 @@ import { getMessaging, getToken } from '@react-native-firebase/messaging';
 import { useUpdateDeviceToken } from './useDeviceMutation';
 import Toast from 'react-native-toast-message';
 import { identifyPostHogUser } from '@/analytics/posthog';
+
+const invalidateBiometricLoginCredential = () => {
+  storage.set(PersistentStorageKey.BIOMETRIC_LOGIN_ENABLED, false);
+  clearBiometricLoginCredential().catch((error) => {
+    console.error('Failed to clear biometric login after PIN change', error);
+  });
+};
 
 export const useCheckPhoneNumber = () => {
   return useMutation<PhoneCheckResponse, Error, PhoneCheckRequestPayload>({
@@ -320,6 +329,7 @@ export const useForgotPinVerifyOtp = () => {
 export const useForgotPinReset = () => {
   return useMutation<ForgotPinResetResponse, Error, ForgotPinResetPayload>({
     mutationFn: (payload) => authApi.forgotPinReset(payload),
+    onSuccess: invalidateBiometricLoginCredential,
   });
 };
 
@@ -360,6 +370,7 @@ export const useChangePin = () => {
   return useMutation<ChangePinResponse, Error, ChangePinPayload>({
     mutationFn: (payload) => authApi.changePin(payload),
     onSuccess: (data) => {
+      invalidateBiometricLoginCredential();
       const session = data?.data;
 
       if (session?.accessToken) {

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Pressable, TextInput, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { Fingerprint } from 'lucide-react-native';
 
 interface CreateAndConfirmPINProps {
   step: number;
@@ -14,6 +15,9 @@ interface CreateAndConfirmPINProps {
   renderDotsPIN: (code: string, hasError: boolean) => React.ReactNode;
   onChangeText: (text: string) => void;
   onForgotPinPress?: () => void;
+  biometricLoginAvailable?: boolean;
+  isBiometricLoginPending?: boolean;
+  onBiometricLoginPress?: () => void;
   PIN_LENGTH: number;
 }
 
@@ -29,6 +33,9 @@ const CreateAndConfirmPIN = ({
   renderDotsPIN,
   onChangeText,
   onForgotPinPress,
+  biometricLoginAvailable,
+  isBiometricLoginPending,
+  onBiometricLoginPress,
   PIN_LENGTH,
 }: CreateAndConfirmPINProps) => {
   const { t } = useTranslation();
@@ -85,6 +92,24 @@ const CreateAndConfirmPIN = ({
             <Text style={{ color: '#3981FF', fontWeight: '700' }}>Reset PIN</Text>
           </TouchableOpacity>
         </View>
+      )}
+      {step === 4 && isLoginState && biometricLoginAvailable && (
+        <TouchableOpacity
+          onPress={onBiometricLoginPress}
+          disabled={isBiometricLoginPending}
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: 8,
+            marginTop: 24,
+            opacity: isBiometricLoginPending ? 0.5 : 1,
+          }}>
+          <Fingerprint size={20} color="#3981FF" />
+          <Text style={{ color: '#3981FF', fontWeight: '700' }}>
+            {t('authEntry.loginWithBiometrics')}
+          </Text>
+        </TouchableOpacity>
       )}
     </View>
   );
