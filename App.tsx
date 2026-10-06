@@ -123,7 +123,6 @@ const App = () => {
   const [isPinLocked, setIsPinLocked] = useState<boolean>(
     () => !!useAuthStore.getState().accessToken,
   );
-  const [appLockActivationId, setAppLockActivationId] = useState(0);
   const accessToken = useAuthStore((state) => state.accessToken);
 
   // PRD Feature B: App Session Re-Authentication (PIN on reopen). The watcher only reports
@@ -135,7 +134,6 @@ const App = () => {
     return startAppLockWatcher(() => {
       if (useAuthStore.getState().accessToken) {
         setIsPinLocked(true);
-        setAppLockActivationId((activationId) => activationId + 1);
       }
     });
   }, []);
@@ -309,12 +307,10 @@ const App = () => {
                   onStateChange={onNavigationStateChange}
                 />
                 <AppInitializer />
-                {isPinLocked && (
-                  <AppLockScreen
-                    activationId={appLockActivationId}
-                    onUnlocked={() => setIsPinLocked(false)}
-                  />
-                )}
+                {isPinLocked && 
+                <AppLockScreen 
+                activationId
+                onUnlocked={() => setIsPinLocked(false)} />}
               </ThemeProvider>
               {!isInternetConnected && (
                 <View style={styles.noInternetBanner}>

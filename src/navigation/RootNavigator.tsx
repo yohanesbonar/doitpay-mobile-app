@@ -41,6 +41,7 @@ import { DeleteAccount } from '@/features/main/profile/DeleteAccount';
 import { DeleteAccountStatus } from '@/features/main/profile/DeleteAccountStatus';
 import { ChangePin } from '@/features/main/profile/ChangePin';
 import { ChangePinSuccess } from '@/features/main/profile/ChangePinSuccess';
+import { BiometricLoginSetup } from '@/features/main/profile/BiometricLoginSetup';
 import DisputeHelpCenterScreen from '@/screens/dispute/helpCenter';
 import DisputeIssueTypeScreen from '@/screens/dispute/issueType';
 import DisputeAttachmentScreen from '@/screens/dispute/attachment';
@@ -223,6 +224,7 @@ export default function RootNavigator({
             />
             <Stack.Screen name="Settings" component={Settings} />
             <Stack.Screen name="Security" component={Security} />
+            <Stack.Screen name="BiometricLoginSetup" component={BiometricLoginSetup} />
             <Stack.Screen name="BankAccounts" component={BankAccounts} />
             <Stack.Screen name="HelpCenter" component={HelpCenter} />
             <Stack.Screen name="EStatement" component={EStatement} />

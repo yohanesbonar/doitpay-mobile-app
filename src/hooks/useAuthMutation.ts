@@ -52,6 +52,7 @@ import { identifyPostHogUser } from '@/analytics/posthog';
 
 const invalidateBiometricLoginCredential = () => {
   storage.set(PersistentStorageKey.BIOMETRIC_LOGIN_ENABLED, false);
+  storage.remove(PersistentStorageKey.BIOMETRIC_LOGIN_PHONE_NUMBER);
   clearBiometricLoginCredential().catch((error) => {
     console.error('Failed to clear biometric login after PIN change', error);
   });

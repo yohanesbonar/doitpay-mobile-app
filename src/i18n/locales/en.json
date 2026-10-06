@@ -12,6 +12,10 @@
     "biometricCredentialUnavailable": "Biometric login details are unavailable. Please log in with your PIN.",
     "biometricAccountMismatch": "Biometrics are registered for a different phone number.",
     "biometricAuthenticationFailed": "Biometric verification failed. Please log in with your PIN.",
+    "biometricResetFailed": "The previous account's biometric setup could not be cleared. Please try again.",
+    "useFaceId": "Face ID",
+    "useFingerprint": "Fingerprint",
+    "useIris": "Iris",
     "occupationLabel": "Occupation",
     "occupationPlaceholder": "Select occupation",
     "loadingOccupation": "Loading occupations...",
@@ -37,7 +41,11 @@
     "remainingAttempts": "Attempts remaining: {{count}}",
     "biometricPromptTitle": "Authenticate to unlock Doitpay",
     "biometricCredentialUnavailable": "Biometric login details are unavailable. Please unlock with your PIN.",
-    "biometricAuthenticationFailed": "Biometric verification failed. Please try your PIN."
+    "biometricAuthenticationFailed": "Biometric verification failed. Please try your PIN.",
+    "useFaceId": "Face ID",
+    "useFingerprint": "Fingerprint",
+    "useIris": "Iris",
+    "deleteLastDigit": "Delete last digit"
   },
   "welcomeTransfer": {
     "title": "Welcome",
