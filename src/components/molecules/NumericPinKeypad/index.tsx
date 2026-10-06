@@ -50,10 +50,16 @@ export const NumericPinKeypad = ({
       onPress={() => onDigitPress(digit)}
       style={cellStyle}
       disabled={disabled}>
-      <View
-        style={[styles.numberKey, { width: keySize, height: keySize, borderRadius: keySize / 2 }]}>
-        <Text style={styles.numberKeyText}>{digit}</Text>
-      </View>
+      {({ pressed }) => (
+        <View
+          style={[
+            styles.numberKey,
+            pressed && styles.numberKeyPressed,
+            { width: keySize, height: keySize, borderRadius: keySize / 2 },
+          ]}>
+          <Text style={styles.numberKeyText}>{digit}</Text>
+        </View>
+      )}
     </Pressable>
   );
 
@@ -106,6 +112,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#E6E6E6',
+  },
+  numberKeyPressed: {
+    backgroundColor: '#BDBDBD',
   },
   numberKeyText: {
     color: '#1A1A1A',
