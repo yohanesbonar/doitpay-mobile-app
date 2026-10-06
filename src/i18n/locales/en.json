@@ -8,7 +8,6 @@
     "freeTransfer": "Free Transfer"
   },
   "authEntry": {
-    "loginWithBiometrics": "Log in with biometrics",
     "biometricPromptTitle": "Confirm your identity to log in to Doitpay",
     "biometricCredentialUnavailable": "Biometric login details are unavailable. Please log in with your PIN.",
     "biometricAccountMismatch": "Biometrics are registered for a different phone number.",

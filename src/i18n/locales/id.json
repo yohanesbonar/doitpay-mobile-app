@@ -56,7 +56,6 @@
     "descConfirmationPIN": "Masukkan ulang PIN",
     "inputPIN": "Masukkan PIN",
     "descInputPIN": "6 digit PIN",
-    "loginWithBiometrics": "Masuk dengan biometrik",
     "biometricPromptTitle": "Konfirmasi identitas untuk masuk ke Doitpay",
     "biometricCredentialUnavailable": "Data masuk biometrik tidak tersedia. Silakan masuk dengan PIN.",
     "biometricAccountMismatch": "Biometrik ini terdaftar untuk nomor handphone lain.",

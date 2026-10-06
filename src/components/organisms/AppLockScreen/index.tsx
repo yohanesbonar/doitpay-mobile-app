@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  AppState,
+  AppStateStatus,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -32,10 +34,11 @@ const formatCountdown = (totalSeconds: number) => {
 };
 
 interface AppLockScreenProps {
+  activationId: number;
   onUnlocked: () => void;
 }
 
-export const AppLockScreen = ({ onUnlocked }: AppLockScreenProps) => {
+export const AppLockScreen = ({ activationId, onUnlocked }: AppLockScreenProps) => {
   const { colors } = useTheme();
   const { t } = useTranslation();
   const styles = createStyles(colors);
@@ -47,7 +50,7 @@ export const AppLockScreen = ({ onUnlocked }: AppLockScreenProps) => {
   const [isBiometricEnabled, setIsBiometricEnabled] = useState(
     storage.getBoolean(PersistentStorageKey.BIOMETRIC_LOGIN_ENABLED) ?? false,
   );
-
+  const [foregroundAttempt, setForegroundAttempt] = useState(0);
   const [lockedUntil, setLockedUntil] = useState<number | null>(() => {
     const stored = storage.getNumber(LOCKOUT_UNTIL_KEY);
     return stored && stored > Date.now() ? stored : null;
@@ -55,6 +58,7 @@ export const AppLockScreen = ({ onUnlocked }: AppLockScreenProps) => {
   const [secondsLeft, setSecondsLeft] = useState(0);
 
   const { mutateAsync: validatePin, isPending } = useValidatePin();
+  const isBiometricPromptInProgress = useRef(false);
 
   useEffect(() => {
     if (!lockedUntil) {
@@ -126,6 +130,7 @@ export const AppLockScreen = ({ onUnlocked }: AppLockScreenProps) => {
     if (!isBiometricEnabled || isBiometricPending || isPending || lockedUntil) return;
 
     Keyboard.dismiss();
+    isBiometricPromptInProgress.current = true;
     setIsBiometricPending(true);
     try {
       let credential;
@@ -154,6 +159,7 @@ export const AppLockScreen = ({ onUnlocked }: AppLockScreenProps) => {
         inputRef.current?.focus();
       }
     } finally {
+      isBiometricPromptInProgress.current = false;
       setIsBiometricPending(false);
     }
   }, [
@@ -167,18 +173,39 @@ export const AppLockScreen = ({ onUnlocked }: AppLockScreenProps) => {
     validatePin,
   ]);
 
-  const hasStartedBiometricPrompt = useRef(false);
+  useEffect(() => {
+    let previousAppState: AppStateStatus = AppState.currentState;
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      const returnedToForeground = previousAppState !== 'active' && nextAppState === 'active';
+      if (returnedToForeground && !isBiometricPromptInProgress.current) {
+        setForegroundAttempt((attempt) => attempt + 1);
+      }
+      previousAppState = nextAppState;
+    });
+
+    return () => subscription.remove();
+  }, []);
+
+  const lastBiometricAttemptKey = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!isBiometricEnabled || lockedUntil || hasStartedBiometricPrompt.current) return;
+    const attemptKey = `${activationId}:${foregroundAttempt}`;
+    if (
+      !isBiometricEnabled ||
+      lockedUntil ||
+      AppState.currentState !== 'active' ||
+      lastBiometricAttemptKey.current === attemptKey
+    ) {
+      return;
+    }
 
-    hasStartedBiometricPrompt.current = true;
+    lastBiometricAttemptKey.current = attemptKey;
     const promptTimeout = setTimeout(() => {
       void handleBiometricUnlock();
-    }, 500);
+    }, 200);
 
     return () => clearTimeout(promptTimeout);
-  }, [handleBiometricUnlock, isBiometricEnabled, lockedUntil]);
+  }, [activationId, foregroundAttempt, handleBiometricUnlock, isBiometricEnabled, lockedUntil]);
 
   const handlePINChange = (text: string) => {
     if (isErrorPIN) setIsErrorPIN(false);

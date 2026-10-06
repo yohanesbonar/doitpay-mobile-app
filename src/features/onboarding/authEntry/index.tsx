@@ -81,6 +81,8 @@ export const AuthEntry = () => {
   const [isBiometricLoginPending, setIsBiometricLoginPending] = useState(false);
   const biometricLoginEnabled =
     storage.getBoolean(PersistentStorageKey.BIOMETRIC_LOGIN_ENABLED) ?? false;
+  const biometricAttemptedPhoneRef = useRef<string | null>(null);
+  const biometricLoginHandlerRef = useRef<() => Promise<void>>(async () => {});
 
   const getErrorMessage = (err: any, fallback: string) => {
     return (
@@ -292,8 +294,6 @@ export const AuthEntry = () => {
               handlePINChange(text);
             }}
             biometricLoginAvailable={biometricLoginEnabled && isLoginState}
-            isBiometricLoginPending={isBiometricLoginPending || isSettingPinLogin}
-            onBiometricLoginPress={handleBiometricLogin}
             onForgotPinPress={
               isLoginState ? () => (navigation as any).navigate('ForgotPin') : undefined
             }
@@ -430,6 +430,7 @@ export const AuthEntry = () => {
     try {
       const credential = await getBiometricLoginCredential(t('authEntry.biometricPromptTitle'));
       if (!credential) {
+        inputRef.current?.focus();
         Toast.show({ type: 'error', text1: t('authEntry.biometricCredentialUnavailable') });
         return;
       }
@@ -437,6 +438,7 @@ export const AuthEntry = () => {
       const { phoneNumber, countryCode } = phoneNumbData;
       const formattedPhone = (countryCode + phoneNumber).replace('+', '');
       if (credential.phoneNumber !== formattedPhone) {
+        inputRef.current?.focus();
         Toast.show({ type: 'error', text1: t('authEntry.biometricAccountMismatch') });
         return;
       }
@@ -444,11 +446,50 @@ export const AuthEntry = () => {
       loginWithPin(formattedPhone, credential.pin);
     } catch (error) {
       console.error('Biometric login failed', error);
+      inputRef.current?.focus();
       Toast.show({ type: 'error', text1: t('authEntry.biometricAuthenticationFailed') });
     } finally {
       setIsBiometricLoginPending(false);
     }
   };
+
+  biometricLoginHandlerRef.current = handleBiometricLogin;
+
+  useEffect(() => {
+    const { phoneNumber, countryCode } = phoneNumbData;
+    const formattedPhone = (countryCode + phoneNumber).replace('+', '');
+
+    if (currentStep !== 4 || !isLoginState || !biometricLoginEnabled || !formattedPhone) {
+      biometricAttemptedPhoneRef.current = null;
+      return;
+    }
+
+    if (
+      isLoginRequesting ||
+      isLoginVerifying ||
+      isBiometricLoginPending ||
+      isSettingPinLogin ||
+      biometricAttemptedPhoneRef.current === formattedPhone
+    ) {
+      return;
+    }
+
+    biometricAttemptedPhoneRef.current = formattedPhone;
+    const promptTimeout = setTimeout(() => {
+      void biometricLoginHandlerRef.current();
+    }, 500);
+
+    return () => clearTimeout(promptTimeout);
+  }, [
+    currentStep,
+    isLoginState,
+    biometricLoginEnabled,
+    phoneNumbData,
+    isLoginRequesting,
+    isLoginVerifying,
+    isBiometricLoginPending,
+    isSettingPinLogin,
+  ]);
 
   useEffect(() => {
     if (currentStep == 1) {
