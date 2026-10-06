@@ -9,6 +9,8 @@ import {
 } from 'react-native';
 import { Delete } from 'lucide-react-native';
 
+const MAX_KEY_SIZE = 80;
+
 interface NumericPinKeypadProps {
   onDigitPress: (digit: string) => void;
   onDeletePress: () => void;
@@ -33,7 +35,11 @@ export const NumericPinKeypad = ({
   horizontalInset = 64,
 }: NumericPinKeypadProps) => {
   const { width, height } = useWindowDimensions();
-  const keySize = Math.min(96, (width - horizontalInset) / 3, Math.max(64, (height - 380) / 4.4));
+  const keySize = Math.min(
+    MAX_KEY_SIZE,
+    (width - horizontalInset) / 3,
+    Math.max(64, (height - 380) / 4.4),
+  );
   const cellStyle = [styles.keypadCell, { height: keySize }];
 
   const renderNumber = (digit: string) => (
@@ -85,6 +91,8 @@ export const NumericPinKeypad = ({
 const styles = StyleSheet.create({
   keypad: {
     width: '100%',
+    maxWidth: 350,
+    alignSelf: 'center',
     flexDirection: 'row',
     flexWrap: 'wrap',
   },

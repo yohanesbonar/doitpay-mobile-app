@@ -111,37 +111,39 @@ export const BiometricLoginSetup = () => {
       </View>
       <View style={styles.content}>
         <Text style={styles.description}>{t('settings.biometricPinDescription')}</Text>
-        <View style={styles.pinDots}>
-          {Array.from({ length: 6 }).map((_, index) => (
-            <View key={index} style={[styles.pinDot, index < pin.length && styles.pinDotFilled]} />
-          ))}
-        </View>
-        <NumericPinKeypad
-          onDigitPress={handleDigitPress}
-          onDeletePress={handleDeletePress}
-          deleteAccessibilityLabel={t('appLock.deleteLastDigit')}
-          disabled={isUpdating}
-          topMargin={32}
-          horizontalInset={72}
-        />
-        {isUpdating && (
-          <ActivityIndicator
-            accessibilityLabel={t('settings.biometricPinTitle')}
-            color="#4A80F0"
-            style={styles.loading}
-          />
-        )}
-        {!isUpdating && (
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => {
-              if (!isUpdating) navigation.goBack();
-            }}
+        <View style={styles.pinEntry}>
+          <View style={styles.pinDots}>
+            {Array.from({ length: 6 }).map((_, index) => (
+              <View
+                key={index}
+                style={[styles.pinDot, index < pin.length && styles.pinDotFilled]}
+              />
+            ))}
+          </View>
+          <NumericPinKeypad
+            onDigitPress={handleDigitPress}
+            onDeletePress={handleDeletePress}
+            deleteAccessibilityLabel={t('appLock.deleteLastDigit')}
             disabled={isUpdating}
-            style={styles.cancelButton}>
-            <Text style={styles.cancelButtonText}>{t('settings.cancel')}</Text>
-          </Pressable>
-        )}
+            topMargin={32}
+            horizontalInset={72}
+          />
+        </View>
+        <View style={styles.bottomAction}>
+          {isUpdating ? (
+            <ActivityIndicator
+              accessibilityLabel={t('settings.biometricPinTitle')}
+              color="#4A80F0"
+            />
+          ) : (
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => navigation.goBack()}
+              style={styles.cancelButton}>
+              <Text style={styles.cancelButtonText}>{t('settings.cancel')}</Text>
+            </Pressable>
+          )}
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -164,12 +166,12 @@ const styles = StyleSheet.create({
     color: '#000',
     textAlign: 'center',
   },
+  pinEntry: { flex: 1, justifyContent: 'center' },
   pinDots: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     gap: 20,
-    marginTop: 48,
   },
   pinDot: {
     width: 24,
@@ -183,7 +185,12 @@ const styles = StyleSheet.create({
     borderColor: '#4A80F0',
     backgroundColor: '#4A80F0',
   },
-  loading: { marginTop: 20 },
+  bottomAction: {
+    minHeight: 56,
+    justifyContent: 'center',
+    marginTop: 8,
+    marginBottom: 16,
+  },
   cancelButton: {
     alignItems: 'center',
     paddingVertical: 16,
