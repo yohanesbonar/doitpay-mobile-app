@@ -3,6 +3,7 @@ import {
   transferApi,
   TransferPayload,
   GetTransferDetailResponse,
+  ManualBankTransferPayload,
   PaymentStatusResponse,
   TransactionPurposesResponse,
   VAMethodsPayload,
@@ -12,6 +13,11 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 type TransferMutationVariables = {
   payload: TransferPayload;
   idempotencyKey?: string;
+};
+
+type ManualTransferMutationVariables = {
+  payload: ManualBankTransferPayload;
+  idempotencyKey: string;
 };
 
 export const useTransfer = () => {
@@ -25,6 +31,16 @@ export const useTransfer = () => {
     onError: (error) => {
       console.log('error useTransfer', error);
       console.error('useTransfer Request failed:', error.message);
+    },
+  });
+};
+
+export const useManualTransfer = () => {
+  return useMutation({
+    mutationFn: ({ payload, idempotencyKey }: ManualTransferMutationVariables) =>
+      transferApi.postManualTransfer(payload, idempotencyKey),
+    onError: (error) => {
+      console.error('Manual transfer request failed:', error);
     },
   });
 };

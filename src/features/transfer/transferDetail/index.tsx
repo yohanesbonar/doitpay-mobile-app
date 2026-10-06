@@ -18,6 +18,7 @@ import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import { formatNumber } from '@/utils/Common';
 import {
   useReceive,
+  useManualTransfer,
   useTransfer,
   useTransactionPurposes,
 } from '../../../hooks/useTransferMutation';
@@ -31,12 +32,10 @@ import {
 import { Info, TriangleAlert, ChevronDown, Check } from 'lucide-react-native';
 import { usePaymentMethodAvailability } from '../hooks/usePaymentMethodAvailability';
 import { useQuickAmounts } from '../hooks/useQuickAmounts';
-import {
-  manualBankApiMock,
-  ManualBankOption,
-  ManualBankTransferData,
-} from './api/manual-bank.mock';
+import { manualBankService } from './api/manual-bank';
+import type { ManualTransferMethod } from '@/api/transfer';
 import { getAmountRange, trackPaymentFunnelEvent, trackPostHogEvent } from '@/analytics/posthog';
+import { generateUUID } from '@/utils/uuid';
 
 interface TransferDetailViewProps {
   accountData: {
@@ -99,10 +98,9 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
     initialPaymentMethod || 'VA',
   );
   const [bankPayment, setBankPayment] = useState(initialBankPayment || null);
-  const [manualBank, setManualBank] = useState<ManualBankOption | null>(null);
+  const [manualBank, setManualBank] = useState<ManualTransferMethod | null>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [isDisableConfirm, setIsDisableConfirm] = useState(true);
-  const [isCreatingManualTransfer, setIsCreatingManualTransfer] = useState(false);
 
   const [calculateData, setCalculateData] = useState<PaymentCalculateData | null>(null);
   const [isLoadingCalculate, setIsLoadingCalculate] = useState(false);
@@ -111,6 +109,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
   const quickAmounts = useQuickAmounts('TRANSFER');
 
   const { mutate: postTransfer, isPending: isLoadingTransfer } = useTransfer();
+  const { mutate: postManualTransfer, isPending: isCreatingManualTransfer } = useManualTransfer();
   const {
     data: purposesData,
     isLoading: isLoadingPurposes,
@@ -223,16 +222,9 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
       setIsLoadingCalculate(true);
       try {
         const payload = getCalculatePayload(amt);
-        if (methodPayment === 'MANUAL_BANK') {
-          const mockResponse = await manualBankApiMock.calculate(amt);
-          if (requestId === calculateRequestIdRef.current) {
-            setCalculateData(mockResponse);
-          }
-        } else {
-          const res = await paymentApi.calculatePayment(payload);
-          if (requestId === calculateRequestIdRef.current && res?.status === 'success') {
-            setCalculateData(res.data);
-          }
+        const res = await paymentApi.calculatePayment(payload);
+        if (requestId === calculateRequestIdRef.current && res?.status === 'success') {
+          setCalculateData(res.data);
         }
       } catch (error) {
         if (requestId === calculateRequestIdRef.current) {
@@ -348,31 +340,30 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
     };
 
     if (methodPayment === 'MANUAL_BANK' && manualBank && calculateData) {
-      setIsCreatingManualTransfer(true);
-      manualBankApiMock
-        .createTransfer({
+      postManualTransfer(
+        {
           payload: {
-            inquiryId: accountData?.id,
+            inquiryId: accountData.id,
             amount: numericAmount,
-            transactionPurpose: selectedPurpose?.code ?? '',
+            transactionPurpose: selectedPurpose.code,
             payMethod: 'MANUAL_BANK',
             payChannel: manualBank.code,
           },
-          bank: manualBank,
-          uniqueCode: calculateData.uniqueCode ?? 0,
-          totalAmount: calculateData.totalAmount,
-        })
-        .then((response) => {
-          navigation.navigate('ManualBankPayment', {
-            transferData: response.data as ManualBankTransferData,
-            accountData,
-            bankData,
-          });
-        })
-        .catch(() => {
-          Toast.show({ type: 'error', text1: 'Gagal membuat transfer. Silakan coba lagi.' });
-        })
-        .finally(() => setIsCreatingManualTransfer(false));
+          idempotencyKey: generateUUID(),
+        },
+        {
+          onSuccess: (response) => {
+            navigation.navigate('ManualBankPayment', {
+              transferData: response.data,
+              accountData,
+              bankData,
+            });
+          },
+          onError: () => {
+            Toast.show({ type: 'error', text1: 'Gagal membuat transfer. Silakan coba lagi.' });
+          },
+        },
+      );
       return;
     }
     let idempotencyKey = new Date().getTime().toString();

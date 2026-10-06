@@ -3,8 +3,8 @@ import { ResponseApi } from '@/api/types';
 
 export type PaymentCalculatePayload = {
   amount: number;
-  productType: 'TRANSFER' | string;
-  payMethod: 'VIRTUAL_ACCOUNT' | 'QRIS' | string;
+  productType: 'TRANSFER' | 'RECEIVE';
+  payMethod: 'VIRTUAL_ACCOUNT' | 'QRIS' | 'MANUAL_BANK';
   payChannel: string;
 };
 

@@ -12,6 +12,14 @@ export interface TransferPayload {
   transactionPurposeOther?: string;
 }
 
+export interface ManualBankTransferPayload {
+  inquiryId: string;
+  amount: number;
+  transactionPurpose: string;
+  payMethod: 'MANUAL_BANK';
+  payChannel: string;
+}
+
 export interface TransactionPurposeItem {
   code: string;
   id: number;
@@ -58,9 +66,52 @@ export interface BaseResponse<T> {
 
 export type CreateTransferResponse = BaseResponse<TransferResponseData>;
 
+export interface ManualBankDetails {
+  accountName: string;
+  accountNumber: string;
+  bankName: string;
+  logoUrl: string;
+  status: string;
+  totalAmount: number;
+  uniqueCode: number;
+  proofUrl?: string | null;
+  rejectReason?: string | null;
+}
+
+export interface ManualBankTransferData {
+  id: string;
+  paymentId: string;
+  status: string;
+  amount: number;
+  createdAt: string;
+  paymentExpiredAt: string;
+  manualBank: ManualBankDetails;
+}
+
+export type CreateManualBankTransferResponse = BaseResponse<ManualBankTransferData>;
+
+export interface CancelTransferResponse {
+  data: {
+    id: string;
+    statusUser: 'CANCELLED';
+  };
+}
+
 export interface VAMethodsPayload {
   name?: string;
 }
+
+export interface ManualTransferMethod {
+  id: string;
+  code: string;
+  name: string;
+  shortName?: string;
+  logoUrl?: string | null;
+}
+
+export type ManualTransferMethodsResponse = BaseResponse<{
+  items: ManualTransferMethod[];
+}>;
 
 export type VAMethodsResponse = {
   status: string;
@@ -149,14 +200,7 @@ export interface GetTransferDetailResponseData {
   paymentId: string;
   qris: QrisDetailData | null;
   status: 'CREATED' | 'PAID' | 'COMPLETED' | 'CANCELLED' | string;
-  manualBank?: {
-    status: 'PENDING' | 'VERIFYING' | 'REJECTED' | 'EXPIRED' | 'CANCELLED' | string;
-    accountName?: string;
-    accountNumber?: string;
-    bankName?: string;
-    totalAmount?: number;
-    uniqueCode?: number;
-  } | null;
+  manualBank?: ManualBankDetails | null;
   va: VaDetailData | null;
 }
 
@@ -174,6 +218,33 @@ export const transferApi = {
     });
     return data;
   },
+  postManualTransfer: async (
+    payload: ManualBankTransferPayload,
+    idempotencyKey: string,
+  ): Promise<CreateManualBankTransferResponse> => {
+    const { data } = await apiClient.post<CreateManualBankTransferResponse>(
+      '/v1/transfers',
+      payload,
+      {
+        headers: {
+          'X-Idempotency-Key': idempotencyKey,
+        },
+      },
+    );
+    return data;
+  },
+  cancelTransfer: async (id: string, idempotencyKey: string): Promise<CancelTransferResponse> => {
+    const { data } = await apiClient.post<CancelTransferResponse>(
+      `/v1/transfers/${id}/cancel`,
+      undefined,
+      {
+        headers: {
+          'X-Idempotency-Key': idempotencyKey,
+        },
+      },
+    );
+    return data;
+  },
   postReceive: async (
     payload: TransferPayload,
     idempotencyKey: string,
@@ -189,6 +260,12 @@ export const transferApi = {
     const { data } = await apiClient.get<VAMethodsResponse>('/v1/payment/va/methods', {
       params: payload,
     });
+    return data;
+  },
+  getManualTransferMethods: async (): Promise<ManualTransferMethodsResponse> => {
+    const { data } = await apiClient.get<ManualTransferMethodsResponse>(
+      '/v1/payment/manual-transfer/methods',
+    );
     return data;
   },
   getPaymentInstruction: async (

@@ -13,17 +13,10 @@ import { Search, CreditCard, QrCode, CheckCircle2, Circle, Landmark } from 'luci
 import { useTheme } from '@/theme/ThemeProvider';
 import { createStyles } from '../../addBankAccount/styles';
 import { useVAMethods } from '@/hooks/useTransferMutation';
-import { manualBankApiMock, ManualBankOption } from '../api/manual-bank.mock';
+import { transferApi } from '@/api/transfer';
+import type { ManualTransferMethod } from '@/api/transfer';
 
 type PaymentMethodType = 'VA' | 'QRIS' | 'MANUAL_BANK';
-
-interface BankOption {
-  id: string;
-  code: string;
-  name: string;
-  shortName?: string;
-  logoUrl: string;
-}
 
 interface PaymentMethodProps {
   selectedMethod: PaymentMethodType;
@@ -54,8 +47,10 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
 }) => {
   const [selectedBank, setSelectedBank] = useState(initialBankPayment?.id || '');
   const [searchQuery, setSearchQuery] = useState('');
-  const [banks, setBanks] = useState<BankOption[]>([]);
-  const [manualBanks, setManualBanks] = useState<ManualBankOption[]>([]);
+  const [banks, setBanks] = useState<ManualTransferMethod[]>([]);
+  const [manualBanks, setManualBanks] = useState<ManualTransferMethod[]>([]);
+  const [isLoadingManualBanks, setIsLoadingManualBanks] = useState(false);
+  const [manualBanksError, setManualBanksError] = useState(false);
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { mutate: VAMethods, isPending: isLoadingVAMethods } = useVAMethods();
@@ -78,10 +73,6 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
     );
   };
 
-  const fetchManualBanks = async (search: string) => {
-    setManualBanks(await manualBankApiMock.getBanks(search));
-  };
-
   const debouncedSearch = (text: string) => {
     if (searchTimeout.current) clearTimeout(searchTimeout.current);
     searchTimeout.current = setTimeout(() => {
@@ -91,12 +82,46 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
 
   useEffect(() => {
     fetchVAMethodsFromApi('');
-    fetchManualBanks('');
 
     return () => {
       if (searchTimeout.current) clearTimeout(searchTimeout.current);
     };
   }, []);
+
+  useEffect(() => {
+    if (!isManualBankEnabled) {
+      return;
+    }
+
+    let isMounted = true;
+
+    const fetchManualBanks = async () => {
+      setIsLoadingManualBanks(true);
+      setManualBanksError(false);
+
+      try {
+        const response = await transferApi.getManualTransferMethods();
+        if (isMounted) {
+          setManualBanks(response.data.items);
+        }
+      } catch (error) {
+        console.error('Failed to load manual transfer methods:', error);
+        if (isMounted) {
+          setManualBanksError(true);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingManualBanks(false);
+        }
+      }
+    };
+
+    fetchManualBanks();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isManualBankEnabled]);
 
   useEffect(() => {
     if (initialBankPayment?.id) {
@@ -307,24 +332,35 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
             }}>
             <Search size={20} color="#A9A9A9" />
             <TextInput
-              placeholder={
-                selectedMethod === 'MANUAL_BANK' ? 'Nama, bank atau nomor rekening' : 'Nama bank'
-              }
+              placeholder={'Nama bank'}
               placeholderTextColor="#A9A9A9"
               style={{ flex: 1, marginLeft: 10, fontFamily: 'Switzer-Regular', fontSize: 15 }}
               value={searchQuery}
               onChangeText={(text) => {
                 setSearchQuery(text);
-                if (selectedMethod === 'MANUAL_BANK') {
-                  fetchManualBanks(text);
-                } else {
+                if (selectedMethod !== 'MANUAL_BANK') {
                   debouncedSearch(text);
                 }
               }}
             />
           </View>
 
-          {(selectedMethod === 'MANUAL_BANK' ? manualBanks : banks).map((item: any) => {
+          {selectedMethod === 'MANUAL_BANK' && isLoadingManualBanks ? (
+            <ActivityIndicator size="small" color="#3B82F6" />
+          ) : null}
+          {selectedMethod === 'MANUAL_BANK' && manualBanksError ? (
+            <Text style={{ color: '#D32F2F', marginBottom: 12, fontFamily: 'Switzer-Regular' }}>
+              Gagal memuat metode transfer. Silakan coba lagi.
+            </Text>
+          ) : null}
+          {(selectedMethod === 'MANUAL_BANK'
+            ? manualBanks.filter((item) =>
+                `${item.name} ${item.code} ${item.shortName || ''}`
+                  .toLowerCase()
+                  .includes(searchQuery.trim().toLowerCase()),
+              )
+            : banks
+          ).map((item) => {
             const isChosen = selectedBank === item.id;
             return (
               <TouchableOpacity
@@ -354,18 +390,18 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
                     alignItems: 'center',
                     marginRight: 16,
                   }}>
-                  {selectedMethod === 'MANUAL_BANK' && item.logo ? (
+                  {selectedMethod === 'MANUAL_BANK' && item.logoUrl ? (
                     <Image
-                      source={item.logo}
+                      source={{ uri: item.logoUrl || undefined }}
                       style={{ width: '100%', height: '100%', resizeMode: 'contain' }}
                     />
                   ) : selectedMethod === 'MANUAL_BANK' ? (
                     <Text style={{ color: '#13C8C8', fontFamily: 'Switzer-Bold', fontSize: 18 }}>
-                      blu
+                      {item.shortName || item.code}
                     </Text>
                   ) : (
                     <Image
-                      source={{ uri: item?.logoUrl }}
+                      source={{ uri: item?.logoUrl ?? undefined }}
                       style={{
                         width: '100%',
                         height: '100%',

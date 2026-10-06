@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -8,7 +8,7 @@ import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import Button from '@/components/atoms/Button';
 import { transferApi, GetTransferDetailResponse } from '@/api/transfer';
 import { formatApiDateToLocal, formatNumber } from '@/utils/Common';
-import { ManualBankTransferData } from '@/features/transfer/transferDetail/api/manual-bank.mock';
+import type { ManualBankTransferData } from '@/api/transfer';
 
 type VerificationStatus = 'VERIFYING' | 'SUCCESS' | 'REJECTED' | 'EXPIRED' | 'CANCELLED';
 
@@ -53,23 +53,12 @@ const ManualBankVerificationScreen = () => {
   const { t } = useTranslation();
   const { transferData, accountData, bankData } = (route.params || {}) as RouteParams;
   const transferId = transferData?.id;
-  const isLocalMock = transferId?.startsWith('mock-transfer-') ?? false;
-  const [mockStatus, setMockStatus] = useState<VerificationStatus>(() =>
-    getVerificationStatus(transferData?.manualBank?.status),
-  );
   const hasNavigatedToReceipt = useRef(false);
-
-  useEffect(() => {
-    if (!isLocalMock || transferData?.manualBank?.status === 'CANCELLED') return;
-
-    const timer = setTimeout(() => setMockStatus('SUCCESS'), 5000);
-    return () => clearTimeout(timer);
-  }, [isLocalMock, transferId, transferData?.manualBank?.status]);
 
   const { data } = useQuery<GetTransferDetailResponse>({
     queryKey: ['manualBankTransferStatus', transferId],
     queryFn: () => transferApi.getTransferDetailById({ id: transferId! }),
-    enabled: Boolean(transferId) && !isLocalMock,
+    enabled: Boolean(transferId),
     retry: false,
     refetchInterval: (query) => {
       const detail = query.state.data?.data;
@@ -92,7 +81,9 @@ const ManualBankVerificationScreen = () => {
   });
 
   const apiStatus = data?.data?.manualBank?.status ?? data?.data?.status;
-  const status = isLocalMock ? mockStatus : getVerificationStatus(apiStatus || 'VERIFYING');
+  const status = getVerificationStatus(
+    apiStatus || transferData?.manualBank?.status || 'VERIFYING',
+  );
   const recipientName =
     accountData?.ownerName || accountData?.accountHolderName || 'Penerima Transfer';
   const recipientBank = bankData?.shortName || bankData?.name || accountData?.bankName || 'Bank';
@@ -108,8 +99,8 @@ const ManualBankVerificationScreen = () => {
     hasNavigatedToReceipt.current = true;
 
     const now = new Date();
-    const bankName =
-      bankData?.shortName || bankData?.name || transferData?.manualBank?.bankName || 'Bank';
+    const manualBank = transferData?.manualBank;
+    const bankName = manualBank?.bankName || bankData?.shortName || bankData?.name || 'Bank';
     const paymentMethod = `Transfer Bank - ${bankName}`;
     const recipientName = accountData?.ownerName || accountData?.accountHolderName || '-';
 
@@ -133,13 +124,13 @@ const ManualBankVerificationScreen = () => {
         createdAt: now.toISOString(),
         paymentMethod,
         paymentMethodName: paymentMethod,
-        paymentMethodLogoUrl: bankData?.logoUrl,
+        paymentMethodLogoUrl: manualBank?.logoUrl || bankData?.logoUrl,
         beneficiaryName: recipientName,
         beneficiaryBankName: accountData?.bankName || bankData?.name || bankName,
         beneficiaryBankLogo: bankData?.logoUrl,
         beneficiaryAccountNumber: accountData?.accountNumber || '',
-        uniqueCode: transferData?.manualBank?.uniqueCode,
-        totalAmount: transferData?.amount ?? 0,
+        uniqueCode: manualBank?.uniqueCode,
+        totalAmount: manualBank?.totalAmount ?? transferData?.amount ?? 0,
       },
     });
   }, [status, navigation, accountData, bankData, transferData, transferId]);

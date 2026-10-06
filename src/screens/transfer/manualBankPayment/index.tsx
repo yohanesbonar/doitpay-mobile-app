@@ -31,10 +31,9 @@ import Button from '@/components/atoms/Button';
 import { formatNumber } from '@/utils/Common';
 import { generateUUID } from '@/utils/uuid';
 import { useTheme } from '@/theme/ThemeProvider';
-import {
-  manualBankApiMock,
-  ManualBankTransferData,
-} from '@/features/transfer/transferDetail/api/manual-bank.mock';
+import { transferApi } from '@/api/transfer';
+import { manualBankService } from '@/features/transfer/transferDetail/api/manual-bank';
+import type { ManualBankTransferData } from '@/api/transfer';
 
 const ManualBankPaymentScreen = () => {
   const { colors } = useTheme();
@@ -54,8 +53,7 @@ const ManualBankPaymentScreen = () => {
   const [countdown, setCountdown] = useState('00:00');
   const [expandedPaymentGuide, setExpandedPaymentGuide] = useState<string | null>(null);
   const manualBank = transferData?.manualBank;
-  const isBca = /bca|central asia/i.test(manualBank?.bankName ?? '');
-  const bankDisplayName = isBca ? 'Bank BCA' : manualBank?.bankName || 'bank tujuan';
+  const bankDisplayName = manualBank?.bankName || 'bank tujuan';
   const paymentGuides = [
     {
       title: 'Mobile Banking',
@@ -133,7 +131,7 @@ const ManualBankPaymentScreen = () => {
     if (!receiptAsset?.uri || !transferData?.id) return;
     setIsSubmitting(true);
     try {
-      const response = await manualBankApiMock.submitProof(
+      const response = await manualBankService.submitProof(
         transferData.id,
         receiptAsset.uri,
         receiptAsset.fileName,
@@ -161,7 +159,7 @@ const ManualBankPaymentScreen = () => {
 
     setIsCancelling(true);
     try {
-      const response = await manualBankApiMock.cancelTransfer(transferData.id, generateUUID());
+      const response = await transferApi.cancelTransfer(transferData.id, generateUUID());
       if (response.data.statusUser !== 'CANCELLED') return;
       navigation.goBack();
     } catch {
@@ -203,7 +201,7 @@ const ManualBankPaymentScreen = () => {
               <Text style={styles.amount}>{formatNumber(manualBank?.totalAmount ?? 0)}</Text>
             </View>
             <TouchableOpacity
-              onPress={() => copyValue("Nominal Transfer", String(manualBank?.totalAmount ?? ''))}
+              onPress={() => copyValue('Nominal Transfer', String(manualBank?.totalAmount ?? ''))}
               style={styles.copyButton}>
               <Copy size={16} color="#FFF" />
               <Text style={styles.copyButtonText}>Salin</Text>
@@ -211,9 +209,9 @@ const ManualBankPaymentScreen = () => {
           </View>
           <View style={styles.bankDetails}>
             <View style={styles.bankHeader}>
-              {isBca ? (
+              {manualBank?.logoUrl ? (
                 <Image
-                  source={require('../../../assets/images/ic-BCA.png')}
+                  source={{ uri: manualBank.logoUrl }}
                   style={styles.bankLogo}
                   resizeMode="contain"
                 />
@@ -225,15 +223,15 @@ const ManualBankPaymentScreen = () => {
                 </View>
               )}
               <View>
-                <Text style={styles.bankName}>Doitpay</Text>
-                <Text style={styles.accountName}>{isBca ? 'Bank BCA' : manualBank?.bankName}</Text>
+                <Text style={styles.bankName}>{manualBank?.accountName}</Text>
+                <Text style={styles.accountName}>{manualBank?.bankName}</Text>
               </View>
             </View>
             <Text style={styles.accountNumberLabel}>Nomor rekening</Text>
             <View style={styles.accountNumberRow}>
               <Text style={styles.accountNumber}>{manualBank?.accountNumber}</Text>
               <TouchableOpacity
-                onPress={() => copyValue("Nomor Rekening", manualBank?.accountNumber ?? '')}
+                onPress={() => copyValue('Nomor Rekening', manualBank?.accountNumber ?? '')}
                 style={styles.copyButton}>
                 <Copy size={16} color="#FFF" />
                 <Text style={styles.copyButtonText}>Salin</Text>
