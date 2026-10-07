@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useIsFocused, useNavigation, useRoute } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
@@ -50,6 +50,7 @@ const getVerificationStatus = (status?: string): VerificationStatus => {
 const ManualBankVerificationScreen = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
+  const isFocused = useIsFocused();
   const { t } = useTranslation();
   const { transferData, accountData, bankData } = (route.params || {}) as RouteParams;
   const transferId = transferData?.id;
@@ -58,9 +59,11 @@ const ManualBankVerificationScreen = () => {
   const { data } = useQuery<GetTransferDetailResponse>({
     queryKey: ['manualBankTransferStatus', transferId],
     queryFn: () => transferApi.getTransferDetailById({ id: transferId! }),
-    enabled: Boolean(transferId),
+    enabled: Boolean(transferId) && isFocused,
     retry: false,
     refetchInterval: (query) => {
+      if (!isFocused) return false;
+
       const detail = query.state.data?.data;
       const status = detail?.manualBank?.status ?? detail?.status;
       return [

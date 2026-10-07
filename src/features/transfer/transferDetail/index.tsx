@@ -223,13 +223,32 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
       try {
         const payload = getCalculatePayload(amt);
         const res = await paymentApi.calculatePayment(payload);
-        if (requestId === calculateRequestIdRef.current && res?.status === 'success') {
-          setCalculateData(res.data);
+        if (requestId === calculateRequestIdRef.current) {
+          if (res?.status === 'success') {
+            setCalculateData(res.data);
+          } else {
+            setCalculateData(null);
+            Toast.show({
+              type: 'error',
+              text1: res?.message || 'Gagal menghitung biaya transfer. Silakan coba lagi.',
+            });
+          }
         }
       } catch (error) {
         if (requestId === calculateRequestIdRef.current) {
           setCalculateData(null);
           console.log('Calculate error:', error);
+          const apiError = error as {
+            error?: { message?: string };
+            message?: string;
+          };
+          Toast.show({
+            type: 'error',
+            text1:
+              apiError?.error?.message ||
+              apiError?.message ||
+              'Gagal menghitung biaya transfer. Silakan coba lagi.',
+          });
         }
       } finally {
         if (requestId === calculateRequestIdRef.current) {
