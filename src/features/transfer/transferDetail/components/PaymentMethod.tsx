@@ -52,6 +52,8 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
   const [isLoadingManualBanks, setIsLoadingManualBanks] = useState(false);
   const [manualBanksError, setManualBanksError] = useState(false);
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isCompactMethodLayout = !isManualBankEnabled;
+  const hasTwoEnabledMethods = isVAEnabled && isQRISEnabled;
 
   const { mutate: VAMethods, isPending: isLoadingVAMethods } = useVAMethods();
 
@@ -224,15 +226,19 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
             <TouchableOpacity
               onPress={() => onSelect('VA')}
               style={{
-                flex: 1,
-                height: 74,
+                flex: isCompactMethodLayout && !hasTwoEnabledMethods ? undefined : 1,
+                width: isCompactMethodLayout && !hasTwoEnabledMethods ? '100%' : undefined,
+                height: isCompactMethodLayout ? 40 : 65,
                 backgroundColor: selectedMethod === 'VA' ? '#3B82F6' : '#FFF',
-                borderRadius: 12,
+                borderRadius: isCompactMethodLayout ? 32 : 12,
                 borderWidth: selectedMethod === 'VA' ? 0 : 1,
                 borderColor: '#E5E7EB',
                 alignItems: 'center',
                 justifyContent: 'center',
-                paddingVertical: 8,
+                flexDirection: isCompactMethodLayout ? 'row' : 'column',
+                gap: isCompactMethodLayout ? 8 : 0,
+                paddingHorizontal: isCompactMethodLayout ? 12 : 0,
+                paddingVertical: isCompactMethodLayout ? 0 : 8,
               }}>
               <CreditCard
                 size={20}
@@ -241,7 +247,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
               />
               <Text
                 style={{
-                  marginTop: 6,
+                  marginTop: isCompactMethodLayout ? 0 : 6,
                   color: selectedMethod === 'VA' ? '#FFF' : '#0A0A0A',
                   fontFamily: selectedMethod === 'VA' ? 'Switzer-Bold' : 'Switzer-Regular',
                   fontSize: 14,
@@ -255,14 +261,18 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
             <TouchableOpacity
               onPress={() => onSelect('QRIS')}
               style={{
-                flex: 1,
-                height: 74,
+                flex: isCompactMethodLayout && !hasTwoEnabledMethods ? undefined : 1,
+                width: isCompactMethodLayout && !hasTwoEnabledMethods ? '100%' : undefined,
+                height: isCompactMethodLayout ? 40 : 65,
                 backgroundColor: selectedMethod === 'QRIS' ? '#3B82F6' : '#FFF',
-                borderRadius: 12,
+                borderRadius: isCompactMethodLayout ? 32 : 12,
                 borderWidth: selectedMethod === 'QRIS' ? 0 : 1,
                 borderColor: '#E5E7EB',
                 alignItems: 'center',
                 justifyContent: 'center',
+                flexDirection: isCompactMethodLayout ? 'row' : 'column',
+                gap: isCompactMethodLayout ? 8 : 0,
+                paddingHorizontal: isCompactMethodLayout ? 12 : 0,
               }}>
               <QrCode
                 size={20}
@@ -271,7 +281,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
               />
               <Text
                 style={{
-                  marginTop: 6,
+                  marginTop: isCompactMethodLayout ? 0 : 6,
                   color: selectedMethod === 'QRIS' ? '#FFF' : '#0A0A0A',
                   fontFamily: selectedMethod === 'QRIS' ? 'Switzer-Bold' : 'Switzer-Regular',
                   fontSize: 14,
@@ -285,9 +295,9 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
               onPress={() => onSelect('MANUAL_BANK')}
               style={{
                 flex: 1,
-                height: 74,
+                height: isCompactMethodLayout ? 40 : 65,
                 backgroundColor: selectedMethod === 'MANUAL_BANK' ? '#3B82F6' : '#FFF',
-                borderRadius: 12,
+                borderRadius: isCompactMethodLayout ? 32 : 12,
                 borderWidth: selectedMethod === 'MANUAL_BANK' ? 0 : 1,
                 borderColor: '#E5E7EB',
                 alignItems: 'center',
@@ -300,7 +310,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
                   marginTop: 6,
                   color: selectedMethod === 'MANUAL_BANK' ? '#FFF' : '#0A0A0A',
                   fontFamily: selectedMethod === 'MANUAL_BANK' ? 'Switzer-Bold' : 'Switzer-Regular',
-                  fontSize: 12,
+                  fontSize: 14,
                 }}>
                 Transfer Bank
               </Text>
