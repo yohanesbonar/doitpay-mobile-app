@@ -457,8 +457,6 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
       isDisable = true;
     } else if (isLoadingCalculate) {
       isDisable = true;
-    } else if (isManualBankIncomplete) {
-      isDisable = true;
     } else {
       isDisable = false;
     }
