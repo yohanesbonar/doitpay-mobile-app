@@ -41,6 +41,8 @@
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Gunakan Face ID untuk masuk dengan aman ke akun Doitpay.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Aplikasi ini membutuhkan akses kamera untuk mengambil foto.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
@@ -127,8 +129,6 @@
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>

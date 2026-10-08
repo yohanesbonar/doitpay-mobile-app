@@ -8,11 +8,44 @@
     "freeTransfer": "Free Transfer"
   },
   "authEntry": {
+    "biometricPromptTitle": "Confirm your identity to log in to Doitpay",
+    "biometricCredentialUnavailable": "Biometric login details are unavailable. Please log in with your PIN.",
+    "biometricAccountMismatch": "Biometrics are registered for a different phone number.",
+    "biometricAuthenticationFailed": "Biometric verification failed. Please log in with your PIN.",
+    "biometricResetFailed": "The previous account's biometric setup could not be cleared. Please try again.",
+    "useFaceId": "Face ID",
+    "useFingerprint": "Fingerprint",
+    "useIris": "Iris",
     "occupationLabel": "Occupation",
     "occupationPlaceholder": "Select occupation",
     "loadingOccupation": "Loading occupations...",
     "occupationLoadError": "Failed to load occupations.",
     "retry": "Retry"
+  },
+  "settings": {
+    "biometricLogin": "Biometric Login",
+    "biometricLoginDescription": "Use fingerprint or Face ID to log in",
+    "biometricUnavailable": "This device does not have usable biometrics configured.",
+    "biometricProfileUnavailable": "Account details are unavailable. Please try again.",
+    "biometricDisableFailed": "Biometric login could not be disabled. Please try again.",
+    "biometricPinTitle": "Enter your PIN",
+    "biometricPinDescription": "Confirm your 6-digit PIN to enable biometric login.",
+    "biometricPromptTitle": "Confirm biometrics to enable login",
+    "biometricSetupFailed": "Biometric setup failed. Please try again.",
+    "biometricSetupSuccess": "Biometric login enabled.",
+    "biometricEnable": "Enable biometrics",
+    "cancel": "Cancel"
+  },
+  "appLock": {
+    "pinIncorrect": "Incorrect PIN",
+    "remainingAttempts": "Attempts remaining: {{count}}",
+    "biometricPromptTitle": "Authenticate to unlock Doitpay",
+    "biometricCredentialUnavailable": "Biometric login details are unavailable. Please unlock with your PIN.",
+    "biometricAuthenticationFailed": "Biometric verification failed. Please try your PIN.",
+    "useFaceId": "Face ID",
+    "useFingerprint": "Fingerprint",
+    "useIris": "Iris",
+    "deleteLastDigit": "Delete last digit"
   },
   "welcomeTransfer": {
     "title": "Welcome",

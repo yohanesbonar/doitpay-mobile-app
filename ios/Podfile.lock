@@ -2684,6 +2684,28 @@ PODS:
     - ReactNativeDependencies
     - RNWorklets (>= 0.8.0)
     - Yoga
+  - RNKeychain (10.0.0):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
   - RNLocalize (3.7.2):
     - hermes-engine
     - RCTRequired
@@ -3159,6 +3181,7 @@ DEPENDENCIES:
   - "RNFBPerf (from `../node_modules/@react-native-firebase/perf`)"
   - "RNFBRemoteConfig (from `../node_modules/@react-native-firebase/remote-config`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
+  - RNKeychain (from `../node_modules/react-native-keychain`)
   - RNLocalize (from `../node_modules/react-native-localize`)
   - "RNNotifee (from `../node_modules/@notifee/react-native`)"
   - RNReanimated (from `../node_modules/react-native-reanimated`)
@@ -3407,6 +3430,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-firebase/remote-config"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
+  RNKeychain:
+    :path: "../node_modules/react-native-keychain"
   RNLocalize:
     :path: "../node_modules/react-native-localize"
   RNNotifee:
@@ -3556,6 +3581,7 @@ SPEC CHECKSUMS:
   RNFBPerf: 9746234838e604f2a05beb276ddcf96fdb65585a
   RNFBRemoteConfig: b7240654c178e68818776255e7b1143ffc56e1a7
   RNGestureHandler: 8513066c8820d60f7b8c1a43e5882f2bb9c75cea
+  RNKeychain: 1b055a0ec36d058cb0a075e965d8c9d335e0c828
   RNLocalize: e499927062b7f49891bd0349cbe39e8f6fa97fec
   RNNotifee: 4a6ee5c7deaf00e005050052d73ee6315dff7ec9
   RNReanimated: 5cc36a25f9e60c523734a60783f84d363e73b4dc
@@ -3571,4 +3597,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 2c3325eb052f5eb519bfbea695fa598a840f3e23
 
-COCOAPODS: 1.13.0
+COCOAPODS: 1.15.2

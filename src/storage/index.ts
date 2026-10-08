@@ -20,6 +20,8 @@ export const StorageKey = {
 export const PersistentStorageKey = {
   DEVICE_TOKEN: 'device_token',
   DEVICE_TOKEN_EXPIRES_AT: 'device_token_expires_at',
+  BIOMETRIC_LOGIN_ENABLED: 'biometric_login_enabled',
+  BIOMETRIC_LOGIN_PHONE_NUMBER: 'biometric_login_phone_number',
 };
 
 export const setStorageItem = (key: string, value: string) => {
