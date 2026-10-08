@@ -2,6 +2,7 @@ export type TransactionItem = {
   accountHolderName: string;
   amount: number;
   bankShortName: string;
+  beneficiaryAccountNumber?: string;
   createdAt: string;
   fee: number;
   id: string;

@@ -35,7 +35,38 @@ const HomeScreen = () => {
     referenceId?: string;
     type?: string;
     status?: string;
+    transactionMethod?: string;
+    amount: number;
+    createdAt: string;
+    beneficiaryAccountHolderName: string;
+    beneficiaryAccountNumber: string;
+    beneficiaryBankShortName: string;
   }) => {
+    if (
+      params.status?.toUpperCase() === 'VERIFYING' &&
+      params.transactionMethod?.toUpperCase() === 'MANUAL_BANK' &&
+      params.referenceId
+    ) {
+      navigation.navigate('ManualBankVerification', {
+        transferData: {
+          id: params.referenceId,
+          status: params.status,
+          amount: params.amount,
+          createdAt: params.createdAt,
+        },
+        accountData: {
+          accountHolderName: params.beneficiaryAccountHolderName,
+          accountNumber: params.beneficiaryAccountNumber,
+          bankName: params.beneficiaryBankShortName,
+        },
+        bankData: {
+          name: params.beneficiaryBankShortName,
+          shortName: params.beneficiaryBankShortName,
+        },
+      });
+      return;
+    }
+
     navigation.navigate('TransactionDetail', {
       transactionId: params.id,
       referenceId: params.referenceId ?? '',

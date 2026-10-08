@@ -82,6 +82,12 @@ interface NavigateToDetailParams {
   referenceId: string;
   type: string;
   status: string;
+  transactionMethod: string;
+  amount: number;
+  createdAt: string;
+  accountHolderName: string;
+  accountNumber?: string;
+  bankShortName: string;
 }
 
 interface HistoryProps {
@@ -239,9 +245,14 @@ export const History: FC<HistoryProps> = ({ navigateToDetail }) => {
                     referenceId: item.referenceId,
                     type: item.type,
                     status: item.status,
+                    transactionMethod: item.transactionMethod,
+                    amount: item.amount,
+                    createdAt: item.createdAt,
+                    accountHolderName: item.accountHolderName,
+                    accountNumber: item.beneficiaryAccountNumber,
+                    bankShortName: item.bankShortName,
                   })
-                }
-              >
+                }>
                 <HistoryItem item={item} />
               </Pressable>
             )}

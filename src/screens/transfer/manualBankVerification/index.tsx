@@ -13,7 +13,7 @@ import type { ManualBankTransferData } from '@/api/transfer';
 type VerificationStatus = 'VERIFYING' | 'SUCCESS' | 'REJECTED' | 'EXPIRED' | 'CANCELLED';
 
 interface RouteParams {
-  transferData: ManualBankTransferData;
+  transferData: Pick<ManualBankTransferData, 'id'> & Partial<Omit<ManualBankTransferData, 'id'>>;
   accountData?: {
     accountNumber?: string;
     bankName?: string;
@@ -40,11 +40,10 @@ const TERMINAL_STATUSES = [
   'CANCELLED',
 ];
 
-const getTransferStatus = (
-  transfer?: Pick<ManualBankTransferData, 'status'> & {
-    manualBank?: Pick<ManualBankTransferData['manualBank'], 'status'> | null;
-  },
-) => {
+const getTransferStatus = (transfer?: {
+  status?: string;
+  manualBank?: { status?: string } | null;
+}) => {
   const statuses = [transfer?.status, transfer?.manualBank?.status];
   const successfulStatus = statuses.find((status) =>
     SUCCESS_TRANSFER_STATUSES.includes(status?.toUpperCase() ?? ''),

@@ -10,7 +10,38 @@ export const TransactionHistoryScreen = () => {
     referenceId: string;
     type: string;
     status: string;
+    transactionMethod: string;
+    amount: number;
+    createdAt: string;
+    accountHolderName: string;
+    accountNumber?: string;
+    bankShortName: string;
   }) => {
+    if (
+      params.status?.toUpperCase() === 'VERIFYING' &&
+      params.transactionMethod?.toUpperCase() === 'MANUAL_BANK' &&
+      params.referenceId
+    ) {
+      navigation.navigate('ManualBankVerification', {
+        transferData: {
+          id: params.referenceId,
+          status: params.status,
+          amount: params.amount,
+          createdAt: params.createdAt,
+        },
+        accountData: {
+          accountHolderName: params.accountHolderName,
+          accountNumber: params.accountNumber,
+          bankName: params.bankShortName,
+        },
+        bankData: {
+          name: params.bankShortName,
+          shortName: params.bankShortName,
+        },
+      });
+      return;
+    }
+
     navigation.navigate('TransactionDetail', {
       transactionId: params.id,
       referenceId: params.referenceId,
