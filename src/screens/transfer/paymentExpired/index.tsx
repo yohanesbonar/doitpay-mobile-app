@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { BackHandler } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import { PaymentExpiredView } from '../../../features/transfer/paymentExpired';
 import { useTransfer } from '@/hooks/useTransferMutation';
-import { transferApi } from '@/api/transfer';
 
 const PaymentExpiredScreen = () => {
   const navigation = useNavigation<any>();
@@ -26,9 +25,7 @@ const PaymentExpiredScreen = () => {
 
   const { mutate: postTransfer, isPending } = useTransfer();
 
-  const [isLoadingPayment, setIsLoadingPayment] = useState(false);
-
-  const handleCreateNewPayment = async () => {
+  const handleCreateNewPayment = () => {
     if (method === 'receive') {
       
       navigation.navigate('RequestPayment', {
@@ -40,7 +37,7 @@ const PaymentExpiredScreen = () => {
       return;
     }
 
-    if (isPending || isLoadingPayment) return;
+    if (isPending) return;
     console.log("bankPayment in handleCreateNewPayment:", bankPayment);
     console.log('Full route params:', {
       method,
@@ -51,28 +48,12 @@ const PaymentExpiredScreen = () => {
       bankData,
       note,
     });
-
-    let paymentData: any;
-    setIsLoadingPayment(true);
-    try {
-      paymentData = (await transferApi.getPaymentStatus({ id: transactionId }))?.data;
-    } catch (error: any) {
-      Toast.show({
-        type: 'error',
-        text1: error?.error?.message || 'Gagal memuat data transaksi sebelumnya',
-      });
-      return;
-    } finally {
-      setIsLoadingPayment(false);
-    }
-
     const payload = {
       amount: parseInt(amount),
-      inquiryId: paymentData?.inquiryId,
+      inquiryId: accountData?.id,
       payChannel: paymentMethod === 'VA' ? bankPayment?.code : paymentMethod,
       payMethod: paymentMethod === 'VA' ? 'VIRTUAL_ACCOUNT' : paymentMethod,
       remark: note || '',
-      transactionPurpose: paymentData?.transactionPurpose,
     };
     console.log('Payload for new transfer:', payload);
     const idempotencyKey = new Date().getTime().toString();
@@ -85,7 +66,7 @@ const PaymentExpiredScreen = () => {
       {
         onSuccess: (data) => {
           const transferData = data?.data ?? {};
-          navigation.replace('PaymentInstruction', {
+          navigation.replace('TransferDetail', {
             method: 'transfer',
             paymentMethod: paymentMethod,
             amount: amount,
@@ -93,6 +74,7 @@ const PaymentExpiredScreen = () => {
             transferData: transferData,
             accountData: accountData,
             bankData: bankData,
+            isExpiredRetry: true,
           });
         },
         onError: (error: any) => {
@@ -132,7 +114,7 @@ const PaymentExpiredScreen = () => {
       recipientName={recipientName}
       onActionNewPayment={handleCreateNewPayment}
       onContactSupport={handleContactSupport}
-      isButtonLoading={isPending || isLoadingPayment}
+      isButtonLoading={isPending}
     />
   );
 };

@@ -14,8 +14,6 @@ import { KycCard } from './components/KycCard';
 import { ProfileCardSkeleton } from './components/ProfileCardSkeleton';
 import { KycCardSkeleton } from './components/KycCardSkeleton';
 import { useGetLimitMeQuery } from '@/features/user/hooks/useGetLimitMeQuery';
-import { useKycStatusQuery } from '@/hooks/useKycStatusQuery';
-import { KycStatus } from '@/features/onboarding/kyc/types';
 import DeviceInfo from 'react-native-device-info';
 import { LogoutConfirmationModal } from './components/LogoutConfirmationModal';
 
@@ -35,31 +33,23 @@ export const Profile = () => {
     refetch: refetchProfile,
   } = useGetProfileMeQuery();
   const { data: limitData, isLoading: loadingLimit, refetch: refetchLimit } = useGetLimitMeQuery();
-  const { data: kycStatusData, refetch: refetchKycStatus } = useKycStatusQuery();
-
-  // /v1/kyc/status knows about rejections (and their reasons); /v1/me is the fallback while it
-  // loads or if it fails.
-  const kycStatus = (kycStatusData?.status as KycStatus | undefined) ?? profileData?.data?.kycStatus;
-
-  const openKycRejection = () => navigation.navigate('KycResult', { variant: 'REJECTED' });
 
   const isLoading = loadingProfile || loadingLimit;
 
   const handlePullRefresh = useCallback(async () => {
     setIsPullRefreshing(true);
     try {
-      await Promise.all([refetchProfile(), refetchLimit(), refetchKycStatus()]);
+      await Promise.all([refetchProfile(), refetchLimit()]);
     } finally {
       setIsPullRefreshing(false);
     }
-  }, [refetchProfile, refetchLimit, refetchKycStatus]);
+  }, [refetchProfile, refetchLimit]);
 
   useFocusEffect(
     useCallback(() => {
       refetchProfile();
       refetchLimit();
-      refetchKycStatus();
-    }, [refetchProfile, refetchLimit, refetchKycStatus]),
+    }, [refetchProfile, refetchLimit]),
   );
 
   return (
@@ -77,11 +67,7 @@ export const Profile = () => {
         {isLoading || !profileData ? (
           <ProfileCardSkeleton />
         ) : (
-          <ProfileCard
-            {...profileData.data}
-            kycStatus={kycStatus ?? profileData.data.kycStatus}
-            onPressRejectedKyc={openKycRejection}
-          />
+          <ProfileCard {...profileData.data} />
         )}
         {isLoading || !profileData || !limitData ? (
           <KycCardSkeleton />
