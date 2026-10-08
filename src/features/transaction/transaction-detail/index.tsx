@@ -130,7 +130,15 @@ export const TransactionDetail = ({
   } = STATUS_CONFIG[resolvedStatus] ?? STATUS_CONFIG[TransactionStatus.SUCCESS_TRANSFER];
 
   const isReceiveIn = type === TransactionType.RECEIVE_IN;
+  const isManualBankTransfer =
+    !isReceiveIn &&
+    (receipt?.uniqueCode != null ||
+      (!receipt?.paymentMethod?.trim() &&
+        Boolean(receipt?.beneficiaryBankName && receipt?.beneficiaryAccountNumber)));
   const isQris = receipt?.paymentMethod?.toUpperCase() === 'QRIS';
+  const paymentMethodLabel = isManualBankTransfer
+    ? `Transfer Bank - ${receipt?.beneficiaryBankName || '-'}`
+    : receipt?.paymentMethod || '-';
 
   const senderName = receipt?.senderName || '-';
   const senderBank = receipt?.paymentMethod || '-';
@@ -195,9 +203,7 @@ export const TransactionDetail = ({
             <Text style={styles.recipientName} numberOfLines={1}>
               {receipt?.beneficiaryName ?? '-'}
             </Text>
-            <Text style={styles.recipientMethod}>
-              {receipt?.paymentMethod ? receipt.paymentMethod : '-'}
-            </Text>
+            <Text style={styles.recipientMethod}>{paymentMethodLabel}</Text>
           </View>
         </View>
       </View>
@@ -206,7 +212,7 @@ export const TransactionDetail = ({
         <Text style={styles.sectionTitle}>Detail Transaksi</Text>
         <View style={styles.detailRow}>
           <Text style={styles.detailLabel}>ID Transaksi</Text>
-          <Text style={styles.detailValue}>{transactionId}</Text>
+          <Text style={styles.detailValue}>{receipt?.id || transactionId}</Text>
         </View>
         <View style={styles.detailRow}>
           <Text style={styles.detailLabel}>Tanggal & Waktu</Text>
@@ -216,27 +222,35 @@ export const TransactionDetail = ({
         </View>
         <View style={styles.detailRow}>
           <Text style={styles.detailLabel}>Metode Pembayaran</Text>
-          <Text style={styles.detailValue}>
-            {receipt?.paymentMethod ? receipt.paymentMethod : '-'}
-          </Text>
+          <Text style={styles.detailValue}>{paymentMethodLabel}</Text>
         </View>
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Jumlah</Text>
-          <Text style={styles.detailValue}>
-            Rp {formatNumber((receipt?.amount ?? 0).toString())}
-          </Text>
-        </View>
-
-        <View style={styles.detailRow}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text style={styles.detailLabelWithIcon}>Biaya Admin</Text>
-            <FeeInfoButton message="Biaya jasa admin yang dibebankan kepada merchant" />
+        {!isManualBankTransfer && (
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Jumlah</Text>
+            <Text style={styles.detailValue}>
+              Rp {formatNumber((receipt?.amount ?? 0).toString())}
+            </Text>
           </View>
-          <Text style={styles.detailValue}>
-            Rp {formatNumber((receipt?.fee ?? 0).toString())}{' '}
-            {receipt?.percentageFee && `(${receipt?.percentageFee}%)`}
-          </Text>
-        </View>
+        )}
+
+        {isManualBankTransfer && receipt?.uniqueCode != null && (
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Kode Unik</Text>
+            <Text style={styles.detailValue}>Rp {formatNumber(receipt.uniqueCode.toString())}</Text>
+          </View>
+        )}
+        {!isManualBankTransfer && (
+          <View style={styles.detailRow}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={styles.detailLabelWithIcon}>Biaya Admin</Text>
+              <FeeInfoButton message="Biaya jasa admin yang dibebankan kepada merchant" />
+            </View>
+            <Text style={styles.detailValue}>
+              Rp {formatNumber((receipt?.fee ?? 0).toString())}{' '}
+              {receipt?.percentageFee && `(${receipt?.percentageFee}%)`}
+            </Text>
+          </View>
+        )}
         <View style={[styles.detailRow, { borderBottomWidth: 0 }]}>
           <Text style={styles.detailLabel}>Total</Text>
           <Text style={styles.detailValue}>
@@ -320,7 +334,7 @@ export const TransactionDetail = ({
 
         <View style={receiptStyles.receiptDetailRow}>
           <Text style={receiptStyles.receiptDetailLabel}>ID Transaksi</Text>
-          <Text style={receiptStyles.receiptDetailValue}>{transactionId}</Text>
+          <Text style={receiptStyles.receiptDetailValue}>{receipt?.id || transactionId}</Text>
         </View>
         <View style={receiptStyles.receiptDetailRow}>
           <Text style={receiptStyles.receiptDetailLabel}>Tanggal & Waktu</Text>
@@ -330,15 +344,25 @@ export const TransactionDetail = ({
         </View>
         <View style={receiptStyles.receiptDetailRow}>
           <Text style={receiptStyles.receiptDetailLabel}>Metode Pembayaran</Text>
-          <Text style={receiptStyles.receiptDetailValue}>{receipt?.paymentMethod ?? '-'}</Text>
+          <Text style={receiptStyles.receiptDetailValue}>{paymentMethodLabel}</Text>
         </View>
-        <View style={receiptStyles.receiptDetailRow}>
-          <Text style={receiptStyles.receiptDetailLabel}>Jumlah</Text>
-          <Text style={receiptStyles.receiptDetailValue}>
-            Rp {formatNumber((receipt?.amount ?? 0).toString())}
-          </Text>
-        </View>
-        {receipt?.fee != null && (
+        {!isManualBankTransfer && (
+          <View style={receiptStyles.receiptDetailRow}>
+            <Text style={receiptStyles.receiptDetailLabel}>Jumlah</Text>
+            <Text style={receiptStyles.receiptDetailValue}>
+              Rp {formatNumber((receipt?.amount ?? 0).toString())}
+            </Text>
+          </View>
+        )}
+        {isManualBankTransfer && receipt?.uniqueCode != null && (
+          <View style={receiptStyles.receiptDetailRow}>
+            <Text style={receiptStyles.receiptDetailLabel}>Kode Unik</Text>
+            <Text style={receiptStyles.receiptDetailValue}>
+              Rp {formatNumber(receipt.uniqueCode.toString())}
+            </Text>
+          </View>
+        )}
+        {!isManualBankTransfer && receipt?.fee != null && (
           <View style={receiptStyles.receiptDetailRow}>
             <Text style={receiptStyles.receiptDetailLabel}>Biaya Admin</Text>
             <Text style={receiptStyles.receiptDetailValue}>

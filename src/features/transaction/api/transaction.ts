@@ -14,6 +14,7 @@ export interface TransactionReceiptData {
   paymentMethodName?: string;
   fee: number;
   totalAmount: number;
+  uniqueCode?: number;
   senderName?: string;
   percentageFee?: number;
 }
