@@ -2511,9 +2511,10 @@ PODS:
     - Yoga
   - RNDeviceInfo (15.0.2):
     - React-Core
-  - RNFastImage (8.26.0):
+  - RNFastImage (8.31.2):
     - React-Core
     - SDWebImage (< 6.0, >= 5.11.1)
+    - SDWebImagePhotosPlugin (< 2.0, >= 1.2.0)
     - SDWebImageWebPCoder (< 1.0, >= 0.8.4)
   - RNFBAnalytics (25.1.0):
     - FirebaseAnalytics/Core (= 12.15.0)
@@ -3042,6 +3043,8 @@ PODS:
   - SDWebImage (5.21.7):
     - SDWebImage/Core (= 5.21.7)
   - SDWebImage/Core (5.21.7)
+  - SDWebImagePhotosPlugin (1.2.1):
+    - SDWebImage/Core (~> 5.10)
   - SDWebImageWebPCoder (0.15.0):
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.17)
@@ -3220,6 +3223,7 @@ SPEC REPOS:
     - PromisesSwift
     - React-Codegen
     - SDWebImage
+    - SDWebImagePhotosPlugin
     - SDWebImageWebPCoder
 
 EXTERNAL SOURCES:
@@ -3573,7 +3577,7 @@ SPEC CHECKSUMS:
   RNCPicker: 5850b195903c126967b2dffcf9500299c8581177
   RNDateTimePicker: 842af426f91942f5ca5e2599cf4a8126e56fbc7a
   RNDeviceInfo: d79872e11c8e9c4de0d65b0ee6e0cee719f37fea
-  RNFastImage: d28580f3844c81b7d104c5eb061623221e3772f0
+  RNFastImage: 46bc66d8f8aa4369827e1a9ff601a773631aa51a
   RNFBAnalytics: 9bf4f9a4cb987908b67793855e0c96b2f2dc3b33
   RNFBApp: ed845aeb52ca478b897c9abe711ebdafbfff24db
   RNFBCrashlytics: 1bde1d40c99d3b3ca089651029f18f45f6cbe88b
@@ -3591,10 +3595,11 @@ SPEC CHECKSUMS:
   RNVectorIcons: 9d52f79c911eb6099a14b8135bd261ccef039fcb
   RNWorklets: 7009adab82cd815153f9470423e42771b3a6b610
   SDWebImage: e9fc87c1aab89a8ab1bbd74eba378c6f53be8abf
+  SDWebImagePhotosPlugin: aaf5bc35fd49b66876de58c33eeb6e38b50920e5
   SDWebImageWebPCoder: 0e06e365080397465cc73a7a9b472d8a3bd0f377
   VisionCamera: c53f898f20f802479777fa3a327a6f05c2741366
   Yoga: 8cf9dd9fc7761e176a3361b4821d26d11cfbeab1
 
 PODFILE CHECKSUM: 2c3325eb052f5eb519bfbea695fa598a840f3e23
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.13.0
