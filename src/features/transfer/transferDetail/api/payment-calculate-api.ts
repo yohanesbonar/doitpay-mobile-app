@@ -12,6 +12,7 @@ export type PaymentCalculateData = {
   amount: number;
   dailyLimitTotal: number;
   dailyLimitUsed: number;
+  defaultFeePerTransaction?: number | null;
   fee: number;
   feePerTransaction: number;
   uniqueCode?: number;
