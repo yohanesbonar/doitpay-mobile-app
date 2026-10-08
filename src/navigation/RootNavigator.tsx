@@ -23,6 +23,8 @@ import { EStatement } from '../features/main/profile/EStatement';
 import Profile from '../features/main/profile';
 import TransferDetail from '../screens/transfer/transferDetail';
 import PaymentInstruction from '../screens/transfer/paymentInstruction';
+import ManualBankPaymentScreen from '../screens/transfer/manualBankPayment';
+import ManualBankVerificationScreen from '../screens/transfer/manualBankVerification';
 import TransferProcessing from '../screens/transfer/transferProcessing';
 import PaymentReceipt from '../screens/transfer/paymentReceipt';
 import SearchAccountScreen from '../screens/transfer/searchAccount';
@@ -39,6 +41,7 @@ import { DeleteAccount } from '@/features/main/profile/DeleteAccount';
 import { DeleteAccountStatus } from '@/features/main/profile/DeleteAccountStatus';
 import { ChangePin } from '@/features/main/profile/ChangePin';
 import { ChangePinSuccess } from '@/features/main/profile/ChangePinSuccess';
+import { BiometricLoginSetup } from '@/features/main/profile/BiometricLoginSetup';
 import DisputeHelpCenterScreen from '@/screens/dispute/helpCenter';
 import DisputeIssueTypeScreen from '@/screens/dispute/issueType';
 import DisputeAttachmentScreen from '@/screens/dispute/attachment';
@@ -205,6 +208,12 @@ export default function RootNavigator({
             <Stack.Screen name="AddBankRecipient" component={AddBankRecipient} />
             <Stack.Screen name="TransferDetail" component={TransferDetail} />
             <Stack.Screen name="PaymentInstruction" component={PaymentInstruction} />
+            <Stack.Screen name="ManualBankPayment" component={ManualBankPaymentScreen} />
+            <Stack.Screen
+              name="ManualBankVerification"
+              component={ManualBankVerificationScreen}
+              options={{ headerShown: false }}
+            />
             <Stack.Screen
               name="TransferProcessing"
               component={TransferProcessing}
@@ -223,6 +232,7 @@ export default function RootNavigator({
             />
             <Stack.Screen name="Settings" component={Settings} />
             <Stack.Screen name="Security" component={Security} />
+            <Stack.Screen name="BiometricLoginSetup" component={BiometricLoginSetup} />
             <Stack.Screen name="BankAccounts" component={BankAccounts} />
             <Stack.Screen name="HelpCenter" component={HelpCenter} />
             <Stack.Screen name="EStatement" component={EStatement} />

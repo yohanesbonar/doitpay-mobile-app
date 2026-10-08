@@ -31,7 +31,7 @@ const TransferDetailScreen = () => {
   };
 
   const gotoPaymentInstruction = (
-    paymentMethod: 'VA' | 'QRIS',
+    paymentMethod: 'VA' | 'QRIS' | 'MANUAL_BANK',
     amount: string,
     transferData: any,
     bankPayment: any,

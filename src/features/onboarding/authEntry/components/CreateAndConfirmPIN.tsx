@@ -1,6 +1,14 @@
 import React from 'react';
-import { View, Text, Pressable, TextInput, TouchableOpacity } from 'react-native';
+import {
+  ActivityIndicator,
+  View,
+  Text,
+  Pressable,
+  TextInput,
+  TouchableOpacity,
+} from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { NumericPinKeypad } from '@/components/molecules/NumericPinKeypad';
 
 interface CreateAndConfirmPINProps {
   step: number;
@@ -14,6 +22,11 @@ interface CreateAndConfirmPINProps {
   renderDotsPIN: (code: string, hasError: boolean) => React.ReactNode;
   onChangeText: (text: string) => void;
   onForgotPinPress?: () => void;
+  biometricLoginAvailable?: boolean;
+  biometricAction?: React.ReactNode;
+  onBiometricLoginPress?: () => void;
+  isBiometricLoginPending?: boolean;
+  showNumericKeypad?: boolean;
   PIN_LENGTH: number;
 }
 
@@ -29,9 +42,23 @@ const CreateAndConfirmPIN = ({
   renderDotsPIN,
   onChangeText,
   onForgotPinPress,
+  biometricLoginAvailable,
+  biometricAction,
+  onBiometricLoginPress,
+  isBiometricLoginPending,
+  showNumericKeypad = false,
   PIN_LENGTH,
 }: CreateAndConfirmPINProps) => {
   const { t } = useTranslation();
+  const currentPin = step === 3 ? pin : confirmationPin;
+
+  const handleDigitPress = (digit: string) => {
+    if (currentPin.length < PIN_LENGTH) onChangeText(`${currentPin}${digit}`);
+  };
+
+  const handleDeletePress = () => {
+    onChangeText(currentPin.slice(0, -1));
+  };
 
   return (
     <View style={{ flex: 1, marginHorizontal: 16 }}>
@@ -53,9 +80,15 @@ const CreateAndConfirmPIN = ({
               : 'authEntry.descConfirmationPIN',
         )}
       </Text>
-      <Pressable style={styles.dotsContainer} onPress={handlePressPIN}>
-        {renderDotsPIN(step === 3 ? pin : confirmationPin, isErrorPIN)}
-      </Pressable>
+      {showNumericKeypad ? (
+        <View style={[styles.dotsContainer, { marginTop: 56 }]}>
+          {renderDotsPIN(currentPin, isErrorPIN)}
+        </View>
+      ) : (
+        <Pressable style={styles.dotsContainer} onPress={handlePressPIN}>
+          {renderDotsPIN(currentPin, isErrorPIN)}
+        </Pressable>
+      )}
 
       {step === 4 && isErrorPIN && (
         <Text style={styles.errorTextPIN}>
@@ -70,14 +103,40 @@ const CreateAndConfirmPIN = ({
         keyboardType="number-pad"
         maxLength={PIN_LENGTH}
         style={styles.hiddenInput}
-        autoFocus={true}
+        editable={!showNumericKeypad}
+        autoFocus={!showNumericKeypad && !(step === 4 && isLoginState && biometricLoginAvailable)}
       />
+      {showNumericKeypad ? (
+        <NumericPinKeypad
+          onDigitPress={handleDigitPress}
+          onDeletePress={handleDeletePress}
+          deleteAccessibilityLabel={t('appLock.deleteLastDigit')}
+          leftAction={step === 4 && isLoginState ? biometricAction : undefined}
+          onLeftActionPress={onBiometricLoginPress}
+          isLeftActionPending={Boolean(isBiometricLoginPending)}
+          disabled={Boolean(isBiometricLoginPending)}
+        />
+      ) : step === 4 && isLoginState && biometricLoginAvailable && biometricAction ? (
+        <Pressable
+          accessibilityRole="button"
+          onPress={onBiometricLoginPress}
+          disabled={isBiometricLoginPending}
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: 8,
+            marginTop: 24,
+          }}>
+          {isBiometricLoginPending ? <ActivityIndicator color="#4A80F0" /> : biometricAction}
+        </Pressable>
+      ) : null}
       {Boolean(onForgotPinPress) && (
         <View
           style={{
             justifyContent: 'center',
             flexDirection: 'row',
-            marginTop: 18,
+            marginTop: 32,
             gap: 4,
           }}>
           <Text>Lupa PIN?</Text>

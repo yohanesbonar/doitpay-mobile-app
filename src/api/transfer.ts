@@ -1,12 +1,13 @@
 import apiClient from './client';
 
 export interface TransferPayload {
-  amount: string;
+  amount: number | string;
   inquiryId: string;
   payChannel: string;
   payMethod: string;
-  pin: string;
-  remark: string;
+  pin?: string;
+  remark?: string;
+  beneficiaryId?: string;
   transactionPurpose?: string;
   transactionPurposeOther?: string;
 }
@@ -64,7 +65,15 @@ export interface VAMethodsPayload {
 export type VAMethodsResponse = {
   status: string;
   message: string;
-  data: null;
+  data: {
+    items: Array<{
+      id: string;
+      code: string;
+      name: string;
+      shortName?: string;
+      logoUrl: string;
+    }>;
+  };
 };
 
 export interface PaymentInstructionPayload {
@@ -101,16 +110,16 @@ export interface BeneficiaryData {
   logoUrl: string;
 }
 
-export type TransferApiStatus = 
-  | 'WAITING_PAYMENT' 
-  | 'DISBURSING' 
-  | 'DISBURSING_FAILED' 
-  | 'COMPLETED' 
+export type TransferApiStatus =
+  | 'WAITING_PAYMENT'
+  | 'DISBURSING'
+  | 'DISBURSING_FAILED'
+  | 'COMPLETED'
   | 'CANCELLED';
 export interface TransferStatusData {
   amount: number;
   beneficiary: BeneficiaryData;
-  lastUpdatedAt: string; 
+  lastUpdatedAt: string;
   processedAt: string;
   status: TransferApiStatus;
 }
@@ -140,6 +149,14 @@ export interface GetTransferDetailResponseData {
   paymentId: string;
   qris: QrisDetailData | null;
   status: 'CREATED' | 'PAID' | 'COMPLETED' | 'CANCELLED' | string;
+  manualBank?: {
+    status: 'PENDING' | 'VERIFYING' | 'REJECTED' | 'EXPIRED' | 'CANCELLED' | string;
+    accountName?: string;
+    accountNumber?: string;
+    bankName?: string;
+    totalAmount?: number;
+    uniqueCode?: number;
+  } | null;
   va: VaDetailData | null;
 }
 
@@ -170,7 +187,7 @@ export const transferApi = {
   },
   getVAMethods: async (payload?: VAMethodsPayload): Promise<VAMethodsResponse> => {
     const { data } = await apiClient.get<VAMethodsResponse>('/v1/payment/va/methods', {
-      params: payload 
+      params: payload,
     });
     return data;
   },
@@ -199,7 +216,9 @@ export const transferApi = {
     return data;
   },
   getTransferReceipt: async (payload: { id: string }): Promise<GetTransferDetailResponse> => {
-    const { data } = await apiClient.get<GetTransferDetailResponse>(`/v1/transfers/${payload.id}/receipt`);
+    const { data } = await apiClient.get<GetTransferDetailResponse>(
+      `/v1/transfers/${payload.id}/receipt`,
+    );
     return data;
   },
   getTransactionPurposes: async (): Promise<TransactionPurposesResponse> => {
@@ -207,7 +226,9 @@ export const transferApi = {
     return data;
   },
   getReceiveReceipt: async (payload: PaymentStatusPayload): Promise<PaymentStatusResponse> => {
-    const { data } = await apiClient.get<PaymentStatusResponse>(`/v1/receive/${payload.id}/receipt`);
+    const { data } = await apiClient.get<PaymentStatusResponse>(
+      `/v1/receive/${payload.id}/receipt`,
+    );
     return data;
   },
 };

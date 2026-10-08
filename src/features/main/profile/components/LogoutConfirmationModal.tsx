@@ -9,6 +9,10 @@ interface LogoutConfirmationModalProps {
   onDismiss?: () => void;
   styles: any;
   colors: any;
+  title?: string;
+  description?: string;
+  cancelLabel?: string;
+  confirmLabel?: string;
 }
 
 export const LogoutConfirmationModal: React.FC<LogoutConfirmationModalProps> = ({
@@ -17,7 +21,11 @@ export const LogoutConfirmationModal: React.FC<LogoutConfirmationModalProps> = (
   onConfirm,
   styles,
   colors,
-  onDismiss
+  onDismiss,
+  title = 'Keluar dari Akun?',
+  description = 'Pastikan semua aktivitas kamu sudah selesai.',
+  cancelLabel = 'Batal',
+  confirmLabel = 'Keluar',
 }) => {
   return (
     <Modal
@@ -31,7 +39,7 @@ export const LogoutConfirmationModal: React.FC<LogoutConfirmationModalProps> = (
           <TouchableWithoutFeedback>
             <View style={styles.modalContent}>
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>Keluar dari Akun?</Text>
+                <Text style={styles.modalTitle}>{title}</Text>
                 <TouchableOpacity
                   onPress={onClose}
                   hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
@@ -39,19 +47,17 @@ export const LogoutConfirmationModal: React.FC<LogoutConfirmationModalProps> = (
                 </TouchableOpacity>
               </View>
 
-              <Text style={styles.modalDescription}>
-                Pastikan semua aktivitas kamu sudah selesai.
-              </Text>
+              <Text style={styles.modalDescription}>{description}</Text>
 
               <View style={styles.modalActions}>
                 <TouchableOpacity style={[styles.modalButton, styles.btnBatal]} onPress={onClose}>
-                  <Text style={styles.textBatal}>Batal</Text>
+                  <Text style={styles.textBatal}>{cancelLabel}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   style={[styles.modalButton, styles.btnKeluar]}
                   onPress={onConfirm}>
-                  <Text style={styles.textKeluar}>Keluar</Text>
+                  <Text style={styles.textKeluar}>{confirmLabel}</Text>
                 </TouchableOpacity>
               </View>
             </View>

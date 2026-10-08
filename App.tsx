@@ -307,7 +307,10 @@ const App = () => {
                   onStateChange={onNavigationStateChange}
                 />
                 <AppInitializer />
-                {isPinLocked && <AppLockScreen onUnlocked={() => setIsPinLocked(false)} />}
+                {isPinLocked && 
+                <AppLockScreen 
+                activationId
+                onUnlocked={() => setIsPinLocked(false)} />}
               </ThemeProvider>
               {!isInternetConnected && (
                 <View style={styles.noInternetBanner}>

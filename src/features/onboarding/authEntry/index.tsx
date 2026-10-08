@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
   View,
+  Text,
   TextInput,
   Keyboard,
   TouchableWithoutFeedback,
@@ -34,7 +36,15 @@ import Toast from 'react-native-toast-message';
 import CreateAndConfirmPIN from './components/CreateAndConfirmPIN.tsx';
 import InputFullName from './components/InputFullName.tsx';
 import crashlytics from '@react-native-firebase/crashlytics';
+import { BIOMETRY_TYPE } from 'react-native-keychain';
+import { Eye, Fingerprint, ScanFace } from 'lucide-react-native';
 import { identifyPostHogUser, trackPostHogEvent } from '@/analytics/posthog';
+import { PersistentStorageKey, storage } from '@/storage';
+import {
+  clearBiometricLoginCredential,
+  getBiometricLoginCredential,
+  getSupportedBiometryType,
+} from '@/utils/BiometricAuth';
 
 export interface PhoneNumberFormValues {
   phoneNumber: string;
@@ -76,6 +86,24 @@ export const AuthEntry = () => {
   const PIN_LENGTH = 6;
   const [isNextButtonEnabled, setIsNextButtonEnabled] = useState(false);
   const [personalDataInput, setPersonalDataInput] = useState({ fullName: '', occupationId: '' });
+  const [isBiometricLoginPending, setIsBiometricLoginPending] = useState(false);
+  const [biometryType, setBiometryType] = useState<BIOMETRY_TYPE | null>(null);
+  const biometricLoginEnabled =
+    storage.getBoolean(PersistentStorageKey.BIOMETRIC_LOGIN_ENABLED) ?? false;
+
+  const clearBiometricLoginForDifferentAccount = async (phoneNumber: string) => {
+    if (!biometricLoginEnabled) return;
+
+    const configuredPhoneNumber = storage.getString(
+      PersistentStorageKey.BIOMETRIC_LOGIN_PHONE_NUMBER,
+    );
+    if (configuredPhoneNumber === phoneNumber) return;
+
+    await clearBiometricLoginCredential();
+    storage.set(PersistentStorageKey.BIOMETRIC_LOGIN_ENABLED, false);
+    storage.remove(PersistentStorageKey.BIOMETRIC_LOGIN_PHONE_NUMBER);
+    setBiometryType(null);
+  };
 
   const getErrorMessage = (err: any, fallback: string) => {
     return (
@@ -113,6 +141,24 @@ export const AuthEntry = () => {
     }
     return dots;
   };
+
+  const biometricAction =
+    biometryType === BIOMETRY_TYPE.FACE_ID || biometryType === BIOMETRY_TYPE.FACE ? (
+      <>
+        <ScanFace size={28} color="#4A80F0" />
+        <Text style={{ color: '#4A80F0' }}>{t('authEntry.useFaceId')}</Text>
+      </>
+    ) : biometryType === BIOMETRY_TYPE.TOUCH_ID || biometryType === BIOMETRY_TYPE.FINGERPRINT ? (
+      <>
+        <Fingerprint size={28} color="#4A80F0" />
+        <Text style={{ color: '#4A80F0' }}>{t('authEntry.useFingerprint')}</Text>
+      </>
+    ) : biometryType === BIOMETRY_TYPE.IRIS ? (
+      <>
+        <Eye size={28} color="#4A80F0" />
+        <Text style={{ color: '#4A80F0' }}>{t('authEntry.useIris')}</Text>
+      </>
+    ) : null;
 
   const formikRef = useRef<FormikProps<PhoneNumberFormValues>>(null);
   const personalDataFormikRef = useRef<FormikProps<PersonalDataFormValues>>(null);
@@ -286,6 +332,13 @@ export const AuthEntry = () => {
             onChangeText={(text) => {
               handlePINChange(text);
             }}
+            biometricLoginAvailable={Boolean(
+              biometricLoginEnabled && isLoginState && biometricAction,
+            )}
+            biometricAction={biometricAction}
+            onBiometricLoginPress={handleBiometricLogin}
+            isBiometricLoginPending={isBiometricLoginPending}
+            showNumericKeypad
             onForgotPinPress={
               isLoginState ? () => (navigation as any).navigate('ForgotPin') : undefined
             }
@@ -369,6 +422,119 @@ export const AuthEntry = () => {
     requestOtpForPhone(formattedPhone, isLoginState);
   };
 
+  const finishLogin = (formattedPhone: string, res: unknown) => {
+    crashlytics().log('User login success');
+    crashlytics().setUserId(formattedPhone);
+    console.log('Login success:', res);
+    identifyPostHogUser(formattedPhone, {
+      account_status: 'ACTIVE',
+    });
+    trackPostHogEvent('login_success', {
+      account_status: 'ACTIVE',
+    });
+    Toast.show({
+      type: 'success',
+      text1: 'Berhasil login',
+    });
+
+    Keyboard.dismiss();
+    navigation.navigate('MainTabs', { isLoginState });
+  };
+
+  const loginWithPin = (formattedPhone: string, loginPin: string) => {
+    loginMutate(
+      {
+        phoneNumber: formattedPhone,
+        pin: loginPin,
+      },
+      {
+        onSuccess: (res) => finishLogin(formattedPhone, res),
+        onError: (err: any) => {
+          const code = err?.response?.data?.error?.code ?? err?.error?.code;
+          if (code === 'USER_ACTIVATION_PENDING') {
+            setConfirmationPin('');
+            (navigation as any).navigate('KycPendingStatus');
+            return;
+          }
+
+          setConfirmationPin('');
+          const msg = err?.response?.data?.error?.message ?? err?.error?.message ?? 'PIN salah';
+          Toast.show({
+            type: 'error',
+            text1: msg,
+          });
+        },
+      },
+    );
+  };
+
+  const handleBiometricLogin = async () => {
+    if (isBiometricLoginPending || isSettingPinLogin) return;
+
+    setIsBiometricLoginPending(true);
+    try {
+      const credential = await getBiometricLoginCredential(t('authEntry.biometricPromptTitle'));
+      if (!credential) {
+        storage.set(PersistentStorageKey.BIOMETRIC_LOGIN_ENABLED, false);
+        storage.remove(PersistentStorageKey.BIOMETRIC_LOGIN_PHONE_NUMBER);
+        setBiometryType(null);
+        try {
+          await clearBiometricLoginCredential();
+        } catch (error) {
+          console.error('Failed to clear unavailable biometric login credentials', error);
+        }
+        inputRef.current?.focus();
+        Toast.show({ type: 'error', text1: t('authEntry.biometricCredentialUnavailable') });
+        return;
+      }
+
+      const { phoneNumber, countryCode } = phoneNumbData;
+      const formattedPhone = (countryCode + phoneNumber).replace('+', '');
+      if (credential.phoneNumber !== formattedPhone) {
+        try {
+          await clearBiometricLoginCredential();
+          storage.set(PersistentStorageKey.BIOMETRIC_LOGIN_ENABLED, false);
+          storage.remove(PersistentStorageKey.BIOMETRIC_LOGIN_PHONE_NUMBER);
+          setBiometryType(null);
+        } catch (error) {
+          console.error('Failed to clear biometric setup after account mismatch', error);
+        }
+        inputRef.current?.focus();
+        Toast.show({ type: 'error', text1: t('authEntry.biometricAccountMismatch') });
+        return;
+      }
+
+      loginWithPin(formattedPhone, credential.pin);
+    } catch (error) {
+      console.error('Biometric login failed', error);
+      inputRef.current?.focus();
+      Toast.show({ type: 'error', text1: t('authEntry.biometricAuthenticationFailed') });
+    } finally {
+      setIsBiometricLoginPending(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!biometricLoginEnabled) {
+      setBiometryType(null);
+      return;
+    }
+
+    let isMounted = true;
+    getSupportedBiometryType()
+      .then((supportedType) => {
+        if (isMounted) setBiometryType(supportedType);
+      })
+      .catch((error) => {
+        console.error('Failed to detect supported biometrics on login', error);
+        if (isMounted) setBiometryType(null);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [biometricLoginEnabled]);
+
   useEffect(() => {
     if (currentStep == 1) {
       const isValid = formikRef.current?.isValid;
@@ -435,52 +601,7 @@ export const AuthEntry = () => {
         } else {
           const { phoneNumber, countryCode } = phoneNumbData;
           const formattedPhone = (countryCode + phoneNumber).replace('+', '');
-
-          console.warn('[Auth] about to call loginMutate');
-
-          loginMutate(
-            {
-              phoneNumber: formattedPhone,
-              pin: text,
-            },
-            {
-              onSuccess: (res) => {
-                crashlytics().log('User login success');
-                crashlytics().setUserId(formattedPhone);
-                console.log('Login success:', res);
-                console.warn('[Auth] login success, calling PostHog identify.');
-                identifyPostHogUser(formattedPhone, {
-                  account_status: 'ACTIVE',
-                });
-                trackPostHogEvent('login_success', {
-                  account_status: 'ACTIVE',
-                });
-                Toast.show({
-                  type: 'success',
-                  text1: 'Berhasil login',
-                });
-
-                Keyboard.dismiss();
-                navigation.navigate('MainTabs', { isLoginState });
-              },
-              onError: (err: any) => {
-                const code = err?.response?.data?.error?.code ?? err?.error?.code;
-                if (code === 'USER_ACTIVATION_PENDING') {
-                  setConfirmationPin('');
-                  (navigation as any).navigate('KycPendingStatus');
-                  return;
-                }
-
-                setConfirmationPin('');
-                const msg =
-                  err?.response?.data?.error?.message ?? err?.error?.message ?? 'PIN salah';
-                Toast.show({
-                  type: 'error',
-                  text1: msg,
-                });
-              },
-            },
-          );
+          loginWithPin(formattedPhone, text);
         }
       }
     }
@@ -498,7 +619,18 @@ export const AuthEntry = () => {
         checkPhoneNumber(
           { phoneNumber: formattedPhone },
           {
-            onSuccess: (res) => {
+            onSuccess: async (res) => {
+              try {
+                await clearBiometricLoginForDifferentAccount(formattedPhone);
+              } catch (error) {
+                console.error('Failed to clear biometric setup for a different account', error);
+                Toast.show({
+                  type: 'error',
+                  text1: getErrorMessage(error, t('authEntry.biometricResetFailed')),
+                });
+                return;
+              }
+
               const accountExists = res.data.isExists;
               setIsLoginState(accountExists);
               requestOtpForPhone(formattedPhone, accountExists);

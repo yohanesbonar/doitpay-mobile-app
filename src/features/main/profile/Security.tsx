@@ -1,17 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, TouchableOpacity, Switch, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import {
-  ChevronLeft,
-  ChevronRight,
-  Lock,
-  Fingerprint,
-  MonitorSmartphone,
-} from 'lucide-react-native';
+import { ChevronLeft, ChevronRight, Lock, MonitorSmartphone } from 'lucide-react-native';
+import { BiometricLoginSetting } from './components/BiometricLoginSetting';
 
 export const Security = ({ navigation }: any) => {
-  const [isBiometricActive, setIsBiometricActive] = useState(false);
-
   const SecurityItem = ({
     title,
     sub,
@@ -64,14 +57,7 @@ export const Security = ({ navigation }: any) => {
           icon={Lock}
           onPress={() => navigation.navigate('ChangePin')}
         />
-        {/*<SecurityItem
-          title="Biometrik"
-          sub="Fingerprint/ Face ID untuk login cepat"
-          icon={Fingerprint}
-          type="switch"
-          value={isBiometricActive}
-          onValueChange={setIsBiometricActive}
-          />*/}
+        <BiometricLoginSetting />
         <SecurityItem
           title="Perangkat Terpercaya"
           sub="1 perangkat aktif"
