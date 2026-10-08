@@ -28,9 +28,35 @@ interface RouteParams {
   };
 }
 
+const SUCCESS_TRANSFER_STATUSES = ['SUCCESS_TRANSFER', 'COMPLETED'];
+const TERMINAL_STATUSES = [
+  ...SUCCESS_TRANSFER_STATUSES,
+  'SUCCESS',
+  'VERIFIED',
+  'APPROVED',
+  'PAID',
+  'REJECTED',
+  'EXPIRED',
+  'CANCELLED',
+];
+
+const getTransferStatus = (
+  transfer?: Pick<ManualBankTransferData, 'status'> & {
+    manualBank?: Pick<ManualBankTransferData['manualBank'], 'status'> | null;
+  },
+) => {
+  const statuses = [transfer?.status, transfer?.manualBank?.status];
+  const successfulStatus = statuses.find((status) =>
+    SUCCESS_TRANSFER_STATUSES.includes(status?.toUpperCase() ?? ''),
+  );
+
+  return successfulStatus ?? transfer?.manualBank?.status ?? transfer?.status;
+};
+
 const getVerificationStatus = (status?: string): VerificationStatus => {
   switch (status?.toUpperCase()) {
     case 'SUCCESS':
+    case 'SUCCESS_TRANSFER':
     case 'COMPLETED':
     case 'VERIFIED':
     case 'APPROVED':
@@ -65,28 +91,17 @@ const ManualBankVerificationScreen = () => {
       if (!isFocused) return false;
 
       const detail = query.state.data?.data;
-      const status = detail?.manualBank?.status ?? detail?.status;
-      return [
-        'SUCCESS',
-        'COMPLETED',
-        'VERIFIED',
-        'APPROVED',
-        'PAID',
-        'REJECTED',
-        'EXPIRED',
-        'CANCELLED',
-      ].includes(status?.toUpperCase() ?? '')
-        ? false
-        : 5000;
+      const statuses = [detail?.status, detail?.manualBank?.status].map((status) =>
+        status?.toUpperCase(),
+      );
+      return statuses.some((status) => TERMINAL_STATUSES.includes(status ?? '')) ? false : 5000;
     },
     refetchIntervalInBackground: false,
     staleTime: 0,
   });
 
-  const apiStatus = data?.data?.manualBank?.status ?? data?.data?.status;
-  const status = getVerificationStatus(
-    apiStatus || transferData?.manualBank?.status || 'VERIFYING',
-  );
+  const apiStatus = getTransferStatus(data?.data) ?? getTransferStatus(transferData);
+  const status = getVerificationStatus(apiStatus || 'VERIFYING');
   const recipientName =
     accountData?.ownerName || accountData?.accountHolderName || 'Penerima Transfer';
   const recipientBank = bankData?.shortName || bankData?.name || accountData?.bankName || 'Bank';
@@ -102,41 +117,47 @@ const ManualBankVerificationScreen = () => {
     hasNavigatedToReceipt.current = true;
 
     const now = new Date();
-    const manualBank = transferData?.manualBank;
+    const receiptTransfer = data?.data ?? transferData;
+    const manualBank = receiptTransfer?.manualBank;
     const bankName = manualBank?.bankName || bankData?.shortName || bankData?.name || 'Bank';
     const paymentMethod = `Transfer Bank - ${bankName}`;
-    const recipientName = accountData?.ownerName || accountData?.accountHolderName || '-';
+    const recipientName =
+      manualBank?.accountName || accountData?.ownerName || accountData?.accountHolderName || '-';
+    const recipientAccountNumber = manualBank?.accountNumber || accountData?.accountNumber || '';
+    const recipientBankName =
+      manualBank?.bankName || accountData?.bankName || bankData?.name || bankName;
+    const createdAt = receiptTransfer?.createdAt || now.toISOString();
 
     navigation.replace('PaymentReceipt', {
       accountData: {
         ...accountData,
-        accountNumber: accountData?.accountNumber || '',
-        bankName: accountData?.bankName || bankData?.name || bankName,
+        accountNumber: recipientAccountNumber,
+        bankName: recipientBankName,
         name: recipientName,
         accountHolderName: recipientName,
       },
       bankData,
       paymentMethod,
-      amount: String(transferData?.amount ?? 0),
-      transactionId: transferId,
-      dateTime: formatApiDateToLocal(now.toISOString()),
+      amount: String(receiptTransfer?.amount ?? 0),
+      transactionId: receiptTransfer?.id || transferId,
+      dateTime: formatApiDateToLocal(createdAt),
       method: 'manualBank',
       manualBankReceiptData: {
-        id: transferId,
-        amount: transferData?.amount ?? 0,
-        createdAt: now.toISOString(),
+        id: receiptTransfer?.id || transferId,
+        amount: receiptTransfer?.amount ?? 0,
+        createdAt,
         paymentMethod,
         paymentMethodName: paymentMethod,
         paymentMethodLogoUrl: manualBank?.logoUrl || bankData?.logoUrl,
         beneficiaryName: recipientName,
-        beneficiaryBankName: accountData?.bankName || bankData?.name || bankName,
-        beneficiaryBankLogo: bankData?.logoUrl,
-        beneficiaryAccountNumber: accountData?.accountNumber || '',
+        beneficiaryBankName: recipientBankName,
+        beneficiaryBankLogo: manualBank?.logoUrl || bankData?.logoUrl,
+        beneficiaryAccountNumber: recipientAccountNumber,
         uniqueCode: manualBank?.uniqueCode,
-        totalAmount: manualBank?.totalAmount ?? transferData?.amount ?? 0,
+        totalAmount: manualBank?.totalAmount ?? receiptTransfer?.amount ?? 0,
       },
     });
-  }, [status, navigation, accountData, bankData, transferData, transferId]);
+  }, [status, navigation, accountData, bankData, data, transferData, transferId]);
 
   const isVerifying = status === 'VERIFYING';
   const title =
