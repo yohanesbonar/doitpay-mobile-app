@@ -82,6 +82,17 @@ export const createStyles = (colors: any) =>
       paddingVertical: 4,
       borderRadius: 8,
     },
+    rejectedBadge: {
+      backgroundColor: '#FDEBEB',
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 8,
+    },
+    rejectedText: {
+      fontSize: 12,
+      fontFamily: 'Switzer-Medium',
+      color: '#E23D3D',
+    },
     pendingText: {
       fontSize: 12,
       fontFamily: 'Switzer-Medium',
