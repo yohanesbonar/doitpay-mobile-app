@@ -7,6 +7,7 @@ export const TransactionHistoryScreen = () => {
 
   const navigateToDetailTransaction = (params: {
     id: string;
+    originTab?: 'home' | 'history';
     referenceId: string;
     type: string;
     status: string;
@@ -23,6 +24,7 @@ export const TransactionHistoryScreen = () => {
       params.referenceId
     ) {
       navigation.navigate('ManualBankVerification', {
+        originTab: params.originTab ?? 'history',
         transferData: {
           id: params.referenceId,
           status: params.status,
@@ -43,6 +45,7 @@ export const TransactionHistoryScreen = () => {
     }
 
     navigation.navigate('TransactionDetail', {
+      originTab: params.originTab ?? 'history',
       transactionId: params.id,
       referenceId: params.referenceId,
       type: params.type,

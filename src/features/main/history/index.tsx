@@ -79,6 +79,7 @@ const initialDate = { month: undefined as number | undefined, year: currentYear 
 
 interface NavigateToDetailParams {
   id: string;
+  originTab?: 'home' | 'history';
   referenceId: string;
   type: string;
   status: string;
@@ -242,6 +243,7 @@ export const History: FC<HistoryProps> = ({ navigateToDetail }) => {
                 onPress={() =>
                   navigateToDetail({
                     id: item.id,
+                    originTab: 'history',
                     referenceId: item.referenceId,
                     type: item.type,
                     status: item.status,

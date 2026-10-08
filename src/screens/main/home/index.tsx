@@ -32,6 +32,7 @@ const HomeScreen = () => {
 
   const goToTransactionDetail = (params: {
     id: string;
+    originTab?: 'home' | 'history';
     referenceId?: string;
     type?: string;
     status?: string;
@@ -48,6 +49,7 @@ const HomeScreen = () => {
       params.referenceId
     ) {
       navigation.navigate('ManualBankVerification', {
+        originTab: params.originTab ?? 'home',
         transferData: {
           id: params.referenceId,
           status: params.status,
@@ -68,6 +70,7 @@ const HomeScreen = () => {
     }
 
     navigation.navigate('TransactionDetail', {
+      originTab: params.originTab ?? 'home',
       transactionId: params.id,
       referenceId: params.referenceId ?? '',
       type: params.type ?? '',

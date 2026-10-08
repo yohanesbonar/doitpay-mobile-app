@@ -37,6 +37,7 @@ interface HomeViewProps {
   goToNotification: () => void;
   goToTransactionDetail: (params: {
     id: string;
+    originTab?: 'home' | 'history';
     referenceId?: string;
     type?: string;
     status?: string;
@@ -238,6 +239,7 @@ export const HomeView = (props: HomeViewProps) => {
                         onPress={() =>
                           props.goToTransactionDetail({
                             id: item.id,
+                            originTab: 'home',
                             referenceId: item.referenceId,
                             type: item.type,
                             status: item.status,

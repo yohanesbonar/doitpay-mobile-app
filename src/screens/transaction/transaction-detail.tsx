@@ -9,7 +9,7 @@ import { Alert } from 'react-native';
 export const TransactionDetailScreen = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
-  const { transactionId = '', referenceId = '', type = '', status } = route.params ?? {};
+  const { transactionId = '', referenceId = '', type = '', status, originTab } = route.params ?? {};
   const [isLoadingContinue, setIsLoadingContinue] = useState(false);
 
   const handleContinuePayment = async (receipt: TransactionReceiptData) => {
@@ -18,6 +18,25 @@ export const TransactionDetailScreen = () => {
 
       const detail = await transferApi.getTransferDetailById({ id: referenceId });
       const detailData = detail.data;
+
+      if (detailData.manualBank) {
+        navigation.navigate('ManualBankPayment', {
+          transferData: detailData,
+          accountData: {
+            accountHolderName: detailData.manualBank.accountName,
+            accountName: detailData.manualBank.accountName,
+            accountNumber: detailData.manualBank.accountNumber,
+            bankName: detailData.manualBank.bankName,
+          },
+          bankData: {
+            name: detailData.manualBank.bankName,
+            logoUrl: detailData.manualBank.logoUrl,
+          },
+          originTab,
+        });
+        return;
+      }
+
       const paymentMethod = detailData.qris ? 'QRIS' : 'VA';
 
       const bankPayment = detailData.va

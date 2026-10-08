@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -17,6 +17,7 @@ import { styles, receiptStyles } from './styles';
 import { formatNumber } from '@/utils/Common';
 import ViewShot from 'react-native-view-shot';
 import Share from 'react-native-share';
+import { useFocusEffect } from '@react-navigation/native';
 import { TransactionStatus, TransactionType } from '@/features/transaction/types';
 import { useTransactionReceiptQuery } from '@/features/transaction/hooks/useTransactionReceiptQuery';
 import { TransactionReceiptData } from '@/features/transaction/api/transaction';
@@ -39,6 +40,11 @@ const STATUS_CONFIG: Record<
   },
   [TransactionStatus.PENDING]: {
     label: 'Transaksi Diproses',
+    color: '#D97706',
+    Icon: Clock,
+  },
+  VERIFYING: {
+    label: 'Bukti Transfer Sedang Diverifikasi',
     color: '#D97706',
     Icon: Clock,
   },
@@ -119,8 +125,22 @@ export const TransactionDetail = ({
 }: TransactionDetailProps) => {
   const viewShotRef = useRef<any>(null);
 
-  const { data: receiptResponse, isLoading } = useTransactionReceiptQuery(referenceId, type);
+  const {
+    data: receiptResponse,
+    isLoading,
+    refetch,
+  } = useTransactionReceiptQuery(referenceId, type);
   const receipt = receiptResponse?.data;
+  const hasFocusedOnce = useRef(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (hasFocusedOnce.current) {
+        void refetch();
+      }
+      hasFocusedOnce.current = true;
+    }, [refetch]),
+  );
 
   const resolvedStatus = deriveStatus(type, status);
   const {

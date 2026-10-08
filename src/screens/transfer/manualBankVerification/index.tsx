@@ -14,6 +14,7 @@ type VerificationStatus = 'VERIFYING' | 'SUCCESS' | 'REJECTED' | 'EXPIRED' | 'CA
 
 interface RouteParams {
   transferData: Pick<ManualBankTransferData, 'id'> & Partial<Omit<ManualBankTransferData, 'id'>>;
+  originTab?: 'home' | 'history';
   accountData?: {
     accountNumber?: string;
     bankName?: string;
@@ -80,6 +81,16 @@ const ManualBankVerificationScreen = () => {
   const { transferData, accountData, bankData } = (route.params || {}) as RouteParams;
   const transferId = transferData?.id;
   const hasNavigatedToReceipt = useRef(false);
+  const onPressBack = () => {
+    if (route.params?.originTab) {
+      const tabRoute =
+        route.params.originTab === 'history' ? t('mainTabNav.history') : t('mainTabNav.homepage');
+      navigation.navigate('MainTabs', { screen: tabRoute }, { pop: true });
+      return;
+    }
+
+    navigation.goBack();
+  };
 
   const { data } = useQuery<GetTransferDetailResponse>({
     queryKey: ['manualBankTransferStatus', transferId],
@@ -181,7 +192,7 @@ const ManualBankVerificationScreen = () => {
       <View style={styles.container}>
         <HeaderToolbar
           title="Verifikasi Transfer"
-          onPressBack={() => navigation.goBack()}
+          onPressBack={onPressBack}
           titlePosition="left"
           titleStyle="medium"
         />

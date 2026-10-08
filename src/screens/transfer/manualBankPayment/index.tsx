@@ -168,6 +168,7 @@ const ManualBankPaymentScreen = () => {
         transferData,
         accountData: route.params?.accountData,
         bankData: route.params?.bankData,
+        originTab: route.params?.originTab,
       });
     } catch (error) {
       console.error('Failed to upload transfer proof:', error);
