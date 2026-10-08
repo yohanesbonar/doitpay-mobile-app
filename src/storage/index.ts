@@ -11,6 +11,8 @@ export const StorageKey = {
   FCM_TOKEN: 'fcm_token',
   HAS_SHOWN_COMPLETE_ACCOUNT_HOME: 'has_shown_complete_account_home',
   HAS_SHOWN_COMPLETE_ACCOUNT_BANK_LIST: 'has_shown_complete_account_bank_list',
+  // Last KYC review status the user has been shown; drives the one-time KYC result screen.
+  KYC_LAST_SEEN_STATUS: 'kyc_last_seen_status',
 };
 
 // Trusted Device credentials. Deliberately kept OUT of `StorageKey`: `useAuthStore.logout()`

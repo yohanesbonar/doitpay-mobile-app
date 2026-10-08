@@ -57,6 +57,8 @@ import CaptureSelfieScreen from '@/screens/kyc/captureSelfie';
 import ConfirmDataScreen from '@/screens/kyc/confirmData';
 import DataSubmittedScreen from '@/screens/kyc/dataSubmitted';
 import KycIntroScreen from '@/screens/kyc/kycIntro';
+import KycResultScreen from '@/screens/kyc/kycResult';
+import { useKycResultRedirect } from '@/hooks/useKycResultRedirect';
 import { useGetProfileMeQuery } from '@/features/user/hooks/useGetProfileMeQuery';
 import { KycPendingStatus } from '@/features/onboarding/kyc/KycPendingStatus';
 
@@ -155,6 +157,12 @@ export default function RootNavigator({
     navigationRef,
     setPendingKycRedirect,
   ]);
+
+  useKycResultRedirect({
+    navigationRef,
+    enabled:
+      isNavReady && isAuthenticated && !isProfileLoading && !isPendingDeletion && !pendingKycRedirect,
+  });
 
   const handleOnReady = () => {
     setIsNavReady(true);
@@ -256,6 +264,7 @@ export default function RootNavigator({
             <Stack.Screen name="DisputeAddResponse" component={DisputeAddResponseScreen} />
             <Stack.Screen name="ActivateQris" component={ActivateQrisScreen} />
             <Stack.Screen name="KycIntro" component={KycIntroScreen} />
+            <Stack.Screen name="KycResult" component={KycResultScreen} />
             <Stack.Screen name="CaptureKtp" component={CaptureKtpScreen} />
             <Stack.Screen name="CaptureSelfie" component={CaptureSelfieScreen} />
             <Stack.Screen name="ConfirmKycData" component={ConfirmDataScreen} />
