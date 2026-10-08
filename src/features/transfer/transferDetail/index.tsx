@@ -105,6 +105,16 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
   const [calculateData, setCalculateData] = useState<PaymentCalculateData | null>(null);
   const [isLoadingCalculate, setIsLoadingCalculate] = useState(false);
   const calculateRequestIdRef = useRef(0);
+  const isTransferFeeFree = calculateData?.isFreeTransfer === true || calculateData?.fee === 0;
+  const showManualBankDefaultFee =
+    methodPayment === 'MANUAL_BANK' &&
+    isTransferFeeFree &&
+    calculateData?.defaultFeePerTransaction != null &&
+    calculateData.defaultFeePerTransaction > 0;
+  const manualBankDefaultFeeLabel =
+    showManualBankDefaultFee && calculateData?.defaultFeePerTransaction != null
+      ? `Rp ${formatNumber(calculateData.defaultFeePerTransaction)}`
+      : null;
   const paymentMethodAvailability = usePaymentMethodAvailability('TRANSFER');
   const quickAmounts = useQuickAmounts('TRANSFER');
 
@@ -793,14 +803,9 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
               <Text style={{ fontFamily: 'Switzer-Regular', color: '#000000', fontSize: 14 }}>
                 Biaya transfer
               </Text>
-              {calculateData.isFreeTransfer ||
-              calculateData.fee === 0 ||
-              (methodPayment === 'MANUAL_BANK' &&
-                calculateData.defaultFeePerTransaction != null &&
-                calculateData.defaultFeePerTransaction > 0) ? (
+              {isTransferFeeFree ? (
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                  {calculateData.freeQuotaTotal > 0 &&
-                  calculateData.defaultFeePerTransaction != null ? (
+                  {manualBankDefaultFeeLabel ? (
                     <Text
                       style={{
                         fontFamily: 'Switzer-Regular',
@@ -808,7 +813,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
                         fontSize: 14,
                         textDecorationLine: 'line-through',
                       }}>
-                      {`Rp ${formatNumber(calculateData.defaultFeePerTransaction)}`}
+                      {manualBankDefaultFeeLabel}
                     </Text>
                   ) : null}
                   <Text style={{ fontFamily: 'Switzer-Medium', color: '#000000', fontSize: 14 }}>
@@ -816,9 +821,22 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
                   </Text>
                 </View>
               ) : (
-                <Text style={{ fontFamily: 'Switzer-Regular', color: '#000000', fontSize: 14 }}>
-                  {`Rp ${formatNumber(calculateData?.fee)}`}
-                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  {manualBankDefaultFeeLabel ? (
+                    <Text
+                      style={{
+                        fontFamily: 'Switzer-Regular',
+                        color: '#737373',
+                        fontSize: 14,
+                        textDecorationLine: 'line-through',
+                      }}>
+                      {manualBankDefaultFeeLabel}
+                    </Text>
+                  ) : null}
+                  <Text style={{ fontFamily: 'Switzer-Regular', color: '#000000', fontSize: 14 }}>
+                    {`Rp ${formatNumber(calculateData.fee)}`}
+                  </Text>
+                </View>
               )}
             </View>
           )}
