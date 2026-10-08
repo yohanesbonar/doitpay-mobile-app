@@ -13,6 +13,12 @@ export type NotificationSubType =
   | 'account';
 
 
+export type NotificationData = {
+  type?: string;
+  referenceId?: string;
+  [key: string]: unknown;
+};
+
 export type Notification = {
   id: string;
   title: string;
@@ -21,6 +27,7 @@ export type Notification = {
   readAt: string | null;
   category: NotificationCategory;
   subType: NotificationSubType;
+  data?: NotificationData;
 };
 
 export type NotificationGroup = {

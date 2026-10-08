@@ -76,6 +76,28 @@ export const createStyles = (colors: any) =>
       borderColor: '#E5E5E5',
       borderWidth: 1,
     },
+    pendingBadge: {
+      backgroundColor: '#FFF7E6',
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 8,
+    },
+    rejectedBadge: {
+      backgroundColor: '#FDEBEB',
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 8,
+    },
+    rejectedText: {
+      fontSize: 12,
+      fontFamily: 'Switzer-Medium',
+      color: '#E23D3D',
+    },
+    pendingText: {
+      fontSize: 12,
+      fontFamily: 'Switzer-Medium',
+      color: '#D97706',
+    },
     verifiedText: {
       fontSize: 12,
       fontFamily: 'Switzer-Medium',

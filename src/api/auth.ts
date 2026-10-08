@@ -212,6 +212,18 @@ export type LogoutResponse = {
   data: {};
 };
 
+export interface PinValidatePayload {
+  pin: string;
+}
+
+export type PinValidateResponse = {
+  status: string;
+  message: string;
+  data: {
+    valid: boolean;
+  };
+};
+
 // CHANGE PIN
 export interface ChangePinPayload {
   oldPin: string;
@@ -374,6 +386,12 @@ export const authApi = {
   logout: async (accessToken: string): Promise<LogoutResponse> => {
     const { data } = await apiClient.post<LogoutResponse>('/v1/auth/logout', undefined, {
       headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    return data;
+  },
+  validatePin: async (payload: PinValidatePayload): Promise<PinValidateResponse> => {
+    const { data } = await apiClient.post<PinValidateResponse>('/v1/pin/validate', payload, {
+      skipAuthRetry: true,
     });
     return data;
   },

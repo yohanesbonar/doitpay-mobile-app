@@ -20,6 +20,10 @@ import { useReadAllNotificationsMutation } from '../hooks/useReadAllNotification
 import NotificationItem from './components/NotificationItem';
 import { NotificationListSkeleton } from './components/NotificationItemSkeleton';
 import { Notification, NotificationGroup, NotificationSubType } from './types';
+import { TransactionType } from '@/features/transaction/types';
+
+// Subtypes where the merchant is receiving money (see payment_method_receive_qris_enabled).
+const RECEIVE_SUBTYPES: NotificationSubType[] = ['incoming', 'qris'];
 
 type Tab = { label: string; value: NotificationSubType | undefined };
 
@@ -61,14 +65,43 @@ const groupByDate = (items: Notification[]): NotificationGroup[] => {
   return Array.from(map.entries()).map(([title, data]) => ({ title, data }));
 };
 
+const KYC_VERIFIED_TITLE = 'KYC Verified';
+
 const NotificationItemRow = ({ item }: { item: Notification }) => {
   const { mutate: readNotification } = useReadNotificationMutation();
+  const navigation = useNavigation<any>();
 
   return (
     <NotificationItem
       item={item}
       onPress={() => {
         if (!item.readAt) readNotification(item.id);
+
+        // KYC rejection carries no `data.type`; it is identified by its reason payload. The result
+        // screen loads the reason itself from /v1/kyc/status.
+        if (typeof item.data?.rejection_reason === 'string') {
+          navigation.navigate('KycResult', { variant: 'REJECTED' });
+          return;
+        }
+
+        // KYC approval has an empty `data`, so the title is the only marker.
+        // TODO: ask BE for a `data.type` (e.g. KYC_VERIFIED) - titles can change or be localized.
+        if (item.title === KYC_VERIFIED_TITLE) {
+          navigation.navigate('KycResult', { variant: 'VERIFIED' });
+          return;
+        }
+
+        if (item.data?.type === 'TRANSACTION_DETAIL' && item.data.referenceId) {
+          const type = RECEIVE_SUBTYPES.includes(item.subType)
+            ? TransactionType.RECEIVE_IN
+            : TransactionType.TRANSFER_OUT;
+
+          navigation.navigate('TransactionDetail', {
+            transactionId: item.data.referenceId,
+            referenceId: item.data.referenceId,
+            type,
+          });
+        }
       }}
     />
   );

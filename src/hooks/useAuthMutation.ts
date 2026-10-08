@@ -28,6 +28,8 @@ import {
   CancelAccountDeletionResponse,
   ChangePinPayload,
   ChangePinResponse,
+  PinValidatePayload,
+  PinValidateResponse,
   PhoneCheckRequestPayload,
   PhoneCheckResponse,
 } from '../api/auth';
@@ -83,6 +85,7 @@ export const useRegisterVerifyOtp = () => {
 export const useRegisterPinSetup = () => {
   const setToken = useAuthStore((state) => state.setToken);
   const setExpiresAt = useAuthStore((state) => state.setExpiresAt);
+  const setPendingKycRedirect = useAuthStore((state) => state.setPendingKycRedirect);
   const { mutate: updateDeviceToken } = useUpdateDeviceToken();
 
   const requestFcmToken = async () => {
@@ -134,6 +137,9 @@ export const useRegisterPinSetup = () => {
       const session = data?.data;
 
       if (session?.accessToken) {
+        // BE only returns a token when the user may proceed to KYC right away (config on BE side).
+        // Flag it before setToken so RootNavigator sees it on the same render that swaps stacks.
+        setPendingKycRedirect(true);
         setToken(session.accessToken, true);
       }
       if (session?.refreshToken) {
@@ -338,6 +344,12 @@ export const useDeleteAccount = () => {
 export const useCancelAccountDeletion = () => {
   return useMutation<CancelAccountDeletionResponse, Error, void>({
     mutationFn: () => authApi.cancelAccountDeletion(),
+  });
+};
+
+export const useValidatePin = () => {
+  return useMutation<PinValidateResponse, Error, PinValidatePayload>({
+    mutationFn: (payload) => authApi.validatePin(payload),
   });
 };
 

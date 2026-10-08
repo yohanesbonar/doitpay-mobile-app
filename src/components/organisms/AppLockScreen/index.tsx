@@ -1,0 +1,238 @@
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableWithoutFeedback,
+  View,
+} from 'react-native';
+import { BlurView } from '@react-native-community/blur';
+import Toast from 'react-native-toast-message';
+import { useTheme } from '@/theme/ThemeProvider';
+import { createStyles } from '@/features/onboarding/authEntry/styles';
+import { useValidatePin } from '@/hooks/useAuthMutation';
+import { useAuthStore } from '@/storage/useAuthStore';
+import { storage } from '@/storage';
+
+const PIN_LENGTH = 6;
+const DEFAULT_LOCKOUT_SECONDS = 60;
+
+const LOCKOUT_UNTIL_KEY = 'pin_lockout_until';
+
+const formatCountdown = (totalSeconds: number) => {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${String(seconds).padStart(2, '0')}`;
+};
+
+interface AppLockScreenProps {
+  onUnlocked: () => void;
+}
+
+export const AppLockScreen = ({ onUnlocked }: AppLockScreenProps) => {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+  const inputRef = useRef<TextInput>(null);
+
+  const [pin, setPin] = useState('');
+  const [isErrorPIN, setIsErrorPIN] = useState(false);
+
+  const [lockedUntil, setLockedUntil] = useState<number | null>(() => {
+    const stored = storage.getNumber(LOCKOUT_UNTIL_KEY);
+    return stored && stored > Date.now() ? stored : null;
+  });
+  const [secondsLeft, setSecondsLeft] = useState(0);
+
+  const { mutate: validatePin, isPending } = useValidatePin();
+
+  useEffect(() => {
+    if (!lockedUntil) {
+      setSecondsLeft(0);
+      return;
+    }
+
+    const tick = () => {
+      const remainingMs = lockedUntil - Date.now();
+
+      if (remainingMs <= 0) {
+        storage.remove(LOCKOUT_UNTIL_KEY);
+        setLockedUntil(null);
+        setIsErrorPIN(false);
+        return;
+      }
+
+      setSecondsLeft(Math.ceil(remainingMs / 1000));
+    };
+
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [lockedUntil]);
+
+  const renderDotsPIN = (code: string, hasError: boolean) =>
+    Array.from({ length: PIN_LENGTH }).map((_, i) => (
+      <View
+        key={i}
+        style={[styles.dot, i < code.length && styles.dotFilled, hasError && styles.dotError]}
+      />
+    ));
+
+  const handlePINChange = (text: string) => {
+    if (isErrorPIN) setIsErrorPIN(false);
+    if (text.length > PIN_LENGTH || lockedUntil) return;
+    setPin(text);
+
+    if (text.length === PIN_LENGTH) {
+      validatePin(
+        { pin: text },
+        {
+          onSuccess: () => {
+            Keyboard.dismiss();
+            onUnlocked();
+          },
+          onError: (err: any) => {
+            const code = err?.response?.data?.error?.code ?? err?.error?.code;
+            const message = err?.response?.data?.error?.message ?? err?.error?.message;
+            const remainingAttempts =
+              err?.response?.data?.error?.remainingAttempts ?? err?.error?.remainingAttempts;
+            const retryAfterSeconds =
+              err?.response?.data?.error?.retryAfterSeconds ??
+              err?.error?.retryAfterSeconds ??
+              DEFAULT_LOCKOUT_SECONDS;
+
+            setIsErrorPIN(true);
+            setPin('');
+
+            if (code === 'PIN_LOCKED') {
+              Keyboard.dismiss();
+              const until = Date.now() + retryAfterSeconds * 1000;
+              storage.set(LOCKOUT_UNTIL_KEY, until);
+              setLockedUntil(until);
+              return;
+            }
+
+            Toast.show({
+              type: 'error',
+              text1: message || 'PIN salah',
+              text2:
+                typeof remainingAttempts === 'number'
+                  ? `Sisa percobaan: ${remainingAttempts}`
+                  : undefined,
+            });
+          },
+        },
+      );
+    }
+  };
+
+  // AppLockScreen renders outside NavigationContainer (it has to sit above whatever screen was
+  // on-screen when the app backgrounded), so it has no navigate() of its own. logout() with
+  // this flag flips the app to the unauthenticated stack and asks RootNavigator to redirect to
+  // ForgotPin once that stack has actually mounted (see RootNavigator.tsx).
+  const handleForgotPin = () => {
+    Keyboard.dismiss();
+    useAuthStore.getState().logout({ redirectToForgotPin: true });
+  };
+
+  return (
+    <View style={localStyles.overlay}>
+      {/* Base layer: the ordinary PIN entry screen. Kept mounted (not swapped out) even during
+          a lockout - the BlurView below simply covers it, exactly like iOS blurring the last
+          wallpaper/screen behind "iPhone Unavailable" rather than replacing it. Since what's
+          being blurred here is only this app's own PIN dots (never real account data), there
+          is no data-exposure concern in letting it sit underneath. */}
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={{ flex: 1, backgroundColor: colors.pageBackground }}
+          enabled>
+          <View style={{ flex: 1, marginHorizontal: 16 }}>
+            <Text style={[styles.titleStep, { marginTop: 80 }]}>Masukkan PIN</Text>
+            <Text style={styles.descStep}>Masukkan PIN 6 digit kamu untuk melanjutkan</Text>
+            <Pressable style={styles.dotsContainer} onPress={() => inputRef.current?.focus()}>
+              {renderDotsPIN(pin, isErrorPIN)}
+            </Pressable>
+            <TextInput
+              ref={inputRef}
+              value={pin}
+              onChangeText={handlePINChange}
+              keyboardType="number-pad"
+              maxLength={PIN_LENGTH}
+              style={styles.hiddenInput}
+              autoFocus={!lockedUntil}
+              editable={!isPending && !lockedUntil}
+            />
+            {!lockedUntil && (
+              <Pressable
+                onPress={handleForgotPin}
+                style={{ marginTop: 24, justifyContent: 'center', alignItems: 'center' }}
+                disabled={isPending}>
+                <Text style={[styles.descStep, { color: '#4A80F0' }]}>Lupa PIN?</Text>
+              </Pressable>
+            )}
+          </View>
+        </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
+
+      {lockedUntil && (
+        <>
+          <BlurView
+            style={localStyles.lockoutBlur}
+            blurType="light"
+            blurAmount={4}
+            reducedTransparencyFallbackColor="transparent"
+          />
+          <View style={localStyles.lockoutContent} pointerEvents="none">
+            <Text style={localStyles.lockoutTitle}>Terlalu banyak percobaan</Text>
+            <Text style={localStyles.lockoutTitle}>Coba lagi dalam</Text>
+            <Text style={localStyles.lockoutCountdown}>{formatCountdown(secondsLeft)}</Text>
+          </View>
+        </>
+      )}
+    </View>
+  );
+};
+
+const localStyles = StyleSheet.create({
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  lockoutBlur: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  lockoutContent: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 32,
+  },
+  lockoutTitle: {
+    color: '#1A1A1A',
+    fontSize: 20,
+    fontFamily: 'Switzer-Semibold',
+    textAlign: 'center',
+  },
+  lockoutCountdown: {
+    color: '#FF3B30',
+    fontSize: 48,
+    fontFamily: 'Switzer-Bold',
+    textAlign: 'center',
+    marginTop: 5,
+  },
+});
