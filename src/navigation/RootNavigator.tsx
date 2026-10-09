@@ -88,7 +88,11 @@ export default function RootNavigator({
   const pendingKycRedirect = useAuthStore((state) => state.pendingKycRedirect);
   const setPendingKycRedirect = useAuthStore((state) => state.setPendingKycRedirect);
 
-  const { data: profileData, isLoading: isProfileLoading } = useGetProfileMeQuery({
+  const {
+    data: profileData,
+    isLoading: isProfileLoading,
+    refetch: refetchProfile,
+  } = useGetProfileMeQuery({
     enabled: isAuthenticated,
   });
   const isPendingDeletion = !!profileData?.data?.isRequestDeleteAccount;
@@ -162,6 +166,8 @@ export default function RootNavigator({
     navigationRef,
     enabled:
       isNavReady && isAuthenticated && !isProfileLoading && !isPendingDeletion && !pendingKycRedirect,
+    kycStatus: profileData?.data?.kycStatus,
+    refetchProfile,
   });
 
   const handleOnReady = () => {
