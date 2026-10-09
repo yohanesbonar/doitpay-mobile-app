@@ -37,6 +37,29 @@ import type { ManualTransferMethod } from '@/api/transfer';
 import { getAmountRange, trackPaymentFunnelEvent, trackPostHogEvent } from '@/analytics/posthog';
 import { generateUUID } from '@/utils/uuid';
 
+const getTransferErrorMessage = (error: unknown): string | undefined => {
+  if (typeof error !== 'object' || error === null) return undefined;
+
+  const apiError = error as {
+    message?: unknown;
+    error?: unknown;
+    response?: { data?: unknown };
+  };
+  const responseData =
+    typeof apiError.response?.data === 'object' && apiError.response.data !== null
+      ? (apiError.response.data as { message?: unknown; error?: unknown })
+      : undefined;
+  const nestedMessage =
+    typeof responseData?.error === 'object' && responseData.error !== null
+      ? (responseData.error as { message?: unknown }).message
+      : typeof apiError.error === 'object' && apiError.error !== null
+        ? (apiError.error as { message?: unknown }).message
+        : undefined;
+  const message = responseData?.message ?? nestedMessage ?? apiError.message;
+
+  return typeof message === 'string' && message.trim() ? message : undefined;
+};
+
 interface TransferDetailViewProps {
   accountData: {
     id: string;
@@ -388,8 +411,11 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
               bankData,
             });
           },
-          onError: () => {
-            Toast.show({ type: 'error', text1: 'Gagal membuat transfer. Silakan coba lagi.' });
+          onError: (error) => {
+            Toast.show({
+              type: 'error',
+              text1: getTransferErrorMessage(error) || 'Gagal membuat transfer. Silakan coba lagi.',
+            });
           },
         },
       );
@@ -430,13 +456,10 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
             });
           }
 
-          const apiErrorMessage = (error as { error?: { message?: string } })?.error?.message;
-          if (apiErrorMessage) {
-            Toast.show({
-              type: 'error',
-              text1: apiErrorMessage,
-            });
-          }
+          Toast.show({
+            type: 'error',
+            text1: getTransferErrorMessage(error) || 'Gagal membuat transfer. Silakan coba lagi.',
+          });
         },
       },
     );
