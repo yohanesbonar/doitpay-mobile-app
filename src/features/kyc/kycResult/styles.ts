@@ -41,6 +41,31 @@ export const createStyles = () =>
     heroRingFailed: {
       borderColor: '#E23D3D',
     },
+    heroPending: {
+      backgroundColor: '#FFF7E6',
+    },
+    heroRingPending: {
+      borderColor: '#E8A317',
+    },
+    heroIconPending: {
+      backgroundColor: '#E8A317',
+    },
+    cardPending: {
+      borderColor: '#F5DDA8',
+      backgroundColor: '#FFFBF2',
+    },
+    pendingCardTitle: {
+      fontFamily: 'Switzer-Semibold',
+      fontSize: 16,
+      color: '#111827',
+      marginBottom: 6,
+    },
+    pendingCardText: {
+      fontFamily: 'Switzer-Regular',
+      fontSize: 14,
+      lineHeight: 21,
+      color: '#374151',
+    },
     heroIcon: {
       width: 60,
       height: 60,
@@ -144,23 +169,39 @@ export const createStyles = () =>
       fontSize: 13,
       color: '#E23D3D',
     },
-    reasonItem: {
-      marginBottom: 12,
-    },
-    reasonItemLast: {
-      marginBottom: 0,
-    },
     reasonText: {
       fontFamily: 'Switzer-Semibold',
       fontSize: 16,
       color: '#111827',
     },
-    reasonHint: {
+    attemptRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      marginTop: 16,
+    },
+    attemptText: {
       fontFamily: 'Switzer-Regular',
       fontSize: 14,
-      lineHeight: 20,
       color: '#6B7280',
+    },
+    attemptLimitText: {
+      fontFamily: 'Switzer-Regular',
+      fontSize: 13,
+      lineHeight: 18,
+      color: '#E23D3D',
+      textAlign: 'center',
+      marginTop: 8,
+    },
+    cooldownBox: {
+      alignItems: 'center',
+    },
+    cooldownTimer: {
+      fontFamily: 'Switzer-Semibold',
+      fontSize: 22,
+      color: '#111827',
       marginTop: 4,
+      fontVariant: ['tabular-nums'],
     },
     footer: {
       paddingHorizontal: 16,
@@ -174,6 +215,9 @@ export const createStyles = () =>
       borderRadius: 24,
       paddingVertical: 14,
       alignItems: 'center',
+    },
+    buttonDisabled: {
+      backgroundColor: '#B8CCF5',
     },
     buttonPrimaryText: {
       fontFamily: 'Switzer-Medium',
