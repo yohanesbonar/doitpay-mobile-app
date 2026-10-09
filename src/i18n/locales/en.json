@@ -47,6 +47,9 @@
     "useIris": "Iris",
     "deleteLastDigit": "Delete last digit"
   },
+  "bankList": {
+    "noBanksAvailable": "Bank unavailable. Please choose another bank."
+  },
   "welcomeTransfer": {
     "title": "Welcome",
     "subtitle": "Your account is ready. Start transferring now.",

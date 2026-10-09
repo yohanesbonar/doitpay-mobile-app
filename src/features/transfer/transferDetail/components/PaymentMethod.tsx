@@ -15,6 +15,7 @@ import { createStyles } from '../../addBankAccount/styles';
 import { useVAMethods } from '@/hooks/useTransferMutation';
 import { transferApi } from '@/api/transfer';
 import type { ManualTransferMethod } from '@/api/transfer';
+import { useTranslation } from 'react-i18next';
 
 type PaymentMethodType = 'VA' | 'QRIS' | 'MANUAL_BANK';
 
@@ -48,6 +49,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
   const [selectedBank, setSelectedBank] = useState(initialBankPayment?.id || '');
   const [searchQuery, setSearchQuery] = useState('');
   const [banks, setBanks] = useState<ManualTransferMethod[]>([]);
+  const [vaBanksError, setVaBanksError] = useState(false);
   const [manualBanks, setManualBanks] = useState<ManualTransferMethod[]>([]);
   const [isLoadingManualBanks, setIsLoadingManualBanks] = useState(false);
   const [manualBanksError, setManualBanksError] = useState(false);
@@ -59,8 +61,10 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
 
   const { colors } = useTheme();
   const styles = createStyles(colors);
+  const { t } = useTranslation();
 
   const fetchVAMethodsFromApi = (search: string) => {
+    setVaBanksError(false);
     VAMethods(
       { name: search.trim() },
       {
@@ -70,6 +74,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
         },
         onError: (error) => {
           console.error('Error VAMethods:', error);
+          setVaBanksError(true);
         },
       },
     );
@@ -130,6 +135,15 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
       setSelectedBank(initialBankPayment.id);
     }
   }, [initialBankPayment]);
+
+  const displayedBanks =
+    selectedMethod === 'MANUAL_BANK'
+      ? manualBanks.filter((item) =>
+          `${item.name} ${item.code} ${item.shortName || ''}`
+            .toLowerCase()
+            .includes(searchQuery.trim().toLowerCase()),
+        )
+      : banks;
 
   const renderHighlightedName = (name: string, search: string) => {
     if (!search.trim()) {
@@ -363,14 +377,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
               Gagal memuat metode transfer. Silakan coba lagi.
             </Text>
           ) : null}
-          {(selectedMethod === 'MANUAL_BANK'
-            ? manualBanks.filter((item) =>
-                `${item.name} ${item.code} ${item.shortName || ''}`
-                  .toLowerCase()
-                  .includes(searchQuery.trim().toLowerCase()),
-              )
-            : banks
-          ).map((item) => {
+          {displayedBanks.map((item) => {
             const isChosen = selectedBank === item.id;
             return (
               <TouchableOpacity
@@ -440,6 +447,21 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
               </TouchableOpacity>
             );
           })}
+          {displayedBanks.length === 0 &&
+          (selectedMethod === 'MANUAL_BANK'
+            ? !isLoadingManualBanks && !manualBanksError
+            : !isLoadingVAMethods && !vaBanksError) ? (
+            <Text
+              style={{
+                color: '#666',
+                fontFamily: 'Switzer-Regular',
+                fontSize: 16,
+                paddingVertical: 16,
+                textAlign: 'center',
+              }}>
+              {t('bankList.noBanksAvailable')}
+            </Text>
+          ) : null}
           {showBankError ? (
             <Text
               style={{

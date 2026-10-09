@@ -117,7 +117,8 @@
     "next": "Lewati",
     "populerBank": "Bank Populer",
     "allBank": "Semua Bank",
-    "nameBankAccount": "Nama Bank"
+    "nameBankAccount": "Nama Bank",
+    "noBanksAvailable": "Bank tidak tersedia, silakan pilih bank lain"
   },
   "addBankAccount": {
     "rekening": "Rekening",
