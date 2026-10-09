@@ -36,6 +36,7 @@ import { manualBankService } from './api/manual-bank';
 import type { ManualTransferMethod } from '@/api/transfer';
 import { getAmountRange, trackPaymentFunnelEvent, trackPostHogEvent } from '@/analytics/posthog';
 import { generateUUID } from '@/utils/uuid';
+import { useTransferAmountLimits } from '@/features/transfer/hooks/useTransferAmountLimits';
 
 const getTransferErrorMessage = (error: unknown): string | undefined => {
   if (typeof error !== 'object' || error === null) return undefined;
@@ -120,6 +121,10 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
   const [methodPayment, setMethodPayment] = useState<'VA' | 'QRIS' | 'MANUAL_BANK'>(
     initialPaymentMethod || 'VA',
   );
+  const transferAmountLimits = useTransferAmountLimits();
+  const amountLimit = transferAmountLimits[methodPayment];
+  const isManualBankAmountLimitEnabled = methodPayment === 'MANUAL_BANK';
+  const [amountLimitError, setAmountLimitError] = useState<string | null>(null);
   const [bankPayment, setBankPayment] = useState(initialBankPayment || null);
   const [manualBank, setManualBank] = useState<ManualTransferMethod | null>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
@@ -152,6 +157,39 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
     refetch: refetchPurposes,
   } = useTransactionPurposes();
   const purposes = purposesData?.data?.items ?? [];
+
+  const applyAmountInput = (value: string) => {
+    const nextAmount = value.replace(/[^0-9]/g, '');
+    if (
+      isManualBankAmountLimitEnabled &&
+      amountLimit.maxAmount !== null &&
+      Number(nextAmount) > amountLimit.maxAmount
+    ) {
+      setAmount(String(amountLimit.maxAmount));
+      setAmountLimitError(amountLimit.maxErrorMessage);
+      return;
+    }
+
+    setAmount(nextAmount);
+    setAmountLimitError(null);
+  };
+
+  useEffect(() => {
+    if (!isManualBankAmountLimitEnabled) {
+      setAmountLimitError(null);
+      return;
+    }
+
+    if (
+      amount &&
+      isManualBankAmountLimitEnabled &&
+      amountLimit.maxAmount !== null &&
+      Number(amount) > amountLimit.maxAmount
+    ) {
+      setAmount(String(amountLimit.maxAmount));
+      setAmountLimitError(amountLimit.maxErrorMessage);
+    }
+  }, [amount, isManualBankAmountLimitEnabled, amountLimit]);
 
   useEffect(() => {
     if (isPurposesError) {
@@ -190,7 +228,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
   useEffect(() => {
     const numericAmount = amount ? parseInt(amount, 10) : 0;
 
-    if (numericAmount >= 10000 && !hasTrackedValidAmountRef.current) {
+    if (numericAmount >= amountLimit.minAmount && !hasTrackedValidAmountRef.current) {
       trackPostHogEvent('transfer_amount_entered', {
         amount_range: getAmountRange(numericAmount),
         destination_bank: bankData?.shortName || bankData?.name || 'unknown',
@@ -199,7 +237,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
 
       hasTrackedValidAmountRef.current = true;
     }
-  }, [amount, bankData?.name, bankData?.shortName, methodPayment]);
+  }, [amount, amountLimit.minAmount, bankData?.name, bankData?.shortName, methodPayment]);
 
   useEffect(() => {
     const { vaEnabled, qrisEnabled, manualBankEnabled, defaultMethod } = paymentMethodAvailability;
@@ -243,7 +281,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
 
     const fetchCalculation = async (amt: number) => {
       if (
-        amt < 10000 ||
+        amt < amountLimit.minAmount ||
         (methodPayment === 'VA' && !bankPayment?.code) ||
         (methodPayment === 'MANUAL_BANK' && !manualBank?.code)
       ) {
@@ -311,7 +349,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
     const isManualBankReady = methodPayment === 'MANUAL_BANK' && !!manualBank?.code;
     const isPaymentMethodReady = isQrisReady || isVaReady || isManualBankReady;
 
-    if (numericAmt >= 10000 && isPaymentMethodReady) {
+    if (numericAmt >= amountLimit.minAmount && isPaymentMethodReady) {
       setIsLoadingCalculate(true);
 
       const delayDebounceFn = setTimeout(() => {
@@ -323,6 +361,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
   }, [
     amount,
     methodPayment,
+    amountLimit.minAmount,
     bankPayment,
     manualBank,
     isFocused,
@@ -333,7 +372,19 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
     setHasSubmitted(true);
     const numericAmount = amount ? parseInt(amount, 10) : 0;
 
-    if (numericAmount < 10000) {
+    if (
+      isManualBankAmountLimitEnabled &&
+      amountLimit.maxAmount !== null &&
+      numericAmount > amountLimit.maxAmount
+    ) {
+      setAmount(String(amountLimit.maxAmount));
+      setAmountLimitError(amountLimit.maxErrorMessage);
+      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+      inputRef.current?.focus();
+      return;
+    }
+
+    if (numericAmount < amountLimit.minAmount) {
       scrollViewRef.current?.scrollTo({ y: 0, animated: true });
       inputRef.current?.focus();
       return;
@@ -472,14 +523,15 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
     hasSubmitted &&
     ((methodPayment === 'VA' && !bankPayment?.code) ||
       (methodPayment === 'MANUAL_BANK' && !manualBank?.code));
-  const showMinAmountError = amount !== '' && numericAmount > 0 && numericAmount < 10000;
+  const showMinAmountError =
+    amount !== '' && numericAmount > 0 && numericAmount < amountLimit.minAmount;
 
   useEffect(() => {
     let isDisable = true;
     const isManualBankIncomplete =
       methodPayment === 'MANUAL_BANK' &&
       (!paymentMethodAvailability.manualBankEnabled ||
-        numericAmount < 10000 ||
+        numericAmount < amountLimit.minAmount ||
         !selectedPurpose ||
         !manualBank?.code ||
         !calculateData);
@@ -499,6 +551,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
     bankPayment,
     amount,
     numericAmount,
+    amountLimit.minAmount,
     isLoadingCalculate,
     calculateData,
     selectedPurpose,
@@ -556,7 +609,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
                 value={formatNumber(amount)}
                 onFocus={() => setIsFocusedInput(true)}
                 onBlur={() => setIsFocusedInput(false)}
-                onChangeText={(val) => setAmount(val.replace(/[^0-9]/g, ''))}
+                onChangeText={applyAmountInput}
                 blurOnSubmit={false}
                 placeholderTextColor={'#A9A9A9'}
               />
@@ -564,11 +617,22 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
           </TouchableWithoutFeedback>
         </View>
 
-        {showRequiredAmountError ? (
+        {amountLimitError ? (
           <Text
             style={{
               color: '#D32F2F',
-              marginLeft: 58,
+              marginLeft: 20,
+              marginTop: 8,
+              fontFamily: 'Switzer-Regular',
+              fontSize: 14,
+            }}>
+            {amountLimitError}
+          </Text>
+        ) : showRequiredAmountError ? (
+          <Text
+            style={{
+              color: '#D32F2F',
+              marginLeft: 20,
               marginTop: 8,
               fontFamily: 'Switzer-Regular',
               fontSize: 14,
@@ -579,18 +643,18 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
           <Text
             style={{
               color: '#D32F2F',
-              marginLeft: 34,
+              marginLeft: 20,
               marginTop: 8,
               fontFamily: 'Switzer-Regular',
               fontSize: 14,
             }}>
-            Minimal transfer Rp 10.000
+            {amountLimit.minErrorMessage}
           </Text>
         ) : null}
 
         <QuickAmount
           currentAmount={amount}
-          onAmountPress={(val) => setAmount(val)}
+          onAmountPress={applyAmountInput}
           amounts={quickAmounts}
         />
 
