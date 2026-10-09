@@ -6,11 +6,11 @@ import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import Button from '@/components/atoms/Button';
-import { transferApi, GetTransferDetailResponse } from '@/api/transfer';
+import { transferApi, TransferStatusResponse } from '@/api/transfer';
 import { formatApiDateToLocal, formatNumber } from '@/utils/Common';
 import type { ManualBankTransferData } from '@/api/transfer';
 
-type VerificationStatus = 'VERIFYING' | 'SUCCESS' | 'REJECTED' | 'EXPIRED' | 'CANCELLED';
+type VerificationStatus = 'VERIFYING' | 'SUCCESS' | 'REJECTED' | 'EXPIRED' | 'CANCELLED' | 'FAILED';
 
 interface RouteParams {
   transferData: Pick<ManualBankTransferData, 'id'> & Partial<Omit<ManualBankTransferData, 'id'>>;
@@ -36,8 +36,10 @@ const TERMINAL_STATUSES = [
   'VERIFIED',
   'APPROVED',
   'PAID',
+  'DISBURSING_FAILED',
   'REJECTED',
   'EXPIRED',
+  'CANCELED',
   'CANCELLED',
 ];
 
@@ -64,8 +66,11 @@ const getVerificationStatus = (status?: string): VerificationStatus => {
       return 'SUCCESS';
     case 'REJECTED':
       return 'REJECTED';
+    case 'DISBURSING_FAILED':
+      return 'FAILED';
     case 'EXPIRED':
       return 'EXPIRED';
+    case 'CANCELED':
     case 'CANCELLED':
       return 'CANCELLED';
     default:
@@ -92,31 +97,46 @@ const ManualBankVerificationScreen = () => {
     navigation.goBack();
   };
 
-  const { data } = useQuery<GetTransferDetailResponse>({
+  const { data: transferStatusResponse } = useQuery<TransferStatusResponse>({
     queryKey: ['manualBankTransferStatus', transferId],
-    queryFn: () => transferApi.getTransferDetailById({ id: transferId! }),
+    queryFn: () => transferApi.getTransferStatus({ id: transferId! }),
     enabled: Boolean(transferId) && isFocused,
     retry: false,
     refetchInterval: (query) => {
       if (!isFocused) return false;
 
-      const detail = query.state.data?.data;
-      const statuses = [detail?.status, detail?.manualBank?.status].map((status) =>
-        status?.toUpperCase(),
-      );
-      return statuses.some((status) => TERMINAL_STATUSES.includes(status ?? '')) ? false : 5000;
+      const currentStatus = query.state.data?.data?.status?.toUpperCase();
+      return TERMINAL_STATUSES.includes(currentStatus ?? '') ? false : 5000;
     },
     refetchIntervalInBackground: false,
     staleTime: 0,
   });
 
-  const apiStatus = getTransferStatus(data?.data) ?? getTransferStatus(transferData);
+  const manualBank = transferData?.manualBank;
+  const statusBeneficiary = transferStatusResponse?.data?.beneficiary;
+  const apiStatus = transferStatusResponse?.data?.status ?? getTransferStatus(transferData);
   const status = getVerificationStatus(apiStatus || 'VERIFYING');
   const recipientName =
-    accountData?.ownerName || accountData?.accountHolderName || 'Penerima Transfer';
-  const recipientBank = bankData?.shortName || bankData?.name || accountData?.bankName || 'Bank';
-  const accountNumber = accountData?.accountNumber;
+    statusBeneficiary?.accountName ||
+    manualBank?.accountName ||
+    accountData?.ownerName ||
+    accountData?.accountHolderName ||
+    'Penerima Transfer';
+  const recipientBank =
+    statusBeneficiary?.bankName ||
+    manualBank?.bankName ||
+    accountData?.bankName ||
+    bankData?.shortName ||
+    bankData?.name ||
+    'Bank';
+  const accountNumber =
+    statusBeneficiary?.accountNumber || manualBank?.accountNumber || accountData?.accountNumber;
   const maskedAccountNumber = accountNumber ? `*******${accountNumber.slice(-3)}` : '*******';
+  const bankLogo = getBankLogo(
+    bankData,
+    recipientBank,
+    statusBeneficiary?.logoUrl || manualBank?.logoUrl,
+  );
 
   const openHistory = () => navigation.navigate('MainTabs', { screen: t('mainTabNav.history') });
   const startNewTransfer = () =>
@@ -127,16 +147,34 @@ const ManualBankVerificationScreen = () => {
     hasNavigatedToReceipt.current = true;
 
     const now = new Date();
-    const receiptTransfer = data?.data ?? transferData;
-    const manualBank = receiptTransfer?.manualBank;
-    const bankName = manualBank?.bankName || bankData?.shortName || bankData?.name || 'Bank';
+    const receiptTransfer = transferData;
+    const receiptManualBank = receiptTransfer?.manualBank;
+    const bankName =
+      statusBeneficiary?.bankName ||
+      receiptManualBank?.bankName ||
+      bankData?.shortName ||
+      bankData?.name ||
+      'Bank';
     const paymentMethod = `Transfer Bank - ${bankName}`;
     const recipientName =
-      manualBank?.accountName || accountData?.ownerName || accountData?.accountHolderName || '-';
-    const recipientAccountNumber = manualBank?.accountNumber || accountData?.accountNumber || '';
+      statusBeneficiary?.accountName ||
+      receiptManualBank?.accountName ||
+      accountData?.ownerName ||
+      accountData?.accountHolderName ||
+      '-';
+    const recipientAccountNumber =
+      statusBeneficiary?.accountNumber ||
+      receiptManualBank?.accountNumber ||
+      accountData?.accountNumber ||
+      '';
     const recipientBankName =
-      manualBank?.bankName || accountData?.bankName || bankData?.name || bankName;
-    const createdAt = receiptTransfer?.createdAt || now.toISOString();
+      statusBeneficiary?.bankName ||
+      receiptManualBank?.bankName ||
+      accountData?.bankName ||
+      bankData?.name ||
+      bankName;
+    const createdAt =
+      transferStatusResponse?.data?.processedAt || receiptTransfer?.createdAt || now.toISOString();
 
     navigation.replace('PaymentReceipt', {
       accountData: {
@@ -148,44 +186,63 @@ const ManualBankVerificationScreen = () => {
       },
       bankData,
       paymentMethod,
-      amount: String(receiptTransfer?.amount ?? 0),
+      amount: String(transferStatusResponse?.data?.amount ?? receiptTransfer?.amount ?? 0),
       transactionId: receiptTransfer?.id || transferId,
       dateTime: formatApiDateToLocal(createdAt),
       method: 'manualBank',
       manualBankReceiptData: {
         id: receiptTransfer?.id || transferId,
-        amount: receiptTransfer?.amount ?? 0,
+        amount: transferStatusResponse?.data?.amount ?? receiptTransfer?.amount ?? 0,
         createdAt,
         paymentMethod,
         paymentMethodName: paymentMethod,
-        paymentMethodLogoUrl: manualBank?.logoUrl || bankData?.logoUrl,
+        paymentMethodLogoUrl:
+          statusBeneficiary?.logoUrl || receiptManualBank?.logoUrl || bankData?.logoUrl,
         beneficiaryName: recipientName,
         beneficiaryBankName: recipientBankName,
-        beneficiaryBankLogo: manualBank?.logoUrl || bankData?.logoUrl,
+        beneficiaryBankLogo:
+          statusBeneficiary?.logoUrl || receiptManualBank?.logoUrl || bankData?.logoUrl,
         beneficiaryAccountNumber: recipientAccountNumber,
-        uniqueCode: manualBank?.uniqueCode,
-        totalAmount: manualBank?.totalAmount ?? receiptTransfer?.amount ?? 0,
+        uniqueCode: receiptManualBank?.uniqueCode,
+        totalAmount:
+          receiptManualBank?.totalAmount ??
+          transferStatusResponse?.data?.amount ??
+          receiptTransfer?.amount ??
+          0,
       },
     });
-  }, [status, navigation, accountData, bankData, data, transferData, transferId]);
+  }, [
+    status,
+    navigation,
+    accountData,
+    bankData,
+    transferData,
+    transferStatusResponse,
+    transferId,
+    statusBeneficiary,
+  ]);
 
   const isVerifying = status === 'VERIFYING';
   const title =
-    status === 'REJECTED'
-      ? 'Bukti Transfer Ditolak'
-      : status === 'EXPIRED'
-        ? 'Waktu Pembayaran sudah Habis'
-        : status === 'CANCELLED'
-          ? 'Transaksi Dibatalkan'
-          : 'Bukti Transfer kamu sedang kami periksa';
+    status === 'FAILED'
+      ? 'Transfer Gagal'
+      : status === 'REJECTED'
+        ? 'Bukti Transfer Ditolak'
+        : status === 'EXPIRED'
+          ? 'Waktu Pembayaran sudah Habis'
+          : status === 'CANCELLED'
+            ? 'Transaksi Dibatalkan'
+            : 'Bukti Transfer kamu sedang kami periksa';
   const description =
-    status === 'REJECTED'
-      ? 'Bukti transfer tidak sesuai dengan data transaksi atau nominal tidak cocok. Jika ada kendala, kamu dapat mengajukan permintaan untuk ditinjau kembali.'
-      : status === 'EXPIRED'
-        ? 'Batas waktu untuk pembayaran telah berakhir. Transaksi ini dibatalkan secara otomatis.'
-        : status === 'CANCELLED'
-          ? 'Kami telah membatalkan transaksi ini. Tidak ada pembayaran yang diproses.'
-          : 'Tim Finance kami sedang memeriksa bukti transfer dan memverifikasi bukti transfer kamu secara manual. Kami akan menginformasikan melalui notifikasi.';
+    status === 'FAILED'
+      ? 'Transfer gagal diproses. Dana akan dikembalikan ke saldo kamu maksimal 1x24 jam.'
+      : status === 'REJECTED'
+        ? 'Bukti transfer tidak sesuai dengan data transaksi atau nominal tidak cocok. Jika ada kendala, kamu dapat mengajukan permintaan untuk ditinjau kembali.'
+        : status === 'EXPIRED'
+          ? 'Batas waktu untuk pembayaran telah berakhir. Transaksi ini dibatalkan secara otomatis.'
+          : status === 'CANCELLED'
+            ? 'Kami telah membatalkan transaksi ini. Tidak ada pembayaran yang diproses.'
+            : 'Tim Finance kami sedang memeriksa bukti transfer dan memverifikasi bukti transfer kamu secara manual. Kami akan menginformasikan melalui notifikasi.';
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['bottom']}>
@@ -206,20 +263,16 @@ const ManualBankVerificationScreen = () => {
               <Text style={styles.sectionLabel}>Nominal Transfer</Text>
               <View style={styles.amountRow}>
                 <Text style={styles.currency}>Rp</Text>
-                <Text style={styles.amount}>{formatNumber(transferData?.amount ?? 0)}</Text>
+                <Text style={styles.amount}>
+                  {formatNumber(transferStatusResponse?.data?.amount ?? transferData?.amount ?? 0)}
+                </Text>
               </View>
             </View>
             <View style={styles.recipientSection}>
               <View style={styles.bankLogoWrap}>
-                {getBankLogo(bankData, recipientBank) ? (
-                  <Image
-                    source={getBankLogo(bankData, recipientBank)!}
-                    style={styles.bankLogo}
-                    resizeMode="contain"
-                  />
-                ) : (
-                  <Text style={styles.bankLogoText}>{recipientBank.slice(0, 3).toUpperCase()}</Text>
-                )}
+                {bankLogo ? (
+                  <Image source={bankLogo} style={styles.bankLogo} resizeMode="contain" />
+                ) : null}
               </View>
               <View style={styles.recipientDetails}>
                 <Text style={styles.recipientName} numberOfLines={1}>
@@ -273,14 +326,16 @@ const ManualBankVerificationScreen = () => {
 const getBankLogo = (
   bankData: RouteParams['bankData'],
   bankName: string,
+  preferredLogoUrl?: string | null,
 ): number | { uri: string } | null => {
+  if (preferredLogoUrl) return { uri: preferredLogoUrl };
+  if (/bca|central asia/i.test(bankName)) return require('../../../assets/images/ic-BCA.png');
+  if (/cimb/i.test(bankName)) return require('../../../assets/images/ic-CIMB.png');
   const remoteLogo = bankData?.logoUrl;
   if (remoteLogo) return { uri: remoteLogo };
   const logo = bankData?.logo;
   if (typeof logo === 'number') return logo;
   if (typeof logo === 'string' && logo) return { uri: logo };
-  if (/bca|central asia/i.test(bankName)) return require('../../../assets/images/ic-BCA.png');
-  if (/cimb/i.test(bankName)) return require('../../../assets/images/ic-CIMB.png');
   return null;
 };
 
@@ -375,7 +430,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 14,
-    padding: 8,
+    padding: 1,
   },
   bankLogo: { width: '100%', height: '100%' },
   bankLogoText: { color: '#3478F6', fontFamily: 'Switzer-Bold', fontSize: 14 },

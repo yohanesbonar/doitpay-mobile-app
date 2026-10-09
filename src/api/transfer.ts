@@ -162,11 +162,20 @@ export interface BeneficiaryData {
 }
 
 export type TransferApiStatus =
+  | 'VERIFYING'
   | 'WAITING_PAYMENT'
   | 'DISBURSING'
   | 'DISBURSING_FAILED'
   | 'COMPLETED'
-  | 'CANCELLED';
+  | 'CANCELED'
+  | 'CANCELLED'
+  | 'SUCCESS'
+  | 'SUCCESS_TRANSFER'
+  | 'VERIFIED'
+  | 'APPROVED'
+  | 'PAID'
+  | 'REJECTED'
+  | 'EXPIRED';
 export interface TransferStatusData {
   amount: number;
   beneficiary: BeneficiaryData;

@@ -249,13 +249,7 @@ const ManualBankPaymentScreen = () => {
                   style={styles.bankLogo}
                   resizeMode="contain"
                 />
-              ) : (
-                <View style={styles.bankLogoFallback}>
-                  <Text style={styles.bankLogoText}>
-                    {manualBank?.bankName?.slice(0, 3).toUpperCase()}
-                  </Text>
-                </View>
-              )}
+              ) : null}
               <View>
                 <Text style={styles.bankName}>{manualBank?.accountName}</Text>
                 <Text style={styles.accountName}>{manualBank?.bankName}</Text>
@@ -532,7 +526,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E7EB',
     marginRight: 14,
-    padding: 8,
+    padding: 1,
   },
   bankLogoFallback: {
     width: 64,
