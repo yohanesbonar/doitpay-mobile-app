@@ -121,7 +121,9 @@ export const History: FC<HistoryProps> = ({ navigateToDetail }) => {
       params.payment_type =
         activeFilters.paymentType === 'Virtual Account'
           ? 'VIRTUAL_ACCOUNT'
-          : activeFilters.paymentType;
+          : activeFilters.paymentType === 'Transfer Bank'
+            ? 'MANUAL_BANK'
+            : activeFilters.paymentType;
     }
     if (activeFilters.transactionType !== 'Semua') {
       params.transaction_type =
