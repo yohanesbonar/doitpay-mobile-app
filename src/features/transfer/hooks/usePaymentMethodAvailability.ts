@@ -51,7 +51,8 @@ const WEEKDAYS: Weekday[] = [
   'friday',
   'saturday',
 ];
-const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
+const START_TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
+const END_TIME_PATTERN = /^(?:([01]\d|2[0-3]):[0-5]\d|24:00)$/;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -115,8 +116,8 @@ const parseManualBankSchedule = (value: string): ManualBankSchedule => {
         !isRecord(daySchedule) ||
         typeof daySchedule.startTime !== 'string' ||
         typeof daySchedule.endTime !== 'string' ||
-        !TIME_PATTERN.test(daySchedule.startTime) ||
-        !TIME_PATTERN.test(daySchedule.endTime) ||
+        !START_TIME_PATTERN.test(daySchedule.startTime) ||
+        !END_TIME_PATTERN.test(daySchedule.endTime) ||
         daySchedule.startTime >= daySchedule.endTime
       ) {
         throw new Error(`Invalid schedule for ${weekday}.`);
