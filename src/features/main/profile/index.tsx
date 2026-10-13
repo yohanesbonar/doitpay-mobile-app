@@ -39,7 +39,8 @@ export const Profile = () => {
 
   // /v1/kyc/status knows about rejections (and their reasons); /v1/me is the fallback while it
   // loads or if it fails.
-  const kycStatus = (kycStatusData?.status as KycStatus | undefined) ?? profileData?.data?.kycStatus;
+  const kycStatus =
+    (kycStatusData?.status as KycStatus | undefined) ?? profileData?.data?.kycStatus;
 
   const openKycRejection = () => navigation.navigate('KycResult', { variant: 'REJECTED' });
 
