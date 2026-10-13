@@ -242,7 +242,7 @@ const ManualBankVerificationScreen = () => {
           ? 'Batas waktu untuk pembayaran telah berakhir. Transaksi ini dibatalkan secara otomatis.'
           : status === 'CANCELLED'
             ? 'Kami telah membatalkan transaksi ini. Tidak ada pembayaran yang diproses.'
-            : 'Tim Finance kami sedang memeriksa bukti transfer dan memverifikasi bukti transfer kamu secara manual. Kami akan menginformasikan melalui notifikasi.';
+            : 'Kami sedang memeriksa bukti transfer dan memverifikasi bukti transfer kamu. Kami akan menginformasikan melalui notifikasi.';
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['bottom']}>
