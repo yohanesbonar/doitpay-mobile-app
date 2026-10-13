@@ -37,9 +37,16 @@ interface HomeViewProps {
   goToNotification: () => void;
   goToTransactionDetail: (params: {
     id: string;
+    originTab?: 'home' | 'history';
     referenceId?: string;
     type?: string;
     status?: string;
+    transactionMethod?: string;
+    amount: number;
+    createdAt: string;
+    beneficiaryAccountHolderName: string;
+    beneficiaryAccountNumber: string;
+    beneficiaryBankShortName: string;
   }) => void;
   goToTransferDetail: (params: { bankData: any; accountData: any; beneficiaryId: string }) => void;
 }
@@ -232,9 +239,16 @@ export const HomeView = (props: HomeViewProps) => {
                         onPress={() =>
                           props.goToTransactionDetail({
                             id: item.id,
+                            originTab: 'home',
                             referenceId: item.referenceId,
                             type: item.type,
                             status: item.status,
+                            transactionMethod: item.transactionMethod,
+                            amount: item.amount,
+                            createdAt: item.createdAt,
+                            beneficiaryAccountHolderName: item.beneficiaryAccountHolderName,
+                            beneficiaryAccountNumber: item.beneficiaryAccountNumber,
+                            beneficiaryBankShortName: item.beneficiaryBankShortName,
                           })
                         }
                       />

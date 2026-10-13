@@ -13,17 +13,11 @@ import { Search, CreditCard, QrCode, CheckCircle2, Circle, Landmark } from 'luci
 import { useTheme } from '@/theme/ThemeProvider';
 import { createStyles } from '../../addBankAccount/styles';
 import { useVAMethods } from '@/hooks/useTransferMutation';
-import { manualBankApiMock, ManualBankOption } from '../api/manual-bank.mock';
+import { transferApi } from '@/api/transfer';
+import type { ManualTransferMethod } from '@/api/transfer';
+import { useTranslation } from 'react-i18next';
 
 type PaymentMethodType = 'VA' | 'QRIS' | 'MANUAL_BANK';
-
-interface BankOption {
-  id: string;
-  code: string;
-  name: string;
-  shortName?: string;
-  logoUrl: string;
-}
 
 interface PaymentMethodProps {
   selectedMethod: PaymentMethodType;
@@ -54,16 +48,23 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
 }) => {
   const [selectedBank, setSelectedBank] = useState(initialBankPayment?.id || '');
   const [searchQuery, setSearchQuery] = useState('');
-  const [banks, setBanks] = useState<BankOption[]>([]);
-  const [manualBanks, setManualBanks] = useState<ManualBankOption[]>([]);
+  const [banks, setBanks] = useState<ManualTransferMethod[]>([]);
+  const [vaBanksError, setVaBanksError] = useState(false);
+  const [manualBanks, setManualBanks] = useState<ManualTransferMethod[]>([]);
+  const [isLoadingManualBanks, setIsLoadingManualBanks] = useState(false);
+  const [manualBanksError, setManualBanksError] = useState(false);
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isCompactMethodLayout = !isManualBankEnabled;
+  const hasTwoEnabledMethods = isVAEnabled && isQRISEnabled;
 
   const { mutate: VAMethods, isPending: isLoadingVAMethods } = useVAMethods();
 
   const { colors } = useTheme();
   const styles = createStyles(colors);
+  const { t } = useTranslation();
 
   const fetchVAMethodsFromApi = (search: string) => {
+    setVaBanksError(false);
     VAMethods(
       { name: search.trim() },
       {
@@ -73,13 +74,10 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
         },
         onError: (error) => {
           console.error('Error VAMethods:', error);
+          setVaBanksError(true);
         },
       },
     );
-  };
-
-  const fetchManualBanks = async (search: string) => {
-    setManualBanks(await manualBankApiMock.getBanks(search));
   };
 
   const debouncedSearch = (text: string) => {
@@ -91,7 +89,6 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
 
   useEffect(() => {
     fetchVAMethodsFromApi('');
-    fetchManualBanks('');
 
     return () => {
       if (searchTimeout.current) clearTimeout(searchTimeout.current);
@@ -99,10 +96,54 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
   }, []);
 
   useEffect(() => {
+    if (!isManualBankEnabled) {
+      return;
+    }
+
+    let isMounted = true;
+
+    const fetchManualBanks = async () => {
+      setIsLoadingManualBanks(true);
+      setManualBanksError(false);
+
+      try {
+        const response = await transferApi.getManualTransferMethods();
+        if (isMounted) {
+          setManualBanks(response.data.items);
+        }
+      } catch (error) {
+        console.error('Failed to load manual transfer methods:', error);
+        if (isMounted) {
+          setManualBanksError(true);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingManualBanks(false);
+        }
+      }
+    };
+
+    fetchManualBanks();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isManualBankEnabled]);
+
+  useEffect(() => {
     if (initialBankPayment?.id) {
       setSelectedBank(initialBankPayment.id);
     }
   }, [initialBankPayment]);
+
+  const displayedBanks =
+    selectedMethod === 'MANUAL_BANK'
+      ? manualBanks.filter((item) =>
+          `${item.name} ${item.code} ${item.shortName || ''}`
+            .toLowerCase()
+            .includes(searchQuery.trim().toLowerCase()),
+        )
+      : banks;
 
   const renderHighlightedName = (name: string, search: string) => {
     if (!search.trim()) {
@@ -199,15 +240,19 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
             <TouchableOpacity
               onPress={() => onSelect('VA')}
               style={{
-                flex: 1,
-                height: 74,
+                flex: isCompactMethodLayout && !hasTwoEnabledMethods ? undefined : 1,
+                width: isCompactMethodLayout && !hasTwoEnabledMethods ? '100%' : undefined,
+                height: isCompactMethodLayout ? 40 : 65,
                 backgroundColor: selectedMethod === 'VA' ? '#3B82F6' : '#FFF',
-                borderRadius: 12,
+                borderRadius: isCompactMethodLayout ? 32 : 12,
                 borderWidth: selectedMethod === 'VA' ? 0 : 1,
                 borderColor: '#E5E7EB',
                 alignItems: 'center',
                 justifyContent: 'center',
-                paddingVertical: 8,
+                flexDirection: isCompactMethodLayout ? 'row' : 'column',
+                gap: isCompactMethodLayout ? 8 : 0,
+                paddingHorizontal: isCompactMethodLayout ? 12 : 0,
+                paddingVertical: isCompactMethodLayout ? 0 : 8,
               }}>
               <CreditCard
                 size={20}
@@ -216,7 +261,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
               />
               <Text
                 style={{
-                  marginTop: 6,
+                  marginTop: isCompactMethodLayout ? 0 : 6,
                   color: selectedMethod === 'VA' ? '#FFF' : '#0A0A0A',
                   fontFamily: selectedMethod === 'VA' ? 'Switzer-Bold' : 'Switzer-Regular',
                   fontSize: 14,
@@ -230,14 +275,18 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
             <TouchableOpacity
               onPress={() => onSelect('QRIS')}
               style={{
-                flex: 1,
-                height: 74,
+                flex: isCompactMethodLayout && !hasTwoEnabledMethods ? undefined : 1,
+                width: isCompactMethodLayout && !hasTwoEnabledMethods ? '100%' : undefined,
+                height: isCompactMethodLayout ? 40 : 65,
                 backgroundColor: selectedMethod === 'QRIS' ? '#3B82F6' : '#FFF',
-                borderRadius: 12,
+                borderRadius: isCompactMethodLayout ? 32 : 12,
                 borderWidth: selectedMethod === 'QRIS' ? 0 : 1,
                 borderColor: '#E5E7EB',
                 alignItems: 'center',
                 justifyContent: 'center',
+                flexDirection: isCompactMethodLayout ? 'row' : 'column',
+                gap: isCompactMethodLayout ? 8 : 0,
+                paddingHorizontal: isCompactMethodLayout ? 12 : 0,
               }}>
               <QrCode
                 size={20}
@@ -246,7 +295,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
               />
               <Text
                 style={{
-                  marginTop: 6,
+                  marginTop: isCompactMethodLayout ? 0 : 6,
                   color: selectedMethod === 'QRIS' ? '#FFF' : '#0A0A0A',
                   fontFamily: selectedMethod === 'QRIS' ? 'Switzer-Bold' : 'Switzer-Regular',
                   fontSize: 14,
@@ -260,9 +309,9 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
               onPress={() => onSelect('MANUAL_BANK')}
               style={{
                 flex: 1,
-                height: 74,
+                height: isCompactMethodLayout ? 40 : 65,
                 backgroundColor: selectedMethod === 'MANUAL_BANK' ? '#3B82F6' : '#FFF',
-                borderRadius: 12,
+                borderRadius: isCompactMethodLayout ? 32 : 12,
                 borderWidth: selectedMethod === 'MANUAL_BANK' ? 0 : 1,
                 borderColor: '#E5E7EB',
                 alignItems: 'center',
@@ -275,7 +324,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
                   marginTop: 6,
                   color: selectedMethod === 'MANUAL_BANK' ? '#FFF' : '#0A0A0A',
                   fontFamily: selectedMethod === 'MANUAL_BANK' ? 'Switzer-Bold' : 'Switzer-Regular',
-                  fontSize: 12,
+                  fontSize: 14,
                 }}>
                 Transfer Bank
               </Text>
@@ -307,24 +356,28 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
             }}>
             <Search size={20} color="#A9A9A9" />
             <TextInput
-              placeholder={
-                selectedMethod === 'MANUAL_BANK' ? 'Nama, bank atau nomor rekening' : 'Nama bank'
-              }
+              placeholder={'Nama bank'}
               placeholderTextColor="#A9A9A9"
               style={{ flex: 1, marginLeft: 10, fontFamily: 'Switzer-Regular', fontSize: 15 }}
               value={searchQuery}
               onChangeText={(text) => {
                 setSearchQuery(text);
-                if (selectedMethod === 'MANUAL_BANK') {
-                  fetchManualBanks(text);
-                } else {
+                if (selectedMethod !== 'MANUAL_BANK') {
                   debouncedSearch(text);
                 }
               }}
             />
           </View>
 
-          {(selectedMethod === 'MANUAL_BANK' ? manualBanks : banks).map((item: any) => {
+          {selectedMethod === 'MANUAL_BANK' && isLoadingManualBanks ? (
+            <ActivityIndicator size="small" color="#3B82F6" />
+          ) : null}
+          {selectedMethod === 'MANUAL_BANK' && manualBanksError ? (
+            <Text style={{ color: '#D32F2F', marginBottom: 12, fontFamily: 'Switzer-Regular' }}>
+              Gagal memuat metode transfer. Silakan coba lagi.
+            </Text>
+          ) : null}
+          {displayedBanks.map((item) => {
             const isChosen = selectedBank === item.id;
             return (
               <TouchableOpacity
@@ -354,18 +407,18 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
                     alignItems: 'center',
                     marginRight: 16,
                   }}>
-                  {selectedMethod === 'MANUAL_BANK' && item.logo ? (
+                  {selectedMethod === 'MANUAL_BANK' && item.logoUrl ? (
                     <Image
-                      source={item.logo}
+                      source={{ uri: item.logoUrl || undefined }}
                       style={{ width: '100%', height: '100%', resizeMode: 'contain' }}
                     />
                   ) : selectedMethod === 'MANUAL_BANK' ? (
                     <Text style={{ color: '#13C8C8', fontFamily: 'Switzer-Bold', fontSize: 18 }}>
-                      blu
+                      {item.shortName || item.code}
                     </Text>
                   ) : (
                     <Image
-                      source={{ uri: item?.logoUrl }}
+                      source={{ uri: item?.logoUrl ?? undefined }}
                       style={{
                         width: '100%',
                         height: '100%',
@@ -394,6 +447,21 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
               </TouchableOpacity>
             );
           })}
+          {displayedBanks.length === 0 &&
+          (selectedMethod === 'MANUAL_BANK'
+            ? !isLoadingManualBanks && !manualBanksError
+            : !isLoadingVAMethods && !vaBanksError) ? (
+            <Text
+              style={{
+                color: '#666',
+                fontFamily: 'Switzer-Regular',
+                fontSize: 16,
+                paddingVertical: 16,
+                textAlign: 'center',
+              }}>
+              {t('bankList.noBanksAvailable')}
+            </Text>
+          ) : null}
           {showBankError ? (
             <Text
               style={{

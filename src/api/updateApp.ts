@@ -17,8 +17,8 @@ interface VersionCheckApiData {
   update_url?: string;
 }
 
-const APP_UPDATE_URL_IOS_KEY = 'app_update_url_ios';
-const APP_UPDATE_URL_ANDROID_KEY = 'app_update_url_android';
+export const APP_UPDATE_URL_IOS_KEY = 'app_update_url_ios';
+export const APP_UPDATE_URL_ANDROID_KEY = 'app_update_url_android';
 
 const logUpdateDebug = (label: string, payload?: Record<string, unknown>) => {
   if (!__DEV__) {
@@ -44,13 +44,27 @@ const normalizeAction = (action?: string): UpdateAction => {
   return 'OK';
 };
 
+export const getActiveRemoteConfigUpdateUrl = (): string | undefined => {
+  const platformKey = Platform.OS === 'ios' ? APP_UPDATE_URL_IOS_KEY : APP_UPDATE_URL_ANDROID_KEY;
+  const platformUrl = remoteConfig().getValue(platformKey).asString().trim();
+
+  logUpdateDebug('Active remote config URL read', {
+    platform: Platform.OS,
+    platformKey,
+    hasPlatformUrl: Boolean(platformUrl),
+    platformUrl,
+  });
+
+  return platformUrl || undefined;
+};
+
 const getRemoteConfigUpdateUrl = async (): Promise<string | undefined> => {
   try {
     const rc = remoteConfig();
 
     await rc.setConfigSettings({
       fetchTimeMillis: 10_000,
-      minimumFetchIntervalMillis: __DEV__ ? 0 : 3_600_000,
+      minimumFetchIntervalMillis: 0,
     });
 
     await rc.setDefaults({
@@ -60,21 +74,7 @@ const getRemoteConfigUpdateUrl = async (): Promise<string | undefined> => {
 
     await rc.fetchAndActivate();
 
-    const platformKey = Platform.OS === 'ios' ? APP_UPDATE_URL_IOS_KEY : APP_UPDATE_URL_ANDROID_KEY;
-    const platformUrl = rc.getValue(platformKey).asString().trim();
-
-    logUpdateDebug('Remote config URL fetched', {
-      platform: Platform.OS,
-      platformKey,
-      hasPlatformUrl: Boolean(platformUrl),
-      platformUrl,
-    });
-
-    if (platformUrl) {
-      return platformUrl;
-    }
-
-    return undefined;
+    return getActiveRemoteConfigUpdateUrl();
   } catch (error) {
     return undefined;
   }

@@ -12,6 +12,7 @@ import {
   ScrollView,
 } from 'react-native';
 import remoteConfig from '@react-native-firebase/remote-config';
+import { subscribeToRemoteConfigUpdates } from '@/api/remoteConfigRealtime';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import { ChevronDown, ChevronUp, Mail, MessageSquare, Search, FileText } from 'lucide-react-native';
 
@@ -69,6 +70,7 @@ export const DisputeHelpCenterView = ({
 
   useEffect(() => {
     let isMounted = true;
+    let unsubscribeFromUpdates: (() => void) | undefined;
 
     if (!isFocused) {
       return () => {
@@ -102,6 +104,18 @@ export const DisputeHelpCenterView = ({
         };
 
         applyConfig();
+        const unsubscribe = subscribeToRemoteConfigUpdates((updatedKeys) => {
+          if (updatedKeys.has('support_whatsapp_number') || updatedKeys.has('support_email')) {
+            applyConfig();
+          }
+        });
+        if (isMounted) {
+          unsubscribeFromUpdates = unsubscribe;
+        } else {
+          unsubscribe();
+          return;
+        }
+
         await rc.fetchAndActivate();
         applyConfig();
       } catch {}
@@ -111,6 +125,7 @@ export const DisputeHelpCenterView = ({
 
     return () => {
       isMounted = false;
+      unsubscribeFromUpdates?.();
     };
   }, [isFocused]);
 

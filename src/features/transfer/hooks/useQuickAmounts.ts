@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import remoteConfig from '@react-native-firebase/remote-config';
 import Config from 'react-native-config';
 import { useIsFocused } from '@react-navigation/native';
+import { subscribeToRemoteConfigUpdates } from '@/api/remoteConfigRealtime';
 
 export type QuickAmountProductType = 'TRANSFER' | 'RECEIVE';
 
@@ -17,7 +18,6 @@ const DEFAULT_AMOUNTS = [
 ];
 
 const isStaging = Config.APP_NAME?.trim().toLowerCase().includes('staging') ?? true;
-
 
 const REMOTE_CONFIG_KEYS: Record<QuickAmountProductType, string> = {
   TRANSFER: isStaging ? 'transfer_amounts_staging' : 'transfer_amounts_production',
@@ -43,7 +43,10 @@ const parseAmounts = (raw: string): string[] => {
     const normalized = raw.trim().replace(/'/g, '"');
     const parsed = JSON.parse(normalized);
 
-    if (Array.isArray(parsed) && parsed.every((item) => typeof item === 'string' || typeof item === 'number')) {
+    if (
+      Array.isArray(parsed) &&
+      parsed.every((item) => typeof item === 'string' || typeof item === 'number')
+    ) {
       const amounts = parsed.map((item) => String(item)).filter((item) => item.length > 0);
       return amounts.length > 0 ? amounts : DEFAULT_AMOUNTS;
     }
@@ -60,6 +63,7 @@ export const useQuickAmounts = (productType: QuickAmountProductType): string[] =
 
   useEffect(() => {
     let isMounted = true;
+    let unsubscribeFromUpdates: (() => void) | undefined;
 
     if (!isFocused) {
       return () => {
@@ -85,6 +89,18 @@ export const useQuickAmounts = (productType: QuickAmountProductType): string[] =
           }
         };
 
+        const unsubscribe = subscribeToRemoteConfigUpdates((updatedKeys) => {
+          if (updatedKeys.has(key)) {
+            applyConfig();
+          }
+        });
+        if (isMounted) {
+          unsubscribeFromUpdates = unsubscribe;
+        } else {
+          unsubscribe();
+          return;
+        }
+
         await rc.activate();
         applyConfig();
         await rc.fetchAndActivate();
@@ -98,6 +114,7 @@ export const useQuickAmounts = (productType: QuickAmountProductType): string[] =
 
     return () => {
       isMounted = false;
+      unsubscribeFromUpdates?.();
     };
   }, [isFocused, productType]);
 

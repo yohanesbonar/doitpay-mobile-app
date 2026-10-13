@@ -10,7 +10,7 @@ interface FilterBottomSheetProps {
   setFilters: (filters: any) => void;
 }
 
-const PAYMENT_OPTIONS = ['Semua', 'QRIS', 'Virtual Account'];
+const PAYMENT_OPTIONS = ['Semua', 'QRIS', 'Virtual Account', 'Transfer Bank'];
 const TRANSACTION_OPTIONS = ['Semua', 'Pengeluaran', 'Pemasukan'];
 
 export const FilterBottomSheet = ({
@@ -54,7 +54,7 @@ export const FilterBottomSheet = ({
         <Text style={styles.dropdownText}>
           {currentValue === 'Semua'
             ? label === 'Tipe Pembayaran'
-              ? 'QRIS/VA'
+              ? 'QRIS/VA/Transfer Bank'
               : 'Pengeluaran / Pemasukan'
             : currentValue}
         </Text>
