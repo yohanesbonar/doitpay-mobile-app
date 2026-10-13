@@ -37,7 +37,7 @@ export const styles = StyleSheet.create({
   },
   resultTitle: {
     fontFamily: 'Switzer-Regular',
-    fontSize: 16,
+    fontSize: 20,
     color: '#FFFFFF',
     marginBottom: 8,
   },

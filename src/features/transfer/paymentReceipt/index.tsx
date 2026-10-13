@@ -29,14 +29,16 @@ interface PaymentReceiptViewProps {
     accountNumber: string;
     bankName: string;
     name?: string;
+    ownerName?: string;
     accountHolderName?: string;
     accountName?: string;
   };
   bankData?: any;
-  paymentMethod?: 'VA' | 'QRIS';
+  paymentMethod?: string;
   amount?: string;
   transactionId?: string;
   dateTime?: string;
+  manualBankReceiptData?: Record<string, any>;
   onPressBack: () => void;
   onPressHome?: () => void;
   method?: string;
@@ -49,15 +51,21 @@ const PaymentReceiptView = ({
   amount,
   transactionId,
   dateTime,
+  manualBankReceiptData,
   onPressBack,
   onPressHome,
   method,
 }: PaymentReceiptViewProps) => {
-  const methodLabel = paymentMethod === 'QRIS' ? 'QRIS' : 'Virtual Account';
-  const { data: transferDetailData, isLoading: isTransferDetailLoading } = useTransferDetailQuery(
-    method !== 'receive' ? transactionId : undefined,
+  const methodLabel =
+    paymentMethod === 'QRIS'
+      ? 'QRIS'
+      : paymentMethod === 'VA'
+        ? 'Virtual Account'
+        : paymentMethod || 'Virtual Account';
+  const { data: transferDetailData } = useTransferDetailQuery(
+    method !== 'receive' && method !== 'manualBank' ? transactionId : undefined,
   );
-  const { data: receiveStatusData, isLoading: isReceiveStatusLoading } = useReceiveStatusQuery(
+  const { data: receiveStatusData } = useReceiveStatusQuery(
     method === 'receive' ? transactionId : undefined,
   );
 
@@ -74,6 +82,13 @@ const PaymentReceiptView = ({
       };
     }
 
+    if (method === 'manualBank' && manualBankReceiptData) {
+      return {
+        amount: manualBankReceiptData.amount?.toString() || baseAmount,
+        dateTime: formatApiDateToLocal(manualBankReceiptData.createdAt || '') || baseDateTime,
+      };
+    }
+
     if (method !== 'receive' && transferDetailData?.data) {
       const detail = transferDetailData.data as any;
       return {
@@ -86,7 +101,7 @@ const PaymentReceiptView = ({
       amount: baseAmount,
       dateTime: baseDateTime,
     };
-  }, [method, receiveStatusData, transferDetailData, amount, dateTime]);
+  }, [method, receiveStatusData, transferDetailData, manualBankReceiptData, amount, dateTime]);
 
   const effectiveAmount = receiptInfo.amount || amount || '0';
   const formattedAmount = formatNumber(effectiveAmount);
@@ -94,7 +109,11 @@ const PaymentReceiptView = ({
   const viewShotRef = useRef<any>(null);
 
   const receiptData = (
-    method === 'receive' ? receiveStatusData?.data : transferDetailData?.data
+    method === 'receive'
+      ? receiveStatusData?.data
+      : method === 'manualBank'
+        ? manualBankReceiptData
+        : transferDetailData?.data
   ) as any;
 
   const effectiveTransactionId = receiptData?.id || transactionId || '-';
@@ -118,6 +137,17 @@ const PaymentReceiptView = ({
   const senderName = effectiveSenderName || '-';
   const senderBank = effectivePaymentMethodName || effectivePaymentMethodLabel || '-';
   const senderLogoUri = effectivePaymentMethodLogoUrl;
+  const fallbackBankLogo =
+    typeof bankData?.logo === 'number'
+      ? bankData.logo
+      : bankData?.logo || bankData?.logoUrl
+        ? { uri: bankData.logo || bankData.logoUrl }
+        : undefined;
+  const paymentMethodLogoSource = effectivePaymentMethodLogoUrl
+    ? { uri: effectivePaymentMethodLogoUrl }
+    : method === 'manualBank'
+      ? fallbackBankLogo
+      : undefined;
 
   const maskAccountNumber = (accountNumber?: string) => {
     if (!accountNumber || accountNumber.length <= 3) {
@@ -260,9 +290,9 @@ const PaymentReceiptView = ({
         <View style={receiptStyles.partySection}>
           <View style={receiptStyles.partyRow}>
             <View style={receiptStyles.partyLogo}>
-              {senderLogoUri ? (
+              {senderLogoUri || (method === 'manualBank' && fallbackBankLogo) ? (
                 <Image
-                  source={{ uri: senderLogoUri }}
+                  source={senderLogoUri ? { uri: senderLogoUri } : fallbackBankLogo}
                   style={{ width: 30, height: 30 }}
                   resizeMode="contain"
                 />
@@ -283,9 +313,9 @@ const PaymentReceiptView = ({
 
           <View style={receiptStyles.partyRow}>
             <View style={receiptStyles.partyLogo}>
-              {recipientLogoUri ? (
+              {recipientLogoUri || (method === 'manualBank' && fallbackBankLogo) ? (
                 <Image
-                  source={{ uri: recipientLogoUri }}
+                  source={recipientLogoUri ? { uri: recipientLogoUri } : fallbackBankLogo}
                   style={{ width: 30, height: 30 }}
                   resizeMode="contain"
                 />
@@ -383,7 +413,9 @@ const PaymentReceiptView = ({
         <View style={styles.recipientBox}>
           <View style={styles.recipientLeft}>
             <Image
-              source={{ uri: effectivePaymentMethodLogoUrl }}
+              source={
+                paymentMethodLogoSource || require('../../../assets/images/ic-doitpay-home.png')
+              }
               style={[
                 styles.bankLogo,
                 { paddingHorizontal: effectivePaymentMethodLabel == 'QRIS' ? 5 : 0 },
@@ -415,10 +447,12 @@ const PaymentReceiptView = ({
             <Text style={styles.detailLabel}>Metode Pembayaran</Text>
             <Text style={styles.detailValue}>{effectivePaymentMethodLabel}</Text>
           </View>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Jumlah</Text>
-            <Text style={styles.detailValue}>Rp {formattedAmount}</Text>
-          </View>
+          {method !== 'manualBank' && (
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Jumlah</Text>
+              <Text style={styles.detailValue}>Rp {formattedAmount}</Text>
+            </View>
+          )}
           {effectiveFee != null && (
             <View style={styles.detailRow}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -429,6 +463,12 @@ const PaymentReceiptView = ({
                 Rp {formatNumber(effectiveFee.toString())}{' '}
                 {effectivePercentageFee && `(${effectivePercentageFee}%)`}
               </Text>
+            </View>
+          )}
+          {method == 'manualBank' && receiptData?.uniqueCode != null && (
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Kode Unik</Text>
+              <Text style={styles.detailValue}>Rp {formatNumber(receiptData.uniqueCode.toString())}</Text>
             </View>
           )}
           {effectiveTotalAmount != null && (

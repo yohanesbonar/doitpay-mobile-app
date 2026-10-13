@@ -35,7 +35,9 @@ import {
 } from '../api/auth';
 import {
   clearDeviceToken,
+  clearBiometricLoginCredential,
   getDeviceToken,
+  PersistentStorageKey,
   setDeviceToken,
   setStorageItem,
   storage,
@@ -47,6 +49,18 @@ import { getMessaging, getToken } from '@react-native-firebase/messaging';
 import { useUpdateDeviceToken } from './useDeviceMutation';
 import Toast from 'react-native-toast-message';
 import { identifyPostHogUser } from '@/analytics/posthog';
+
+const invalidateBiometricLoginCredential = () => {
+  try {
+    storage.set(PersistentStorageKey.BIOMETRIC_LOGIN_ENABLED, false);
+    storage.remove(PersistentStorageKey.BIOMETRIC_LOGIN_PHONE_NUMBER);
+    clearBiometricLoginCredential().catch((error) => {
+      console.error('Failed to clear biometric login credential', error);
+    });
+  } catch (error) {
+    console.error('Failed to invalidate biometric login credential', error);
+  }
+};
 
 export const useCheckPhoneNumber = () => {
   return useMutation<PhoneCheckResponse, Error, PhoneCheckRequestPayload>({
@@ -85,6 +99,7 @@ export const useRegisterVerifyOtp = () => {
 export const useRegisterPinSetup = () => {
   const setToken = useAuthStore((state) => state.setToken);
   const setExpiresAt = useAuthStore((state) => state.setExpiresAt);
+  const setPendingKycRedirect = useAuthStore((state) => state.setPendingKycRedirect);
   const { mutate: updateDeviceToken } = useUpdateDeviceToken();
 
   const requestFcmToken = async () => {
@@ -136,6 +151,9 @@ export const useRegisterPinSetup = () => {
       const session = data?.data;
 
       if (session?.accessToken) {
+        // BE only returns a token when the user may proceed to KYC right away (config on BE side).
+        // Flag it before setToken so RootNavigator sees it on the same render that swaps stacks.
+        setPendingKycRedirect(true);
         setToken(session.accessToken, true);
       }
       if (session?.refreshToken) {
@@ -316,6 +334,7 @@ export const useForgotPinVerifyOtp = () => {
 export const useForgotPinReset = () => {
   return useMutation<ForgotPinResetResponse, Error, ForgotPinResetPayload>({
     mutationFn: (payload) => authApi.forgotPinReset(payload),
+    onSuccess: invalidateBiometricLoginCredential,
   });
 };
 
@@ -349,23 +368,51 @@ export const useValidatePin = () => {
   });
 };
 
-export const useChangePin = () => {
+export const useChangePin = (onSuccess?: (data: ChangePinResponse) => void) => {
   const setToken = useAuthStore((state) => state.setToken);
   const setExpiresAt = useAuthStore((state) => state.setExpiresAt);
 
   return useMutation<ChangePinResponse, Error, ChangePinPayload>({
     mutationFn: (payload) => authApi.changePin(payload),
     onSuccess: (data) => {
+      // A successful server response must remain a successful mutation even if a
+      // local credential cleanup or navigation side effect fails afterward.
+      try {
+        invalidateBiometricLoginCredential();
+      } catch (error) {
+        console.error('Failed to clear biometric credentials after PIN change', error);
+      }
+
+      // Complete the screen transition before rotating session tokens. Updating the
+      // auth store can cause the root navigator to re-render or replace routes.
+      try {
+        onSuccess?.(data);
+      } catch (error) {
+        console.error('Failed to run PIN change success callback', error);
+      }
+
       const session = data?.data;
 
       if (session?.accessToken) {
-        setToken(session.accessToken);
+        try {
+          setToken(session.accessToken);
+        } catch (error) {
+          console.error('Failed to update access token after PIN change', error);
+        }
       }
       if (session?.refreshToken) {
-        setStorageItem(StorageKey.REFRESH_TOKEN, session.refreshToken);
+        try {
+          setStorageItem(StorageKey.REFRESH_TOKEN, session.refreshToken);
+        } catch (error) {
+          console.error('Failed to update refresh token after PIN change', error);
+        }
       }
       if (session?.expiresAt) {
-        setExpiresAt(session.expiresAt);
+        try {
+          setExpiresAt(session.expiresAt);
+        } catch (error) {
+          console.error('Failed to update session expiry after PIN change', error);
+        }
       }
     },
   });

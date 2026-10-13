@@ -98,7 +98,7 @@ export const RequestPaymentView = ({
     const { vaEnabled, qrisEnabled, defaultMethod } = paymentMethodAvailability;
 
     if ((methodPayment === 'VA' && !vaEnabled) || (methodPayment === 'QRIS' && !qrisEnabled)) {
-      if (defaultMethod) {
+      if (defaultMethod && defaultMethod !== 'MANUAL_BANK') {
         setMethodPayment(defaultMethod);
       }
     }
@@ -288,7 +288,10 @@ export const RequestPaymentView = ({
             <View
               style={[
                 styles.inputAmountWrapper,
-                { marginBottom: isErrorMinimumReached && !isInputEmpty || showRequiredAmountError? 0 : 16 },
+                {
+                  marginBottom:
+                    (isErrorMinimumReached && !isInputEmpty) || showRequiredAmountError ? 0 : 16,
+                },
               ]}>
               <Text style={styles.inputCurrencyPrefix}>Rp</Text>
               <TextInput
@@ -324,6 +327,8 @@ export const RequestPaymentView = ({
               selectedMethod={methodPayment}
               styleProps={{ backgroundColor: '#FFF' }}
               onSelect={async (val) => {
+                if (val === 'MANUAL_BANK') return;
+
                 if (val === 'QRIS' && onSelectQrisMethod) {
                   const canUseQris = await onSelectQrisMethod();
                   if (!canUseQris) return;

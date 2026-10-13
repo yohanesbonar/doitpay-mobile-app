@@ -5,12 +5,15 @@ import {
   usePaymentInstructionMutation,
   usePaymentStatusMutation,
 } from '@/hooks/useTransferMutation';
-import { formatApiDateToLocal } from '@/utils/Common';
 import {
-  getAmountRange,
-  trackPaymentFunnelEvent,
-  trackPostHogEvent,
-} from '@/analytics/posthog';
+  formatApiDateToLocal,
+  // formatNumber
+} from '@/utils/Common';
+// import {
+//   endPaymentLiveActivity,
+//   startPaymentLiveActivity,
+// } from '@/utils/LiveActivity/paymentLiveActivity';
+import { getAmountRange, trackPaymentFunnelEvent, trackPostHogEvent } from '@/analytics/posthog';
 
 const PaymentInstructionScreen = () => {
   const navigation = useNavigation<any>();
@@ -70,6 +73,27 @@ const PaymentInstructionScreen = () => {
   const receiveId = receiveData?.paymentId ?? receiveData?.id;
   const activeId = method === 'receive' ? receiveId : transferId;
 
+  // const expiredAtRaw =
+  //   transferData?.paymentExpiredAt ||
+  //   receiveData?.paymentExpiredAt ||
+  //   transferData?.paymentInstrument?.expiredAt;
+
+  // useEffect(() => {
+  //   const expiresAt = expiredAtRaw ? new Date(expiredAtRaw).getTime() : NaN;
+  //   if (!activeId || Number.isNaN(expiresAt)) return;
+
+  //   startPaymentLiveActivity({
+  //     paymentId: String(activeId),
+  //     expiresAt,
+  //     title: method === 'receive' ? 'Menunggu pembayaran masuk' : 'Selesaikan pembayaran',
+  //     amount: `Rp ${formatNumber(transferData?.amount ?? receiveData?.amount ?? amount)}`,
+  //     methodLabel:
+  //       paymentMethod === 'QRIS'
+  //         ? 'QRIS'
+  //         : (transferData?.va?.name ?? receiveData?.va?.name ?? 'Virtual Account'),
+  //   });
+  // }, [activeId, expiredAtRaw]);
+
   const handleBack = () => {
     if (pollingTimerRef.current) clearTimeout(pollingTimerRef.current);
 
@@ -117,7 +141,15 @@ const PaymentInstructionScreen = () => {
     });
 
     hasTrackedInstructionRef.current = true;
-  }, [amount, bankData?.name, bankData?.shortName, bankPayment?.code, instructionData, method, paymentMethod]);
+  }, [
+    amount,
+    bankData?.name,
+    bankData?.shortName,
+    bankPayment?.code,
+    instructionData,
+    method,
+    paymentMethod,
+  ]);
 
   useEffect(() => {
     if (!statusData) return;
@@ -133,6 +165,8 @@ const PaymentInstructionScreen = () => {
     lastUpdatedRef.current = serverTimestamp;
 
     if (currentServerStatus === 'PAID') {
+      // endPaymentLiveActivity(String(activeId));
+
       trackPaymentFunnelEvent(
         paymentMethod,
         method === 'receive' ? 'receive' : 'transfer',
@@ -180,6 +214,8 @@ const PaymentInstructionScreen = () => {
         });
       }
     } else if (currentServerStatus === 'EXPIRED' || currentServerStatus === 'FAILED') {
+      // endPaymentLiveActivity(String(activeId));
+
       trackPaymentFunnelEvent(
         paymentMethod,
         method === 'receive' ? 'receive' : 'transfer',

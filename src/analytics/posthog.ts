@@ -12,20 +12,21 @@ export const releaseStage = Config.POSTHOG_RELEASE_STAGE?.trim() || 'internal_re
 // ENVIRONMENT CHECK: PostHog will ONLY be initialized in production builds.
 // Adjust `Config.ENV` or `releaseStage` to match your project's .env variable.
 // -----------------------------------------------------------------------------
-const isProduction = Config.ENV === 'production' || releaseStage === 'public_release'
+const isProduction = Config.ENV === 'production' || releaseStage === 'public_release';
 
 /**
  * Singleton PostHog client instance.
  * Returns `null` if the app is running in non-production environments or if the API key is missing.
  */
-export const posthogClient = isProduction && apiKey
-  ? new PostHog(apiKey, {
-      host,
-      captureAppLifecycleEvents: true,
-      enablePersistSessionIdAcrossRestart: true,
-      personProfiles: 'always',
-    })
-  : null;
+export const posthogClient =
+  isProduction && apiKey
+    ? new PostHog(apiKey, {
+        host,
+        captureAppLifecycleEvents: true,
+        enablePersistSessionIdAcrossRestart: true,
+        personProfiles: 'always',
+      })
+    : null;
 
 // Temporary verification log
 if (__DEV__) {
@@ -70,7 +71,7 @@ export const trackPostHogEvent = (eventName: string, properties: Record<string, 
   posthogClient.flush();
 };
 
-export type PaymentMethod = 'VA' | 'QRIS';
+export type PaymentMethod = 'VA' | 'QRIS' | 'MANUAL_BANK';
 export type PaymentFlowMethod = 'transfer' | 'receive';
 export type PaymentFunnelStage = 'started' | 'submitted' | 'success' | 'failed';
 

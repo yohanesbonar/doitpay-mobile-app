@@ -11,6 +11,8 @@ interface ActivateQrisViewProps {
   onPressContinueKyc: () => void;
   activationStatus?: QrisActivationStatus;
   rejectionReason?: string;
+  // KYC already submitted and under review: block re-submitting from KYC_INCOMPLETE.
+  isKycSubmitted?: boolean;
 }
 
 export const ActivateQrisView = ({
@@ -18,10 +20,12 @@ export const ActivateQrisView = ({
   onPressContinueKyc,
   activationStatus = 'CAN_ACTIVATE',
   rejectionReason,
+  isKycSubmitted = false,
 }: ActivateQrisViewProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const isKycIncomplete = activationStatus === 'KYC_INCOMPLETE';
+  const isKycUnderReview = isKycIncomplete && isKycSubmitted;
   const isRejected = activationStatus === 'REJECTED';
   const isPendingVerification = activationStatus === 'PENDING';
   const isActivationReady = activationStatus === 'CAN_ACTIVATE' || activationStatus === 'ACTIVE';
@@ -73,6 +77,24 @@ export const ActivateQrisView = ({
   };
 
   const renderStatusBanner = () => {
+    if (isKycUnderReview) {
+      return (
+        <View style={[styles.banner, styles.bannerWarning]}>
+          <View style={styles.bannerIconContainer}>
+            <CircleAlertIcon size={18} color="#FFFFFF" strokeWidth={2.2} />
+          </View>
+          <View style={styles.bannerContent}>
+            <Text style={[styles.bannerTitle, styles.bannerWarningTitle]}>
+              Verifikasi KYC Sedang Diproses
+            </Text>
+            <Text style={[styles.bannerSubtitle, styles.bannerWarningSubtitle]}>
+              Data KYC kamu sudah kami terima. QRIS bisa diajukan setelah KYC disetujui.
+            </Text>
+          </View>
+        </View>
+      );
+    }
+
     if (isKycIncomplete) {
       return (
         <View style={[styles.banner, styles.bannerWarning]}>
@@ -143,6 +165,18 @@ export const ActivateQrisView = ({
   };
 
   const renderMiddleSection = () => {
+    if (isKycUnderReview) {
+      return (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Status Verifikasi KYC</Text>
+          <Text style={styles.itemDesc}>
+            Tim kami sedang meninjau data KYC kamu. Proses ini biasanya memerlukan waktu hingga 1x24
+            jam. Kamu akan mendapatkan notifikasi setelah proses selesai.
+          </Text>
+        </View>
+      );
+    }
+
     if (isKycIncomplete) {
       return (
         <View style={styles.card}>
@@ -234,6 +268,17 @@ export const ActivateQrisView = ({
   };
 
   const renderActions = () => {
+    if (isKycUnderReview) {
+      return (
+        <TouchableOpacity
+          style={styles.buttonSecondary}
+          onPress={onPressBackToReceiveMoney}
+          activeOpacity={0.8}>
+          <Text style={styles.buttonSecondaryText}>Kembali ke Terima Uang</Text>
+        </TouchableOpacity>
+      );
+    }
+
     if (isKycIncomplete) {
       return (
         <>

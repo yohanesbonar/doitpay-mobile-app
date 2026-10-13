@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, Globe, Clock, Trash2 } from 'lucide-react-native';
+import { ChevronLeft, Trash2 } from 'lucide-react-native';
 import { SettingItem } from '@/components/molecules/SettingsItem';
 import DeviceInfo from 'react-native-device-info';
 import { TermsAndConditionContent } from './components/TermsAndConditionContent';

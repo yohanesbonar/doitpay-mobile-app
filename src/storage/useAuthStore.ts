@@ -5,17 +5,22 @@ interface AuthState {
   accessToken: string | null;
   isNewUser: boolean;
   pendingForgotPinRedirect: boolean;
+  // Set when register pin-setup returns an access token: the user continues straight into KYC
+  // instead of waiting for admin approval. Consumed by RootNavigator once the authed stack mounts.
+  pendingKycRedirect: boolean;
   setToken: (token: string | null, isNew?: boolean) => void;
   setExpiresAt: (expiresAt: string) => void;
   setIsNewUser: (val: boolean) => void;
   logout: (options?: { redirectToForgotPin?: boolean }) => void;
   clearPendingForgotPinRedirect: () => void;
+  setPendingKycRedirect: (val: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   accessToken: storage.getString(StorageKey.ACCESS_TOKEN) || null,
   isNewUser: false,
   pendingForgotPinRedirect: false,
+  pendingKycRedirect: false,
 
   setToken: (token, isNew = false) => {
     if (token) {
@@ -37,8 +42,13 @@ export const useAuthStore = create<AuthState>((set) => ({
       storage.remove(key);
     });
     console.log('User logged out, all tokens cleared from storage');
-    set({ accessToken: null, pendingForgotPinRedirect: !!options?.redirectToForgotPin });
+    set({
+      accessToken: null,
+      pendingForgotPinRedirect: !!options?.redirectToForgotPin,
+      pendingKycRedirect: false,
+    });
   },
   clearPendingForgotPinRedirect: () => set({ pendingForgotPinRedirect: false }),
+  setPendingKycRedirect: (val) => set({ pendingKycRedirect: val }),
   setIsNewUser: (val) => set({ isNewUser: val }),
 }));

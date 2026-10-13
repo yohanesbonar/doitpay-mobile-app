@@ -1,16 +1,27 @@
 import React, { FC } from 'react';
-import { Text, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import { createStyles } from '../styles';
 import { colors } from '@/theme/colors';
 import { User } from '@/features/user/types';
 import { KycStatus } from '@/features/onboarding/kyc/types';
 
-interface ProfileCardProps extends Pick<User, 'fullName' | 'phoneNumber' | 'kycStatus'> {}
+interface ProfileCardProps extends Pick<User, 'fullName' | 'phoneNumber' | 'kycStatus'> {
+  // Badge is tappable for every state except verified: rejected (see reason), pending (under
+  // review screen) and unverified (start KYC).
+  onPressKycBadge?: () => void;
+}
 
-export const ProfileCard: FC<ProfileCardProps> = ({ fullName, phoneNumber, kycStatus }) => {
+export const ProfileCard: FC<ProfileCardProps> = ({
+  fullName,
+  phoneNumber,
+  kycStatus,
+  onPressKycBadge,
+}) => {
   const styles = createStyles(colors);
 
   const isKycVerified = kycStatus === KycStatus.VERIFIED;
+  const isKycPending = kycStatus === KycStatus.PENDING;
+  const isKycRejected = kycStatus === KycStatus.REJECTED;
 
   const initials = fullName
     ? fullName
@@ -20,6 +31,28 @@ export const ProfileCard: FC<ProfileCardProps> = ({ fullName, phoneNumber, kycSt
         .map((word) => word[0].toUpperCase())
         .join('')
     : '?';
+
+  const badgeStyle = isKycVerified
+    ? styles.verifiedBadge
+    : isKycPending
+      ? styles.pendingBadge
+      : isKycRejected
+        ? styles.rejectedBadge
+        : styles.unverifiedBadge;
+  const badgeTextStyle = isKycVerified
+    ? styles.verifiedText
+    : isKycPending
+      ? styles.pendingText
+      : isKycRejected
+        ? styles.rejectedText
+        : styles.unverifiedText;
+  const badgeLabel = isKycVerified
+    ? 'Terverifikasi'
+    : isKycPending
+      ? 'Sedang Diverifikasi'
+      : isKycRejected
+        ? 'Verifikasi Gagal'
+        : 'Belum Verifikasi';
 
   return (
     <View style={styles.userCard}>
@@ -33,14 +66,15 @@ export const ProfileCard: FC<ProfileCardProps> = ({ fullName, phoneNumber, kycSt
           numberOfLines={1}
           ellipsizeMode="tail">{`+${phoneNumber}`}</Text>
       </View>
-      <View style={isKycVerified ? styles.verifiedBadge : styles.unverifiedBadge}>
-        <Text
-          style={isKycVerified ? styles.verifiedText : styles.unverifiedText}
-          numberOfLines={1}
-          ellipsizeMode="tail">
-          {isKycVerified ? 'Terverifikasi' : 'Belum Verifikasi'}
+      <TouchableOpacity
+        style={badgeStyle}
+        onPress={onPressKycBadge}
+        disabled={isKycVerified || !onPressKycBadge}
+        activeOpacity={0.7}>
+        <Text style={badgeTextStyle} numberOfLines={1} ellipsizeMode="tail">
+          {badgeLabel}
         </Text>
-      </View>
+      </TouchableOpacity>
     </View>
   );
 };

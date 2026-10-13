@@ -4,6 +4,7 @@ import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import { Contact } from 'lucide-react-native';
 import ImageEditor from '@react-native-community/image-editor';
 import { createStyles } from './styles';
+import { KycImageError, prepareKycImage } from '@/features/kyc/utils/prepareKycImage';
 import {
   Camera,
   useCameraDevice,
@@ -28,7 +29,8 @@ export const CaptureKtpView = ({ onPressBack, onSubmitCapturedKtp }: CaptureKtpV
   const [frameLayout, setFrameLayout] = useState<LayoutRectangle | null>(null);
   const [guidanceFrameLayout, setGuidanceFrameLayout] = useState<LayoutRectangle | null>(null);
   const device = useCameraDevice('back');
-  const photoOutput = usePhotoOutput();
+  // JPEG explicitly: 'native' (the default) is HEIC on most iPhones, and KYC submit sends image/jpeg.
+  const photoOutput = usePhotoOutput({ containerFormat: 'jpeg' });
   const { hasPermission, requestPermission } = useCameraPermission();
 
   const hasPreview = useMemo(() => !!capturedUri, [capturedUri]);
@@ -121,9 +123,14 @@ export const CaptureKtpView = ({ onPressBack, onSubmitCapturedKtp }: CaptureKtpV
         return;
       }
 
-      const previewUri = await cropToGuidanceFrame(uri);
-      setCapturedUri(previewUri);
+      const croppedUri = await cropToGuidanceFrame(uri);
+      setCapturedUri(await prepareKycImage(croppedUri));
     } catch (error) {
+      if (error instanceof KycImageError) {
+        Alert.alert('Foto Tidak Valid', error.message);
+        return;
+      }
+
       const message = error instanceof Error ? error.message : 'Gagal mengambil foto KTP';
       console.error('CaptureKtpView - handleCapture error:', error);
 

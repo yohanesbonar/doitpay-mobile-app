@@ -14,6 +14,7 @@ import { KycCard } from './components/KycCard';
 import { ProfileCardSkeleton } from './components/ProfileCardSkeleton';
 import { KycCardSkeleton } from './components/KycCardSkeleton';
 import { useGetLimitMeQuery } from '@/features/user/hooks/useGetLimitMeQuery';
+import { KycStatus } from '@/features/onboarding/kyc/types';
 import DeviceInfo from 'react-native-device-info';
 import { LogoutConfirmationModal } from './components/LogoutConfirmationModal';
 
@@ -33,6 +34,17 @@ export const Profile = () => {
     refetch: refetchProfile,
   } = useGetProfileMeQuery();
   const { data: limitData, isLoading: loadingLimit, refetch: refetchLimit } = useGetLimitMeQuery();
+  const kycStatus = profileData?.data?.kycStatus;
+
+  const onPressKycBadge = () => {
+    if (kycStatus === KycStatus.REJECTED || kycStatus === KycStatus.PENDING) {
+      // KycResult loads /v1/kyc/status itself (reason, attempts).
+      navigation.navigate('KycResult');
+      return;
+    }
+    // ProfileCard disables the badge when verified, so anything left is unverified.
+    navigation.navigate('KycIntro');
+  };
 
   const isLoading = loadingProfile || loadingLimit;
 
@@ -67,7 +79,10 @@ export const Profile = () => {
         {isLoading || !profileData ? (
           <ProfileCardSkeleton />
         ) : (
-          <ProfileCard {...profileData.data} />
+          <ProfileCard
+            {...profileData.data}
+            onPressKycBadge={onPressKycBadge}
+          />
         )}
         {isLoading || !profileData || !limitData ? (
           <KycCardSkeleton />

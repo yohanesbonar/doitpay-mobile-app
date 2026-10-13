@@ -2,12 +2,13 @@ import { useEffect, useMemo, useState } from 'react';
 import remoteConfig from '@react-native-firebase/remote-config';
 import { useIsFocused } from '@react-navigation/native';
 
-export type PaymentMethodType = 'VA' | 'QRIS';
+export type PaymentMethodType = 'VA' | 'QRIS' | 'MANUAL_BANK';
 export type PaymentProductType = 'TRANSFER' | 'RECEIVE';
 
 interface PaymentMethodAvailability {
   vaEnabled: boolean;
   qrisEnabled: boolean;
+  manualBankEnabled: boolean;
   isLoading: boolean;
   hasAnyEnabled: boolean;
   defaultMethod: PaymentMethodType | null;
@@ -17,6 +18,7 @@ const REMOTE_CONFIG_KEYS = {
   TRANSFER: {
     VA: 'payment_method_transfer_va_enabled',
     QRIS: 'payment_method_transfer_qris_enabled',
+    MANUAL_BANK: 'payment_method_transfer_manual_bank_enabled',
   },
   RECEIVE: {
     VA: 'payment_method_receive_va_enabled',
@@ -27,6 +29,7 @@ const REMOTE_CONFIG_KEYS = {
 const REMOTE_CONFIG_DEFAULTS = {
   payment_method_transfer_va_enabled: true,
   payment_method_transfer_qris_enabled: true,
+  payment_method_transfer_manual_bank_enabled: false,
   payment_method_receive_va_enabled: true,
   payment_method_receive_qris_enabled: true,
 };
@@ -34,6 +37,7 @@ const REMOTE_CONFIG_DEFAULTS = {
 const resolveDefaultMethod = (
   vaEnabled: boolean,
   qrisEnabled: boolean,
+  manualBankEnabled: boolean,
 ): PaymentMethodType | null => {
   if (vaEnabled) {
     return 'VA';
@@ -41,6 +45,10 @@ const resolveDefaultMethod = (
 
   if (qrisEnabled) {
     return 'QRIS';
+  }
+
+  if (manualBankEnabled) {
+    return 'MANUAL_BANK';
   }
 
   return null;
@@ -52,6 +60,7 @@ export const usePaymentMethodAvailability = (
   const isFocused = useIsFocused();
   const [vaEnabled, setVaEnabled] = useState(true);
   const [qrisEnabled, setQrisEnabled] = useState(true);
+  const [manualBankEnabled, setManualBankEnabled] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -82,6 +91,10 @@ export const usePaymentMethodAvailability = (
         if (isMounted) {
           setVaEnabled(rc.getValue(keys.VA).asBoolean());
           setQrisEnabled(rc.getValue(keys.QRIS).asBoolean());
+          setManualBankEnabled(
+            productType === 'TRANSFER' &&
+              rc.getValue(REMOTE_CONFIG_KEYS.TRANSFER.MANUAL_BANK).asBoolean(),
+          );
           setIsLoading(false);
         }
 
@@ -90,6 +103,10 @@ export const usePaymentMethodAvailability = (
         if (isMounted) {
           setVaEnabled(rc.getValue(keys.VA).asBoolean());
           setQrisEnabled(rc.getValue(keys.QRIS).asBoolean());
+          setManualBankEnabled(
+            productType === 'TRANSFER' &&
+              rc.getValue(REMOTE_CONFIG_KEYS.TRANSFER.MANUAL_BANK).asBoolean(),
+          );
         }
       } catch (error) {
         if (!isMounted) {
@@ -109,14 +126,15 @@ export const usePaymentMethodAvailability = (
   }, [isFocused, productType]);
 
   return useMemo(() => {
-    const defaultMethod = resolveDefaultMethod(vaEnabled, qrisEnabled);
+    const defaultMethod = resolveDefaultMethod(vaEnabled, qrisEnabled, manualBankEnabled);
 
     return {
       vaEnabled,
       qrisEnabled,
+      manualBankEnabled,
       isLoading,
-      hasAnyEnabled: vaEnabled || qrisEnabled,
+      hasAnyEnabled: vaEnabled || qrisEnabled || manualBankEnabled,
       defaultMethod,
     };
-  }, [vaEnabled, qrisEnabled, isLoading]);
+  }, [vaEnabled, qrisEnabled, manualBankEnabled, isLoading]);
 };

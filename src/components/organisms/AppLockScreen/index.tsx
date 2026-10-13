@@ -1,22 +1,21 @@
-import React, { useEffect, useRef, useState } from 'react';
-import {
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableWithoutFeedback,
-  View,
-} from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { BlurView } from '@react-native-community/blur';
 import Toast from 'react-native-toast-message';
+import { BIOMETRY_TYPE } from 'react-native-keychain';
+import { Eye, Fingerprint, ScanFace } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
+import { NumericPinKeypad } from '@/components/molecules/NumericPinKeypad';
 import { useTheme } from '@/theme/ThemeProvider';
 import { createStyles } from '@/features/onboarding/authEntry/styles';
 import { useValidatePin } from '@/hooks/useAuthMutation';
 import { useAuthStore } from '@/storage/useAuthStore';
-import { storage } from '@/storage';
+import { PersistentStorageKey, storage } from '@/storage';
+import {
+  clearBiometricLoginCredential,
+  getBiometricLoginCredential,
+  getSupportedBiometryType,
+} from '@/utils/BiometricAuth';
 
 const PIN_LENGTH = 6;
 const DEFAULT_LOCKOUT_SECONDS = 60;
@@ -35,19 +34,44 @@ interface AppLockScreenProps {
 
 export const AppLockScreen = ({ onUnlocked }: AppLockScreenProps) => {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const styles = createStyles(colors);
-  const inputRef = useRef<TextInput>(null);
 
   const [pin, setPin] = useState('');
   const [isErrorPIN, setIsErrorPIN] = useState(false);
-
+  const [isBiometricPending, setIsBiometricPending] = useState(false);
+  const [isBiometricEnabled, setIsBiometricEnabled] = useState(
+    storage.getBoolean(PersistentStorageKey.BIOMETRIC_LOGIN_ENABLED) ?? false,
+  );
+  const [biometryType, setBiometryType] = useState<BIOMETRY_TYPE | null>(null);
   const [lockedUntil, setLockedUntil] = useState<number | null>(() => {
     const stored = storage.getNumber(LOCKOUT_UNTIL_KEY);
     return stored && stored > Date.now() ? stored : null;
   });
   const [secondsLeft, setSecondsLeft] = useState(0);
 
-  const { mutate: validatePin, isPending } = useValidatePin();
+  const { mutateAsync: validatePin, isPending } = useValidatePin();
+
+  useEffect(() => {
+    if (!isBiometricEnabled) {
+      setBiometryType(null);
+      return;
+    }
+
+    let isMounted = true;
+    getSupportedBiometryType()
+      .then((supportedType) => {
+        if (isMounted) setBiometryType(supportedType);
+      })
+      .catch((error) => {
+        console.error('Failed to detect supported biometrics on app lock', error);
+        if (isMounted) setBiometryType(null);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isBiometricEnabled]);
 
   useEffect(() => {
     if (!lockedUntil) {
@@ -81,52 +105,104 @@ export const AppLockScreen = ({ onUnlocked }: AppLockScreenProps) => {
       />
     ));
 
-  const handlePINChange = (text: string) => {
-    if (isErrorPIN) setIsErrorPIN(false);
-    if (text.length > PIN_LENGTH || lockedUntil) return;
-    setPin(text);
+  const handlePinValidationError = useCallback(
+    (err: any) => {
+      const code = err?.response?.data?.error?.code ?? err?.error?.code;
+      const message = err?.response?.data?.error?.message ?? err?.error?.message;
+      const remainingAttempts =
+        err?.response?.data?.error?.remainingAttempts ?? err?.error?.remainingAttempts;
+      const retryAfterSeconds =
+        err?.response?.data?.error?.retryAfterSeconds ??
+        err?.error?.retryAfterSeconds ??
+        DEFAULT_LOCKOUT_SECONDS;
 
-    if (text.length === PIN_LENGTH) {
-      validatePin(
-        { pin: text },
-        {
-          onSuccess: () => {
-            Keyboard.dismiss();
-            onUnlocked();
-          },
-          onError: (err: any) => {
-            const code = err?.response?.data?.error?.code ?? err?.error?.code;
-            const message = err?.response?.data?.error?.message ?? err?.error?.message;
-            const remainingAttempts =
-              err?.response?.data?.error?.remainingAttempts ?? err?.error?.remainingAttempts;
-            const retryAfterSeconds =
-              err?.response?.data?.error?.retryAfterSeconds ??
-              err?.error?.retryAfterSeconds ??
-              DEFAULT_LOCKOUT_SECONDS;
+      setIsErrorPIN(true);
+      setPin('');
 
-            setIsErrorPIN(true);
-            setPin('');
+      if (code === 'PIN_LOCKED') {
+        const until = Date.now() + retryAfterSeconds * 1000;
+        storage.set(LOCKOUT_UNTIL_KEY, until);
+        setLockedUntil(until);
+        return;
+      }
 
-            if (code === 'PIN_LOCKED') {
-              Keyboard.dismiss();
-              const until = Date.now() + retryAfterSeconds * 1000;
-              storage.set(LOCKOUT_UNTIL_KEY, until);
-              setLockedUntil(until);
-              return;
-            }
+      Toast.show({
+        type: 'error',
+        text1: message || t('appLock.pinIncorrect'),
+        text2:
+          typeof remainingAttempts === 'number'
+            ? t('appLock.remainingAttempts', { count: remainingAttempts })
+            : undefined,
+      });
+    },
+    [t],
+  );
 
-            Toast.show({
-              type: 'error',
-              text1: message || 'PIN salah',
-              text2:
-                typeof remainingAttempts === 'number'
-                  ? `Sisa percobaan: ${remainingAttempts}`
-                  : undefined,
-            });
-          },
-        },
-      );
+  const handleBiometricUnlock = useCallback(async () => {
+    if (!isBiometricEnabled || isBiometricPending || isPending || lockedUntil) return;
+    setIsBiometricPending(true);
+    try {
+      let credential;
+      try {
+        credential = await getBiometricLoginCredential(t('appLock.biometricPromptTitle'));
+      } catch (error) {
+        console.error('Biometric app unlock authentication failed', error);
+        Toast.show({ type: 'error', text1: t('appLock.biometricAuthenticationFailed') });
+        return;
+      }
+
+      if (!credential) {
+        storage.set(PersistentStorageKey.BIOMETRIC_LOGIN_ENABLED, false);
+        storage.remove(PersistentStorageKey.BIOMETRIC_LOGIN_PHONE_NUMBER);
+        setIsBiometricEnabled(false);
+        try {
+          await clearBiometricLoginCredential();
+        } catch (error) {
+          console.error('Failed to clear invalidated biometric credentials', error);
+        }
+        Toast.show({ type: 'error', text1: t('appLock.biometricCredentialUnavailable') });
+        return;
+      }
+
+      try {
+        await validatePin({ pin: credential.pin });
+        onUnlocked();
+      } catch (error) {
+        handlePinValidationError(error);
+      }
+    } finally {
+      setIsBiometricPending(false);
     }
+  }, [
+    handlePinValidationError,
+    isBiometricEnabled,
+    isBiometricPending,
+    isPending,
+    lockedUntil,
+    onUnlocked,
+    t,
+    validatePin,
+  ]);
+
+  const handleDigitPress = (digit: string) => {
+    if (isPending || isBiometricPending || lockedUntil || pin.length >= PIN_LENGTH) return;
+    if (isErrorPIN) setIsErrorPIN(false);
+    const nextPin = `${pin}${digit}`;
+    setPin(nextPin);
+
+    if (nextPin.length === PIN_LENGTH) {
+      validatePin({ pin: nextPin })
+        .then(() => {
+          onUnlocked();
+        })
+        .catch(handlePinValidationError);
+    }
+  };
+
+  const handleDeleteDigit = () => {
+    if (isPending || isBiometricPending || lockedUntil) return;
+    if (isErrorPIN) setIsErrorPIN(false);
+    setPin((currentPin) => currentPin.slice(0, -1));
   };
 
   // AppLockScreen renders outside NavigationContainer (it has to sit above whatever screen was
@@ -134,49 +210,57 @@ export const AppLockScreen = ({ onUnlocked }: AppLockScreenProps) => {
   // this flag flips the app to the unauthenticated stack and asks RootNavigator to redirect to
   // ForgotPin once that stack has actually mounted (see RootNavigator.tsx).
   const handleForgotPin = () => {
-    Keyboard.dismiss();
     useAuthStore.getState().logout({ redirectToForgotPin: true });
   };
 
+  const biometricAction =
+    biometryType === BIOMETRY_TYPE.FACE_ID || biometryType === BIOMETRY_TYPE.FACE ? (
+      <>
+        <ScanFace size={36} color="#4A80F0" />
+        <Text style={localStyles.biometricButtonText}>{t('appLock.useFaceId')}</Text>
+      </>
+    ) : biometryType === BIOMETRY_TYPE.TOUCH_ID || biometryType === BIOMETRY_TYPE.FINGERPRINT ? (
+      <>
+        <Fingerprint size={36} color="#4A80F0" />
+        <Text style={localStyles.biometricButtonText}>{t('appLock.useFingerprint')}</Text>
+      </>
+    ) : biometryType === BIOMETRY_TYPE.IRIS ? (
+      <>
+        <Eye size={36} color="#4A80F0" />
+        <Text style={localStyles.biometricButtonText}>{t('appLock.useIris')}</Text>
+      </>
+    ) : null;
+
   return (
     <View style={localStyles.overlay}>
-      {/* Base layer: the ordinary PIN entry screen. Kept mounted (not swapped out) even during
-          a lockout - the BlurView below simply covers it, exactly like iOS blurring the last
-          wallpaper/screen behind "iPhone Unavailable" rather than replacing it. Since what's
-          being blurred here is only this app's own PIN dots (never real account data), there
-          is no data-exposure concern in letting it sit underneath. */}
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={{ flex: 1, backgroundColor: colors.pageBackground }}
-          enabled>
-          <View style={{ flex: 1, marginHorizontal: 16 }}>
-            <Text style={[styles.titleStep, { marginTop: 80 }]}>Masukkan PIN</Text>
-            <Text style={styles.descStep}>Masukkan PIN 6 digit kamu untuk melanjutkan</Text>
-            <Pressable style={styles.dotsContainer} onPress={() => inputRef.current?.focus()}>
-              {renderDotsPIN(pin, isErrorPIN)}
+      <View style={[localStyles.screenContent, { backgroundColor: colors.pageBackground }]}>
+        <Text style={[styles.titleStep, localStyles.title]}>Masukkan PIN</Text>
+        <Text style={[styles.descStep, localStyles.description]}>
+          Masukkan PIN 6 digit kamu untuk melanjutkan
+        </Text>
+        <View style={localStyles.pinDots}>{renderDotsPIN(pin, isErrorPIN)}</View>
+
+        {!lockedUntil && (
+          <>
+            <Pressable
+              accessibilityRole="button"
+              onPress={handleForgotPin}
+              style={localStyles.forgotPinButton}
+              disabled={isPending || isBiometricPending}>
+              <Text style={localStyles.forgotPinText}>Lupa PIN?</Text>
             </Pressable>
-            <TextInput
-              ref={inputRef}
-              value={pin}
-              onChangeText={handlePINChange}
-              keyboardType="number-pad"
-              maxLength={PIN_LENGTH}
-              style={styles.hiddenInput}
-              autoFocus={!lockedUntil}
-              editable={!isPending && !lockedUntil}
+            <NumericPinKeypad
+              onDigitPress={handleDigitPress}
+              onDeletePress={handleDeleteDigit}
+              deleteAccessibilityLabel={t('appLock.deleteLastDigit')}
+              leftAction={biometricAction}
+              onLeftActionPress={handleBiometricUnlock}
+              isLeftActionPending={isBiometricPending}
+              disabled={isPending || isBiometricPending}
             />
-            {!lockedUntil && (
-              <Pressable
-                onPress={handleForgotPin}
-                style={{ marginTop: 24, justifyContent: 'center', alignItems: 'center' }}
-                disabled={isPending}>
-                <Text style={[styles.descStep, { color: '#4A80F0' }]}>Lupa PIN?</Text>
-              </Pressable>
-            )}
-          </View>
-        </KeyboardAvoidingView>
-      </TouchableWithoutFeedback>
+          </>
+        )}
+      </View>
 
       {lockedUntil && (
         <>
@@ -234,5 +318,42 @@ const localStyles = StyleSheet.create({
     fontFamily: 'Switzer-Bold',
     textAlign: 'center',
     marginTop: 5,
+  },
+  screenContent: {
+    flex: 1,
+    alignItems: 'center',
+    paddingTop: 80,
+    paddingHorizontal: 16,
+  },
+  title: {
+    marginTop: 0,
+    textAlign: 'center',
+  },
+  description: {
+    textAlign: 'center',
+  },
+  pinDots: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 20,
+    marginTop: 56,
+  },
+  forgotPinText: {
+    color: '#4A80F0',
+    fontSize: 16,
+    fontFamily: 'Switzer-Medium',
+  },
+  forgotPinButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 24,
+    minHeight: 32,
+  },
+  biometricButtonText: {
+    color: '#4A80F0',
+    fontSize: 12,
+    fontFamily: 'Switzer-Medium',
+    textAlign: 'center',
   },
 });
