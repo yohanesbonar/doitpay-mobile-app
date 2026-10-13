@@ -1,4 +1,5 @@
 name: Build Android (Staging)
+run-name: Build Android (Staging / Firebase)
 
 on:
   workflow_dispatch:
