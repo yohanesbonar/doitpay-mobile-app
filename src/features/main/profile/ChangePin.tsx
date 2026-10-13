@@ -9,6 +9,7 @@ import CreateAndConfirmPIN from '@/features/onboarding/authEntry/components/Crea
 import { useChangePin } from '@/hooks/useAuthMutation';
 import { NumericPinKeypad } from '@/components/molecules/NumericPinKeypad';
 import { useTranslation } from 'react-i18next';
+import { navigationRef } from '@/navigation/navigationRef';
 
 const PIN_LENGTH = 6;
 
@@ -26,7 +27,21 @@ export const ChangePin = () => {
 
   const inputRef = useRef<TextInput>(null);
 
-  const { mutate: changePin, isPending } = useChangePin();
+  const { mutate: changePin, isPending } = useChangePin(() => {
+    Keyboard.dismiss();
+    try {
+      if (navigationRef.isReady()) {
+        navigationRef.resetRoot({
+          index: 0,
+          routes: [{ name: 'ChangePinSuccess' }],
+        });
+      } else {
+        navigation.replace('ChangePinSuccess');
+      }
+    } catch (error) {
+      console.error('Failed to open ChangePinSuccess after PIN change', error);
+    }
+  });
 
   useEffect(() => {
     if (currentStep === 1) setOldPin('');
@@ -86,10 +101,6 @@ export const ChangePin = () => {
       changePin(
         { oldPin, newPin: text },
         {
-          onSuccess: () => {
-            Keyboard.dismiss();
-            navigation.replace('ChangePinSuccess');
-          },
           onError: (err: any) => {
             const code = err?.response?.data?.error?.code ?? err?.error?.code;
             const message = err?.response?.data?.error?.message ?? err?.error?.message;
@@ -167,6 +178,7 @@ export const ChangePin = () => {
             PIN_LENGTH={PIN_LENGTH}
             onChangeText={handlePINChange}
             showNumericKeypad
+            disabled={isPending}
           />
         );
       default:
