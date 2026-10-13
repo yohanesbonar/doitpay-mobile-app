@@ -159,7 +159,7 @@ export const AddBankRecipientView = ({
           <HeaderToolbar
             title={bankData?.shortName ? `${bankData?.shortName}` : t('addBankAccount.rekening')}
             onPressBack={onPressBack}
-            titleStyle="normal"
+            titleStyle="medium"
             titlePosition={fromTabBar ? 'left' : 'center'}
           />
           <Formik

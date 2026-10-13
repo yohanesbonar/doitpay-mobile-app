@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
   View,
+  Text,
   TextInput,
   Keyboard,
   TouchableWithoutFeedback,
@@ -25,14 +27,24 @@ import {
   useLoginRequestOtp,
   useLoginVerifyOtp,
   useLogin,
+  useCheckPhoneNumber,
 } from '../../../hooks/useAuthMutation.ts';
+import type { LoginOtpResponse } from '../../../api/auth.ts';
 import InputPhoneNumber from './components/InputPhoneNumber.tsx';
 import InputOTPNumber from './components/InputOTPNumber.tsx';
 import Toast from 'react-native-toast-message';
 import CreateAndConfirmPIN from './components/CreateAndConfirmPIN.tsx';
 import InputFullName from './components/InputFullName.tsx';
 import crashlytics from '@react-native-firebase/crashlytics';
+import { BIOMETRY_TYPE } from 'react-native-keychain';
+import { Eye, Fingerprint, ScanFace } from 'lucide-react-native';
 import { identifyPostHogUser, trackPostHogEvent } from '@/analytics/posthog';
+import { PersistentStorageKey, storage } from '@/storage';
+import {
+  clearBiometricLoginCredential,
+  getBiometricLoginCredential,
+  getSupportedBiometryType,
+} from '@/utils/BiometricAuth';
 
 export interface PhoneNumberFormValues {
   phoneNumber: string;
@@ -41,16 +53,17 @@ export interface PhoneNumberFormValues {
 
 export interface PersonalDataFormValues {
   fullName: string;
+  occupationId: string;
 }
 
-export const AuthEntry = ({ route }) => {
-  const { isLoginState } = route.params;
+export const AuthEntry = () => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const { t } = useTranslation();
   const navigation = useNavigation();
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 3;
+  const [isLoginState, setIsLoginState] = useState(false);
 
   const CELL_COUNT_OTP = 6;
   const [bottomSpacing, setBottomSpacing] = useState(32);
@@ -58,6 +71,8 @@ export const AuthEntry = ({ route }) => {
   const [timerOTP, setTimerOTP] = useState(30);
   const [phoneNumbData, setPhoneNumData] = useState({ phoneNumber: '', countryCode: '' });
   const [verificationToken, setVerificationToken] = useState('');
+  // Trusted device: OTP step (step 2) was never shown, which the back handler has to know.
+  const [isOtpSkipped, setIsOtpSkipped] = useState(false);
   const ref = useBlurOnFulfill({ value: valueOTP, cellCount: CELL_COUNT_OTP });
   const [props, getCellOnLayoutHandler] = useClearByFocusCell({
     value: valueOTP,
@@ -69,7 +84,36 @@ export const AuthEntry = ({ route }) => {
   const [isErrorPIN, setIsErrorPIN] = useState(false);
   const inputRef = useRef<TextInput>(null);
   const PIN_LENGTH = 6;
-  const enableButtonNextRef = useRef(false);
+  const [isNextButtonEnabled, setIsNextButtonEnabled] = useState(false);
+  const [personalDataInput, setPersonalDataInput] = useState({ fullName: '', occupationId: '' });
+  const [isBiometricLoginPending, setIsBiometricLoginPending] = useState(false);
+  const [biometryType, setBiometryType] = useState<BIOMETRY_TYPE | null>(null);
+  const biometricLoginEnabled =
+    storage.getBoolean(PersistentStorageKey.BIOMETRIC_LOGIN_ENABLED) ?? false;
+
+  const clearBiometricLoginForDifferentAccount = async (phoneNumber: string) => {
+    if (!biometricLoginEnabled) return;
+
+    const configuredPhoneNumber = storage.getString(
+      PersistentStorageKey.BIOMETRIC_LOGIN_PHONE_NUMBER,
+    );
+    if (configuredPhoneNumber === phoneNumber) return;
+
+    await clearBiometricLoginCredential();
+    storage.set(PersistentStorageKey.BIOMETRIC_LOGIN_ENABLED, false);
+    storage.remove(PersistentStorageKey.BIOMETRIC_LOGIN_PHONE_NUMBER);
+    setBiometryType(null);
+  };
+
+  const getErrorMessage = (err: any, fallback: string) => {
+    return (
+      err?.response?.data?.error?.message ??
+      err?.response?.data?.message ??
+      err?.error?.message ??
+      err?.message ??
+      fallback
+    );
+  };
 
   const { mutate: registerRequestOTP, isPending: isRequesting } = useRegisterRequestOtp();
   const { mutate: registerVerifyOTP, isPending: isVerifying } = useRegisterVerifyOtp();
@@ -78,6 +122,7 @@ export const AuthEntry = ({ route }) => {
   const { mutate: loginRequestOTP, isPending: isLoginRequesting } = useLoginRequestOtp();
   const { mutate: loginVerifyOTP, isPending: isLoginVerifying } = useLoginVerifyOtp();
   const { mutate: loginMutate, isPending: isSettingPinLogin } = useLogin();
+  const { mutate: checkPhoneNumber, isPending: isCheckingPhoneNumber } = useCheckPhoneNumber();
 
   const handlePressPIN = () => {
     inputRef.current?.focus();
@@ -96,6 +141,24 @@ export const AuthEntry = ({ route }) => {
     }
     return dots;
   };
+
+  const biometricAction =
+    biometryType === BIOMETRY_TYPE.FACE_ID || biometryType === BIOMETRY_TYPE.FACE ? (
+      <>
+        <ScanFace size={28} color="#4A80F0" />
+        <Text style={{ color: '#4A80F0' }}>{t('authEntry.useFaceId')}</Text>
+      </>
+    ) : biometryType === BIOMETRY_TYPE.TOUCH_ID || biometryType === BIOMETRY_TYPE.FINGERPRINT ? (
+      <>
+        <Fingerprint size={28} color="#4A80F0" />
+        <Text style={{ color: '#4A80F0' }}>{t('authEntry.useFingerprint')}</Text>
+      </>
+    ) : biometryType === BIOMETRY_TYPE.IRIS ? (
+      <>
+        <Eye size={28} color="#4A80F0" />
+        <Text style={{ color: '#4A80F0' }}>{t('authEntry.useIris')}</Text>
+      </>
+    ) : null;
 
   const formikRef = useRef<FormikProps<PhoneNumberFormValues>>(null);
   const personalDataFormikRef = useRef<FormikProps<PersonalDataFormValues>>(null);
@@ -209,6 +272,7 @@ export const AuthEntry = ({ route }) => {
 
   const FullNameSchema = Yup.object().shape({
     fullName: Yup.string().min(3, 'Nama terlalu pendek').required('Wajib diisi'),
+    occupationId: Yup.string().required('Wajib diisi'),
   });
 
   useEffect(() => {
@@ -268,6 +332,13 @@ export const AuthEntry = ({ route }) => {
             onChangeText={(text) => {
               handlePINChange(text);
             }}
+            biometricLoginAvailable={Boolean(
+              biometricLoginEnabled && isLoginState && biometricAction,
+            )}
+            biometricAction={biometricAction}
+            onBiometricLoginPress={handleBiometricLogin}
+            isBiometricLoginPending={isBiometricLoginPending}
+            showNumericKeypad
             onForgotPinPress={
               isLoginState ? () => (navigation as any).navigate('ForgotPin') : undefined
             }
@@ -277,10 +348,10 @@ export const AuthEntry = ({ route }) => {
         return (
           <Formik<PersonalDataFormValues>
             innerRef={personalDataFormikRef}
-            initialValues={{ fullName: '' }}
+            initialValues={{ fullName: '', occupationId: '' }}
             validationSchema={FullNameSchema}
             onSubmit={(values) => console.log('Form Data:', values)}>
-            <InputFullName styles={styles} />
+            <InputFullName styles={styles} onPersonalDataChange={setPersonalDataInput} />
           </Formik>
         );
       default:
@@ -288,75 +359,206 @@ export const AuthEntry = ({ route }) => {
     }
   };
 
-  const handleSendOtp = () => {
-    const { phoneNumber, countryCode } = phoneNumbData;
-    const formattedPhone = (countryCode + phoneNumber).replace('+', '');
+  // Trusted device: BE answers `otpSkipped` on the OTP request itself, so the choice between
+  // showing the OTP step and jumping straight to PIN entry is made here - one place for both
+  // call sites below.
+  const handleLoginOtpRequested = (res: LoginOtpResponse) => {
+    const otpSkipped = res?.data?.otpSkipped === true;
+    setIsOtpSkipped(otpSkipped);
 
-    if (!isLoginState) {
-      registerRequestOTP(
-        {
-          phoneNumber: formattedPhone,
-          method: 'SMS',
-        },
-        {
-          onSuccess: (res) => {
-            setTimerOTP(res.data.retryAfterSeconds || 30);
-            setCurrentStep(2);
-          },
-          onError: (err) => {
-            console.error('error registerRequestOTP', err);
-            Toast.show({
-              type: 'error',
-              text1: err?.error?.message ?? '',
-            });
-          },
-        },
-      );
-    } else {
+    if (otpSkipped) {
+      // useLoginRequestOtp has already stored the verification token, so step 2 is not needed.
+      setCurrentStep(4);
+      return;
+    }
+
+    setTimerOTP(res.data.retryAfterSeconds || 30);
+    setCurrentStep(2);
+  };
+
+  const requestOtpForPhone = (formattedPhone: string, loginState: boolean) => {
+    if (loginState) {
       loginRequestOTP(
+        { phoneNumber: formattedPhone, method: 'SMS' },
         {
-          phoneNumber: formattedPhone,
-          method: 'SMS',
-        },
-        {
-          onSuccess: (res) => {
-            setTimerOTP(res.data.retryAfterSeconds || 30);
-            setCurrentStep(2);
-          },
-          onError: (err) => {
+          onSuccess: handleLoginOtpRequested,
+          onError: (err: any) => {
             console.error('error loginRequestOTP', err);
             Toast.show({
               type: 'error',
-              text1: err?.error?.message ?? '',
+              text1: getErrorMessage(err, 'Gagal mengirim OTP'),
             });
           },
         },
       );
+      return;
+    }
+
+    trackPostHogEvent('signup_started', {
+      signup_step: 'phone_start',
+      account_status: 'PENDING_APPROVAL',
+    });
+    registerRequestOTP(
+      { phoneNumber: formattedPhone, method: 'SMS' },
+      {
+        onSuccess: (res) => {
+          setTimerOTP(res.data.retryAfterSeconds || 30);
+          setCurrentStep(2);
+        },
+        onError: (err: any) => {
+          console.error('error registerRequestOTP', err);
+          Toast.show({
+            type: 'error',
+            text1: getErrorMessage(err, 'Gagal mengirim OTP'),
+          });
+        },
+      },
+    );
+  };
+
+  const handleSendOtp = () => {
+    const { phoneNumber, countryCode } = phoneNumbData;
+    const formattedPhone = (countryCode + phoneNumber).replace('+', '');
+    requestOtpForPhone(formattedPhone, isLoginState);
+  };
+
+  const finishLogin = (formattedPhone: string, res: unknown) => {
+    crashlytics().log('User login success');
+    crashlytics().setUserId(formattedPhone);
+    console.log('Login success:', res);
+    identifyPostHogUser(formattedPhone, {
+      account_status: 'ACTIVE',
+    });
+    trackPostHogEvent('login_success', {
+      account_status: 'ACTIVE',
+    });
+    Toast.show({
+      type: 'success',
+      text1: 'Berhasil login',
+    });
+
+    Keyboard.dismiss();
+    navigation.navigate('MainTabs', { isLoginState });
+  };
+
+  const loginWithPin = (formattedPhone: string, loginPin: string) => {
+    loginMutate(
+      {
+        phoneNumber: formattedPhone,
+        pin: loginPin,
+      },
+      {
+        onSuccess: (res) => finishLogin(formattedPhone, res),
+        onError: (err: any) => {
+          const code = err?.response?.data?.error?.code ?? err?.error?.code;
+          if (code === 'USER_ACTIVATION_PENDING') {
+            setConfirmationPin('');
+            (navigation as any).navigate('KycPendingStatus');
+            return;
+          }
+
+          setConfirmationPin('');
+          const msg = err?.response?.data?.error?.message ?? err?.error?.message ?? 'PIN salah';
+          Toast.show({
+            type: 'error',
+            text1: msg,
+          });
+        },
+      },
+    );
+  };
+
+  const handleBiometricLogin = async () => {
+    if (isBiometricLoginPending || isSettingPinLogin) return;
+
+    setIsBiometricLoginPending(true);
+    try {
+      const credential = await getBiometricLoginCredential(t('authEntry.biometricPromptTitle'));
+      if (!credential) {
+        storage.set(PersistentStorageKey.BIOMETRIC_LOGIN_ENABLED, false);
+        storage.remove(PersistentStorageKey.BIOMETRIC_LOGIN_PHONE_NUMBER);
+        setBiometryType(null);
+        try {
+          await clearBiometricLoginCredential();
+        } catch (error) {
+          console.error('Failed to clear unavailable biometric login credentials', error);
+        }
+        inputRef.current?.focus();
+        Toast.show({ type: 'error', text1: t('authEntry.biometricCredentialUnavailable') });
+        return;
+      }
+
+      const { phoneNumber, countryCode } = phoneNumbData;
+      const formattedPhone = (countryCode + phoneNumber).replace('+', '');
+      if (credential.phoneNumber !== formattedPhone) {
+        try {
+          await clearBiometricLoginCredential();
+          storage.set(PersistentStorageKey.BIOMETRIC_LOGIN_ENABLED, false);
+          storage.remove(PersistentStorageKey.BIOMETRIC_LOGIN_PHONE_NUMBER);
+          setBiometryType(null);
+        } catch (error) {
+          console.error('Failed to clear biometric setup after account mismatch', error);
+        }
+        inputRef.current?.focus();
+        Toast.show({ type: 'error', text1: t('authEntry.biometricAccountMismatch') });
+        return;
+      }
+
+      loginWithPin(formattedPhone, credential.pin);
+    } catch (error) {
+      console.error('Biometric login failed', error);
+      inputRef.current?.focus();
+      Toast.show({ type: 'error', text1: t('authEntry.biometricAuthenticationFailed') });
+    } finally {
+      setIsBiometricLoginPending(false);
     }
   };
+
+  useEffect(() => {
+    if (!biometricLoginEnabled) {
+      setBiometryType(null);
+      return;
+    }
+
+    let isMounted = true;
+    getSupportedBiometryType()
+      .then((supportedType) => {
+        if (isMounted) setBiometryType(supportedType);
+      })
+      .catch((error) => {
+        console.error('Failed to detect supported biometrics on login', error);
+        if (isMounted) setBiometryType(null);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [biometricLoginEnabled]);
 
   useEffect(() => {
     if (currentStep == 1) {
       const isValid = formikRef.current?.isValid;
       const isDirty = formikRef.current?.dirty;
       if (!isValid || !isDirty) {
-        enableButtonNextRef.current = false;
+        setIsNextButtonEnabled(false);
       } else {
-        enableButtonNextRef.current = true;
+        setIsNextButtonEnabled(true);
       }
     } else if (currentStep == 2) {
       if (valueOTP.length == 6) {
-        enableButtonNextRef.current = true;
+        setIsNextButtonEnabled(true);
       } else {
-        enableButtonNextRef.current = false;
+        setIsNextButtonEnabled(false);
       }
     } else if (currentStep == 5) {
       const isValid = personalDataFormikRef.current?.isValid;
-      const isDirty = personalDataFormikRef.current?.dirty;
-      if (!isValid || !isDirty) {
-        enableButtonNextRef.current = false;
+      const isFullNameFilled = personalDataInput.fullName.trim().length > 0;
+      const isOccupationFilled = personalDataInput.occupationId.trim().length > 0;
+
+      if (!isValid || !isFullNameFilled || !isOccupationFilled) {
+        setIsNextButtonEnabled(false);
       } else {
-        enableButtonNextRef.current = true;
+        setIsNextButtonEnabled(true);
       }
     }
   }, [
@@ -364,6 +566,8 @@ export const AuthEntry = ({ route }) => {
     formikRef.current?.dirty,
     personalDataFormikRef.current?.isValid,
     personalDataFormikRef.current?.dirty,
+    personalDataInput.fullName,
+    personalDataInput.occupationId,
     currentStep,
     valueOTP,
   ]);
@@ -397,52 +601,7 @@ export const AuthEntry = ({ route }) => {
         } else {
           const { phoneNumber, countryCode } = phoneNumbData;
           const formattedPhone = (countryCode + phoneNumber).replace('+', '');
-
-          console.warn('[Auth] about to call loginMutate');
-
-          loginMutate(
-            {
-              phoneNumber: formattedPhone,
-              pin: text,
-            },
-            {
-              onSuccess: (res) => {
-                crashlytics().log('User login success');
-                crashlytics().setUserId(formattedPhone);
-                console.log('Login success:', res);
-                console.warn('[Auth] login success, calling PostHog identify.');
-                identifyPostHogUser(formattedPhone, {
-                  account_status: 'ACTIVE',
-                });
-                trackPostHogEvent('login_success', {
-                  account_status: 'ACTIVE',
-                });
-                Toast.show({
-                  type: 'success',
-                  text1: 'Berhasil login',
-                });
-
-                Keyboard.dismiss();
-                navigation.navigate('MainTabs', { isLoginState });
-              },
-              onError: (err: any) => {
-                const code = err?.response?.data?.error?.code ?? err?.error?.code;
-                if (code === 'USER_ACTIVATION_PENDING') {
-                  setConfirmationPin('');
-                  (navigation as any).navigate('KycPendingStatus');
-                  return;
-                }
-
-                setConfirmationPin('');
-                const msg =
-                  err?.response?.data?.error?.message ?? err?.error?.message ?? 'PIN salah';
-                Toast.show({
-                  type: 'error',
-                  text1: msg,
-                });
-              },
-            },
-          );
+          loginWithPin(formattedPhone, text);
         }
       }
     }
@@ -457,65 +616,53 @@ export const AuthEntry = ({ route }) => {
         const { phoneNumber, countryCode } = values;
         const formattedPhone = (countryCode + phoneNumber).replace('+', '');
 
-        if (!isLoginState) {
-          trackPostHogEvent('signup_started', {
-            signup_step: 'phone_start',
-            account_status: 'PENDING_APPROVAL',
-          });
+        checkPhoneNumber(
+          { phoneNumber: formattedPhone },
+          {
+            onSuccess: async (res) => {
+              try {
+                await clearBiometricLoginForDifferentAccount(formattedPhone);
+              } catch (error) {
+                console.error('Failed to clear biometric setup for a different account', error);
+                Toast.show({
+                  type: 'error',
+                  text1: getErrorMessage(error, t('authEntry.biometricResetFailed')),
+                });
+                return;
+              }
 
-          registerRequestOTP(
-            {
-              phoneNumber: formattedPhone,
-              method: 'SMS',
+              const accountExists = res.data.isExists;
+              setIsLoginState(accountExists);
+              requestOtpForPhone(formattedPhone, accountExists);
             },
-            {
-              onSuccess: (res) => {
-                setTimerOTP(res.data.retryAfterSeconds || 30);
-                setCurrentStep(2);
-              },
-              onError: (err) => {
-                console.error('error registerRequestOTP', err?.error?.message);
-                Toast.show({
-                  type: 'error',
-                  text1: err?.error?.message ?? '',
-                });
-              },
+            onError: (err: any) => {
+              console.error('error checkPhoneNumber', err);
+              Toast.show({
+                type: 'error',
+                text1: getErrorMessage(err, 'Gagal memeriksa nomor handphone'),
+              });
             },
-          );
-        } else {
-          loginRequestOTP(
-            {
-              phoneNumber: formattedPhone,
-              method: 'SMS',
-            },
-            {
-              onSuccess: (res) => {
-                setTimerOTP(res.data.retryAfterSeconds || 30);
-                setCurrentStep(2);
-              },
-              onError: (err) => {
-                console.error('error registerRequestOTP', err?.error?.message);
-                Toast.show({
-                  type: 'error',
-                  text1: err?.error?.message ?? '',
-                });
-              },
-            },
-          );
-        }
+          },
+        );
       }
       return;
     }
 
     if (currentStep === 5) {
       const fullName = personalDataFormikRef.current?.values?.fullName ?? '';
+      const occupationId = Number(personalDataFormikRef.current?.values?.occupationId ?? 0);
       const { phoneNumber, countryCode } = phoneNumbData;
       const formattedPhone = (countryCode + phoneNumber).replace('+', '');
+
+      trackPostHogEvent('signup_personal_data_submitted', {
+        occupationId,
+      });
 
       registerSetupPin(
         {
           pin,
           fullName,
+          occupationId,
           continueAsNew: true,
           verifyToken: verificationToken,
         },
@@ -524,14 +671,16 @@ export const AuthEntry = ({ route }) => {
             crashlytics().log('User register setup pin');
             crashlytics().setUserId(formattedPhone);
             Keyboard.dismiss();
-            if (res?.data?.status === 'ACTIVATION_PENDING') {
+            // With an access token the auth stack is swapped out and RootNavigator redirects to KYC
+            // (see pendingKycRedirect). Without one, the user waits for admin approval.
+            if (!res?.data?.accessToken) {
               (navigation as any).navigate('KycPendingStatus');
             }
           },
           onError: (err: any) => {
             Toast.show({
               type: 'error',
-              text1: err?.error?.message ?? '',
+              text1: getErrorMessage(err, 'Gagal menyimpan PIN'),
             });
           },
         },
@@ -539,7 +688,7 @@ export const AuthEntry = ({ route }) => {
       return;
     }
     if (currentStep == 1 || currentStep == 2) {
-      enableButtonNextRef.current = false;
+      setIsNextButtonEnabled(false);
     }
     if (!isLoginState) {
       console.log('bonlog 1');
@@ -584,7 +733,11 @@ export const AuthEntry = ({ route }) => {
                         setCurrentStep((prev) => Math.max(prev - 1, 1));
                       } else {
                         if (currentStep == 4) {
-                          setCurrentStep((prev) => Math.max(prev - 2, 1));
+                          // Normally step 4 (PIN) is reached from step 2 (OTP), so back skips
+                          // over the unused step 3. On a trusted device step 2 never happened,
+                          // so going back there would strand the user on an OTP screen they
+                          // were never shown - return to the phone number input instead.
+                          setCurrentStep(isOtpSkipped ? 1 : 2);
                         } else {
                           setCurrentStep((prev) => Math.max(prev - 1, 1));
                         }
@@ -593,17 +746,17 @@ export const AuthEntry = ({ route }) => {
                   }
             }
             titlePosition="center"
-            titleStyle="regular"
+            titleStyle="medium"
           />
-          {!isLoginState ? (
+          {isLoginState ? (
+            <View style={{ marginBottom: -22 }} />
+          ) : currentStep > 1 ? (
             <FlowIndicator
               totalSteps={totalSteps}
               currentStep={Math.ceil(currentStep / 2)}
               barStep={currentStep}
             />
-          ) : (
-            <View style={{ marginBottom: -22 }} />
-          )}
+          ) : null}
 
           {detailStep()}
           <View
@@ -619,6 +772,7 @@ export const AuthEntry = ({ route }) => {
                 onPress={() => onPressNext()}
                 loading={
                   isRequesting ||
+                  isCheckingPhoneNumber ||
                   isVerifying ||
                   isLoginRequesting ||
                   isLoginVerifying ||
@@ -633,7 +787,7 @@ export const AuthEntry = ({ route }) => {
                 )}
                 style={{
                   backgroundColor:
-                    enableButtonNextRef.current &&
+                    isNextButtonEnabled &&
                     !isVerifying &&
                     !isRequesting &&
                     !isLoginRequesting &&
@@ -645,7 +799,8 @@ export const AuthEntry = ({ route }) => {
                 color={colors.buttonBlue}
                 textColor="white"
                 disable={
-                  !enableButtonNextRef.current ||
+                  !isNextButtonEnabled ||
+                  isCheckingPhoneNumber ||
                   isVerifying ||
                   isRequesting ||
                   isLoginRequesting ||

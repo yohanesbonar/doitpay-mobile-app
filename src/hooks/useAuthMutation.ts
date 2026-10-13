@@ -28,14 +28,41 @@ import {
   CancelAccountDeletionResponse,
   ChangePinPayload,
   ChangePinResponse,
+  PinValidatePayload,
+  PinValidateResponse,
+  PhoneCheckRequestPayload,
+  PhoneCheckResponse,
 } from '../api/auth';
-import { setStorageItem, storage, StorageKey } from '../storage';
+import {
+  clearDeviceToken,
+  clearBiometricLoginCredential,
+  getDeviceToken,
+  PersistentStorageKey,
+  setDeviceToken,
+  setStorageItem,
+  storage,
+  StorageKey,
+} from '../storage';
 import { useAuthStore } from '../storage/useAuthStore';
 import { Platform } from 'react-native';
 import { getMessaging, getToken } from '@react-native-firebase/messaging';
 import { useUpdateDeviceToken } from './useDeviceMutation';
 import Toast from 'react-native-toast-message';
 import { identifyPostHogUser } from '@/analytics/posthog';
+
+const invalidateBiometricLoginCredential = () => {
+  storage.set(PersistentStorageKey.BIOMETRIC_LOGIN_ENABLED, false);
+  storage.remove(PersistentStorageKey.BIOMETRIC_LOGIN_PHONE_NUMBER);
+  clearBiometricLoginCredential().catch((error) => {
+    console.error('Failed to clear biometric login after PIN change', error);
+  });
+};
+
+export const useCheckPhoneNumber = () => {
+  return useMutation<PhoneCheckResponse, Error, PhoneCheckRequestPayload>({
+    mutationFn: (payload) => authApi.checkPhoneNumber(payload),
+  });
+};
 
 export const useRegisterRequestOtp = () => {
   return useMutation<RegisterOtpResponse, Error, RegisterOtpRequestPayload>({
@@ -68,6 +95,7 @@ export const useRegisterVerifyOtp = () => {
 export const useRegisterPinSetup = () => {
   const setToken = useAuthStore((state) => state.setToken);
   const setExpiresAt = useAuthStore((state) => state.setExpiresAt);
+  const setPendingKycRedirect = useAuthStore((state) => state.setPendingKycRedirect);
   const { mutate: updateDeviceToken } = useUpdateDeviceToken();
 
   const requestFcmToken = async () => {
@@ -103,7 +131,10 @@ export const useRegisterPinSetup = () => {
   };
 
   return useMutation<RegisterPinSetupResponse, Error, RegisterPinSetupPayload>({
-    mutationFn: (payload) => authApi.registerPinSetup(payload),
+    mutationFn: async (payload) => {
+      const fcmToken = await requestFcmToken();
+      return authApi.registerPinSetup({ ...payload, fcmToken: fcmToken ?? undefined });
+    },
     onSuccess: (data, variables) => {
       console.log('useRegisterPinSetup data.message:', data?.message);
       console.log('useRegisterPinSetup data', data);
@@ -116,6 +147,9 @@ export const useRegisterPinSetup = () => {
       const session = data?.data;
 
       if (session?.accessToken) {
+        // BE only returns a token when the user may proceed to KYC right away (config on BE side).
+        // Flag it before setToken so RootNavigator sees it on the same render that swaps stacks.
+        setPendingKycRedirect(true);
         setToken(session.accessToken, true);
       }
       if (session?.refreshToken) {
@@ -149,6 +183,26 @@ export const useLoginRequestOtp = () => {
     onSuccess: (data, variables) => {
       console.log('useLoginRequestOtp data.message:', data.message);
       console.log('useLoginRequestOtp data', data);
+
+      const session = data?.data;
+
+      if (session?.otpSkipped && session?.verificationToken) {
+        // Trusted device: BE already issued the verification token that authorises
+        // /v1/auth/login, so the OTP step is skipped entirely.
+        //
+        // Stored with setStorageItem and NOT setToken - exactly as useLoginVerifyOtp does -
+        // so the zustand `accessToken` stays null and the app cannot slip into the
+        // authenticated stack before the PIN has been entered.
+        setStorageItem(StorageKey.ACCESS_TOKEN, session.verificationToken);
+
+        console.log('useLoginRequestOtp OTP skipped, verification token saved to MMKV');
+      } else if (session?.otpSkipped === false && getDeviceToken()) {
+        // BE is the source of truth: it saw our token and still demands an OTP, so the local
+        // copy is stale (revoked or dormant). Drop it and let the OTP flow mint a fresh one.
+        clearDeviceToken();
+
+        console.log('useLoginRequestOtp device token rejected by BE, cleared from MMKV');
+      }
     },
     onError: (error) => {
       console.log('error useLoginRequestOtp', error);
@@ -234,6 +288,13 @@ export const useLogin = () => {
         setExpiresAt(session.expiresAt);
       }
 
+      // Trusted Device: BE re-issues the token on every successful login, whether this login
+      // went through an OTP or skipped it, so storing it here covers both paths and refreshes
+      // the dormancy window each time.
+      if (session?.deviceToken) {
+        setDeviceToken(session.deviceToken, session.deviceTokenExpiresAt);
+      }
+
       console.warn('[AuthHook] login success, fallback PostHog identify from hook.');
       identifyPostHogUser(variables.phoneNumber, {
         account_status: 'ACTIVE',
@@ -269,6 +330,7 @@ export const useForgotPinVerifyOtp = () => {
 export const useForgotPinReset = () => {
   return useMutation<ForgotPinResetResponse, Error, ForgotPinResetPayload>({
     mutationFn: (payload) => authApi.forgotPinReset(payload),
+    onSuccess: invalidateBiometricLoginCredential,
   });
 };
 
@@ -296,6 +358,12 @@ export const useCancelAccountDeletion = () => {
   });
 };
 
+export const useValidatePin = () => {
+  return useMutation<PinValidateResponse, Error, PinValidatePayload>({
+    mutationFn: (payload) => authApi.validatePin(payload),
+  });
+};
+
 export const useChangePin = () => {
   const setToken = useAuthStore((state) => state.setToken);
   const setExpiresAt = useAuthStore((state) => state.setExpiresAt);
@@ -303,6 +371,7 @@ export const useChangePin = () => {
   return useMutation<ChangePinResponse, Error, ChangePinPayload>({
     mutationFn: (payload) => authApi.changePin(payload),
     onSuccess: (data) => {
+      invalidateBiometricLoginCredential();
       const session = data?.data;
 
       if (session?.accessToken) {

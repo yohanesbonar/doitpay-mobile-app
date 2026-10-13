@@ -1,0 +1,9 @@
+{
+  "id" : "346b172e-4522-4aad-b977-3154fea16695",
+  "targets" : [
+    {
+      "id" : "F27F5778-440B-4C49-9F10-D2D6DBB6E3F2",
+      "name" : "DoitpayMobileApp"
+    }
+  ]
+}

@@ -286,7 +286,7 @@ export const DeleteAccount = () => {
           title={titleMap[currentStep] ?? 'Hapus Akun'}
           onPressBack={handleBack}
           titlePosition="left"
-          titleStyle="regular"
+          titleStyle="medium"
         />
 
         <View style={{ flex: 1 }}>{renderStep()}</View>

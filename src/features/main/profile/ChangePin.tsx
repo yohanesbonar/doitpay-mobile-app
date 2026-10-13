@@ -192,7 +192,7 @@ export const ChangePin = () => {
               else navigation.goBack();
             }}
             titlePosition="center"
-            titleStyle="regular"
+            titleStyle="medium"
           />
           {stepContent()}
         </View>

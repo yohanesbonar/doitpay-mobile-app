@@ -4,7 +4,6 @@ import {
   Alert,
   Dimensions,
   Image,
-  PermissionsAndroid,
   Platform,
   ScrollView,
   StyleSheet,
@@ -41,24 +40,7 @@ export const DisputeAttachmentView = ({
   const canContinue = useMemo(() => description.trim().length > 3, [description]);
   const attachmentCount = attachments.length;
 
-  const requestPhotoPermission = async () => {
-    if (Platform.OS !== 'android') {
-      return true;
-    }
 
-    const permission =
-      Number(Platform.Version) >= 33
-        ? PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES
-        : PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE;
-
-    const granted = await PermissionsAndroid.check(permission);
-    if (granted) {
-      return true;
-    }
-
-    const status = await PermissionsAndroid.request(permission);
-    return status === PermissionsAndroid.RESULTS.GRANTED;
-  };
 
   const addAttachment = async () => {
     try {
@@ -70,11 +52,7 @@ export const DisputeAttachmentView = ({
         return;
       }
 
-      const hasPermission = await requestPhotoPermission();
-      if (!hasPermission) {
-        Alert.alert('Izin Ditolak', 'Aplikasi membutuhkan izin galeri untuk memilih foto.');
-        return;
-      }
+
 
       const options = {
         mediaType: 'photo',

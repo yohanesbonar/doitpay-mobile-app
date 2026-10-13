@@ -1,10 +1,10 @@
 import { type UseQueryOptions, useQuery } from '@tanstack/react-query';
-import { ResponseApi, ResponseListApi } from '@/api/types';
+import { ResponseApi } from '@/api/types';
 import { UserLimit } from '../types';
 import { userApi } from '../api/user-api';
 
 export const useGetLimitMeQuery = (
-  options?: Partial<UseQueryOptions<unknown, unknown, ResponseListApi<UserLimit>, unknown[]>>,
+  options?: Partial<UseQueryOptions<unknown, unknown, ResponseApi<UserLimit>, unknown[]>>,
 ) => {
   return useQuery({
     queryKey: ['limit-me'],

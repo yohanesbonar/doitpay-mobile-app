@@ -23,6 +23,8 @@ import { EStatement } from '../features/main/profile/EStatement';
 import Profile from '../features/main/profile';
 import TransferDetail from '../screens/transfer/transferDetail';
 import PaymentInstruction from '../screens/transfer/paymentInstruction';
+import ManualBankPaymentScreen from '../screens/transfer/manualBankPayment';
+import ManualBankVerificationScreen from '../screens/transfer/manualBankVerification';
 import TransferProcessing from '../screens/transfer/transferProcessing';
 import PaymentReceipt from '../screens/transfer/paymentReceipt';
 import SearchAccountScreen from '../screens/transfer/searchAccount';
@@ -39,6 +41,7 @@ import { DeleteAccount } from '@/features/main/profile/DeleteAccount';
 import { DeleteAccountStatus } from '@/features/main/profile/DeleteAccountStatus';
 import { ChangePin } from '@/features/main/profile/ChangePin';
 import { ChangePinSuccess } from '@/features/main/profile/ChangePinSuccess';
+import { BiometricLoginSetup } from '@/features/main/profile/BiometricLoginSetup';
 import DisputeHelpCenterScreen from '@/screens/dispute/helpCenter';
 import DisputeIssueTypeScreen from '@/screens/dispute/issueType';
 import DisputeAttachmentScreen from '@/screens/dispute/attachment';
@@ -53,6 +56,9 @@ import CaptureKtpScreen from '@/screens/kyc/captureKtp';
 import CaptureSelfieScreen from '@/screens/kyc/captureSelfie';
 import ConfirmDataScreen from '@/screens/kyc/confirmData';
 import DataSubmittedScreen from '@/screens/kyc/dataSubmitted';
+import KycIntroScreen from '@/screens/kyc/kycIntro';
+import KycResultScreen from '@/screens/kyc/kycResult';
+import { useKycResultRedirect } from '@/hooks/useKycResultRedirect';
 import { useGetProfileMeQuery } from '@/features/user/hooks/useGetProfileMeQuery';
 import { KycPendingStatus } from '@/features/onboarding/kyc/KycPendingStatus';
 
@@ -75,6 +81,12 @@ export default function RootNavigator({
 
   const accessToken = useAuthStore((state) => state.accessToken);
   const isAuthenticated = !!accessToken;
+  const pendingForgotPinRedirect = useAuthStore((state) => state.pendingForgotPinRedirect);
+  const clearPendingForgotPinRedirect = useAuthStore(
+    (state) => state.clearPendingForgotPinRedirect,
+  );
+  const pendingKycRedirect = useAuthStore((state) => state.pendingKycRedirect);
+  const setPendingKycRedirect = useAuthStore((state) => state.setPendingKycRedirect);
 
   const { data: profileData, isLoading: isProfileLoading } = useGetProfileMeQuery({
     enabled: isAuthenticated,
@@ -103,6 +115,54 @@ export default function RootNavigator({
       }
     }
   }, [isNavReady, isAuthenticated, isProfileLoading, isPendingDeletion, navigationRef]);
+
+  useEffect(() => {
+    if (!isNavReady || isAuthenticated || !pendingForgotPinRedirect) return;
+
+    if (navigationRef.current?.isReady()) {
+      navigationRef.current.reset({ index: 0, routes: [{ name: 'ForgotPin' }] });
+      clearPendingForgotPinRedirect();
+    }
+  }, [
+    isNavReady,
+    isAuthenticated,
+    pendingForgotPinRedirect,
+    navigationRef,
+    clearPendingForgotPinRedirect,
+  ]);
+
+  // Newly registered user who got an access token from pin-setup continues into KYC. Waits for the
+  // profile so it runs after the authed stack (MainTabs) has mounted; MainTabs stays underneath so
+  // back from KYC lands on home.
+  useEffect(() => {
+    if (!isNavReady || !isAuthenticated || isProfileLoading || !pendingKycRedirect) return;
+    if (isPendingDeletion) {
+      setPendingKycRedirect(false);
+      return;
+    }
+
+    if (navigationRef.current?.isReady()) {
+      navigationRef.current.reset({
+        index: 1,
+        routes: [{ name: 'MainTabs' }, { name: 'KycIntro' }],
+      });
+      setPendingKycRedirect(false);
+    }
+  }, [
+    isNavReady,
+    isAuthenticated,
+    isProfileLoading,
+    isPendingDeletion,
+    pendingKycRedirect,
+    navigationRef,
+    setPendingKycRedirect,
+  ]);
+
+  useKycResultRedirect({
+    navigationRef,
+    enabled:
+      isNavReady && isAuthenticated && !isProfileLoading && !isPendingDeletion && !pendingKycRedirect,
+  });
 
   const handleOnReady = () => {
     setIsNavReady(true);
@@ -148,6 +208,12 @@ export default function RootNavigator({
             <Stack.Screen name="AddBankRecipient" component={AddBankRecipient} />
             <Stack.Screen name="TransferDetail" component={TransferDetail} />
             <Stack.Screen name="PaymentInstruction" component={PaymentInstruction} />
+            <Stack.Screen name="ManualBankPayment" component={ManualBankPaymentScreen} />
+            <Stack.Screen
+              name="ManualBankVerification"
+              component={ManualBankVerificationScreen}
+              options={{ headerShown: false }}
+            />
             <Stack.Screen
               name="TransferProcessing"
               component={TransferProcessing}
@@ -166,6 +232,7 @@ export default function RootNavigator({
             />
             <Stack.Screen name="Settings" component={Settings} />
             <Stack.Screen name="Security" component={Security} />
+            <Stack.Screen name="BiometricLoginSetup" component={BiometricLoginSetup} />
             <Stack.Screen name="BankAccounts" component={BankAccounts} />
             <Stack.Screen name="HelpCenter" component={HelpCenter} />
             <Stack.Screen name="EStatement" component={EStatement} />
@@ -196,6 +263,8 @@ export default function RootNavigator({
             <Stack.Screen name="DisputeDetail" component={DisputeDetailScreen} />
             <Stack.Screen name="DisputeAddResponse" component={DisputeAddResponseScreen} />
             <Stack.Screen name="ActivateQris" component={ActivateQrisScreen} />
+            <Stack.Screen name="KycIntro" component={KycIntroScreen} />
+            <Stack.Screen name="KycResult" component={KycResultScreen} />
             <Stack.Screen name="CaptureKtp" component={CaptureKtpScreen} />
             <Stack.Screen name="CaptureSelfie" component={CaptureSelfieScreen} />
             <Stack.Screen name="ConfirmKycData" component={ConfirmDataScreen} />

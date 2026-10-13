@@ -1,11 +1,22 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Modal, Button, Pressable, Alert, Linking, LogBox } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Modal,
+  Button,
+  Pressable,
+  Alert,
+  Linking,
+  LogBox,
+} from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { I18nextProvider } from 'react-i18next';
 import i18next from 'i18next';
 import Toast from 'react-native-toast-message';
 import { getMessaging, setBackgroundMessageHandler } from '@react-native-firebase/messaging';
+import analytics from '@react-native-firebase/analytics';
 import notifee, { EventType } from '@notifee/react-native';
 import perf from '@react-native-firebase/perf';
 import crashlytics from '@react-native-firebase/crashlytics';
@@ -31,10 +42,14 @@ import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { queryClient } from './src/api/queryClient';
 import { navigationRef } from '@/navigation/navigationRef.ts';
 import { SecurityBlocker } from '@/components/organisms/SecurityBlocker/index.tsx';
+import { AppLockScreen } from '@/components/organisms/AppLockScreen/index.tsx';
+import { startAppLockWatcher } from '@/utils/AppLock/appLockManager.ts';
+import { useAuthStore } from '@/storage/useAuthStore.ts';
 import { UpdateAppBottomSheet, UpdateAppData } from '@/components/molecules/UpdateAppBottomSheet';
 import { updateAppApi } from '@/api/updateApp';
 import { PostHogProvider } from 'posthog-react-native';
 import { posthogClient, trackScreenView } from './src/analytics/posthog';
+import DeviceInfo from 'react-native-device-info';
 
 // Start i18n
 initI18next();
@@ -44,6 +59,25 @@ if (__DEV__) {
 }
 
 const messagingInstance = getMessaging();
+
+const appEnvironment = Config.ENV?.trim().toLowerCase() === 'production' ? 'production' : 'staging';
+if (__DEV__) {
+  console.log('ENV :', appEnvironment);
+}
+
+analytics()
+  .setUserProperty('app_environment', appEnvironment)
+  .then(() => {
+    if (__DEV__) {
+      console.log('✅ [Analytics] App environment set successfully:', appEnvironment);
+    }
+  })
+  .catch((error) => {
+    if (__DEV__) {
+      console.error('❌ [Analytics] Failed to set app environment:', error);
+    }
+  });
+
 // Handle background messages
 setBackgroundMessageHandler(messagingInstance, async (remoteMessage) => {
   // console.log('Message handled in the background!', remoteMessage);
@@ -76,6 +110,41 @@ const App = () => {
   const routeNameRef = useRef<string | undefined>(undefined);
   const traceRef = useRef<any>(null);
 
+  // PRD B1: cold start (the app process was killed, not just backgrounded) of an
+  // already-logged-in user must also hit the PIN lock before anything else is visible - never
+  // straight to the home screen just because a session token still exists in storage. The
+  // lazy initializer runs exactly once, at the very first mount of this component, which is
+  // precisely what "cold start" means here: it can only be true the instant the JS engine has
+  // just booted, never as a result of a later state change while the app keeps running.
+  //
+  // RootNavigator is free to resolve to MainTabs underneath in parallel (so profile data etc.
+  // is already loaded by the time the PIN is confirmed) - this overlay is what actually keeps
+  // it off-screen until then, same mechanism as the background-timeout lock below.
+  const [isPinLocked, setIsPinLocked] = useState<boolean>(
+    () => !!useAuthStore.getState().accessToken,
+  );
+  const accessToken = useAuthStore((state) => state.accessToken);
+
+  // PRD Feature B: App Session Re-Authentication (PIN on reopen). The watcher only reports
+  // "the app came back after being away too long" - it knows nothing about auth state, so
+  // whether that should actually lock the screen is decided here via getState() (not the
+  // `accessToken` above) so the check always reflects the moment of resume, not whatever the
+  // value was when this effect first mounted.
+  useEffect(() => {
+    return startAppLockWatcher(() => {
+      if (useAuthStore.getState().accessToken) {
+        setIsPinLocked(true);
+      }
+    });
+  }, []);
+
+  // Covers both a correct-PIN unlock and a forced logout from the lock screen itself (PIN_LOCKED
+  // exhaustion, or the "Lupa PIN" escape hatch) - either way the overlay should not linger once
+  // there is no session left to guard.
+  useEffect(() => {
+    if (!accessToken) setIsPinLocked(false);
+  }, [accessToken]);
+
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener((state) => {
       const isOK = state.isConnected && state.isInternetReachable;
@@ -102,8 +171,9 @@ const App = () => {
     try {
       const isJailBrokenOrRooted = JailMonkey.isJailBroken();
       const isHookedWithFakeGPS = JailMonkey.canMockLocation();
+      const isSimulator = DeviceInfo.isEmulatorSync();
 
-      if ((isJailBrokenOrRooted || isHookedWithFakeGPS) && !__DEV__) {
+      if (isJailBrokenOrRooted && !__DEV__ && !isSimulator) {
         setIsDeviceCompromised(true);
 
         if (!__DEV__) {
@@ -145,7 +215,8 @@ const App = () => {
 
   const onNavigationStateChange = async () => {
     const previousRouteName = routeNameRef.current;
-    const currentRouteName = (navigationRef.getCurrentRoute() as { name?: string } | undefined)?.name;
+    const currentRouteName = (navigationRef.getCurrentRoute() as { name?: string } | undefined)
+      ?.name;
 
     if (previousRouteName !== currentRouteName) {
       if (currentRouteName) {
@@ -236,15 +307,19 @@ const App = () => {
                   onStateChange={onNavigationStateChange}
                 />
                 <AppInitializer />
+                {isPinLocked && 
+                <AppLockScreen 
+                activationId
+                onUnlocked={() => setIsPinLocked(false)} />}
               </ThemeProvider>
               {!isInternetConnected && (
                 <View style={styles.noInternetBanner}>
                   <Text style={styles.noInternetText}>
-                    Connection lost. Checking your network...
+                    Koneksi terputus. Memeriksa jaringan Anda…
                   </Text>
                 </View>
               )}
-              <Toast config={toastConfig} />
+              <Toast config={toastConfig} position="bottom" />
               {isLoggerEnabled && isButtonVisible && (
                 <Pressable
                   style={styles.floatingDebugButton}

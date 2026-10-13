@@ -35,7 +35,7 @@ export const handleLogout = () => {
     Toast.show({
       type: 'success',
       text1: 'Log Out Berhasil',
-      position: 'top',
+      position: 'bottom',
       visibilityTime: 3000,
     });
   }, 400);
@@ -50,6 +50,21 @@ export const formatNumber = (val: string | number | null | undefined): string =>
   if (cleanNumber === '') return '';
 
   return cleanNumber.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+};
+
+// Shortens amounts for quick-select chips, e.g. 10000 -> "10K", 1000000 -> "1000K".
+export const formatShortAmount = (val: string | number | null | undefined): string => {
+  if (val === null || val === undefined || val === '') return '';
+
+  const numericVal = Number(String(val).replace(/[^0-9]/g, ''));
+  if (!numericVal || Number.isNaN(numericVal)) return '';
+
+  if (numericVal >= 1_000) {
+    const thousands = numericVal / 1_000;
+    return `${thousands % 1 === 0 ? thousands : thousands.toFixed(1)}K`;
+  }
+
+  return String(numericVal);
 };
 
 export const formatApiDateToLocal = (dateString: string) => {

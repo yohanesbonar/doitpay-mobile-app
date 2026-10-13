@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Settings, CreditCard, ShieldCheck, HelpCircle, FileText } from 'lucide-react-native';
 import { useTheme } from '../../../theme/ThemeProvider';
 import { createStyles } from './styles';
 import ProfileMenuItem from './components/ProfileMenuItem';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { handleLogout } from '@/utils/Common';
 import { NotificationIconWithBadge } from '@/components/molecules/NotificationIconWithBadge';
 import { useGetProfileMeQuery } from '@/features/user/hooks/useGetProfileMeQuery';
@@ -14,7 +14,8 @@ import { KycCard } from './components/KycCard';
 import { ProfileCardSkeleton } from './components/ProfileCardSkeleton';
 import { KycCardSkeleton } from './components/KycCardSkeleton';
 import { useGetLimitMeQuery } from '@/features/user/hooks/useGetLimitMeQuery';
-import { UserLimitType } from '@/features/user/types';
+import { useKycStatusQuery } from '@/hooks/useKycStatusQuery';
+import { KycStatus } from '@/features/onboarding/kyc/types';
 import DeviceInfo from 'react-native-device-info';
 import { LogoutConfirmationModal } from './components/LogoutConfirmationModal';
 
@@ -26,11 +27,41 @@ export const Profile = () => {
   const navigation = useNavigation<any>();
 
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isPullRefreshing, setIsPullRefreshing] = useState(false);
 
-  const { data: profileData, isLoading: loadingProfile } = useGetProfileMeQuery();
-  const { data: limitData, isLoading: loadingLimit } = useGetLimitMeQuery();
+  const {
+    data: profileData,
+    isLoading: loadingProfile,
+    refetch: refetchProfile,
+  } = useGetProfileMeQuery();
+  const { data: limitData, isLoading: loadingLimit, refetch: refetchLimit } = useGetLimitMeQuery();
+  const { data: kycStatusData, refetch: refetchKycStatus } = useKycStatusQuery();
+
+  // /v1/kyc/status knows about rejections (and their reasons); /v1/me is the fallback while it
+  // loads or if it fails.
+  const kycStatus =
+    (kycStatusData?.status as KycStatus | undefined) ?? profileData?.data?.kycStatus;
+
+  const openKycRejection = () => navigation.navigate('KycResult', { variant: 'REJECTED' });
 
   const isLoading = loadingProfile || loadingLimit;
+
+  const handlePullRefresh = useCallback(async () => {
+    setIsPullRefreshing(true);
+    try {
+      await Promise.all([refetchProfile(), refetchLimit(), refetchKycStatus()]);
+    } finally {
+      setIsPullRefreshing(false);
+    }
+  }, [refetchProfile, refetchLimit, refetchKycStatus]);
+
+  useFocusEffect(
+    useCallback(() => {
+      refetchProfile();
+      refetchLimit();
+      refetchKycStatus();
+    }, [refetchProfile, refetchLimit, refetchKycStatus]),
+  );
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -38,19 +69,26 @@ export const Profile = () => {
         <Text style={styles.headerTitle}>Profil</Text>
         <NotificationIconWithBadge onPress={() => navigation.navigate('Notification')} />
       </View>
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.container}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={isPullRefreshing} onRefresh={handlePullRefresh} />
+        }>
         {isLoading || !profileData ? (
           <ProfileCardSkeleton />
         ) : (
-          <ProfileCard {...profileData.data} />
+          <ProfileCard
+            {...profileData.data}
+            kycStatus={kycStatus ?? profileData.data.kycStatus}
+            onPressRejectedKyc={openKycRejection}
+          />
         )}
         {isLoading || !profileData || !limitData ? (
           <KycCardSkeleton />
         ) : (
           <KycCard
-            limitAmount={
-              limitData.data.items?.find((i) => i.type === UserLimitType.TRANSFER)?.amountLimit || 0
-            }
+            limitAmount={limitData?.data?.dailyLimitTotal - limitData?.data?.dailyLimitUsed || 0}
             kycStatus={profileData.data.kycStatus}
           />
         )}
@@ -94,7 +132,7 @@ export const Profile = () => {
           }>
           <Text style={styles.logoutText}>Keluar</Text>
         </TouchableOpacity>
-        <View style={{ alignItems: 'center', marginTop: 20 }}>
+        <View style={{ alignItems: 'center', marginTop: 20, marginBottom: 200 }}>
           <Text style={{ fontSize: 14 }}>Versi {appVersion}</Text>
         </View>
       </ScrollView>

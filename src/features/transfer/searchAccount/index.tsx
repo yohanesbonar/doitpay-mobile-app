@@ -75,7 +75,7 @@ const SearchAccountView = ({ onPressBack, goToTransferDetail }: SearchAccountVie
         title={t('searchAccount.searchName')}
         onPressBack={onPressBack}
         titlePosition="left"
-        titleStyle="regular"
+        titleStyle="medium"
       />
 
       <View style={styles.content}>

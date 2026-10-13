@@ -23,9 +23,15 @@ export const createStyles = (colors: any) =>
       gap: 12,
     },
     headerTitle: {
+      flex: 1,
       fontFamily: 'Switzer-Semibold',
       fontSize: 22,
       color: '#1A1A1A',
+    },
+    readAllText: {
+      fontFamily: 'Switzer-Medium',
+      fontSize: 13,
+      color: '#4F84F6',
     },
     tabContainer: {
       flexDirection: 'row',

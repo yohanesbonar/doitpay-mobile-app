@@ -10,13 +10,16 @@ const BankListScreen = () => {
   const fromTabBar = route.params?.fromTabBar;
   const fromProfile = route.params?.fromProfile;
   const isLoginState = route.params?.isLoginState;
+  const returnHomeOnBack = route.params?.returnHomeOnBack;
 
   const accessToken = useAuthStore((state) => state.accessToken);
   const state = navigation.getState();
   const hasHomeRoute = state.routeNames.includes('Home');
 
   const handleBack = () => {
-    if (fromTabBar) {
+    if (returnHomeOnBack) {
+      navigation.reset({ index: 0, routes: [{ name: 'MainTabs' }] });
+    } else if (fromTabBar) {
       navigation.goBack();
     } else {
       if (navigation.canGoBack()) {

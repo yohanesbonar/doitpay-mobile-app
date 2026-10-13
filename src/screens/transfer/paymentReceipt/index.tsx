@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BackHandler } from 'react-native'; 
+import { BackHandler } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import PaymentReceiptView from '../../../features/transfer/paymentReceipt';
 import { getAmountRange, trackPostHogEvent } from '@/analytics/posthog';
@@ -7,8 +7,16 @@ import { getAmountRange, trackPostHogEvent } from '@/analytics/posthog';
 const PaymentReceiptScreen = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
-  const { accountData, bankData, paymentMethod, amount, transactionId, dateTime, method } =
-    (route.params || {}) as any;
+  const {
+    accountData,
+    bankData,
+    paymentMethod,
+    amount,
+    transactionId,
+    dateTime,
+    method,
+    manualBankReceiptData,
+  } = (route.params || {}) as any;
 
   useEffect(() => {
     if (method !== 'receive') return;
@@ -22,22 +30,17 @@ const PaymentReceiptScreen = () => {
     });
   }, [accountData?.bankName, amount, bankData?.name, bankData?.shortName, paymentMethod]);
 
-
   const handleHome = () => {
-    navigation.navigate('MainTabs'); 
+    navigation.navigate('MainTabs');
   };
-
 
   useEffect(() => {
     const backAction = () => {
       handleHome();
-      return true; 
+      return true;
     };
 
-    const backHandler = BackHandler.addEventListener(
-      'hardwareBackPress',
-      backAction
-    );
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
 
     return () => backHandler.remove();
   }, []);
@@ -50,7 +53,8 @@ const PaymentReceiptScreen = () => {
       amount={amount}
       transactionId={transactionId}
       dateTime={dateTime}
-      onPressBack={handleHome} 
+      manualBankReceiptData={manualBankReceiptData}
+      onPressBack={handleHome}
       onPressHome={handleHome}
       method={method}
     />

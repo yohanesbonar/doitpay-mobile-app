@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
 import { ChevronDown, ChevronUp } from 'lucide-react-native';
+import { AppBottomSheet } from '@/components/molecules/AppBottomSheet';
 
 interface FilterBottomSheetProps {
   isVisible: boolean;
@@ -10,15 +10,15 @@ interface FilterBottomSheetProps {
   setFilters: (filters: any) => void;
 }
 
+const PAYMENT_OPTIONS = ['Semua', 'QRIS', 'Virtual Account'];
+const TRANSACTION_OPTIONS = ['Semua', 'Pengeluaran', 'Pemasukan'];
+
 export const FilterBottomSheet = ({
   isVisible,
   onClose,
   filters,
   setFilters,
 }: FilterBottomSheetProps) => {
-  const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const snapPoints = useMemo(() => ['75%'], []);
-  const [isMounted, setIsMounted] = useState(false);
   const [tempFilters, setTempFilters] = useState(filters);
   const [showPaymentOptions, setShowPaymentOptions] = useState(false);
   const [showTransactionOptions, setShowTransactionOptions] = useState(false);
@@ -28,32 +28,9 @@ export const FilterBottomSheet = ({
       setTempFilters(filters);
       setShowPaymentOptions(false);
       setShowTransactionOptions(false);
-      setIsMounted(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isVisible]);
-
-  useEffect(() => {
-    if (isMounted) {
-      requestAnimationFrame(() => {
-        bottomSheetRef.current?.present();
-      });
-    }
-  }, [isMounted]);
-
-  const handleDismiss = () => {
-    setIsMounted(false);
-    onClose();
-  };
-
-  const renderBackdrop = useCallback(
-    (props: any) => (
-      <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} opacity={0.5} />
-    ),
-    [],
-  );
-
-  const paymentOptions = ['Semua', 'QRIS', 'Virtual Account'];
-  const transactionOptions = ['Semua', 'Pengeluaran', 'Pemasukan'];
 
   const handleApply = () => {
     setFilters(tempFilters);
@@ -104,22 +81,16 @@ export const FilterBottomSheet = ({
     </View>
   );
 
-  return isMounted ? (
-    <BottomSheetModal
-      ref={bottomSheetRef}
-      snapPoints={snapPoints}
-      enablePanDownToClose
-      backdropComponent={renderBackdrop}
-      onDismiss={handleDismiss}
-      handleIndicatorStyle={{ backgroundColor: '#E5E5E5', width: 40 }}>
-      <BottomSheetView style={styles.sheet}>
+  return (
+    <AppBottomSheet isVisible={isVisible} onClose={onClose}>
+      <View style={styles.sheet}>
         <View style={styles.header}>
           <Text style={styles.title}>Filter</Text>
         </View>
 
         {renderDropdown(
           'Tipe Pembayaran',
-          paymentOptions,
+          PAYMENT_OPTIONS,
           tempFilters.paymentType,
           showPaymentOptions,
           () => setShowPaymentOptions(!showPaymentOptions),
@@ -128,7 +99,7 @@ export const FilterBottomSheet = ({
 
         {renderDropdown(
           'Tipe Transaksi',
-          transactionOptions,
+          TRANSACTION_OPTIONS,
           tempFilters.transactionType,
           showTransactionOptions,
           () => setShowTransactionOptions(!showTransactionOptions),
@@ -138,15 +109,15 @@ export const FilterBottomSheet = ({
         <TouchableOpacity style={styles.applyButton} onPress={handleApply}>
           <Text style={styles.applyText}>Terapkan Filter</Text>
         </TouchableOpacity>
-      </BottomSheetView>
-    </BottomSheetModal>
-  ) : null;
+      </View>
+    </AppBottomSheet>
+  );
 };
 
 const styles = StyleSheet.create({
   sheet: {
     paddingHorizontal: 20,
-    paddingBottom: 40,
+    paddingBottom: 24,
     paddingTop: 10,
   },
   header: {

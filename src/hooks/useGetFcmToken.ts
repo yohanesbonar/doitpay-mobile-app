@@ -1,5 +1,10 @@
 import { useState, useEffect } from 'react';
-import { getMessaging, getToken, onTokenRefresh } from '@react-native-firebase/messaging';
+import {
+  getMessaging,
+  getToken,
+  onTokenRefresh,
+  registerDeviceForRemoteMessages,
+} from '@react-native-firebase/messaging';
 import { setStorageItem, storage, StorageKey } from '@/storage';
 import { useUpdateDeviceToken } from './useDeviceMutation';
 import { Platform } from 'react-native';
@@ -25,6 +30,10 @@ export const useGetFcmToken = () => {
 
   const fetchToken = async () => {
     try {
+      if (Platform.OS === 'ios') {
+        await registerDeviceForRemoteMessages(messagingInstance);
+      }
+
       const token = await getToken(messagingInstance);
       if (token) {
         setFcmToken(token);

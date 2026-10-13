@@ -7,6 +7,8 @@ import {
   ScrollView,
   TouchableWithoutFeedback,
   ActivityIndicator,
+  Modal,
+  FlatList,
 } from 'react-native';
 import { useRoute, useNavigation, useIsFocused } from '@react-navigation/native';
 import { styles } from './styles';
@@ -14,14 +16,27 @@ import PaymentMethod from './components/PaymentMethod';
 import QuickAmount from './components/QuickAmount';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import { formatNumber } from '@/utils/Common';
-import { useReceive, useTransfer } from '../../../hooks/useTransferMutation';
-import _ from 'lodash';
+import {
+  useReceive,
+  useTransfer,
+  useTransactionPurposes,
+} from '../../../hooks/useTransferMutation';
 import Button from '../../../components/atoms/Button/index.tsx';
 import Toast from 'react-native-toast-message';
-import { paymentApi, PaymentCalculatePayload } from './api/payment-calculate-api';
-import { Info, TriangleAlert } from 'lucide-react-native';
+import {
+  paymentApi,
+  PaymentCalculateData,
+  PaymentCalculatePayload,
+} from './api/payment-calculate-api';
+import { Info, TriangleAlert, ChevronDown, Check } from 'lucide-react-native';
 import { usePaymentMethodAvailability } from '../hooks/usePaymentMethodAvailability';
-import { getAmountRange, trackPostHogEvent } from '@/analytics/posthog';
+import { useQuickAmounts } from '../hooks/useQuickAmounts';
+import {
+  manualBankApiMock,
+  ManualBankOption,
+  ManualBankTransferData,
+} from './api/manual-bank.mock';
+import { getAmountRange, trackPaymentFunnelEvent, trackPostHogEvent } from '@/analytics/posthog';
 
 interface TransferDetailViewProps {
   accountData: {
@@ -32,13 +47,14 @@ interface TransferDetailViewProps {
     accountHolderName: string;
   };
   bankData: any;
+  bankPayment?: any;
   fromTabBar: boolean;
   isLoginState: boolean;
   beneficiaryId?: string;
   method: 'send' | 'receive';
   onPressBack: () => void;
   gotoPaymentInstruction: (
-    paymentMethod: 'VA' | 'QRIS',
+    paymentMethod: 'VA' | 'QRIS' | 'MANUAL_BANK',
     amount: string,
     transferData: any,
     bankPayment: any,
@@ -52,6 +68,8 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
   const navigation = useNavigation<any>();
   const [isFocusedInput, setIsFocusedInput] = useState(false);
   const inputRef = useRef<TextInput>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
+  const fieldOffsetsRef = useRef({ purpose: 0, paymentMethod: 0 });
 
   const handleFocusInput = () => {
     inputRef.current?.focus();
@@ -72,16 +90,43 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
   const { accountNumber, bankName, accountHolderName } = accountData || {};
 
   const [amount, setAmount] = useState(initialAmount || '');
-  const [note, setNote] = useState('');
-  const [methodPayment, setMethodPayment] = useState<'VA' | 'QRIS'>(initialPaymentMethod || 'VA');
+  const [selectedPurpose, setSelectedPurpose] = useState<{ code: string; name: string } | null>(
+    null,
+  );
+  const [isPurposeModalVisible, setIsPurposeModalVisible] = useState(false);
+  const [isUniqueCodeTooltipVisible, setIsUniqueCodeTooltipVisible] = useState(false);
+  const [methodPayment, setMethodPayment] = useState<'VA' | 'QRIS' | 'MANUAL_BANK'>(
+    initialPaymentMethod || 'VA',
+  );
   const [bankPayment, setBankPayment] = useState(initialBankPayment || null);
+  const [manualBank, setManualBank] = useState<ManualBankOption | null>(null);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
   const [isDisableConfirm, setIsDisableConfirm] = useState(true);
+  const [isCreatingManualTransfer, setIsCreatingManualTransfer] = useState(false);
 
-  const [calculateData, setCalculateData] = useState<any>(null);
+  const [calculateData, setCalculateData] = useState<PaymentCalculateData | null>(null);
   const [isLoadingCalculate, setIsLoadingCalculate] = useState(false);
+  const calculateRequestIdRef = useRef(0);
   const paymentMethodAvailability = usePaymentMethodAvailability('TRANSFER');
+  const quickAmounts = useQuickAmounts('TRANSFER');
 
   const { mutate: postTransfer, isPending: isLoadingTransfer } = useTransfer();
+  const {
+    data: purposesData,
+    isLoading: isLoadingPurposes,
+    isError: isPurposesError,
+    error: purposesError,
+    isFetching: isFetchingPurposes,
+    refetch: refetchPurposes,
+  } = useTransactionPurposes();
+  const purposes = purposesData?.data?.items ?? [];
+
+  useEffect(() => {
+    if (isPurposesError) {
+      console.log('useTransactionPurposes error', purposesError);
+    }
+  }, [isPurposesError, purposesError]);
+
   const hasTrackedValidAmountRef = useRef(false);
   const hasTrackedReviewViewRef = useRef(false);
 
@@ -91,6 +136,14 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
 
   useEffect(() => {
     if (hasTrackedReviewViewRef.current) return;
+
+    if (method === 'send') {
+      trackPaymentFunnelEvent(methodPayment, 'transfer', 'started', {
+        amount_range: getAmountRange(amount),
+        destination_bank: bankData?.shortName || bankData?.name || 'unknown',
+        source_bank: bankPayment?.code || bankData?.shortName || 'unknown',
+      });
+    }
 
     trackPostHogEvent('transfer_review_viewed', {
       amount_range: getAmountRange(amount),
@@ -117,9 +170,13 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
   }, [amount, bankData?.name, bankData?.shortName, methodPayment]);
 
   useEffect(() => {
-    const { vaEnabled, qrisEnabled, defaultMethod } = paymentMethodAvailability;
+    const { vaEnabled, qrisEnabled, manualBankEnabled, defaultMethod } = paymentMethodAvailability;
 
-    if ((methodPayment === 'VA' && !vaEnabled) || (methodPayment === 'QRIS' && !qrisEnabled)) {
+    if (
+      (methodPayment === 'VA' && !vaEnabled) ||
+      (methodPayment === 'QRIS' && !qrisEnabled) ||
+      (methodPayment === 'MANUAL_BANK' && !manualBankEnabled)
+    ) {
       if (defaultMethod) {
         setMethodPayment(defaultMethod);
       }
@@ -130,6 +187,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
   const isFirstMount = useRef(true);
   const prevMethodPayment = useRef(methodPayment);
   const prevBankPayment = useRef(bankPayment?.code);
+  const prevManualBankCode = useRef(manualBank?.code);
 
   useEffect(() => {
     if (!isFocused) return;
@@ -142,42 +200,72 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
         amount: amt,
         productType: 'TRANSFER',
         payMethod: methodPayment === 'VA' ? 'VIRTUAL_ACCOUNT' : methodPayment,
-        payChannel: methodPayment === 'VA' ? bankPayment?.code || '' : 'QRIS',
+        payChannel:
+          methodPayment === 'VA'
+            ? bankPayment?.code || ''
+            : methodPayment === 'QRIS'
+              ? 'QRIS'
+              : manualBank?.code || '',
       };
     };
 
     const fetchCalculation = async (amt: number) => {
-      if (methodPayment === 'VA' && !bankPayment?.code && amt >= 10000) return;
+      if (
+        amt < 10000 ||
+        (methodPayment === 'VA' && !bankPayment?.code) ||
+        (methodPayment === 'MANUAL_BANK' && !manualBank?.code)
+      ) {
+        setIsLoadingCalculate(false);
+        return;
+      }
 
+      const requestId = ++calculateRequestIdRef.current;
       setIsLoadingCalculate(true);
       try {
         const payload = getCalculatePayload(amt);
-        const res = await paymentApi.calculatePayment(payload);
-        if (res && res.status === 'success') {
-          setCalculateData(res.data);
+        if (methodPayment === 'MANUAL_BANK') {
+          const mockResponse = await manualBankApiMock.calculate(amt);
+          if (requestId === calculateRequestIdRef.current) {
+            setCalculateData(mockResponse);
+          }
+        } else {
+          const res = await paymentApi.calculatePayment(payload);
+          if (requestId === calculateRequestIdRef.current && res?.status === 'success') {
+            setCalculateData(res.data);
+          }
         }
       } catch (error) {
-        console.log('Calculate error:', error);
+        if (requestId === calculateRequestIdRef.current) {
+          setCalculateData(null);
+          console.log('Calculate error:', error);
+        }
       } finally {
-        setIsLoadingCalculate(false);
+        if (requestId === calculateRequestIdRef.current) {
+          setIsLoadingCalculate(false);
+        }
       }
     };
 
     const isMethodChanged = prevMethodPayment.current !== methodPayment;
     const isBankChanged = prevBankPayment.current !== bankPayment?.code;
+    const isManualBankChanged = prevManualBankCode.current !== manualBank?.code;
 
-    if (isFirstMount.current || isMethodChanged || isBankChanged) {
+    if (isFirstMount.current || isMethodChanged || isBankChanged || isManualBankChanged) {
       isFirstMount.current = false;
       prevMethodPayment.current = methodPayment;
       prevBankPayment.current = bankPayment?.code;
+      prevManualBankCode.current = manualBank?.code;
 
+      calculateRequestIdRef.current += 1;
+      setCalculateData(null);
       fetchCalculation(numericAmt);
       return;
     }
 
     const isQrisReady = methodPayment === 'QRIS';
     const isVaReady = methodPayment === 'VA' && !!bankPayment?.code;
-    const isPaymentMethodReady = isQrisReady || isVaReady;
+    const isManualBankReady = methodPayment === 'MANUAL_BANK' && !!manualBank?.code;
+    const isPaymentMethodReady = isQrisReady || isVaReady || isManualBankReady;
 
     if (numericAmt >= 10000 && isPaymentMethodReady) {
       setIsLoadingCalculate(true);
@@ -188,26 +276,105 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
 
       return () => clearTimeout(delayDebounceFn);
     }
-  }, [amount, methodPayment, bankPayment, isFocused, paymentMethodAvailability.isLoading]);
+  }, [
+    amount,
+    methodPayment,
+    bankPayment,
+    manualBank,
+    isFocused,
+    paymentMethodAvailability.isLoading,
+  ]);
 
   const onPressConfirm = () => {
+    setHasSubmitted(true);
+    const numericAmount = amount ? parseInt(amount, 10) : 0;
+
+    if (numericAmount < 10000) {
+      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+      inputRef.current?.focus();
+      return;
+    }
+
+    if (!selectedPurpose) {
+      scrollViewRef.current?.scrollTo({
+        y: Math.max(fieldOffsetsRef.current.purpose - 20, 0),
+        animated: true,
+      });
+      setIsPurposeModalVisible(true);
+      return;
+    }
+
+    if (methodPayment === 'VA' && !bankPayment?.code) {
+      scrollViewRef.current?.scrollTo({
+        y: Math.max(fieldOffsetsRef.current.paymentMethod - 20, 0),
+        animated: true,
+      });
+      return;
+    }
+
+    if (methodPayment === 'MANUAL_BANK' && !manualBank?.code) {
+      scrollViewRef.current?.scrollTo({
+        y: Math.max(fieldOffsetsRef.current.paymentMethod - 20, 0),
+        animated: true,
+      });
+      return;
+    }
+
     trackPostHogEvent('transfer_confirmed', {
       amount_range: getAmountRange(amount),
       destination_bank: bankData?.shortName || bankData?.name || 'unknown',
       source_bank: bankPayment?.code || bankData?.shortName || 'unknown',
       pay_method: methodPayment,
-      fee_status:
-        calculateData?.isFreeTransfer || calculateData?.fee === 0 ? 'free_quota' : 'paid',
+      fee_status: calculateData?.isFreeTransfer || calculateData?.fee === 0 ? 'free_quota' : 'paid',
     });
 
     let payload = {
       amount: parseInt(amount),
       inquiryId: accountData?.id,
       beneficiaryId: props.beneficiaryId,
-      payChannel: methodPayment == 'VA' ? bankPayment?.code : methodPayment,
-      payMethod: methodPayment == 'VA' ? 'VIRTUAL_ACCOUNT' : methodPayment,
-      remark: note,
+      payChannel:
+        methodPayment === 'VA'
+          ? bankPayment?.code
+          : methodPayment === 'MANUAL_BANK'
+            ? manualBank?.code
+            : methodPayment,
+      payMethod:
+        methodPayment === 'VA'
+          ? 'VIRTUAL_ACCOUNT'
+          : methodPayment === 'MANUAL_BANK'
+            ? 'MANUAL_BANK'
+            : methodPayment,
+      transactionPurpose: selectedPurpose?.code,
     };
+
+    if (methodPayment === 'MANUAL_BANK' && manualBank && calculateData) {
+      setIsCreatingManualTransfer(true);
+      manualBankApiMock
+        .createTransfer({
+          payload: {
+            inquiryId: accountData?.id,
+            amount: numericAmount,
+            transactionPurpose: selectedPurpose?.code ?? '',
+            payMethod: 'MANUAL_BANK',
+            payChannel: manualBank.code,
+          },
+          bank: manualBank,
+          uniqueCode: calculateData.uniqueCode ?? 0,
+          totalAmount: calculateData.totalAmount,
+        })
+        .then((response) => {
+          navigation.navigate('ManualBankPayment', {
+            transferData: response.data as ManualBankTransferData,
+            accountData,
+            bankData,
+          });
+        })
+        .catch(() => {
+          Toast.show({ type: 'error', text1: 'Gagal membuat transfer. Silakan coba lagi.' });
+        })
+        .finally(() => setIsCreatingManualTransfer(false));
+      return;
+    }
     let idempotencyKey = new Date().getTime().toString();
 
     postTransfer(
@@ -219,14 +386,35 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
         onSuccess: (data) => {
           let transferData = data?.data ?? {};
           console.log('postTransfer onSuccess bankPayment', bankPayment);
+
+          if (method === 'send') {
+            trackPaymentFunnelEvent(methodPayment, 'transfer', 'submitted', {
+              amount_range: getAmountRange(amount),
+              destination_bank: bankData?.shortName || bankData?.name || 'unknown',
+              source_bank: bankPayment?.code || bankData?.shortName || 'unknown',
+              transfer_id: transferData?.id,
+            });
+          }
+
           gotoPaymentInstruction(methodPayment, amount, transferData, bankPayment);
         },
         onError: (error) => {
           console.log('postTransfer onError', error);
-          if (error?.error?.message) {
+
+          if (method === 'send') {
+            trackPaymentFunnelEvent(methodPayment, 'transfer', 'failed', {
+              amount_range: getAmountRange(amount),
+              destination_bank: bankData?.shortName || bankData?.name || 'unknown',
+              source_bank: bankPayment?.code || bankData?.shortName || 'unknown',
+              failure_reason: 'payment_creation_failed',
+            });
+          }
+
+          const apiErrorMessage = (error as { error?: { message?: string } })?.error?.message;
+          if (apiErrorMessage) {
             Toast.show({
               type: 'error',
-              text1: error?.error?.message,
+              text1: apiErrorMessage,
             });
           }
         },
@@ -235,22 +423,31 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
   };
 
   const numericAmount = amount ? parseInt(amount, 10) : 0;
+  const showRequiredAmountError = hasSubmitted && !amount;
+  const showRequiredPurposeError = hasSubmitted && !selectedPurpose;
+  const showRequiredBankError =
+    hasSubmitted &&
+    ((methodPayment === 'VA' && !bankPayment?.code) ||
+      (methodPayment === 'MANUAL_BANK' && !manualBank?.code));
   const showMinAmountError = amount !== '' && numericAmount > 0 && numericAmount < 10000;
 
   useEffect(() => {
     let isDisable = true;
+    const isManualBankIncomplete =
+      methodPayment === 'MANUAL_BANK' &&
+      (!paymentMethodAvailability.manualBankEnabled ||
+        numericAmount < 10000 ||
+        !selectedPurpose ||
+        !manualBank?.code ||
+        !calculateData);
 
     if (paymentMethodAvailability.isLoading) {
       isDisable = true;
     } else if (!paymentMethodAvailability.hasAnyEnabled) {
       isDisable = true;
-    } else if (numericAmount < 10000) {
-      isDisable = true;
-    } else if (methodPayment == 'QRIS' && !amount) {
-      isDisable = true;
-    } else if (methodPayment == 'VA' && (_.isEmpty(bankPayment) || !amount)) {
-      isDisable = true;
     } else if (isLoadingCalculate) {
+      isDisable = true;
+    } else if (isManualBankIncomplete) {
       isDisable = true;
     } else {
       isDisable = false;
@@ -262,19 +459,29 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
     amount,
     numericAmount,
     isLoadingCalculate,
+    calculateData,
+    selectedPurpose,
+    manualBank,
     paymentMethodAvailability.isLoading,
     paymentMethodAvailability.hasAnyEnabled,
   ]);
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#FFF' }}>
+    <View
+      style={{ flex: 1, backgroundColor: '#FFF' }}
+      onTouchStart={() => {
+        if (isUniqueCodeTooltipVisible) setIsUniqueCodeTooltipVisible(false);
+      }}>
       <HeaderToolbar
         title={'Jumlah & Konfirmasi'}
         onPressBack={onPressBack}
-        titleStyle="regular"
+        titleStyle="medium"
         titlePosition={'left'}
       />
-      <ScrollView contentContainerStyle={{ paddingBottom: 190 }} style={styles.container}>
+      <ScrollView
+        ref={scrollViewRef}
+        contentContainerStyle={{ paddingBottom: 190 }}
+        style={styles.container}>
         <View style={styles.recipientCard}>
           <View style={styles.avatar}>
             <Text style={styles.avatarText}>
@@ -294,7 +501,12 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
           <Text style={[styles.labelRp, { marginRight: 12 }]}>Rp</Text>
 
           <TouchableWithoutFeedback onPress={handleFocusInput}>
-            <View style={[styles.inputContainer, isFocusedInput && styles.inputContainerFocused]}>
+            <View
+              style={[
+                styles.inputContainer,
+                isFocusedInput && styles.inputContainerFocused,
+                showRequiredAmountError && { borderColor: '#D32F2F', borderWidth: 1.5 },
+              ]}>
               <TextInput
                 ref={inputRef}
                 style={[styles.inputAmount, { fontSize: amount.length > 0 ? 32 : 16 }]}
@@ -305,87 +517,264 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
                 onBlur={() => setIsFocusedInput(false)}
                 onChangeText={(val) => setAmount(val.replace(/[^0-9]/g, ''))}
                 blurOnSubmit={false}
+                placeholderTextColor={'#A9A9A9'}
               />
             </View>
           </TouchableWithoutFeedback>
         </View>
 
-        {showMinAmountError ? (
+        {showRequiredAmountError ? (
           <Text
             style={{
               color: '#D32F2F',
-              marginLeft: 20,
+              marginLeft: 58,
               marginTop: 8,
               fontFamily: 'Switzer-Regular',
+              fontSize: 14,
+            }}>
+            Wajib diisi.
+          </Text>
+        ) : showMinAmountError ? (
+          <Text
+            style={{
+              color: '#D32F2F',
+              marginLeft: 34,
+              marginTop: 8,
+              fontFamily: 'Switzer-Regular',
+              fontSize: 14,
             }}>
             Minimal transfer Rp 10.000
           </Text>
         ) : null}
 
-        <QuickAmount currentAmount={amount} onAmountPress={(val) => setAmount(val)} />
+        <QuickAmount
+          currentAmount={amount}
+          onAmountPress={(val) => setAmount(val)}
+          amounts={quickAmounts}
+        />
 
         <Text style={[styles.label, { marginTop: 10, paddingHorizontal: 20 }]}>
-          Catatan (Opsional)
+          Tujuan Transaksi <Text style={{ color: '#9CA3AF' }}>(wajib)</Text>
         </Text>
-        <TextInput
+        <TouchableOpacity
           style={{
-            borderColor: '#E5E5E5',
+            borderColor: showRequiredPurposeError ? '#D32F2F' : '#E5E5E5',
             borderWidth: 1,
             backgroundColor: '#FFF',
             padding: 16,
             borderRadius: 12,
-            fontFamily: 'Switzer-Regular',
-            minHeight: 50,
             marginHorizontal: 20,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            minHeight: 50,
           }}
-          placeholder="Contoh: uang bulanan"
-          placeholderTextColor={'#737373'}
-          value={note}
-          onChangeText={setNote}
-        />
+          onLayout={(event) => {
+            fieldOffsetsRef.current.purpose = event.nativeEvent.layout.y;
+          }}
+          onPress={() => setIsPurposeModalVisible(true)}
+          activeOpacity={0.7}>
+          <Text
+            style={{
+              fontFamily: 'Switzer-Regular',
+              color: selectedPurpose ? '#0A0A0A' : '#737373',
+              fontSize: 15,
+              flex: 1,
+            }}>
+            {selectedPurpose ? selectedPurpose.name : 'Pilih Tujuan'}
+          </Text>
+          {isLoadingPurposes ? (
+            <ActivityIndicator size="small" color="#3B82F6" />
+          ) : (
+            <ChevronDown size={18} color="#9CA3AF" />
+          )}
+        </TouchableOpacity>
+        {showRequiredPurposeError ? (
+          <Text
+            style={{
+              color: '#D32F2F',
+              marginHorizontal: 20,
+              marginTop: 8,
+              fontFamily: 'Switzer-Regular',
+            }}>
+            Wajib diisi.
+          </Text>
+        ) : null}
+
+        <Modal
+          visible={isPurposeModalVisible}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setIsPurposeModalVisible(false)}>
+          <TouchableOpacity
+            style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' }}
+            activeOpacity={1}
+            onPress={() => setIsPurposeModalVisible(false)}
+          />
+          <View
+            style={{
+              backgroundColor: '#FFF',
+              borderTopLeftRadius: 20,
+              borderTopRightRadius: 20,
+              paddingBottom: 32,
+              maxHeight: '60%',
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+            }}>
+            <View
+              style={{
+                alignItems: 'center',
+                paddingTop: 12,
+                paddingBottom: 16,
+                borderBottomWidth: 1,
+                borderBottomColor: '#F3F4F6',
+              }}>
+              <View
+                style={{
+                  width: 36,
+                  height: 4,
+                  borderRadius: 2,
+                  backgroundColor: '#E5E7EB',
+                  marginBottom: 12,
+                }}
+              />
+              <Text style={{ fontFamily: 'Switzer-Bold', fontSize: 16, color: '#0A0A0A' }}>
+                Tujuan Transaksi
+              </Text>
+            </View>
+            <FlatList
+              data={purposes}
+              keyExtractor={(item) => item.code}
+              ListEmptyComponent={
+                <View
+                  style={{
+                    alignItems: 'center',
+                    paddingVertical: 24,
+                    paddingHorizontal: 20,
+                  }}>
+                  <Text
+                    style={{
+                      fontFamily: 'Switzer-Regular',
+                      fontSize: 14,
+                      color: '#737373',
+                      textAlign: 'center',
+                    }}>
+                    {isLoadingPurposes
+                      ? 'Memuat tujuan transaksi...'
+                      : isPurposesError
+                        ? 'Gagal memuat tujuan transaksi. Silakan coba lagi.'
+                        : 'Tujuan transaksi tidak tersedia.'}
+                  </Text>
+                  {isPurposesError && (
+                    <TouchableOpacity
+                      onPress={() => refetchPurposes()}
+                      disabled={isFetchingPurposes}
+                      style={{ marginTop: 12, paddingVertical: 8, paddingHorizontal: 16 }}>
+                      {isFetchingPurposes ? (
+                        <ActivityIndicator size="small" color="#3B82F6" />
+                      ) : (
+                        <Text
+                          style={{
+                            fontFamily: 'Switzer-Bold',
+                            fontSize: 14,
+                            color: '#3B82F6',
+                          }}>
+                          Coba Lagi
+                        </Text>
+                      )}
+                    </TouchableOpacity>
+                  )}
+                </View>
+              }
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    paddingHorizontal: 20,
+                    paddingVertical: 16,
+                    borderBottomWidth: 1,
+                    borderBottomColor: '#F9FAFB',
+                  }}
+                  onPress={() => {
+                    setSelectedPurpose({ code: item.code, name: item.name });
+                    setIsPurposeModalVisible(false);
+                  }}>
+                  <Text
+                    style={{
+                      fontFamily: 'Switzer-Regular',
+                      fontSize: 15,
+                      color: '#0A0A0A',
+                      flex: 1,
+                    }}>
+                    {item.name}
+                  </Text>
+                  {selectedPurpose?.code === item.code && <Check size={18} color="#3B82F6" />}
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </Modal>
 
         <PaymentMethod
           selectedMethod={methodPayment}
           onSelect={(val) => setMethodPayment(val)}
-          onSelectBank={(val) => setBankPayment(val)}
+          onSelectBank={(val) => {
+            setCalculateData(null);
+            if (methodPayment === 'MANUAL_BANK') {
+              setManualBank(val);
+            } else {
+              setBankPayment(val);
+            }
+          }}
           initialBankPayment={initialBankPayment}
           styleProps={{}}
           isVAEnabled={paymentMethodAvailability.vaEnabled}
           isQRISEnabled={paymentMethodAvailability.qrisEnabled}
+          isManualBankEnabled={paymentMethodAvailability.manualBankEnabled}
           isLoading={paymentMethodAvailability.isLoading}
+          showBankError={showRequiredBankError}
+          onLayout={(event) => {
+            fieldOffsetsRef.current.paymentMethod = event.nativeEvent.layout.y;
+          }}
         />
       </ScrollView>
 
       <View style={styles.footerOverlay}>
         <View style={styles.footerContent}>
-          <View
-            style={[
-              styles.rowBetween,
-              {
-                marginBottom: 4,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'flex-start',
-              },
-            ]}>
-            <Text style={{ fontFamily: 'Switzer-Regular', color: '#000000', fontSize: 14 }}>
-              Limit Harian:
-            </Text>
+          {methodPayment !== 'MANUAL_BANK' && (
+            <View
+              style={[
+                styles.rowBetween,
+                {
+                  marginBottom: 4,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'flex-start',
+                  marginTop: 8,
+                },
+              ]}>
+              <Text style={{ fontFamily: 'Switzer-Regular', color: '#000000', fontSize: 14 }}>
+                Limit Harian:
+              </Text>
 
-            <Text style={{ fontFamily: 'Switzer-Regular', color: '#1F2937', fontSize: 14 }}>
-              {calculateData ? (
-                <>
-                  <Text style={{ fontFamily: 'Switzer-Bold' }}>
-                    {`  Rp ${formatNumber(calculateData.dailyLimitUsed)}`}
-                  </Text>
-                  {/* Bagian total limit tetap Regular */}
-                  {` / Rp ${formatNumber(calculateData.dailyLimitTotal)}`}
-                </>
-              ) : (
-                '  -'
-              )}
-            </Text>
-          </View>
+              <Text style={{ fontFamily: 'Switzer-Regular', color: '#1F2937', fontSize: 14 }}>
+                {calculateData ? (
+                  <>
+                    <Text style={{ fontFamily: 'Switzer-Bold' }}>
+                      {`  Rp ${formatNumber(calculateData.dailyLimitUsed)}`}
+                    </Text>
+                    {` / Rp ${formatNumber(calculateData.dailyLimitTotal)}`}
+                  </>
+                ) : (
+                  '  -'
+                )}
+              </Text>
+            </View>
+          )}
 
           {calculateData && (
             <View
@@ -397,9 +786,22 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
                 Biaya transfer
               </Text>
               {calculateData.isFreeTransfer || calculateData.fee === 0 ? (
-                <Text style={{ fontFamily: 'Switzer-Medium', color: '#16A34A', fontSize: 14 }}>
-                  GRATIS
-                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  {methodPayment === 'MANUAL_BANK' && calculateData.feePerTransaction > 0 ? (
+                    <Text
+                      style={{
+                        fontFamily: 'Switzer-Regular',
+                        color: '#737373',
+                        fontSize: 14,
+                        textDecorationLine: 'line-through',
+                      }}>
+                      {`Rp ${formatNumber(calculateData.feePerTransaction)}`}
+                    </Text>
+                  ) : null}
+                  <Text style={{ fontFamily: 'Switzer-Medium', color: '#000000', fontSize: 14 }}>
+                    GRATIS
+                  </Text>
+                </View>
               ) : (
                 <Text style={{ fontFamily: 'Switzer-Regular', color: '#000000', fontSize: 14 }}>
                   {`Rp ${formatNumber(calculateData?.fee)}`}
@@ -407,6 +809,41 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
               )}
             </View>
           )}
+
+          {calculateData?.uniqueCode ? (
+            <View style={styles.uniqueCodeRowWrapper}>
+              <View style={[styles.rowBetween, { marginTop: 8, alignItems: 'center' }]}>
+                <View style={styles.uniqueCodeLabel}>
+                  <TouchableOpacity
+                    accessibilityRole="button"
+                    accessibilityLabel="Informasi kode unik"
+                    accessibilityState={{ expanded: isUniqueCodeTooltipVisible }}
+                    hitSlop={8}
+                    onPress={() => setIsUniqueCodeTooltipVisible((visible) => !visible)}>
+                    <Info size={18} color="#666666" strokeWidth={2} />
+                  </TouchableOpacity>
+                  <Text style={{ fontFamily: 'Switzer-Regular', color: '#000000', fontSize: 14 }}>
+                    Kode Unik
+                  </Text>
+                </View>
+                <Text style={{ fontFamily: 'Switzer-Medium', color: '#000000', fontSize: 14 }}>
+                  {`Rp ${formatNumber(calculateData.uniqueCode)}`}
+                </Text>
+              </View>
+              {isUniqueCodeTooltipVisible && (
+                <View style={styles.uniqueCodeTooltip}>
+                  <View style={styles.uniqueCodeTooltipArrow} />
+                  <Text style={styles.uniqueCodeTooltipText}>
+                    Kode unik menjadi{' '}
+                    <Text style={styles.uniqueCodeTooltipEmphasis}>
+                      biaya layanan jika transfer berhasil.
+                    </Text>{' '}
+                    Jika gagal, seluruh dana akan dikembalikan.
+                  </Text>
+                </View>
+              )}
+            </View>
+          ) : null}
 
           {calculateData && (
             <View style={[styles.rowBetween, { marginTop: 8, alignItems: 'center' }]}>
@@ -428,51 +865,56 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
             textStyle={{ color: '#FFF', fontFamily: 'Switzer-Bold', fontSize: 16 }}
             style={[styles.confirmButton, isDisableConfirm && styles.disabledButton]}
             disable={isDisableConfirm}
-            loading={isLoadingTransfer}
+            loading={isLoadingTransfer || isCreatingManualTransfer}
           />
-          <View style={{ marginTop: 12 }}>
-            {isLoadingCalculate ? (
-              <ActivityIndicator
-                size="small"
-                color="#1F2937"
-                style={{ alignSelf: 'flex-start', marginVertical: 2 }}
-              />
-            ) : calculateData ? (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                {calculateData.freeQuotaRemaining === 1 ? (
-                  <>
-                    <TriangleAlert size={20} color="#D97706" />
-                    <Text style={{ fontFamily: 'Switzer-Medium', fontSize: 14, color: '#000000' }}>
-                      Kuota transfer gratis tersisa 1 dari {calculateData.freeQuotaTotal}
-                    </Text>
-                  </>
-                ) : calculateData.freeQuotaRemaining > 0 ? (
-                  <>
-                    <Info size={20} color="#525252" />
-                    <Text style={{ fontFamily: 'Switzer-Medium', fontSize: 14, color: '#1F2937' }}>
-                      Kuota transfer gratis tersisa {calculateData.freeQuotaRemaining} dari{' '}
-                      {calculateData.freeQuotaTotal}
-                    </Text>
-                  </>
-                ) : (
-                  <>
-                    <Info size={20} color="#525252" />
-                    <Text style={{ fontFamily: 'Switzer-Medium', fontSize: 14, color: '#000000' }}>
-                      Kuota gratis habis biaya transfer Rp{' '}
-                      {formatNumber(calculateData.feePerTransaction)}/transaksi
-                    </Text>
-                  </>
-                )}
-              </View>
-            ) : (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <Info size={14} color="#666" />
-                <Text style={{ fontFamily: 'Switzer-Regular', fontSize: 14, color: '#666' }}>
-                  Kuota transfer gratis tersisa 5 dari 5
-                </Text>
-              </View>
-            )}
-          </View>
+          {methodPayment !== 'MANUAL_BANK' ? (
+            <View style={{ marginTop: 12 }}>
+              {isLoadingCalculate ? (
+                <ActivityIndicator
+                  size="small"
+                  color="#1F2937"
+                  style={{ alignSelf: 'flex-start', marginVertical: 2 }}
+                />
+              ) : calculateData ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  {calculateData.freeQuotaRemaining === 1 ? (
+                    <>
+                      <TriangleAlert size={20} color="#D97706" />
+                      <Text
+                        style={{ fontFamily: 'Switzer-Medium', fontSize: 14, color: '#000000' }}>
+                        Kuota transfer gratis tersisa 1 dari {calculateData.freeQuotaTotal}
+                      </Text>
+                    </>
+                  ) : calculateData.freeQuotaRemaining > 0 ? (
+                    <>
+                      <Info size={20} color="#525252" />
+                      <Text
+                        style={{ fontFamily: 'Switzer-Medium', fontSize: 14, color: '#1F2937' }}>
+                        Kuota transfer gratis tersisa {calculateData.freeQuotaRemaining} dari{' '}
+                        {calculateData.freeQuotaTotal}
+                      </Text>
+                    </>
+                  ) : (
+                    <>
+                      <Info size={20} color="#525252" />
+                      <Text
+                        style={{ fontFamily: 'Switzer-Medium', fontSize: 14, color: '#000000' }}>
+                        Kuota gratis habis biaya transfer Rp{' '}
+                        {formatNumber(calculateData.feePerTransaction)}/transaksi
+                      </Text>
+                    </>
+                  )}
+                </View>
+              ) : (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Info size={14} color="#666" />
+                  <Text style={{ fontFamily: 'Switzer-Regular', fontSize: 14, color: '#666' }}>
+                    Kuota transfer gratis tersisa 5 dari 5
+                  </Text>
+                </View>
+              )}
+            </View>
+          ) : null}
         </View>
       </View>
     </View>

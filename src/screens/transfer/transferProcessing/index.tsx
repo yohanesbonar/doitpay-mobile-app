@@ -40,6 +40,7 @@ const TransferProcessingScreen = () => {
   });
 
   const [isDelayOver, setIsDelayOver] = useState(false);
+  const trackedDisbursementStatusRef = React.useRef<string | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -94,6 +95,33 @@ const TransferProcessingScreen = () => {
   };
 
   useEffect(() => {
+    if (
+      data?.status &&
+      ['DISBURSING', 'COMPLETED', 'CANCELLED', 'DISBURSING_FAILED'].includes(data.status) &&
+      trackedDisbursementStatusRef.current !== data.status
+    ) {
+      trackedDisbursementStatusRef.current = data.status;
+
+      const properties = {
+        amount_range: getAmountRange(data?.data?.amount || amount),
+        payment_method: paymentMethod,
+        destination_bank: bankData?.shortName || bankData?.name || 'unknown',
+        source_bank: accountData?.bankName || bankData?.shortName || 'unknown',
+        transfer_id: activeTransferId,
+      };
+
+      if (data.status === 'DISBURSING') {
+        trackPostHogEvent('disbursement_started', properties);
+      } else if (data.status === 'COMPLETED') {
+        trackPostHogEvent('disbursement_success', properties);
+      } else {
+        trackPostHogEvent('disbursement_failed', {
+          ...properties,
+          failure_reason: data.status === 'CANCELLED' ? 'cancelled' : 'disbursing_failed',
+        });
+      }
+    }
+
     if (data?.status === 'COMPLETED') {
       const finalTimer = setTimeout(() => {
         handleFinish();

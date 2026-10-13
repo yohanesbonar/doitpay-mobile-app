@@ -1,5 +1,6 @@
 import apiClient from './client';
 import { generateUUID } from '@/utils/uuid';
+import { getDeviceToken } from '../storage';
 
 // REGISTER
 export interface RegisterOtpRequestPayload {
@@ -15,8 +16,10 @@ export interface RegisterOtpVerifyPayload {
 export interface RegisterPinSetupPayload {
   pin: string;
   fullName: string;
+  occupationId: number;
   continueAsNew: boolean;
   verifyToken: string;
+  fcmToken?: string;
 }
 
 export type RegisterOtpResponse = {
@@ -72,6 +75,11 @@ export type LoginOtpResponse = {
   message: string;
   data: {
     retryAfterSeconds: number;
+    // Trusted Device: when true, BE recognised the device from `X-Device-Token` and already
+    // issued `verificationToken` (verifyMethod: TRUSTED_DEVICE), so there is no OTP to enter.
+    otpSkipped?: boolean;
+    verificationToken?: string;
+    expiresAt?: string;
   };
 };
 
@@ -95,6 +103,10 @@ export type LoginResponse = {
     accessToken: string;
     refreshToken: string;
     expiresAt: string;
+    // Trusted Device token, re-issued on every successful login. Its expiry is the dormancy
+    // window after which the next login is challenged with an OTP again.
+    deviceToken?: string;
+    deviceTokenExpiresAt?: string;
   };
 };
 
@@ -200,6 +212,18 @@ export type LogoutResponse = {
   data: {};
 };
 
+export interface PinValidatePayload {
+  pin: string;
+}
+
+export type PinValidateResponse = {
+  status: string;
+  message: string;
+  data: {
+    valid: boolean;
+  };
+};
+
 // CHANGE PIN
 export interface ChangePinPayload {
   oldPin: string;
@@ -217,7 +241,25 @@ export type ChangePinResponse = {
   };
 };
 
+export interface PhoneCheckRequestPayload {
+  phoneNumber: string;
+}
+
+export type PhoneCheckResponse = {
+  status: string;
+  message: string;
+  data: {
+    isExists: boolean;
+  };
+};
+
 export const authApi = {
+  checkPhoneNumber: async (payload: PhoneCheckRequestPayload): Promise<PhoneCheckResponse> => {
+    const { data } = await apiClient.post<PhoneCheckResponse>('/v1/auth/phone/check', payload, {
+      noNeedAuth: true,
+    });
+    return data;
+  },
   registerRequestOtp: async (payload: RegisterOtpRequestPayload): Promise<RegisterOtpResponse> => {
     const { data } = await apiClient.post<RegisterOtpResponse>(
       '/v1/onboarding/otp/request',
@@ -238,11 +280,12 @@ export const authApi = {
   },
   registerPinSetup: async ({
     verifyToken,
+    fcmToken,
     ...body
   }: RegisterPinSetupPayload): Promise<RegisterPinSetupResponse> => {
     const { data } = await apiClient.post<RegisterPinSetupResponse>(
       '/v1/onboarding/pin-setup',
-      body,
+      { ...body, fcm_token: fcmToken },
       {
         headers: { Authorization: `bearer ${verifyToken}` },
       },
@@ -250,25 +293,35 @@ export const authApi = {
     return data;
   },
   loginRequestOtp: async (payload: LoginOtpRequestPayload): Promise<LoginOtpResponse> => {
-    const { data } = await apiClient.post<LoginOtpResponse>('v1/auth/login/otp/request', payload, {
+    // X-Device-Token is attached here rather than in the global request interceptor: this is
+    // the only endpoint that acts on it, and the trust credential should not be broadcast to
+    // every request. Absent/expired token simply means BE challenges with an OTP as before.
+    const deviceToken = getDeviceToken();
+
+    const { data } = await apiClient.post<LoginOtpResponse>('/v1/auth/login/otp/request', payload, {
       noNeedAuth: true,
+      ...(deviceToken ? { headers: { 'X-Device-Token': deviceToken } } : {}),
     });
     return data;
   },
   loginVerifyOtp: async (payload: LoginOtpVerifyPayload): Promise<LoginOtpVerifyResponse> => {
     const { data } = await apiClient.post<LoginOtpVerifyResponse>(
-      'v1/auth/login/otp/verify',
+      '/v1/auth/login/otp/verify',
       payload,
       { noNeedAuth: true },
     );
     return data;
   },
   login: async (payload: LoginPayload): Promise<LoginResponse> => {
-    const { data } = await apiClient.post<LoginResponse>('v1/auth/login', payload);
+    // skipAuthRetry: a 401 here means the submitted PIN is wrong (business validation),
+    // not an expired/invalid session, so it must not trigger the global forced logout.
+    const { data } = await apiClient.post<LoginResponse>('/v1/auth/login', payload, {
+      skipAuthRetry: true,
+    });
     return data;
   },
   refreshToken: async (payload: RefreshTokenPayload): Promise<RefreshTokenResponse> => {
-    const { data } = await apiClient.post<RefreshTokenResponse>('v1/auth/refresh', payload);
+    const { data } = await apiClient.post<RefreshTokenResponse>('/v1/auth/refresh', payload);
     return data;
   },
   forgotPinRequestOtp: async (
@@ -333,6 +386,12 @@ export const authApi = {
   logout: async (accessToken: string): Promise<LogoutResponse> => {
     const { data } = await apiClient.post<LogoutResponse>('/v1/auth/logout', undefined, {
       headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    return data;
+  },
+  validatePin: async (payload: PinValidatePayload): Promise<PinValidateResponse> => {
+    const { data } = await apiClient.post<PinValidateResponse>('/v1/pin/validate', payload, {
+      skipAuthRetry: true,
     });
     return data;
   },

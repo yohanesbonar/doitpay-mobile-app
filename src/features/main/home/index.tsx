@@ -1,5 +1,6 @@
-import { Image, Text, View, ScrollView, RefreshControl } from 'react-native';
+import { AppState, Image, Text, View, ScrollView, RefreshControl } from 'react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { useTheme } from '../../../theme/ThemeProvider.tsx';
 import { createStyles } from './styles.ts';
 import { useTranslation } from 'react-i18next';
@@ -11,7 +12,11 @@ import { RecentRecipient } from './components/RecentRecipient.tsx';
 import { SearchBar } from './components/SearchBar.tsx';
 import { UnprotectedAccount } from './components/UnprotectedAccount.tsx';
 import { DeletionInProgressBanner } from './components/DeletionInProgressBanner.tsx';
-import { RecentActivitySkeleton, RecentBeneficiarySkeleton, TransferLimitSkeleton } from './components/HomeSkeletons.tsx';
+import {
+  RecentActivitySkeleton,
+  RecentBeneficiarySkeleton,
+  TransferLimitSkeleton,
+} from './components/HomeSkeletons.tsx';
 import { NotificationIconWithBadge } from '@/components/molecules/NotificationIconWithBadge';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { EmailBottomsheet } from '@/components/molecules/EmailBottomsheet';
@@ -47,10 +52,41 @@ export const HomeView = (props: HomeViewProps) => {
   const [isSheetMounted, setIsSheetMounted] = useState(false);
   const emailSheetRef = useRef<BottomSheetModal>(null);
   const [isAccountSheetMounted, setIsAccountSheetMounted] = useState(false);
+  const [isPullRefreshing, setIsPullRefreshing] = useState(false);
   const { isNewUser, setIsNewUser } = useAuthStore();
 
-  const { data: homeAggregate, isLoading, isRefetching, refetch } = useGetHomeAggregateQuery();
-  const { data: profile } = useGetProfileMeQuery();
+  const { data: homeAggregate, isLoading, refetch } = useGetHomeAggregateQuery();
+  const { data: profile, refetch: refetchProfile } = useGetProfileMeQuery();
+  const isHomeFocused = useIsFocused();
+
+  const refreshHomeData = useCallback(() => {
+    void refetch();
+  }, [refetch]);
+
+  const handlePullRefresh = useCallback(async () => {
+    setIsPullRefreshing(true);
+    try {
+      await Promise.all([refetch(), refetchProfile()]);
+    } finally {
+      setIsPullRefreshing(false);
+    }
+  }, [refetch, refetchProfile]);
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshHomeData();
+    }, [refreshHomeData]),
+  );
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (nextAppState === 'active' && isHomeFocused) {
+        refreshHomeData();
+      }
+    });
+
+    return () => subscription.remove();
+  }, [isHomeFocused, refreshHomeData]);
 
   const homeData = homeAggregate?.data;
   const transferLimit = homeData?.transferLimit;
@@ -119,12 +155,11 @@ export const HomeView = (props: HomeViewProps) => {
           style={{ flex: 1 }}
           contentContainerStyle={{ paddingBottom: 30 }}
           showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}>
+          refreshControl={
+            <RefreshControl refreshing={isPullRefreshing} onRefresh={handlePullRefresh} />
+          }>
           <DeletionInProgressBanner isShow={profile?.data?.isRequestDeleteAccount ?? false} />
           <View style={styles.dailyLimitWrapper}>
-            <Text style={{ fontSize: 20, marginBottom: 4, fontFamily: 'Switzer-Semibold' }}>
-              {t('home.dailyLimitTransfer')}
-            </Text>
             {isLoading || !homeData ? (
               <TransferLimitSkeleton />
             ) : (
@@ -133,8 +168,10 @@ export const HomeView = (props: HomeViewProps) => {
                 freeTransferQuotaTotal={transferQuota?.freeTransferQuotaTotal ?? 0}
                 freeTransferQuotaUsed={transferQuota?.freeTransferQuotaUsed ?? 0}
                 transferFee={transferQuota?.transferFee ?? 0}
-                maxLimit={transferLimit?.maxAmount ?? 0}
+                maxLimit={(transferLimit?.maxAmount ?? 0) - (transferLimit?.usage ?? 0)}
+                amountReceived={transferLimit?.amountReceived ?? 0}
                 isKycVerified={!hasKycPending}
+                freeQuotaResetType={transferQuota?.freeQuotaResetType}
               />
             )}
           </View>

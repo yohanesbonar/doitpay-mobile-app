@@ -10,6 +10,7 @@ import {
   PermissionsAndroid,
   Image,
   Dimensions,
+  NativeModules,
 } from 'react-native';
 import { CheckCircle2, Download, Share2 } from 'lucide-react-native';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
@@ -28,14 +29,16 @@ interface PaymentReceiptViewProps {
     accountNumber: string;
     bankName: string;
     name?: string;
+    ownerName?: string;
     accountHolderName?: string;
     accountName?: string;
   };
   bankData?: any;
-  paymentMethod?: 'VA' | 'QRIS';
+  paymentMethod?: string;
   amount?: string;
   transactionId?: string;
   dateTime?: string;
+  manualBankReceiptData?: Record<string, any>;
   onPressBack: () => void;
   onPressHome?: () => void;
   method?: string;
@@ -48,15 +51,21 @@ const PaymentReceiptView = ({
   amount,
   transactionId,
   dateTime,
+  manualBankReceiptData,
   onPressBack,
   onPressHome,
   method,
 }: PaymentReceiptViewProps) => {
-  const methodLabel = paymentMethod === 'QRIS' ? 'QRIS' : 'Virtual Account';
-  const { data: transferDetailData, isLoading: isTransferDetailLoading } = useTransferDetailQuery(
-    method !== 'receive' ? transactionId : undefined,
+  const methodLabel =
+    paymentMethod === 'QRIS'
+      ? 'QRIS'
+      : paymentMethod === 'VA'
+        ? 'Virtual Account'
+        : paymentMethod || 'Virtual Account';
+  const { data: transferDetailData } = useTransferDetailQuery(
+    method !== 'receive' && method !== 'manualBank' ? transactionId : undefined,
   );
-  const { data: receiveStatusData, isLoading: isReceiveStatusLoading } = useReceiveStatusQuery(
+  const { data: receiveStatusData } = useReceiveStatusQuery(
     method === 'receive' ? transactionId : undefined,
   );
 
@@ -73,6 +82,13 @@ const PaymentReceiptView = ({
       };
     }
 
+    if (method === 'manualBank' && manualBankReceiptData) {
+      return {
+        amount: manualBankReceiptData.amount?.toString() || baseAmount,
+        dateTime: formatApiDateToLocal(manualBankReceiptData.createdAt || '') || baseDateTime,
+      };
+    }
+
     if (method !== 'receive' && transferDetailData?.data) {
       const detail = transferDetailData.data as any;
       return {
@@ -85,7 +101,7 @@ const PaymentReceiptView = ({
       amount: baseAmount,
       dateTime: baseDateTime,
     };
-  }, [method, receiveStatusData, transferDetailData, amount, dateTime]);
+  }, [method, receiveStatusData, transferDetailData, manualBankReceiptData, amount, dateTime]);
 
   const effectiveAmount = receiptInfo.amount || amount || '0';
   const formattedAmount = formatNumber(effectiveAmount);
@@ -93,7 +109,11 @@ const PaymentReceiptView = ({
   const viewShotRef = useRef<any>(null);
 
   const receiptData = (
-    method === 'receive' ? receiveStatusData?.data : transferDetailData?.data
+    method === 'receive'
+      ? receiveStatusData?.data
+      : method === 'manualBank'
+        ? manualBankReceiptData
+        : transferDetailData?.data
   ) as any;
 
   const effectiveTransactionId = receiptData?.id || transactionId || '-';
@@ -107,28 +127,53 @@ const PaymentReceiptView = ({
   const effectiveTotalAmount = receiptData?.totalAmount;
   const effectiveBeneficiaryBankName = receiptData?.beneficiaryBankName;
   const effectiveBeneficiaryBankLogo = receiptData?.beneficiaryBankLogo;
+  const effectiveBeneficiaryAccountNumber = receiptData?.beneficiaryAccountNumber;
   const effectiveSenderName = receiptData?.senderName;
   const effectivePaymentMethodName = receiptData?.paymentMethodName;
 
   const isReceiveIn = method === 'receive';
+  const isQris = effectivePaymentMethodLabel?.toUpperCase() === 'QRIS';
 
   const senderName = effectiveSenderName || '-';
   const senderBank = effectivePaymentMethodName || effectivePaymentMethodLabel || '-';
   const senderLogoUri = effectivePaymentMethodLogoUrl;
+  const fallbackBankLogo =
+    typeof bankData?.logo === 'number'
+      ? bankData.logo
+      : bankData?.logo || bankData?.logoUrl
+        ? { uri: bankData.logo || bankData.logoUrl }
+        : undefined;
+  const paymentMethodLogoSource = effectivePaymentMethodLogoUrl
+    ? { uri: effectivePaymentMethodLogoUrl }
+    : method === 'manualBank'
+      ? fallbackBankLogo
+      : undefined;
+
+  const maskAccountNumber = (accountNumber?: string) => {
+    if (!accountNumber || accountNumber.length <= 3) {
+      return accountNumber || '';
+    }
+
+    const lastThree = accountNumber.slice(-3);
+    return `${'*'.repeat(accountNumber.length - 3)}${lastThree}`;
+  };
 
   const recipientName = effectiveRecipient || '-';
-  const recipientBank = effectiveBeneficiaryBankName || '-';
+  const recipientBank = effectiveBeneficiaryAccountNumber
+    ? `${effectiveBeneficiaryBankName || '-'} - ${maskAccountNumber(effectiveBeneficiaryAccountNumber)}`
+    : effectiveBeneficiaryBankName || '-';
   const recipientLogoUri = effectiveBeneficiaryBankLogo;
 
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const doitpayLogo = require('../../../assets/images/ic-doitpay-white.png');
 
   const hasAndroidPermission = async () => {
-    const getCheckPermission =
-      Number(Platform.Version) >= 33
-        ? PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES
-        : PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE;
+    // For Android 13+ we avoid requesting READ_MEDIA_IMAGES when saving images to gallery.
+    if (Number(Platform.Version) >= 33) {
+      return true;
+    }
 
+    const getCheckPermission = PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE;
     const hasPermission = await PermissionsAndroid.check(getCheckPermission);
     if (hasPermission) return true;
 
@@ -148,15 +193,10 @@ const PaymentReceiptView = ({
         }
 
         await CameraRoll.saveAsset(targetUri, { type: 'photo' });
-        Alert.alert('Sukses', 'Bukti disimpan ke Galeri Foto.', [
-          {
-            text: 'OK',
-            style: 'cancel',
-          },
-          {
-            text: 'Buka Galeri',
-            onPress: () => openGalleryApp(),
-          },
+
+        Alert.alert('Sukses', 'Bukti berhasil disimpan ke Galeri Foto.', [
+          { text: 'OK', style: 'cancel' },
+          { text: 'Buka Galeri', onPress: () => openGalleryApp() },
         ]);
       } else {
         const hasPermission = await hasAndroidPermission();
@@ -165,23 +205,27 @@ const PaymentReceiptView = ({
           return;
         }
 
-        await CameraRoll.saveAsset(targetUri, { type: 'photo' });
+        const savedUri = await CameraRoll.saveAsset(targetUri, { type: 'photo' });
+
+        try {
+          if (typeof savedUri === 'string' && savedUri.startsWith('file://')) {
+            const filePath = savedUri.replace('file://', '');
+            await NativeModules.GalleryModule.scanFile(filePath);
+          }
+        } catch (e) {
+          // ignore
+        }
 
         Alert.alert('Sukses', 'Bukti berhasil disimpan ke Galeri Foto.', [
-          {
-            text: 'OK',
-            style: 'cancel',
-          },
-          {
-            text: 'Buka Galeri',
-            onPress: () => openGalleryApp(),
-          },
+          { text: 'OK', style: 'cancel' },
+          { text: 'Buka Galeri', onPress: () => openGalleryApp() },
         ]);
       }
     } catch (error: any) {
       console.error('Download error:', error);
 
       if (Platform.OS === 'ios') {
+        // no-op
       } else {
         Alert.alert('Gagal', 'Gagal menyimpan Bukti ke galeri');
       }
@@ -200,7 +244,11 @@ const PaymentReceiptView = ({
           await Linking.openURL('calshow://');
         }
       } else {
-        await Linking.openURL('content://media/internal/images/media');
+        try {
+          await NativeModules.GalleryModule.openGallery();
+        } catch (e) {
+          await Linking.openURL('content://media/internal/images/media');
+        }
       }
     } catch (error) {
       console.log('Gagal membuka galeri otomatis:', error);
@@ -242,9 +290,9 @@ const PaymentReceiptView = ({
         <View style={receiptStyles.partySection}>
           <View style={receiptStyles.partyRow}>
             <View style={receiptStyles.partyLogo}>
-              {senderLogoUri ? (
+              {senderLogoUri || (method === 'manualBank' && fallbackBankLogo) ? (
                 <Image
-                  source={{ uri: senderLogoUri }}
+                  source={senderLogoUri ? { uri: senderLogoUri } : fallbackBankLogo}
                   style={{ width: 30, height: 30 }}
                   resizeMode="contain"
                 />
@@ -257,9 +305,6 @@ const PaymentReceiptView = ({
               )}
             </View>
             <View style={receiptStyles.partyInfo}>
-              <Text style={receiptStyles.partyName} numberOfLines={1}>
-                {senderName}
-              </Text>
               <Text style={receiptStyles.partyBank}>{senderBank}</Text>
             </View>
           </View>
@@ -268,9 +313,9 @@ const PaymentReceiptView = ({
 
           <View style={receiptStyles.partyRow}>
             <View style={receiptStyles.partyLogo}>
-              {recipientLogoUri ? (
+              {recipientLogoUri || (method === 'manualBank' && fallbackBankLogo) ? (
                 <Image
-                  source={{ uri: recipientLogoUri }}
+                  source={recipientLogoUri ? { uri: recipientLogoUri } : fallbackBankLogo}
                   style={{ width: 30, height: 30 }}
                   resizeMode="contain"
                 />
@@ -339,8 +384,6 @@ const PaymentReceiptView = ({
 
   return (
     <View style={styles.container}>
-      {/* <HeaderToolbar title="" titlePosition="left" titleStyle="regular" /> */}
-
       <ViewShot
         ref={viewShotRef}
         options={{ format: 'png', quality: 1.0 }}
@@ -370,7 +413,9 @@ const PaymentReceiptView = ({
         <View style={styles.recipientBox}>
           <View style={styles.recipientLeft}>
             <Image
-              source={{ uri: effectivePaymentMethodLogoUrl }}
+              source={
+                paymentMethodLogoSource || require('../../../assets/images/ic-doitpay-home.png')
+              }
               style={[
                 styles.bankLogo,
                 { paddingHorizontal: effectivePaymentMethodLabel == 'QRIS' ? 5 : 0 },
@@ -402,10 +447,12 @@ const PaymentReceiptView = ({
             <Text style={styles.detailLabel}>Metode Pembayaran</Text>
             <Text style={styles.detailValue}>{effectivePaymentMethodLabel}</Text>
           </View>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Jumlah</Text>
-            <Text style={styles.detailValue}>Rp {formattedAmount}</Text>
-          </View>
+          {method !== 'manualBank' && (
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Jumlah</Text>
+              <Text style={styles.detailValue}>Rp {formattedAmount}</Text>
+            </View>
+          )}
           {effectiveFee != null && (
             <View style={styles.detailRow}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -416,6 +463,12 @@ const PaymentReceiptView = ({
                 Rp {formatNumber(effectiveFee.toString())}{' '}
                 {effectivePercentageFee && `(${effectivePercentageFee}%)`}
               </Text>
+            </View>
+          )}
+          {method == 'manualBank' && receiptData?.uniqueCode != null && (
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Kode Unik</Text>
+              <Text style={styles.detailValue}>Rp {formatNumber(receiptData.uniqueCode.toString())}</Text>
             </View>
           )}
           {effectiveTotalAmount != null && (

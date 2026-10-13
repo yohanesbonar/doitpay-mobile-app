@@ -7,6 +7,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import Button from '@/components/atoms/Button';
 import { useCancelAccountDeletion } from '@/hooks/useAuthMutation';
+import { handleLogout } from '@/utils/Common';
 import AccountDeletionIcon from '@/assets/icons/ic-account-deletion-pending.svg';
 import FastImage from 'react-native-fast-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -50,6 +51,17 @@ export const DeleteAccountStatus = () => {
 
   const handleGoHome = () => {
     navigation.reset({ index: 0, routes: [{ name: 'MainTabs' }] });
+  };
+
+  const handleLogoutPress = () => {
+    Alert.alert('Keluar dari Akun', 'Apakah kamu yakin ingin keluar dari akun ini?', [
+      { text: 'Batal', style: 'cancel' },
+      {
+        text: 'Ya, Keluar',
+        style: 'destructive',
+        onPress: () => handleLogout(),
+      },
+    ]);
   };
 
   return (
@@ -114,6 +126,14 @@ export const DeleteAccountStatus = () => {
               style={styles.goHomeButton}
             />
           )}
+          <Button
+            type="regular"
+            onPress={handleLogoutPress}
+            title="Keluar"
+            color="#FFF"
+            textColor="black"
+            style={styles.logoutButton}
+          />
         </View>
       </View>
     </SafeAreaView>
@@ -127,7 +147,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingBottom: 120,
+    paddingBottom: 170,
     alignItems: 'center',
   },
   illustrationContainer: {
@@ -198,5 +218,10 @@ const styles = StyleSheet.create({
   },
   goHomeButton: {
     marginTop: 12,
+  },
+  logoutButton: {
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: '#E5E5E5',
   },
 });

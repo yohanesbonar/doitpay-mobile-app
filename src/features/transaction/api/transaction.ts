@@ -6,6 +6,7 @@ export interface TransactionReceiptData {
   beneficiaryName: string;
   beneficiaryBankName?: string;
   beneficiaryBankLogo?: string;
+  beneficiaryAccountNumber?: string;
   createdAt: string;
   id: string;
   paymentMethod: string;

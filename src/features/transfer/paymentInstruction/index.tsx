@@ -9,6 +9,7 @@ import {
   PermissionsAndroid,
   Platform,
   Linking,
+  NativeModules,
 } from 'react-native';
 import { ChevronDown, Clock, Copy, Download, Share2 } from 'lucide-react-native';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
@@ -19,6 +20,7 @@ import { CameraRoll } from '@react-native-camera-roll/camera-roll';
 import Share from 'react-native-share';
 import ViewShot from 'react-native-view-shot';
 import Clipboard from '@react-native-clipboard/clipboard';
+import Toast from 'react-native-toast-message';
 import { getAmountRange, trackPostHogEvent } from '@/analytics/posthog';
 
 interface PaymentInstructionViewProps {
@@ -131,17 +133,22 @@ const PaymentInstructionView = ({
       source_bank:
         transferData?.va?.name || receiveData?.va?.name || bankData?.shortName || 'unknown',
     });
-    Alert.alert('Sukses', 'Nomor VA berhasil disalin');
+    Toast.show({
+      type: 'success',
+      text1: 'Nomor VA berhasil disalin',
+    });
   };
 
   const viewShotRef = useRef<any>(null);
 
   const hasAndroidPermission = async () => {
-    const getCheckPermission =
-      Platform.Version >= 33
-        ? PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES
-        : PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE;
+    // For Android 13+ we avoid requesting READ_MEDIA_IMAGES just to save an image.
+    // Modern CameraRoll implementations use MediaStore APIs and should not require READ_MEDIA_IMAGES for saving.
+    if (Platform.Version >= 33) {
+      return true;
+    }
 
+    const getCheckPermission = PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE;
     const hasPermission = await PermissionsAndroid.check(getCheckPermission);
     if (hasPermission) return true;
 
@@ -161,7 +168,13 @@ const PaymentInstructionView = ({
           await Linking.openURL('calshow://');
         }
       } else {
-        await Linking.openURL('content://media/internal/images/media');
+        // Use native intent helper to open gallery reliably across devices
+        try {
+          await NativeModules.GalleryModule.openGallery();
+        } catch (e) {
+          // fallback to content URI if native module fails
+          await Linking.openURL('content://media/internal/images/media');
+        }
       }
     } catch (error) {
       console.log('Gagal membuka galeri otomatis:', error);
@@ -181,15 +194,10 @@ const PaymentInstructionView = ({
         }
 
         await CameraRoll.saveAsset(targetUri, { type: 'photo' });
+
         Alert.alert('Sukses', 'QRIS berhasil disimpan ke Galeri Foto.', [
-          {
-            text: 'OK',
-            style: 'cancel',
-          },
-          {
-            text: 'Buka Galeri',
-            onPress: () => openGalleryApp(),
-          },
+          { text: 'OK', style: 'cancel' },
+          { text: 'Buka Galeri', onPress: () => openGalleryApp() },
         ]);
       } else {
         const hasPermission = await hasAndroidPermission();
@@ -198,7 +206,16 @@ const PaymentInstructionView = ({
           return;
         }
 
-        await CameraRoll.saveAsset(targetUri, { type: 'photo' });
+        const savedUri = await CameraRoll.saveAsset(targetUri, { type: 'photo' });
+
+        try {
+          if (typeof savedUri === 'string' && savedUri.startsWith('file://')) {
+            const filePath = savedUri.replace('file://', '');
+            await NativeModules.GalleryModule.scanFile(filePath);
+          }
+        } catch (e) {
+          // ignore
+        }
 
         Alert.alert('Sukses', 'QRIS berhasil disimpan ke Galeri Foto.', [
           {
@@ -215,6 +232,7 @@ const PaymentInstructionView = ({
       console.error('Download error:', error);
 
       if (Platform.OS === 'ios') {
+        // no-op
       } else {
         Alert.alert('Gagal', 'Gagal menyimpan QRIS ke galeri');
       }
@@ -244,7 +262,7 @@ const PaymentInstructionView = ({
         title={method === 'receive' ? 'Terima Pembayaran' : 'Pembayaran'}
         onPressBack={onPressBack}
         titlePosition="left"
-        titleStyle="regular"
+        titleStyle="medium"
       />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>

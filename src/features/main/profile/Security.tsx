@@ -1,19 +1,24 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, TouchableOpacity, Switch, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import {
-  ChevronLeft,
-  ChevronRight,
-  Lock,
-  Fingerprint,
-  MonitorSmartphone,
-} from 'lucide-react-native';
+import { ChevronLeft, ChevronRight, Lock, MonitorSmartphone } from 'lucide-react-native';
+import { BiometricLoginSetting } from './components/BiometricLoginSetting';
 
 export const Security = ({ navigation }: any) => {
-  const [isBiometricActive, setIsBiometricActive] = useState(false);
-
-  const SecurityItem = ({ title, sub, icon: Icon, type = 'arrow', value, onValueChange, onPress }: any) => (
-    <TouchableOpacity style={styles.item} activeOpacity={0.7} disabled={type === 'switch'} onPress={onPress}>
+  const SecurityItem = ({
+    title,
+    sub,
+    icon: Icon,
+    type = 'arrow',
+    value,
+    onValueChange,
+    onPress,
+  }: any) => (
+    <TouchableOpacity
+      style={styles.item}
+      activeOpacity={0.7}
+      disabled={type === 'switch'}
+      onPress={onPress}>
       <View style={styles.row}>
         <View style={styles.iconBox}>
           <Icon size={22} color="#1A1A1A" />
@@ -22,15 +27,16 @@ export const Security = ({ navigation }: any) => {
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.sub}>{sub}</Text>
         </View>
-        {type === 'arrow' ? (
-          <ChevronRight size={20} color="#737373" />
-        ) : (
-          <Switch
-            value={value}
-            onValueChange={onValueChange}
-            trackColor={{ false: '#E5E5E5', true: '#4F84F6' }}
-          />
-        )}
+        {onPress &&
+          (type === 'arrow' ? (
+            <ChevronRight size={20} color="#737373" />
+          ) : (
+            <Switch
+              value={value}
+              onValueChange={onValueChange}
+              trackColor={{ false: '#E5E5E5', true: '#4F84F6' }}
+            />
+          ))}
       </View>
     </TouchableOpacity>
   );
@@ -51,14 +57,7 @@ export const Security = ({ navigation }: any) => {
           icon={Lock}
           onPress={() => navigation.navigate('ChangePin')}
         />
-        <SecurityItem
-          title="Biometrik"
-          sub="Fingerprint/ Face ID untuk login cepat"
-          icon={Fingerprint}
-          type="switch"
-          value={isBiometricActive}
-          onValueChange={setIsBiometricActive}
-        />
+        <BiometricLoginSetting />
         <SecurityItem
           title="Perangkat Terpercaya"
           sub="1 perangkat aktif"

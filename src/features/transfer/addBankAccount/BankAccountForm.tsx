@@ -33,7 +33,7 @@ const BankAccountForm = ({
   selectedId,
   setShowResult,
   setResultData,
-  inputRef
+  inputRef,
 }: BankAccountFormProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -89,6 +89,7 @@ const BankAccountForm = ({
           onChangeText={handleAccountNumberChange}
           onBlur={handleBlur('accountNumber')}
           value={values.accountNumber}
+          placeholderTextColor={'#A9A9A9'}
         />
         {touched.accountNumber && errors.accountNumber && (
           <Text style={styles.errorText}>{errors.accountNumber}</Text>

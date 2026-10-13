@@ -5,15 +5,9 @@ import { OnboardingView } from '../../../features/onboarding/onboardingLanding';
 const OnboardingScreen = () => {
   const navigation = useNavigation<any>();
 
-  const handleGetStarted = () => {
-    navigation.navigate('AuthEntry', { isLoginState: false });
-  };
+  const handleGetStarted = () => navigation.navigate('AuthEntry');
 
-  const handleLoginRedirect = () => {
-    navigation.navigate('AuthEntry', { isLoginState: true });
-  };
-
-  return <OnboardingView onGetStarted={handleGetStarted} onLoginRedirect={handleLoginRedirect} />;
+  return <OnboardingView onGetStarted={handleGetStarted} />;
 };
 
 export default OnboardingScreen;

@@ -42,13 +42,5 @@ export const createStyles = (colors: any) => {
       paddingHorizontal: 16,
       marginTop: 24, 
     },
-    accountQuestionText: {
-      marginTop: 16,
-      fontSize: 13,
-      fontFamily: "Switzer",
-      textAlign: 'center',
-      color: colors.textBlack,
-      textDecorationLine: 'underline',
-    }
   });
 };

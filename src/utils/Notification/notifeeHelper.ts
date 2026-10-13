@@ -1,4 +1,4 @@
-import notifee, { AndroidImportance, EventType } from '@notifee/react-native';
+import notifee, { AndroidImportance } from '@notifee/react-native';
 
 export const onDisplayNotification = async (title?: string, body?: string, data?: any) => {
   // Request permissions (required for iOS)
@@ -21,6 +21,14 @@ export const onDisplayNotification = async (title?: string, body?: string, data?
       importance: AndroidImportance.HIGH,
       pressAction: {
         id: 'default',
+      },
+    },
+    ios: {
+      sound: 'default',
+      foregroundPresentationOptions: {
+        alert: true,
+        badge: true,
+        sound: true,
       },
     },
   });

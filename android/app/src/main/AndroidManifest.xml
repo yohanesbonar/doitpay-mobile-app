@@ -1,10 +1,16 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+
+    <!-- Allow WRITE_EXTERNAL_STORAGE only for Android 12 and below. Android 13+ uses MediaStore. -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" tools:node="remove" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" tools:node="remove" />
+
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove" />
 
     <application
     android:name=".MainApplication"
@@ -18,6 +24,7 @@
       <activity
       android:name=".MainActivity"
       android:label="@string/app_name"
+      android:screenOrientation="portrait"
       android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|uiMode"
       android:launchMode="singleTask"
       android:windowSoftInputMode="adjustResize"
@@ -33,6 +40,9 @@
       android:name="com.google.firebase.messaging.default_notification_icon"
       android:resource="@drawable/ic_notification"
     />
+    <!-- Disable Ad ID collection for Firebase Analytics to comply with "NO" declaration -->
+    <meta-data android:name="google_analytics_adid_collection_enabled" android:value="false" tools:replace="android:value" />
+    <meta-data android:name="google_analytics_default_allow_ad_personalization_signals" android:value="false" tools:replace="android:value" />
 
     </application>
 </manifest>
