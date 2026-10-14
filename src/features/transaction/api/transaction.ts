@@ -1,5 +1,5 @@
 import apiClient from '@/api/client';
-import { GetTransactionsQueries } from '../types';
+import { GetTransactionsQueries, TransactionStatus } from '../types';
 
 export interface TransactionReceiptData {
   amount: number;
@@ -17,6 +17,7 @@ export interface TransactionReceiptData {
   uniqueCode?: number;
   senderName?: string;
   percentageFee?: number;
+  status?: TransactionStatus;
 }
 
 export interface TransactionReceiptResponse {

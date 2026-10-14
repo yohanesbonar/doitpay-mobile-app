@@ -142,7 +142,7 @@ export const TransactionDetail = ({
     }, [refetch]),
   );
 
-  const resolvedStatus = deriveStatus(type, status);
+  const resolvedStatus = deriveStatus(type, receipt?.status ?? status);
   const {
     label: statusLabel,
     color: statusColor,
@@ -443,7 +443,7 @@ export const TransactionDetail = ({
         )}
 
         <View style={styles.footerContainer}>
-          {status === 'PENDING' ? (
+          {resolvedStatus === TransactionStatus.PENDING ? (
             <TouchableOpacity
               style={[styles.continuePaymentButton, isLoadingContinue && { opacity: 0.6 }]}
               onPress={() => receipt && onContinuePayment?.(receipt)}
