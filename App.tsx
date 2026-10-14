@@ -58,6 +58,7 @@ import {
   startRemoteConfigRealtimeUpdates,
   subscribeToRemoteConfigUpdates,
 } from '@/api/remoteConfigRealtime';
+import FloatingDebugButton from '@/components/molecules/FloatingDebugButton';
 import { PostHogProvider } from 'posthog-react-native';
 import { posthogClient, trackScreenView } from './src/analytics/posthog';
 import DeviceInfo from 'react-native-device-info';
@@ -363,16 +364,15 @@ const App = () => {
                 </View>
               )}
               <Toast config={toastConfig} position="bottom" />
-              {isLoggerEnabled && isButtonVisible && (
-                <Pressable
-                  style={styles.floatingDebugButton}
+              {isLoggerEnabled && (
+                <FloatingDebugButton
+                  visible={isButtonVisible}
                   onPress={() => setLoggerVisible(true)}
                   onLongPress={() => {
                     setIsButtonVisible(false);
                     Alert.alert('Tombol log disembunyikan. Shake kembali untuk memunculkan.');
-                  }}>
-                  <Text style={styles.floatingDebugText}>🌐 Log</Text>
-                </Pressable>
+                  }}
+                />
               )}
 
               <Modal
@@ -455,26 +455,6 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 10,
     paddingHorizontal: 10,
-  },
-  floatingDebugButton: {
-    position: 'absolute',
-    bottom: 100,
-    right: 20,
-    backgroundColor: '#007AFF',
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 20,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    zIndex: 99999,
-  },
-  floatingDebugText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: 'bold',
   },
 });
 
