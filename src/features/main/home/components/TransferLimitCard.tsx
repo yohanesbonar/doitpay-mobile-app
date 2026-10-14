@@ -49,7 +49,7 @@ export const TransferLimitCard = ({
       end={{ x: 1, y: 0 }}
       style={styles.card}>
       <View style={{ padding: 16 }}>
-        <Text style={styles.labelBalance}>Balance Tersedia</Text>
+        <Text style={styles.labelBalance}>Dana Diterima</Text>
         <Text style={styles.balanceAmount}>Rp {formatCurrency(amountReceived)}</Text>
 
         <View style={styles.divider} />
