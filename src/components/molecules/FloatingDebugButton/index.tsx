@@ -7,9 +7,12 @@ import {
   Text,
   useWindowDimensions,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const DRAG_ACTIVATION_DISTANCE = 8;
 const EDGE_INSET = 8;
+const HEADER_PROTECTED_HEIGHT = 56;
+const BOTTOM_BAR_PROTECTED_HEIGHT = 90;
 
 type FloatingDebugButtonProps = {
   visible: boolean;
@@ -23,6 +26,7 @@ export default function FloatingDebugButton({
   onLongPress,
 }: FloatingDebugButtonProps) {
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const safeAreaInsets = useSafeAreaInsets();
   const initialPosition = {
     x: Math.max(EDGE_INSET, windowWidth - 108),
     y: Math.max(EDGE_INSET, windowHeight - 180),
@@ -31,24 +35,42 @@ export default function FloatingDebugButton({
   const dragStartRef = useRef(initialPosition);
   const buttonSizeRef = useRef({ width: 100, height: 40 });
   const hasMeasuredButtonRef = useRef(false);
-  const windowSizeRef = useRef({ width: windowWidth, height: windowHeight });
+  const windowSizeRef = useRef({
+    width: windowWidth,
+    height: windowHeight,
+    topInset: safeAreaInsets.top,
+    bottomInset: safeAreaInsets.bottom,
+  });
   const left = useRef(new Animated.Value(initialPosition.x)).current;
   const top = useRef(new Animated.Value(initialPosition.y)).current;
-  windowSizeRef.current = { width: windowWidth, height: windowHeight };
+  windowSizeRef.current = {
+    width: windowWidth,
+    height: windowHeight,
+    topInset: safeAreaInsets.top,
+    bottomInset: safeAreaInsets.bottom,
+  };
 
   const clampPosition = (x: number, y: number) => {
     const maxX = Math.max(
       EDGE_INSET,
       windowSizeRef.current.width - buttonSizeRef.current.width - EDGE_INSET,
     );
+    const minY = windowSizeRef.current.topInset + HEADER_PROTECTED_HEIGHT + EDGE_INSET;
+    const bottomProtectedHeight = Math.max(
+      windowSizeRef.current.bottomInset,
+      BOTTOM_BAR_PROTECTED_HEIGHT,
+    );
     const maxY = Math.max(
-      EDGE_INSET,
-      windowSizeRef.current.height - buttonSizeRef.current.height - EDGE_INSET,
+      minY,
+      windowSizeRef.current.height -
+        bottomProtectedHeight -
+        buttonSizeRef.current.height -
+        EDGE_INSET,
     );
 
     return {
       x: Math.max(EDGE_INSET, Math.min(x, maxX)),
-      y: Math.max(EDGE_INSET, Math.min(y, maxY)),
+      y: Math.max(minY, Math.min(y, maxY)),
     };
   };
 
@@ -104,7 +126,7 @@ export default function FloatingDebugButton({
 
   useEffect(() => {
     updatePosition(positionRef.current.x, positionRef.current.y);
-  }, [windowWidth, windowHeight]);
+  }, [windowWidth, windowHeight, safeAreaInsets.top, safeAreaInsets.bottom]);
 
   if (!visible) return null;
 
