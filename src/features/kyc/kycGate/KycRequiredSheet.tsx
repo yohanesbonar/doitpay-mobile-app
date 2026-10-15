@@ -74,7 +74,8 @@ export const KycRequiredSheet = ({ status, onClose, onNavigate }: KycRequiredShe
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 16,
-    paddingTop: 4,
+
+    paddingTop: 16,
     paddingBottom: 4,
     alignItems: 'center',
   },
