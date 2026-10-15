@@ -26,6 +26,7 @@ import { useAuthStore } from '@/storage/useAuthStore.ts';
 import { useGetHomeAggregateQuery } from './hooks/useGetHomeAggregateQuery.ts';
 import { useGetProfile } from '@/hooks/useMeMutation.ts';
 import { useGetProfileMeQuery } from '@/features/user/hooks/useGetProfileMeQuery.ts';
+import { KycUnverifiedBanner } from '@/features/kyc/components/KycUnverifiedBanner';
 import LogoDoitpay from '@/assets/icons/ic-logo.svg';
 import EmptyHomeIcon from '@/assets/icons/ic-empty-home.svg';
 import { trackPostHogEvent } from '@/analytics/posthog';
@@ -150,6 +151,7 @@ export const HomeView = (props: HomeViewProps) => {
           <LogoDoitpay />
           <NotificationIconWithBadge onPress={props.goToNotification} />
         </View>
+        <KycUnverifiedBanner kycStatus={profile?.data?.kycStatus} style={{ marginBottom: 12 }} />
 
         <ScrollView
           style={{ flex: 1 }}

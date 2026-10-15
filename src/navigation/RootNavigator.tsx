@@ -59,6 +59,8 @@ import DataSubmittedScreen from '@/screens/kyc/dataSubmitted';
 import KycIntroScreen from '@/screens/kyc/kycIntro';
 import KycResultScreen from '@/screens/kyc/kycResult';
 import { useKycResultRedirect } from '@/hooks/useKycResultRedirect';
+import { KycRequiredSheet } from '@/features/kyc/kycGate/KycRequiredSheet';
+import { useKycGateStore } from '@/storage/useKycGateStore';
 import { useGetProfileMeQuery } from '@/features/user/hooks/useGetProfileMeQuery';
 import { KycPendingStatus } from '@/features/onboarding/kyc/KycPendingStatus';
 
@@ -81,6 +83,8 @@ export default function RootNavigator({
 
   const accessToken = useAuthStore((state) => state.accessToken);
   const isAuthenticated = !!accessToken;
+  const kycGateStatus = useKycGateStore((state) => state.gateStatus);
+  const closeKycGate = useKycGateStore((state) => state.closeGate);
   const pendingForgotPinRedirect = useAuthStore((state) => state.pendingForgotPinRedirect);
   const clearPendingForgotPinRedirect = useAuthStore(
     (state) => state.clearPendingForgotPinRedirect,
@@ -278,6 +282,16 @@ export default function RootNavigator({
           </Stack.Group>
         )}
       </Stack.Navigator>
+      {isAuthenticated && (
+        <KycRequiredSheet
+          status={kycGateStatus}
+          onClose={closeKycGate}
+          onNavigate={(route) => {
+            closeKycGate();
+            navigationRef.current?.navigate(route);
+          }}
+        />
+      )}
     </NavigationContainer>
   );
 }
