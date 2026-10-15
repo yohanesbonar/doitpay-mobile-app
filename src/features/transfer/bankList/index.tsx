@@ -16,6 +16,7 @@ import { useGetProfile } from '@/hooks/useMeMutation.ts';
 import _ from 'lodash';
 import { BankListSkeleton } from './BankListSkeleton.tsx';
 import { useTransferFeatureAvailability } from '../hooks/useTransferFeatureAvailability.ts';
+import { useKycGate } from '@/hooks/useKycGate';
 
 interface BankListViewProps {
   onPressBack: () => void;
@@ -66,6 +67,9 @@ export const BankListView = ({
 
   const { mutate: mutateBanks, isPending: isPendingBank } = useBanks();
   const [isAccountSheetMounted, setIsAccountSheetMounted] = useState(false);
+  // null until /v1/me answers; the account popup is only shown on a definite `false`.
+  const [hasBankAccount, setHasBankAccount] = useState<boolean | null>(null);
+  const runWithKycGate = useKycGate();
 
   const { mutate: getProfile, isPending: isLoadingProfile } = useGetProfile();
 
@@ -124,11 +128,8 @@ export const BankListView = ({
         {
           onSuccess: (data) => {
             console.log('getProfile data', data);
-            if (!data?.data?.hasBankAccount && !fromProfile) {
-              setTimeout(() => {
-                handleOpenAccountSheet();
-              }, 500);
-            }
+            // Checked on action (send / receive), not on entry, so transfer can ask for KYC first.
+            setHasBankAccount(!!data?.data?.hasBankAccount);
           },
           onError: (error) => {
             console.log('getProfile error', error);
@@ -164,14 +165,34 @@ export const BankListView = ({
 
   const onCloseCompleteModal = () => {
     setIsAccountSheetMounted(false);
-    onPressBack();
+  };
+
+  // Both sending and receiving need the user's own bank account (fromProfile is the flow that
+  // adds it, so it is exempt).
+  const requireBankAccount = (action: () => void) => {
+    if (!fromProfile && hasBankAccount === false) {
+      handleOpenAccountSheet();
+      return;
+    }
+    action();
+  };
+
+  // Transfer: KYC first, then bank account. Receiving money does not need KYC.
+  const handleSelectBank = (bank: any) => {
+    if (fromProfile) {
+      onSelectBank(bank, activeTab);
+      return;
+    }
+    runWithKycGate(() => requireBankAccount(() => onSelectBank(bank, activeTab)));
   };
 
   const onPressReceive = () => {
-    setActiveTab('receive');
-    setTimeout(() => {
-      goToRequestPayment();
-    }, 300);
+    requireBankAccount(() => {
+      setActiveTab('receive');
+      setTimeout(() => {
+        goToRequestPayment();
+      }, 300);
+    });
   };
 
   return (
@@ -272,7 +293,7 @@ export const BankListView = ({
                               ]}
                               onPress={() => {
                                 setFieldValue('selectedBank', bank);
-                                onSelectBank(bank, activeTab);
+                                handleSelectBank(bank);
                               }}>
                               <FastImage
                                 style={styles.logoGrid}
@@ -296,7 +317,7 @@ export const BankListView = ({
                         style={styles.listItem}
                         onPress={() => {
                           setFieldValue('selectedBank', item);
-                          onSelectBank(item, activeTab);
+                          handleSelectBank(item);
                         }}>
                         <View style={styles.listLogoContainer}>
                           <FastImage

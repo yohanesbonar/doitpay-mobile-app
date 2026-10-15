@@ -3,19 +3,23 @@ import { HomeView } from '../../../features/main/home';
 import React from 'react';
 import { trackPostHogEvent } from '@/analytics/posthog';
 import { useTransferFeatureAvailability } from '@/features/transfer/hooks/useTransferFeatureAvailability';
+import { useKycGate } from '@/hooks/useKycGate';
 
 const HomeScreen = () => {
   const navigation = useNavigation<any>();
   const { transferEnabled, isLoading: isFeatureLoading } = useTransferFeatureAvailability();
 
   const canTransfer = isFeatureLoading || transferEnabled;
+  const runWithKycGate = useKycGate();
 
   const goToSearchAccount = () => {
-    trackPostHogEvent('transfer_started', {
-      entry_point: 'home_search_account',
-    });
+    runWithKycGate(() => {
+      trackPostHogEvent('transfer_started', {
+        entry_point: 'home_search_account',
+      });
 
-    navigation.navigate('SearchAccount');
+      navigation.navigate('SearchAccount');
+    });
   };
 
   const onPressBack = () => {
@@ -87,12 +91,14 @@ const HomeScreen = () => {
       return;
     }
 
-    trackPostHogEvent('transfer_started', {
-      entry_point: 'home_recent_beneficiary',
-      destination_bank: params.bankData?.shortName || params.bankData?.name || 'unknown',
-    });
+    runWithKycGate(() => {
+      trackPostHogEvent('transfer_started', {
+        entry_point: 'home_recent_beneficiary',
+        destination_bank: params.bankData?.shortName || params.bankData?.name || 'unknown',
+      });
 
-    navigation.navigate('TransferDetail', params);
+      navigation.navigate('TransferDetail', params);
+    });
   };
 
   return (

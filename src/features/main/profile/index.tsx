@@ -15,6 +15,7 @@ import { ProfileCardSkeleton } from './components/ProfileCardSkeleton';
 import { KycCardSkeleton } from './components/KycCardSkeleton';
 import { useGetLimitMeQuery } from '@/features/user/hooks/useGetLimitMeQuery';
 import { KycStatus } from '@/features/onboarding/kyc/types';
+import { KycUnverifiedBanner } from '@/features/kyc/components/KycUnverifiedBanner';
 import DeviceInfo from 'react-native-device-info';
 import { LogoutConfirmationModal } from './components/LogoutConfirmationModal';
 
@@ -70,6 +71,8 @@ export const Profile = () => {
         <Text style={styles.headerTitle}>Profil</Text>
         <NotificationIconWithBadge onPress={() => navigation.navigate('Notification')} />
       </View>
+      {/* Pulled up over the header's marginBottom so it sits right under the header divider. */}
+      <KycUnverifiedBanner kycStatus={kycStatus} style={{ marginTop: -14, marginBottom: 14 }} />
       <ScrollView
         style={styles.container}
         showsVerticalScrollIndicator={false}
