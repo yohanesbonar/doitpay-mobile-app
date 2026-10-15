@@ -178,6 +178,7 @@ jobs:
         with:
           username: GitHub
           webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
+          content: "<@582602363278327809> <@1391615235252551841>"
           embed-title: "✅ Building Android (${{ env.ARTIFACT_LABEL }}) Finished"
           embed-color: 3066993
           embed-url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
@@ -199,6 +200,7 @@ jobs:
         with:
           username: GitHub
           webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
+          content: "<@582602363278327809> <@1391615235252551841>"
           embed-title: "❌ Building Android (${{ env.ARTIFACT_LABEL }}) Failed"
           embed-color: 15158332
           embed-url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
