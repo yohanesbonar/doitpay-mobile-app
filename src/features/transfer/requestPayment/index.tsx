@@ -28,6 +28,7 @@ import { Info, TriangleAlert } from 'lucide-react-native';
 import { useIsFocused } from '@react-navigation/native';
 import { usePaymentMethodAvailability } from '../hooks/usePaymentMethodAvailability';
 import { useQuickAmounts } from '../hooks/useQuickAmounts';
+import { useReceiveAmountLimits } from '../hooks/useReceiveAmountLimits';
 import { getAmountRange, trackPaymentFunnelEvent } from '@/analytics/posthog';
 
 interface RequestPaymentViewProps {
@@ -68,8 +69,11 @@ export const RequestPaymentView = ({
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [isDisableConfirm, setIsDisableConfirm] = useState(false);
   const [isErrorMinimumReached, setIsErrorMinimumReached] = useState(false);
+  const [amountLimitError, setAmountLimitError] = useState<string | null>(null);
   const [calculateData, setCalculateData] = useState<any>(null);
   const [isLoadingCalculate, setIsLoadingCalculate] = useState(false);
+  const receiveAmountLimits = useReceiveAmountLimits();
+  const amountLimit = receiveAmountLimits[methodPayment];
   const paymentMethodAvailability = usePaymentMethodAvailability('RECEIVE');
   const quickAmounts = useQuickAmounts('RECEIVE');
 
@@ -108,7 +112,15 @@ export const RequestPaymentView = ({
     setHasSubmitted(true);
     const numericAmount = amount ? parseInt(amount, 10) : 0;
 
-    if (numericAmount < 10000) {
+    if (amountLimit.maxAmount !== null && numericAmount > amountLimit.maxAmount) {
+      setAmount(String(amountLimit.maxAmount));
+      setAmountLimitError(amountLimit.maxErrorMessage);
+      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+      inputRef.current?.focus();
+      return;
+    }
+
+    if (numericAmount < amountLimit.minAmount) {
       scrollViewRef.current?.scrollTo({ y: 0, animated: true });
       inputRef.current?.focus();
       return;
@@ -181,7 +193,11 @@ export const RequestPaymentView = ({
     };
 
     const fetchCalculation = async (amt: number) => {
-      if (methodPayment === 'VA' && !bankPayment?.code && amt >= 10000) return;
+      if (
+        (amountLimit.maxAmount !== null && amt > amountLimit.maxAmount) ||
+        (methodPayment === 'VA' && !bankPayment?.code && amt >= amountLimit.minAmount)
+      )
+        return;
 
       setIsLoadingCalculate(true);
       try {
@@ -213,7 +229,11 @@ export const RequestPaymentView = ({
     const isVaReady = methodPayment === 'VA' && !!bankPayment?.code;
     const isPaymentMethodReady = isQrisReady || isVaReady;
 
-    if (numericAmt >= 10000 && isPaymentMethodReady) {
+    if (
+      numericAmt >= amountLimit.minAmount &&
+      (amountLimit.maxAmount === null || numericAmt <= amountLimit.maxAmount) &&
+      isPaymentMethodReady
+    ) {
       setIsLoadingCalculate(true);
 
       const delayDebounceFn = setTimeout(() => {
@@ -222,17 +242,33 @@ export const RequestPaymentView = ({
 
       return () => clearTimeout(delayDebounceFn);
     }
-  }, [amount, methodPayment, bankPayment, isFocused, paymentMethodAvailability.isLoading]);
+  }, [
+    amount,
+    methodPayment,
+    bankPayment,
+    isFocused,
+    paymentMethodAvailability.isLoading,
+    amountLimit.minAmount,
+    amountLimit.maxAmount,
+  ]);
 
   useEffect(() => {
-    let errorMinimumReached;
-    let amountInt = parseInt(amount);
-    if (amountInt >= 10000) {
-      errorMinimumReached = false;
-    } else {
-      errorMinimumReached = true;
+    if (amountLimit.maxAmount === null) {
+      setAmountLimitError(null);
+      return;
     }
-    setIsErrorMinimumReached(errorMinimumReached);
+
+    if (amount && Number(amount) > amountLimit.maxAmount) {
+      setAmount(String(amountLimit.maxAmount));
+      setAmountLimitError(amountLimit.maxErrorMessage);
+    } else {
+      setAmountLimitError(null);
+    }
+  }, [amount, amountLimit]);
+
+  useEffect(() => {
+    const amountInt = amount ? parseInt(amount, 10) : 0;
+    setIsErrorMinimumReached(amountInt < amountLimit.minAmount);
 
     let isDisable;
     if (paymentMethodAvailability.isLoading) {
@@ -250,6 +286,7 @@ export const RequestPaymentView = ({
     amount,
     methodPayment,
     bankPayment,
+    amountLimit.minAmount,
     isLoadingCalculate,
     paymentMethodAvailability.isLoading,
     paymentMethodAvailability.hasAnyEnabled,
@@ -257,7 +294,14 @@ export const RequestPaymentView = ({
 
   const handleInputChange = (val: string) => {
     const cleanNumber = val.replace(/[^0-9]/g, '');
+    if (amountLimit.maxAmount !== null && Number(cleanNumber) > amountLimit.maxAmount) {
+      setAmount(String(amountLimit.maxAmount));
+      setAmountLimitError(amountLimit.maxErrorMessage);
+      return;
+    }
+
     setAmount(cleanNumber);
+    setAmountLimitError(null);
   };
 
   const showRequiredAmountError = hasSubmitted && isInputEmpty;
@@ -300,7 +344,10 @@ export const RequestPaymentView = ({
                   styles.amountInput,
                   amount.length === 0 ? styles.amountInputPlaceholder : styles.amountInputActive,
                   isErrorMinimumReached && !isInputEmpty && {},
-                  showRequiredAmountError && { borderColor: '#D32F2F', borderWidth: 1.5 },
+                  (showRequiredAmountError || amountLimitError) && {
+                    borderColor: '#D32F2F',
+                    borderWidth: 1.5,
+                  },
                 ]}
                 placeholder="Masukkan Nominal"
                 placeholderTextColor="#9CA3AF"
@@ -310,15 +357,20 @@ export const RequestPaymentView = ({
               />
             </View>
 
-            {showRequiredAmountError ? (
+            {amountLimitError ? (
+              <Text style={styles.textError}>{amountLimitError}</Text>
+            ) : showRequiredAmountError ? (
               <Text style={styles.textError}>Wajib diisi.</Text>
             ) : isErrorMinimumReached && !isInputEmpty ? (
-              <Text style={styles.textError}>{t('requestPayment.minimal')}</Text>
+              <Text style={styles.textError}>{amountLimit.minErrorMessage}</Text>
             ) : null}
 
             <View style={styles.chipContainer}>
               {quickAmounts.map((item) => (
-                <TouchableOpacity key={item} style={styles.chip} onPress={() => setAmount(item)}>
+                <TouchableOpacity
+                  key={item}
+                  style={styles.chip}
+                  onPress={() => handleInputChange(item)}>
                   <Text style={styles.chipText}>{formatShortAmount(item)}</Text>
                 </TouchableOpacity>
               ))}

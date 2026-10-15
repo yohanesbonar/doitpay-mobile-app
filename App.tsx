@@ -9,6 +9,7 @@ import {
   Alert,
   Linking,
   LogBox,
+  AppState,
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -46,7 +47,18 @@ import { AppLockScreen } from '@/components/organisms/AppLockScreen/index.tsx';
 import { startAppLockWatcher } from '@/utils/AppLock/appLockManager.ts';
 import { useAuthStore } from '@/storage/useAuthStore.ts';
 import { UpdateAppBottomSheet, UpdateAppData } from '@/components/molecules/UpdateAppBottomSheet';
-import { updateAppApi } from '@/api/updateApp';
+import {
+  APP_UPDATE_URL_ANDROID_KEY,
+  APP_UPDATE_URL_IOS_KEY,
+  getActiveRemoteConfigUpdateUrl,
+  updateAppApi,
+} from '@/api/updateApp';
+import {
+  refreshRemoteConfigAndNotify,
+  startRemoteConfigRealtimeUpdates,
+  subscribeToRemoteConfigUpdates,
+} from '@/api/remoteConfigRealtime';
+import FloatingDebugButton from '@/components/molecules/FloatingDebugButton';
 import { PostHogProvider } from 'posthog-react-native';
 import { posthogClient, trackScreenView } from './src/analytics/posthog';
 import DeviceInfo from 'react-native-device-info';
@@ -124,6 +136,38 @@ const App = () => {
     () => !!useAuthStore.getState().accessToken,
   );
   const accessToken = useAuthStore((state) => state.accessToken);
+
+  useEffect(() => startRemoteConfigRealtimeUpdates(), []);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        refreshRemoteConfigAndNotify().catch((error) => {
+          console.error('[Remote Config] Foreground refresh failed:', error);
+        });
+      }
+    });
+
+    return () => subscription.remove();
+  }, []);
+
+  useEffect(
+    () =>
+      subscribeToRemoteConfigUpdates((updatedKeys) => {
+        if (
+          updatedKeys.has(APP_UPDATE_URL_IOS_KEY) ||
+          updatedKeys.has(APP_UPDATE_URL_ANDROID_KEY)
+        ) {
+          const updateUrl = getActiveRemoteConfigUpdateUrl();
+          if (updateUrl) {
+            setUpdateAppData((currentData) =>
+              currentData ? { ...currentData, update_url: updateUrl } : currentData,
+            );
+          }
+        }
+      }),
+    [],
+  );
 
   // PRD Feature B: App Session Re-Authentication (PIN on reopen). The watcher only reports
   // "the app came back after being away too long" - it knows nothing about auth state, so
@@ -320,16 +364,15 @@ const App = () => {
                 </View>
               )}
               <Toast config={toastConfig} position="bottom" />
-              {isLoggerEnabled && isButtonVisible && (
-                <Pressable
-                  style={styles.floatingDebugButton}
+              {isLoggerEnabled && (
+                <FloatingDebugButton
+                  visible={isButtonVisible}
                   onPress={() => setLoggerVisible(true)}
                   onLongPress={() => {
                     setIsButtonVisible(false);
                     Alert.alert('Tombol log disembunyikan. Shake kembali untuk memunculkan.');
-                  }}>
-                  <Text style={styles.floatingDebugText}>🌐 Log</Text>
-                </Pressable>
+                  }}
+                />
               )}
 
               <Modal
@@ -412,26 +455,6 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 10,
     paddingHorizontal: 10,
-  },
-  floatingDebugButton: {
-    position: 'absolute',
-    bottom: 100,
-    right: 20,
-    backgroundColor: '#007AFF',
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 20,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    zIndex: 99999,
-  },
-  floatingDebugText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: 'bold',
   },
 });
 

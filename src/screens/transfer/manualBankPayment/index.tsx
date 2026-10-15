@@ -31,10 +31,16 @@ import Button from '@/components/atoms/Button';
 import { formatNumber } from '@/utils/Common';
 import { generateUUID } from '@/utils/uuid';
 import { useTheme } from '@/theme/ThemeProvider';
+import { transferApi } from '@/api/transfer';
 import {
-  manualBankApiMock,
-  ManualBankTransferData,
-} from '@/features/transfer/transferDetail/api/manual-bank.mock';
+  manualBankService,
+  ProofUploadError,
+} from '@/features/transfer/transferDetail/api/manual-bank';
+import type { ManualBankTransferData } from '@/api/transfer';
+import type { ProofUploadErrorType } from '@/features/transfer/transferDetail/api/manual-bank';
+
+const MAX_PROOF_FILE_SIZE = 5 * 1024 * 1024;
+const PROOF_CONTENT_TYPES = ['image/jpeg', 'image/png'];
 
 const ManualBankPaymentScreen = () => {
   const { colors } = useTheme();
@@ -46,16 +52,16 @@ const ManualBankPaymentScreen = () => {
     uri: string;
     fileName?: string | null;
     fileSize?: number | null;
+    contentType: string;
   } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [isCancelConfirmationVisible, setIsCancelConfirmationVisible] = useState(false);
-  const [errorType, setErrorType] = useState<'submission' | 'fileSize' | 'fileFormat' | null>(null);
+  const [errorType, setErrorType] = useState<ProofUploadErrorType | null>(null);
   const [countdown, setCountdown] = useState('00:00');
   const [expandedPaymentGuide, setExpandedPaymentGuide] = useState<string | null>(null);
   const manualBank = transferData?.manualBank;
-  const isBca = /bca|central asia/i.test(manualBank?.bankName ?? '');
-  const bankDisplayName = isBca ? 'Bank BCA' : manualBank?.bankName || 'bank tujuan';
+  const bankDisplayName = manualBank?.bankName || 'bank tujuan';
   const paymentGuides = [
     {
       title: 'Mobile Banking',
@@ -107,53 +113,79 @@ const ManualBankPaymentScreen = () => {
   };
 
   const chooseReceipt = async () => {
-    const result = await launchImageLibrary({ mediaType: 'photo', selectionLimit: 1 });
-    const asset = result.assets?.[0];
-    if (result.didCancel || !asset?.uri) return;
+    try {
+      const result = await launchImageLibrary({ mediaType: 'photo', selectionLimit: 1 });
+      const asset = result.assets?.[0];
+      if (result.didCancel || !asset?.uri) return;
 
-    if (asset.fileSize && asset.fileSize > 5 * 1024 * 1024) {
-      setErrorType('fileSize');
-      return;
+      if (asset.fileSize != null && asset.fileSize > MAX_PROOF_FILE_SIZE) {
+        setErrorType('fileSize');
+        return;
+      }
+
+      const fileExtension = asset.fileName?.split('.').pop()?.toLowerCase();
+      const assetContentType = asset.type?.toLowerCase();
+      const contentType =
+        (assetContentType === 'image/jpg' ? 'image/jpeg' : assetContentType) ||
+        (['jpg', 'jpeg'].includes(fileExtension ?? '')
+          ? 'image/jpeg'
+          : fileExtension === 'png'
+            ? 'image/png'
+            : '');
+      if (!PROOF_CONTENT_TYPES.includes(contentType)) {
+        setErrorType('fileFormat');
+        return;
+      }
+
+      setErrorType(null);
+      setReceiptAsset({
+        uri: asset.uri,
+        fileName: asset.fileName,
+        fileSize: asset.fileSize,
+        contentType,
+      });
+    } catch (error) {
+      console.error('Failed to select transfer proof:', error);
+      setErrorType('serverError');
     }
-
-    const fileExtension = asset.fileName?.split('.').pop()?.toLowerCase();
-    const isSupportedFormat =
-      ['jpg', 'jpeg', 'png'].includes(fileExtension ?? '') ||
-      ['image/jpeg', 'image/png'].includes(asset.type ?? '');
-    if (!isSupportedFormat) {
-      setErrorType('fileFormat');
-      return;
-    }
-
-    setErrorType(null);
-    setReceiptAsset({ uri: asset.uri, fileName: asset.fileName, fileSize: asset.fileSize });
   };
 
   const submitReceipt = async () => {
     if (!receiptAsset?.uri || !transferData?.id) return;
     setIsSubmitting(true);
     try {
-      const response = await manualBankApiMock.submitProof(
+      const response = await manualBankService.submitProof(
         transferData.id,
         receiptAsset.uri,
+        receiptAsset.contentType,
         receiptAsset.fileName,
       );
-      if (response.data.status === 'VERIFYING') {
-        navigation.replace('ManualBankVerification', {
-          transferData,
-          accountData: route.params?.accountData,
-          bankData: route.params?.bankData,
-        });
+      if (response.status !== 'success') {
+        throw new Error(response.message || 'Proof upload confirmation failed');
       }
-    } catch {
-      setErrorType('submission');
+
+      navigation.replace('ManualBankVerification', {
+        transferData,
+        accountData: route.params?.accountData,
+        bankData: route.params?.bankData,
+        originTab: route.params?.originTab,
+      });
+    } catch (error) {
+      console.error('Failed to upload transfer proof:', error);
+      setErrorType(error instanceof ProofUploadError ? error.type : 'serverError');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleErrorAction = () => {
+    const shouldRetryUpload = errorType === 'serverError';
     setErrorType(null);
+    if (shouldRetryUpload) {
+      void submitReceipt();
+    } else {
+      void chooseReceipt();
+    }
   };
 
   const cancelTransfer = async () => {
@@ -161,7 +193,7 @@ const ManualBankPaymentScreen = () => {
 
     setIsCancelling(true);
     try {
-      const response = await manualBankApiMock.cancelTransfer(transferData.id, generateUUID());
+      const response = await transferApi.cancelTransfer(transferData.id, generateUUID());
       if (response.data.statusUser !== 'CANCELLED') return;
       navigation.goBack();
     } catch {
@@ -203,7 +235,7 @@ const ManualBankPaymentScreen = () => {
               <Text style={styles.amount}>{formatNumber(manualBank?.totalAmount ?? 0)}</Text>
             </View>
             <TouchableOpacity
-              onPress={() => copyValue("Nominal Transfer", String(manualBank?.totalAmount ?? ''))}
+              onPress={() => copyValue('Nominal Transfer', String(manualBank?.totalAmount ?? ''))}
               style={styles.copyButton}>
               <Copy size={16} color="#FFF" />
               <Text style={styles.copyButtonText}>Salin</Text>
@@ -211,29 +243,23 @@ const ManualBankPaymentScreen = () => {
           </View>
           <View style={styles.bankDetails}>
             <View style={styles.bankHeader}>
-              {isBca ? (
+              {manualBank?.logoUrl ? (
                 <Image
-                  source={require('../../../assets/images/ic-BCA.png')}
+                  source={{ uri: manualBank.logoUrl }}
                   style={styles.bankLogo}
                   resizeMode="contain"
                 />
-              ) : (
-                <View style={styles.bankLogoFallback}>
-                  <Text style={styles.bankLogoText}>
-                    {manualBank?.bankName?.slice(0, 3).toUpperCase()}
-                  </Text>
-                </View>
-              )}
+              ) : null}
               <View>
-                <Text style={styles.bankName}>Doitpay</Text>
-                <Text style={styles.accountName}>{isBca ? 'Bank BCA' : manualBank?.bankName}</Text>
+                <Text style={styles.bankName}>{manualBank?.accountName}</Text>
+                <Text style={styles.accountName}>{manualBank?.bankName}</Text>
               </View>
             </View>
             <Text style={styles.accountNumberLabel}>Nomor rekening</Text>
             <View style={styles.accountNumberRow}>
               <Text style={styles.accountNumber}>{manualBank?.accountNumber}</Text>
               <TouchableOpacity
-                onPress={() => copyValue("Nomor Rekening", manualBank?.accountNumber ?? '')}
+                onPress={() => copyValue('Nomor Rekening', manualBank?.accountNumber ?? '')}
                 style={styles.copyButton}>
                 <Copy size={16} color="#FFF" />
                 <Text style={styles.copyButtonText}>Salin</Text>
@@ -369,30 +395,30 @@ const ManualBankPaymentScreen = () => {
             <View
               style={[
                 styles.errorIconCircle,
-                errorType === 'submission' ? styles.errorIconDanger : styles.errorIconWarning,
+                errorType === 'serverError' ? styles.errorIconDanger : styles.errorIconWarning,
               ]}>
-              {errorType === 'submission' ? (
+              {errorType === 'serverError' ? (
                 <WifiOff size={34} color="#DC2626" strokeWidth={2.5} />
               ) : (
                 <FileWarning size={34} color="#D18B00" strokeWidth={2} />
               )}
             </View>
             <Text style={styles.errorTitle}>
-              {errorType === 'submission'
+              {errorType === 'serverError'
                 ? 'Gagal Mengirim Bukti Transfer'
                 : errorType === 'fileSize'
                   ? 'Ukuran File Terlalu Besar'
                   : 'Format File Tidak Didukung'}
             </Text>
             <Text style={styles.errorDescription}>
-              {errorType === 'submission'
-                ? 'Periksa Internet kamu dan coba lagi'
+              {errorType === 'serverError'
+                ? 'Terjadi gangguan server atau koneksi. Silakan coba lagi.'
                 : errorType === 'fileSize'
                   ? 'Maksimal ukuran file 5MB. Silahkan pilih file lain'
                   : 'Gunakan format JPG, JPEG atau PNG'}
             </Text>
             <Button
-              title={errorType === 'submission' ? 'Coba Lagi' : 'Pilih File Lain'}
+              title={errorType === 'serverError' ? 'Coba Lagi' : 'Pilih File Lain'}
               onPress={handleErrorAction}
               type="regular"
               color="#3B82F6"
@@ -500,7 +526,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E7EB',
     marginRight: 14,
-    padding: 8,
+    padding: 1,
   },
   bankLogoFallback: {
     width: 64,

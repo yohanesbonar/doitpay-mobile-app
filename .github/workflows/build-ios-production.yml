@@ -1,4 +1,5 @@
 name: Build iOS (Production)
+run-name: Build iOS (Production / ${{ inputs.upload == 'testflight' && 'TestFlight' || 'Firebase' }})
 
 on:
   workflow_dispatch:

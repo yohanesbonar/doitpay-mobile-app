@@ -27,6 +27,7 @@ interface CreateAndConfirmPINProps {
   onBiometricLoginPress?: () => void;
   isBiometricLoginPending?: boolean;
   showNumericKeypad?: boolean;
+  disabled?: boolean;
   PIN_LENGTH: number;
 }
 
@@ -47,6 +48,7 @@ const CreateAndConfirmPIN = ({
   onBiometricLoginPress,
   isBiometricLoginPending,
   showNumericKeypad = false,
+  disabled = false,
   PIN_LENGTH,
 }: CreateAndConfirmPINProps) => {
   const { t } = useTranslation();
@@ -114,7 +116,7 @@ const CreateAndConfirmPIN = ({
           leftAction={step === 4 && isLoginState ? biometricAction : undefined}
           onLeftActionPress={onBiometricLoginPress}
           isLeftActionPending={Boolean(isBiometricLoginPending)}
-          disabled={Boolean(isBiometricLoginPending)}
+          disabled={disabled || Boolean(isBiometricLoginPending)}
         />
       ) : step === 4 && isLoginState && biometricLoginAvailable && biometricAction ? (
         <Pressable

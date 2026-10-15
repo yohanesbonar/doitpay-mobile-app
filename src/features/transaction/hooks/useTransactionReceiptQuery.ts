@@ -15,5 +15,7 @@ export const useTransactionReceiptQuery = (
         ? transactionApi.getReceiveReceipt(referenceId!)
         : transactionApi.getTransferReceipt(referenceId!),
     enabled: !!referenceId && !!type,
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 };

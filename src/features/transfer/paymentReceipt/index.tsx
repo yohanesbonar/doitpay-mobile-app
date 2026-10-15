@@ -20,7 +20,9 @@ import { formatApiDateToLocal, formatNumber } from '@/utils/Common';
 import ViewShot from 'react-native-view-shot';
 import { CameraRoll } from '@react-native-camera-roll/camera-roll';
 import Share from 'react-native-share';
-import { useReceiveStatusQuery, useTransferDetailQuery } from '@/hooks/useTransferMutation';
+import { useReceiveStatusQuery } from '@/hooks/useTransferMutation';
+import { useTransactionReceiptQuery } from '@/features/transaction/hooks/useTransactionReceiptQuery';
+import { TransactionType } from '@/features/transaction/types';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -62,11 +64,59 @@ const PaymentReceiptView = ({
       : paymentMethod === 'VA'
         ? 'Virtual Account'
         : paymentMethod || 'Virtual Account';
-  const { data: transferDetailData } = useTransferDetailQuery(
-    method !== 'receive' && method !== 'manualBank' ? transactionId : undefined,
-  );
   const { data: receiveStatusData } = useReceiveStatusQuery(
     method === 'receive' ? transactionId : undefined,
+  );
+  const { data: transferReceiptResponse } = useTransactionReceiptQuery(
+    method === 'pay' || method === 'manualBank' ? transactionId : undefined,
+    method === 'pay' || method === 'manualBank' ? TransactionType.TRANSFER_OUT : undefined,
+  );
+  const transferReceiptData = transferReceiptResponse?.data;
+
+  const manualBankApiReceipt = useMemo(() => {
+    const detail = transferReceiptData;
+    if (method !== 'manualBank' || !detail) return undefined;
+
+    const beneficiaryBankName =
+      detail.beneficiaryBankName || manualBankReceiptData?.beneficiaryBankName || bankData?.name;
+    const manualBankPaymentMethod = beneficiaryBankName
+      ? `Transfer Bank - ${beneficiaryBankName}`
+      : paymentMethod;
+    const totalAmount = detail.totalAmount ?? manualBankReceiptData?.totalAmount;
+
+    return {
+      ...detail,
+      paymentMethod: manualBankPaymentMethod,
+      paymentMethodName: manualBankPaymentMethod,
+      paymentMethodLogoUrl:
+        detail.paymentMethodLogoUrl || manualBankReceiptData?.paymentMethodLogoUrl,
+      beneficiaryName: detail.beneficiaryName || manualBankReceiptData?.beneficiaryName,
+      beneficiaryBankName,
+      beneficiaryBankLogo: detail.beneficiaryBankLogo || manualBankReceiptData?.beneficiaryBankLogo,
+      beneficiaryAccountNumber:
+        detail.beneficiaryAccountNumber || manualBankReceiptData?.beneficiaryAccountNumber,
+      uniqueCode: detail.uniqueCode ?? manualBankReceiptData?.uniqueCode,
+      totalAmount,
+    };
+  }, [bankData?.name, method, manualBankReceiptData, paymentMethod, transferReceiptData]);
+  const transferReceiptFallback = useMemo(
+    () =>
+      method === 'pay'
+        ? {
+            id: transactionId,
+            amount,
+            createdAt: dateTime,
+            paymentMethod,
+            paymentMethodName: paymentMethod,
+            paymentMethodLogoUrl: bankData?.logoUrl,
+            beneficiaryName:
+              accountData?.name || accountData?.ownerName || accountData?.accountHolderName,
+            beneficiaryBankName: accountData?.bankName || bankData?.name,
+            beneficiaryBankLogo: bankData?.logoUrl,
+            beneficiaryAccountNumber: accountData?.accountNumber,
+          }
+        : undefined,
+    [accountData, amount, bankData, dateTime, method, paymentMethod, transactionId],
   );
 
   const receiptInfo = useMemo(() => {
@@ -82,26 +132,32 @@ const PaymentReceiptView = ({
       };
     }
 
-    if (method === 'manualBank' && manualBankReceiptData) {
-      return {
-        amount: manualBankReceiptData.amount?.toString() || baseAmount,
-        dateTime: formatApiDateToLocal(manualBankReceiptData.createdAt || '') || baseDateTime,
-      };
-    }
-
-    if (method !== 'receive' && transferDetailData?.data) {
-      const detail = transferDetailData.data as any;
-      return {
-        amount: detail.amount?.toString() || baseAmount,
-        dateTime: formatApiDateToLocal(detail.createdAt) || baseDateTime,
-      };
+    if (method === 'manualBank' || method === 'pay') {
+      const detail =
+        method === 'manualBank'
+          ? manualBankApiReceipt || manualBankReceiptData
+          : transferReceiptData;
+      if (detail) {
+        return {
+          amount: detail.amount?.toString() || baseAmount,
+          dateTime: formatApiDateToLocal(detail.createdAt || '') || baseDateTime,
+        };
+      }
     }
 
     return {
       amount: baseAmount,
       dateTime: baseDateTime,
     };
-  }, [method, receiveStatusData, transferDetailData, manualBankReceiptData, amount, dateTime]);
+  }, [
+    method,
+    receiveStatusData,
+    transferReceiptData,
+    manualBankApiReceipt,
+    manualBankReceiptData,
+    amount,
+    dateTime,
+  ]);
 
   const effectiveAmount = receiptInfo.amount || amount || '0';
   const formattedAmount = formatNumber(effectiveAmount);
@@ -112,8 +168,10 @@ const PaymentReceiptView = ({
     method === 'receive'
       ? receiveStatusData?.data
       : method === 'manualBank'
-        ? manualBankReceiptData
-        : transferDetailData?.data
+        ? manualBankApiReceipt || manualBankReceiptData
+        : method === 'pay'
+          ? transferReceiptData || transferReceiptFallback
+          : undefined
   ) as any;
 
   const effectiveTransactionId = receiptData?.id || transactionId || '-';
@@ -352,11 +410,21 @@ const PaymentReceiptView = ({
           <Text style={receiptStyles.receiptDetailLabel}>Metode Pembayaran</Text>
           <Text style={receiptStyles.receiptDetailValue}>{effectivePaymentMethodLabel}</Text>
         </View>
-        <View style={receiptStyles.receiptDetailRow}>
-          <Text style={receiptStyles.receiptDetailLabel}>Jumlah</Text>
-          <Text style={receiptStyles.receiptDetailValue}>Rp {formattedAmount}</Text>
-        </View>
-        {effectiveFee != null && (
+        {method !== 'manualBank' && (
+          <View style={receiptStyles.receiptDetailRow}>
+            <Text style={receiptStyles.receiptDetailLabel}>Jumlah</Text>
+            <Text style={receiptStyles.receiptDetailValue}>Rp {formattedAmount}</Text>
+          </View>
+        )}
+        {method === 'manualBank' && receiptData?.uniqueCode != null && (
+          <View style={receiptStyles.receiptDetailRow}>
+            <Text style={receiptStyles.receiptDetailLabel}>Kode Unik</Text>
+            <Text style={receiptStyles.receiptDetailValue}>
+              Rp {formatNumber(receiptData.uniqueCode.toString())}
+            </Text>
+          </View>
+        )}
+        {method !== 'manualBank' && effectiveFee != null && (
           <View style={receiptStyles.receiptDetailRow}>
             <Text style={receiptStyles.receiptDetailLabel}>Biaya Admin</Text>
             <Text style={receiptStyles.receiptDetailValue}>
@@ -453,7 +521,7 @@ const PaymentReceiptView = ({
               <Text style={styles.detailValue}>Rp {formattedAmount}</Text>
             </View>
           )}
-          {effectiveFee != null && (
+          {method !== 'manualBank' && effectiveFee != null && (
             <View style={styles.detailRow}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Text style={styles.detailLabelWithIcon}>Biaya Admin</Text>
@@ -468,7 +536,9 @@ const PaymentReceiptView = ({
           {method == 'manualBank' && receiptData?.uniqueCode != null && (
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Kode Unik</Text>
-              <Text style={styles.detailValue}>Rp {formatNumber(receiptData.uniqueCode.toString())}</Text>
+              <Text style={styles.detailValue}>
+                Rp {formatNumber(receiptData.uniqueCode.toString())}
+              </Text>
             </View>
           )}
           {effectiveTotalAmount != null && (

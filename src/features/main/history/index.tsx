@@ -79,9 +79,16 @@ const initialDate = { month: undefined as number | undefined, year: currentYear 
 
 interface NavigateToDetailParams {
   id: string;
+  originTab?: 'home' | 'history';
   referenceId: string;
   type: string;
   status: string;
+  transactionMethod: string;
+  amount: number;
+  createdAt: string;
+  accountHolderName: string;
+  accountNumber?: string;
+  bankShortName: string;
 }
 
 interface HistoryProps {
@@ -114,7 +121,9 @@ export const History: FC<HistoryProps> = ({ navigateToDetail }) => {
       params.payment_type =
         activeFilters.paymentType === 'Virtual Account'
           ? 'VIRTUAL_ACCOUNT'
-          : activeFilters.paymentType;
+          : activeFilters.paymentType === 'Transfer Bank'
+            ? 'MANUAL_BANK'
+            : activeFilters.paymentType;
     }
     if (activeFilters.transactionType !== 'Semua') {
       params.transaction_type =
@@ -236,12 +245,18 @@ export const History: FC<HistoryProps> = ({ navigateToDetail }) => {
                 onPress={() =>
                   navigateToDetail({
                     id: item.id,
+                    originTab: 'history',
                     referenceId: item.referenceId,
                     type: item.type,
                     status: item.status,
+                    transactionMethod: item.transactionMethod,
+                    amount: item.amount,
+                    createdAt: item.createdAt,
+                    accountHolderName: item.accountHolderName,
+                    accountNumber: item.beneficiaryAccountNumber,
+                    bankShortName: item.bankShortName,
                   })
-                }
-              >
+                }>
                 <HistoryItem item={item} />
               </Pressable>
             )}

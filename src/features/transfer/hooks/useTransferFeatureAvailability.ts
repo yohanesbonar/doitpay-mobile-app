@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import remoteConfig from '@react-native-firebase/remote-config';
 import { useIsFocused } from '@react-navigation/native';
+import { subscribeToRemoteConfigUpdates } from '@/api/remoteConfigRealtime';
 
 interface TransferFeatureAvailability {
   transferEnabled: boolean;
@@ -21,6 +22,7 @@ export const useTransferFeatureAvailability = (): TransferFeatureAvailability =>
 
   useEffect(() => {
     let isMounted = true;
+    let unsubscribeFromUpdates: (() => void) | undefined;
 
     if (!isFocused) {
       return () => {
@@ -40,17 +42,35 @@ export const useTransferFeatureAvailability = (): TransferFeatureAvailability =>
         await rc.setDefaults(REMOTE_CONFIG_DEFAULTS);
         await rc.activate();
 
-        if (isMounted) {
+        const applyConfig = () => {
+          if (!isMounted) {
+            return;
+          }
+
           setTransferEnabled(rc.getValue('transfer_feature_enabled').asBoolean());
           setReceiveEnabled(rc.getValue('receive_feature_enabled').asBoolean());
           setIsLoading(false);
+        };
+
+        const unsubscribe = subscribeToRemoteConfigUpdates((updatedKeys) => {
+          if (
+            updatedKeys.has('transfer_feature_enabled') ||
+            updatedKeys.has('receive_feature_enabled')
+          ) {
+            applyConfig();
+          }
+        });
+        if (isMounted) {
+          unsubscribeFromUpdates = unsubscribe;
+        } else {
+          unsubscribe();
+          return;
         }
 
+        applyConfig();
+
         await rc.fetchAndActivate();
-        if (isMounted) {
-          setTransferEnabled(rc.getValue('transfer_feature_enabled').asBoolean());
-          setReceiveEnabled(rc.getValue('receive_feature_enabled').asBoolean());
-        }
+        applyConfig();
       } catch (error) {
         if (!isMounted) {
           return;
@@ -64,6 +84,7 @@ export const useTransferFeatureAvailability = (): TransferFeatureAvailability =>
 
     return () => {
       isMounted = false;
+      unsubscribeFromUpdates?.();
     };
   }, [isFocused]);
 

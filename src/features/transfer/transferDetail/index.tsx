@@ -18,6 +18,7 @@ import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import { formatNumber } from '@/utils/Common';
 import {
   useReceive,
+  useManualTransfer,
   useTransfer,
   useTransactionPurposes,
 } from '../../../hooks/useTransferMutation';
@@ -31,12 +32,34 @@ import {
 import { Info, TriangleAlert, ChevronDown, Check } from 'lucide-react-native';
 import { usePaymentMethodAvailability } from '../hooks/usePaymentMethodAvailability';
 import { useQuickAmounts } from '../hooks/useQuickAmounts';
-import {
-  manualBankApiMock,
-  ManualBankOption,
-  ManualBankTransferData,
-} from './api/manual-bank.mock';
+import { manualBankService } from './api/manual-bank';
+import type { ManualTransferMethod } from '@/api/transfer';
 import { getAmountRange, trackPaymentFunnelEvent, trackPostHogEvent } from '@/analytics/posthog';
+import { generateUUID } from '@/utils/uuid';
+import { useTransferAmountLimits } from '@/features/transfer/hooks/useTransferAmountLimits';
+
+const getTransferErrorMessage = (error: unknown): string | undefined => {
+  if (typeof error !== 'object' || error === null) return undefined;
+
+  const apiError = error as {
+    message?: unknown;
+    error?: unknown;
+    response?: { data?: unknown };
+  };
+  const responseData =
+    typeof apiError.response?.data === 'object' && apiError.response.data !== null
+      ? (apiError.response.data as { message?: unknown; error?: unknown })
+      : undefined;
+  const nestedMessage =
+    typeof responseData?.error === 'object' && responseData.error !== null
+      ? (responseData.error as { message?: unknown }).message
+      : typeof apiError.error === 'object' && apiError.error !== null
+        ? (apiError.error as { message?: unknown }).message
+        : undefined;
+  const message = responseData?.message ?? nestedMessage ?? apiError.message;
+
+  return typeof message === 'string' && message.trim() ? message : undefined;
+};
 
 interface TransferDetailViewProps {
   accountData: {
@@ -98,19 +121,33 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
   const [methodPayment, setMethodPayment] = useState<'VA' | 'QRIS' | 'MANUAL_BANK'>(
     initialPaymentMethod || 'VA',
   );
+  const transferAmountLimits = useTransferAmountLimits();
+  const amountLimit = transferAmountLimits[methodPayment];
+  const isManualBankAmountLimitEnabled = methodPayment === 'MANUAL_BANK';
+  const [amountLimitError, setAmountLimitError] = useState<string | null>(null);
   const [bankPayment, setBankPayment] = useState(initialBankPayment || null);
-  const [manualBank, setManualBank] = useState<ManualBankOption | null>(null);
+  const [manualBank, setManualBank] = useState<ManualTransferMethod | null>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [isDisableConfirm, setIsDisableConfirm] = useState(true);
-  const [isCreatingManualTransfer, setIsCreatingManualTransfer] = useState(false);
 
   const [calculateData, setCalculateData] = useState<PaymentCalculateData | null>(null);
   const [isLoadingCalculate, setIsLoadingCalculate] = useState(false);
   const calculateRequestIdRef = useRef(0);
+  const isTransferFeeFree = calculateData?.isFreeTransfer === true || calculateData?.fee === 0;
+  const showManualBankDefaultFee =
+    methodPayment === 'MANUAL_BANK' &&
+    isTransferFeeFree &&
+    calculateData?.defaultFeePerTransaction != null &&
+    calculateData.defaultFeePerTransaction > 0;
+  const manualBankDefaultFeeLabel =
+    showManualBankDefaultFee && calculateData?.defaultFeePerTransaction != null
+      ? `Rp ${formatNumber(calculateData.defaultFeePerTransaction)}`
+      : null;
   const paymentMethodAvailability = usePaymentMethodAvailability('TRANSFER');
   const quickAmounts = useQuickAmounts('TRANSFER');
 
   const { mutate: postTransfer, isPending: isLoadingTransfer } = useTransfer();
+  const { mutate: postManualTransfer, isPending: isCreatingManualTransfer } = useManualTransfer();
   const {
     data: purposesData,
     isLoading: isLoadingPurposes,
@@ -120,6 +157,39 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
     refetch: refetchPurposes,
   } = useTransactionPurposes();
   const purposes = purposesData?.data?.items ?? [];
+
+  const applyAmountInput = (value: string) => {
+    const nextAmount = value.replace(/[^0-9]/g, '');
+    if (
+      isManualBankAmountLimitEnabled &&
+      amountLimit.maxAmount !== null &&
+      Number(nextAmount) > amountLimit.maxAmount
+    ) {
+      setAmount(String(amountLimit.maxAmount));
+      setAmountLimitError(amountLimit.maxErrorMessage);
+      return;
+    }
+
+    setAmount(nextAmount);
+    setAmountLimitError(null);
+  };
+
+  useEffect(() => {
+    if (!isManualBankAmountLimitEnabled) {
+      setAmountLimitError(null);
+      return;
+    }
+
+    if (
+      amount &&
+      isManualBankAmountLimitEnabled &&
+      amountLimit.maxAmount !== null &&
+      Number(amount) > amountLimit.maxAmount
+    ) {
+      setAmount(String(amountLimit.maxAmount));
+      setAmountLimitError(amountLimit.maxErrorMessage);
+    }
+  }, [amount, isManualBankAmountLimitEnabled, amountLimit]);
 
   useEffect(() => {
     if (isPurposesError) {
@@ -158,7 +228,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
   useEffect(() => {
     const numericAmount = amount ? parseInt(amount, 10) : 0;
 
-    if (numericAmount >= 10000 && !hasTrackedValidAmountRef.current) {
+    if (numericAmount >= amountLimit.minAmount && !hasTrackedValidAmountRef.current) {
       trackPostHogEvent('transfer_amount_entered', {
         amount_range: getAmountRange(numericAmount),
         destination_bank: bankData?.shortName || bankData?.name || 'unknown',
@@ -167,7 +237,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
 
       hasTrackedValidAmountRef.current = true;
     }
-  }, [amount, bankData?.name, bankData?.shortName, methodPayment]);
+  }, [amount, amountLimit.minAmount, bankData?.name, bankData?.shortName, methodPayment]);
 
   useEffect(() => {
     const { vaEnabled, qrisEnabled, manualBankEnabled, defaultMethod } = paymentMethodAvailability;
@@ -211,7 +281,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
 
     const fetchCalculation = async (amt: number) => {
       if (
-        amt < 10000 ||
+        amt < amountLimit.minAmount ||
         (methodPayment === 'VA' && !bankPayment?.code) ||
         (methodPayment === 'MANUAL_BANK' && !manualBank?.code)
       ) {
@@ -223,21 +293,33 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
       setIsLoadingCalculate(true);
       try {
         const payload = getCalculatePayload(amt);
-        if (methodPayment === 'MANUAL_BANK') {
-          const mockResponse = await manualBankApiMock.calculate(amt);
-          if (requestId === calculateRequestIdRef.current) {
-            setCalculateData(mockResponse);
-          }
-        } else {
-          const res = await paymentApi.calculatePayment(payload);
-          if (requestId === calculateRequestIdRef.current && res?.status === 'success') {
+        const res = await paymentApi.calculatePayment(payload);
+        if (requestId === calculateRequestIdRef.current) {
+          if (res?.status === 'success') {
             setCalculateData(res.data);
+          } else {
+            setCalculateData(null);
+            Toast.show({
+              type: 'error',
+              text1: res?.message || 'Gagal menghitung biaya transfer. Silakan coba lagi.',
+            });
           }
         }
       } catch (error) {
         if (requestId === calculateRequestIdRef.current) {
           setCalculateData(null);
           console.log('Calculate error:', error);
+          const apiError = error as {
+            error?: { message?: string };
+            message?: string;
+          };
+          Toast.show({
+            type: 'error',
+            text1:
+              apiError?.error?.message ||
+              apiError?.message ||
+              'Gagal menghitung biaya transfer. Silakan coba lagi.',
+          });
         }
       } finally {
         if (requestId === calculateRequestIdRef.current) {
@@ -267,7 +349,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
     const isManualBankReady = methodPayment === 'MANUAL_BANK' && !!manualBank?.code;
     const isPaymentMethodReady = isQrisReady || isVaReady || isManualBankReady;
 
-    if (numericAmt >= 10000 && isPaymentMethodReady) {
+    if (numericAmt >= amountLimit.minAmount && isPaymentMethodReady) {
       setIsLoadingCalculate(true);
 
       const delayDebounceFn = setTimeout(() => {
@@ -279,6 +361,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
   }, [
     amount,
     methodPayment,
+    amountLimit.minAmount,
     bankPayment,
     manualBank,
     isFocused,
@@ -289,7 +372,19 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
     setHasSubmitted(true);
     const numericAmount = amount ? parseInt(amount, 10) : 0;
 
-    if (numericAmount < 10000) {
+    if (
+      isManualBankAmountLimitEnabled &&
+      amountLimit.maxAmount !== null &&
+      numericAmount > amountLimit.maxAmount
+    ) {
+      setAmount(String(amountLimit.maxAmount));
+      setAmountLimitError(amountLimit.maxErrorMessage);
+      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+      inputRef.current?.focus();
+      return;
+    }
+
+    if (numericAmount < amountLimit.minAmount) {
       scrollViewRef.current?.scrollTo({ y: 0, animated: true });
       inputRef.current?.focus();
       return;
@@ -348,31 +443,33 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
     };
 
     if (methodPayment === 'MANUAL_BANK' && manualBank && calculateData) {
-      setIsCreatingManualTransfer(true);
-      manualBankApiMock
-        .createTransfer({
+      postManualTransfer(
+        {
           payload: {
-            inquiryId: accountData?.id,
+            inquiryId: accountData.id,
             amount: numericAmount,
-            transactionPurpose: selectedPurpose?.code ?? '',
+            transactionPurpose: selectedPurpose.code,
             payMethod: 'MANUAL_BANK',
             payChannel: manualBank.code,
           },
-          bank: manualBank,
-          uniqueCode: calculateData.uniqueCode ?? 0,
-          totalAmount: calculateData.totalAmount,
-        })
-        .then((response) => {
-          navigation.navigate('ManualBankPayment', {
-            transferData: response.data as ManualBankTransferData,
-            accountData,
-            bankData,
-          });
-        })
-        .catch(() => {
-          Toast.show({ type: 'error', text1: 'Gagal membuat transfer. Silakan coba lagi.' });
-        })
-        .finally(() => setIsCreatingManualTransfer(false));
+          idempotencyKey: generateUUID(),
+        },
+        {
+          onSuccess: (response) => {
+            navigation.navigate('ManualBankPayment', {
+              transferData: response.data,
+              accountData,
+              bankData,
+            });
+          },
+          onError: (error) => {
+            Toast.show({
+              type: 'error',
+              text1: getTransferErrorMessage(error) || 'Gagal membuat transfer. Silakan coba lagi.',
+            });
+          },
+        },
+      );
       return;
     }
     let idempotencyKey = new Date().getTime().toString();
@@ -410,13 +507,10 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
             });
           }
 
-          const apiErrorMessage = (error as { error?: { message?: string } })?.error?.message;
-          if (apiErrorMessage) {
-            Toast.show({
-              type: 'error',
-              text1: apiErrorMessage,
-            });
-          }
+          Toast.show({
+            type: 'error',
+            text1: getTransferErrorMessage(error) || 'Gagal membuat transfer. Silakan coba lagi.',
+          });
         },
       },
     );
@@ -429,14 +523,15 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
     hasSubmitted &&
     ((methodPayment === 'VA' && !bankPayment?.code) ||
       (methodPayment === 'MANUAL_BANK' && !manualBank?.code));
-  const showMinAmountError = amount !== '' && numericAmount > 0 && numericAmount < 10000;
+  const showMinAmountError =
+    amount !== '' && numericAmount > 0 && numericAmount < amountLimit.minAmount;
 
   useEffect(() => {
     let isDisable = true;
     const isManualBankIncomplete =
       methodPayment === 'MANUAL_BANK' &&
       (!paymentMethodAvailability.manualBankEnabled ||
-        numericAmount < 10000 ||
+        numericAmount < amountLimit.minAmount ||
         !selectedPurpose ||
         !manualBank?.code ||
         !calculateData);
@@ -447,8 +542,6 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
       isDisable = true;
     } else if (isLoadingCalculate) {
       isDisable = true;
-    } else if (isManualBankIncomplete) {
-      isDisable = true;
     } else {
       isDisable = false;
     }
@@ -458,6 +551,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
     bankPayment,
     amount,
     numericAmount,
+    amountLimit.minAmount,
     isLoadingCalculate,
     calculateData,
     selectedPurpose,
@@ -515,7 +609,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
                 value={formatNumber(amount)}
                 onFocus={() => setIsFocusedInput(true)}
                 onBlur={() => setIsFocusedInput(false)}
-                onChangeText={(val) => setAmount(val.replace(/[^0-9]/g, ''))}
+                onChangeText={applyAmountInput}
                 blurOnSubmit={false}
                 placeholderTextColor={'#A9A9A9'}
               />
@@ -523,11 +617,22 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
           </TouchableWithoutFeedback>
         </View>
 
-        {showRequiredAmountError ? (
+        {amountLimitError ? (
           <Text
             style={{
               color: '#D32F2F',
-              marginLeft: 58,
+              marginLeft: 20,
+              marginTop: 8,
+              fontFamily: 'Switzer-Regular',
+              fontSize: 14,
+            }}>
+            {amountLimitError}
+          </Text>
+        ) : showRequiredAmountError ? (
+          <Text
+            style={{
+              color: '#D32F2F',
+              marginLeft: 20,
               marginTop: 8,
               fontFamily: 'Switzer-Regular',
               fontSize: 14,
@@ -538,18 +643,18 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
           <Text
             style={{
               color: '#D32F2F',
-              marginLeft: 34,
+              marginLeft: 20,
               marginTop: 8,
               fontFamily: 'Switzer-Regular',
               fontSize: 14,
             }}>
-            Minimal transfer Rp 10.000
+            {amountLimit.minErrorMessage}
           </Text>
         ) : null}
 
         <QuickAmount
           currentAmount={amount}
-          onAmountPress={(val) => setAmount(val)}
+          onAmountPress={applyAmountInput}
           amounts={quickAmounts}
         />
 
@@ -785,9 +890,9 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
               <Text style={{ fontFamily: 'Switzer-Regular', color: '#000000', fontSize: 14 }}>
                 Biaya transfer
               </Text>
-              {calculateData.isFreeTransfer || calculateData.fee === 0 ? (
+              {isTransferFeeFree ? (
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                  {methodPayment === 'MANUAL_BANK' && calculateData.feePerTransaction > 0 ? (
+                  {manualBankDefaultFeeLabel ? (
                     <Text
                       style={{
                         fontFamily: 'Switzer-Regular',
@@ -795,7 +900,7 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
                         fontSize: 14,
                         textDecorationLine: 'line-through',
                       }}>
-                      {`Rp ${formatNumber(calculateData.feePerTransaction)}`}
+                      {manualBankDefaultFeeLabel}
                     </Text>
                   ) : null}
                   <Text style={{ fontFamily: 'Switzer-Medium', color: '#000000', fontSize: 14 }}>
@@ -803,47 +908,25 @@ const TransferDetailView = (props: TransferDetailViewProps) => {
                   </Text>
                 </View>
               ) : (
-                <Text style={{ fontFamily: 'Switzer-Regular', color: '#000000', fontSize: 14 }}>
-                  {`Rp ${formatNumber(calculateData?.fee)}`}
-                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  {manualBankDefaultFeeLabel ? (
+                    <Text
+                      style={{
+                        fontFamily: 'Switzer-Regular',
+                        color: '#737373',
+                        fontSize: 14,
+                        textDecorationLine: 'line-through',
+                      }}>
+                      {manualBankDefaultFeeLabel}
+                    </Text>
+                  ) : null}
+                  <Text style={{ fontFamily: 'Switzer-Regular', color: '#000000', fontSize: 14 }}>
+                    {`Rp ${formatNumber(calculateData.fee)}`}
+                  </Text>
+                </View>
               )}
             </View>
           )}
-
-          {calculateData?.uniqueCode ? (
-            <View style={styles.uniqueCodeRowWrapper}>
-              <View style={[styles.rowBetween, { marginTop: 8, alignItems: 'center' }]}>
-                <View style={styles.uniqueCodeLabel}>
-                  <TouchableOpacity
-                    accessibilityRole="button"
-                    accessibilityLabel="Informasi kode unik"
-                    accessibilityState={{ expanded: isUniqueCodeTooltipVisible }}
-                    hitSlop={8}
-                    onPress={() => setIsUniqueCodeTooltipVisible((visible) => !visible)}>
-                    <Info size={18} color="#666666" strokeWidth={2} />
-                  </TouchableOpacity>
-                  <Text style={{ fontFamily: 'Switzer-Regular', color: '#000000', fontSize: 14 }}>
-                    Kode Unik
-                  </Text>
-                </View>
-                <Text style={{ fontFamily: 'Switzer-Medium', color: '#000000', fontSize: 14 }}>
-                  {`Rp ${formatNumber(calculateData.uniqueCode)}`}
-                </Text>
-              </View>
-              {isUniqueCodeTooltipVisible && (
-                <View style={styles.uniqueCodeTooltip}>
-                  <View style={styles.uniqueCodeTooltipArrow} />
-                  <Text style={styles.uniqueCodeTooltipText}>
-                    Kode unik menjadi{' '}
-                    <Text style={styles.uniqueCodeTooltipEmphasis}>
-                      biaya layanan jika transfer berhasil.
-                    </Text>{' '}
-                    Jika gagal, seluruh dana akan dikembalikan.
-                  </Text>
-                </View>
-              )}
-            </View>
-          ) : null}
 
           {calculateData && (
             <View style={[styles.rowBetween, { marginTop: 8, alignItems: 'center' }]}>

@@ -1,4 +1,5 @@
 name: Build iOS (Staging)
+run-name: Build iOS (Staging / Firebase)
 
 on:
   workflow_dispatch:

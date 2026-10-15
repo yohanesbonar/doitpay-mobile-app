@@ -23,6 +23,7 @@ import {
   X,
 } from 'lucide-react-native';
 import remoteConfig from '@react-native-firebase/remote-config';
+import { subscribeToRemoteConfigUpdates } from '@/api/remoteConfigRealtime';
 import { useGetFaqsQuery } from './hooks/useGetFaqsQuery';
 import { FaqItem as FaqItemType } from './api/faq-api';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
@@ -96,6 +97,7 @@ export const HelpCenter = ({ navigation }: any) => {
 
   useEffect(() => {
     let isMounted = true;
+    let unsubscribeFromUpdates: (() => void) | undefined;
 
     if (!isFocused) {
       return () => {
@@ -129,6 +131,18 @@ export const HelpCenter = ({ navigation }: any) => {
         };
 
         applyConfig();
+        const unsubscribe = subscribeToRemoteConfigUpdates((updatedKeys) => {
+          if (updatedKeys.has('support_whatsapp_number') || updatedKeys.has('support_email')) {
+            applyConfig();
+          }
+        });
+        if (isMounted) {
+          unsubscribeFromUpdates = unsubscribe;
+        } else {
+          unsubscribe();
+          return;
+        }
+
         await rc.fetchAndActivate();
         applyConfig();
       } catch {}
@@ -138,6 +152,7 @@ export const HelpCenter = ({ navigation }: any) => {
 
     return () => {
       isMounted = false;
+      unsubscribeFromUpdates?.();
     };
   }, [isFocused]);
 

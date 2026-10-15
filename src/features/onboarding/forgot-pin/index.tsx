@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { navigationRef } from '@/navigation/navigationRef';
 import { useTranslation } from 'react-i18next';
 import { Formik, FormikProps } from 'formik';
 import * as Yup from 'yup';
@@ -54,6 +55,7 @@ export const ForgotPin = () => {
   const [pin, setPin] = useState('');
   const [confirmationPin, setConfirmationPin] = useState('');
   const [isErrorPIN, setIsErrorPIN] = useState(false);
+  const resetSubmittedRef = useRef(false);
 
   const formikRef = useRef<FormikProps<PhoneFormValues>>(null);
   const inputRef = useRef<TextInput>(null);
@@ -151,17 +153,36 @@ export const ForgotPin = () => {
         setConfirmationPin('');
         return;
       }
+      if (resetSubmittedRef.current) return;
+      resetSubmittedRef.current = true;
       resetPin(
         { pin: text },
         {
           onSuccess: () => {
             Keyboard.dismiss();
             Toast.show({ type: 'success', text1: 'PIN berhasil direset' });
-            navigation.reset({ index: 0, routes: [{ name: 'MainApp' }] });
+            try {
+              if (navigationRef.isReady()) {
+                navigationRef.resetRoot({ index: 0, routes: [{ name: 'MainApp' }] });
+              } else {
+                navigation.reset({ index: 0, routes: [{ name: 'MainApp' }] });
+              }
+            } catch (error) {
+              console.error('Failed to return to sign in after PIN reset', error);
+            }
           },
           onError: (err: any) => {
+            resetSubmittedRef.current = false;
             setConfirmationPin('');
-            Toast.show({ type: 'error', text1: err?.message || err?.error?.message || 'Gagal mereset PIN' });
+            const errorMessage =
+              err?.response?.data?.error?.message ??
+              err?.response?.data?.message ??
+              err?.error?.message ??
+              (err?.message !== 'undefined is not a function' ? err?.message : undefined);
+            Toast.show({
+              type: 'error',
+              text1: errorMessage || 'Gagal mereset PIN. Silakan coba lagi.',
+            });
           },
         },
       );
@@ -239,6 +260,8 @@ export const ForgotPin = () => {
             renderDotsPIN={renderDotsPIN}
             PIN_LENGTH={PIN_LENGTH}
             onChangeText={handlePINChange}
+            showNumericKeypad
+            disabled={isResetting}
           />
         );
       default:

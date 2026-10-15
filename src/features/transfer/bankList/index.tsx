@@ -56,6 +56,7 @@ export const BankListView = ({
   const [activeTab, setActiveTab] = useState<'send' | 'receive'>('send');
   const [allBanks, setAllBanks] = useState<any[]>([]);
   const [popularBanks, setPopularBanks] = useState<any[]>([]);
+  const [bankLoadError, setBankLoadError] = useState(false);
   const {
     transferEnabled,
     receiveEnabled,
@@ -74,6 +75,7 @@ export const BankListView = ({
 
   const fetchBanksFromApi = useCallback(
     (searchQuery: string) => {
+      setBankLoadError(false);
       mutateBanks(
         { name: searchQuery.trim() },
         {
@@ -83,6 +85,7 @@ export const BankListView = ({
           },
           onError: (error) => {
             console.error('Error fetching banks:', error);
+            setBankLoadError(true);
           },
         },
       );
@@ -258,6 +261,21 @@ export const BankListView = ({
                   <FlatList
                     data={allBanks}
                     keyExtractor={(item, index) => index.toString()}
+                    ListEmptyComponent={
+                      popularBanks.length === 0 && !bankLoadError ? (
+                        <Text
+                          style={{
+                            color: '#666',
+                            fontFamily: 'Switzer-Regular',
+                            fontSize: 16,
+                            paddingHorizontal: 16,
+                            paddingVertical: 60,
+                            textAlign: 'center',
+                          }}>
+                          {t('bankList.noBanksAvailable')}
+                        </Text>
+                      ) : null
+                    }
                     ListHeaderComponent={
                       <View>
                         {popularBanks.length > 0 && (

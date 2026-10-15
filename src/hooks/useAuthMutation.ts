@@ -51,11 +51,15 @@ import Toast from 'react-native-toast-message';
 import { identifyPostHogUser } from '@/analytics/posthog';
 
 const invalidateBiometricLoginCredential = () => {
-  storage.set(PersistentStorageKey.BIOMETRIC_LOGIN_ENABLED, false);
-  storage.remove(PersistentStorageKey.BIOMETRIC_LOGIN_PHONE_NUMBER);
-  clearBiometricLoginCredential().catch((error) => {
-    console.error('Failed to clear biometric login after PIN change', error);
-  });
+  try {
+    storage.set(PersistentStorageKey.BIOMETRIC_LOGIN_ENABLED, false);
+    storage.remove(PersistentStorageKey.BIOMETRIC_LOGIN_PHONE_NUMBER);
+    clearBiometricLoginCredential().catch((error) => {
+      console.error('Failed to clear biometric login credential', error);
+    });
+  } catch (error) {
+    console.error('Failed to invalidate biometric login credential', error);
+  }
 };
 
 export const useCheckPhoneNumber = () => {
@@ -364,24 +368,51 @@ export const useValidatePin = () => {
   });
 };
 
-export const useChangePin = () => {
+export const useChangePin = (onSuccess?: (data: ChangePinResponse) => void) => {
   const setToken = useAuthStore((state) => state.setToken);
   const setExpiresAt = useAuthStore((state) => state.setExpiresAt);
 
   return useMutation<ChangePinResponse, Error, ChangePinPayload>({
     mutationFn: (payload) => authApi.changePin(payload),
     onSuccess: (data) => {
-      invalidateBiometricLoginCredential();
+      // A successful server response must remain a successful mutation even if a
+      // local credential cleanup or navigation side effect fails afterward.
+      try {
+        invalidateBiometricLoginCredential();
+      } catch (error) {
+        console.error('Failed to clear biometric credentials after PIN change', error);
+      }
+
+      // Complete the screen transition before rotating session tokens. Updating the
+      // auth store can cause the root navigator to re-render or replace routes.
+      try {
+        onSuccess?.(data);
+      } catch (error) {
+        console.error('Failed to run PIN change success callback', error);
+      }
+
       const session = data?.data;
 
       if (session?.accessToken) {
-        setToken(session.accessToken);
+        try {
+          setToken(session.accessToken);
+        } catch (error) {
+          console.error('Failed to update access token after PIN change', error);
+        }
       }
       if (session?.refreshToken) {
-        setStorageItem(StorageKey.REFRESH_TOKEN, session.refreshToken);
+        try {
+          setStorageItem(StorageKey.REFRESH_TOKEN, session.refreshToken);
+        } catch (error) {
+          console.error('Failed to update refresh token after PIN change', error);
+        }
       }
       if (session?.expiresAt) {
-        setExpiresAt(session.expiresAt);
+        try {
+          setExpiresAt(session.expiresAt);
+        } catch (error) {
+          console.error('Failed to update session expiry after PIN change', error);
+        }
       }
     },
   });

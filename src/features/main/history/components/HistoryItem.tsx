@@ -58,6 +58,8 @@ const HistoryItem: FC<HistoryItemProps> = ({ item, showDate = false }) => {
   };
 
   const formatTitle = (value: string): string => {
+    if (value.toUpperCase() === 'MANUAL_BANK') return 'Transfer Bank';
+
     return value
       .toLowerCase()
       .split('_')
