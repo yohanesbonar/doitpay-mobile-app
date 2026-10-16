@@ -93,6 +93,10 @@ export const createStyles = () =>
       paddingHorizontal: 16,
       paddingBottom: 16,
     },
+    dateSpinner: {
+      width: '100%',
+      height: 216,
+    },
     dateSheetTitle: {
       fontFamily: 'Switzer-Semibold',
       fontSize: 18,

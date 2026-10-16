@@ -234,6 +234,10 @@ export const ConfirmDataView = ({
                     display="spinner"
                     locale="id-ID"
                     maximumDate={today}
+                    // Tinggi & lebar wajib eksplisit: tanpa ini ukuran spinner
+                    // bergantung pada pengukuran native yang dikirim balik lewat
+                    // shadow-node state, dan layout pertamanya bisa tersangkut di 0.
+                    style={styles.dateSpinner}
                     onChange={(_, date) => date && setIosTempDate(date)}
                   />
                   <TouchableOpacity

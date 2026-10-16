@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { Picker } from 'react-native-wheel-pick';
 import { AppBottomSheet } from '@/components/molecules/AppBottomSheet';
-import { WheelPicker, type WheelPickerItem } from '@/components/molecules/WheelPicker';
 
 interface DateBottomSheetProps {
   isVisible: boolean;
@@ -10,7 +10,9 @@ interface DateBottomSheetProps {
   onSelect: (date: { month: number; year: number }) => void;
 }
 
-const MONTHS: WheelPickerItem[] = [
+const PICKER_HEIGHT = 220;
+
+const MONTHS = [
   { label: 'Januari', value: 0 },
   { label: 'Februari', value: 1 },
   { label: 'Maret', value: 2 },
@@ -26,10 +28,15 @@ const MONTHS: WheelPickerItem[] = [
 ];
 
 const currentYear = new Date().getFullYear();
-const YEARS: WheelPickerItem[] = Array.from(
-  { length: 3 },
-  (_, index) => currentYear - 2 + index,
-).map((year) => ({ label: year.toString(), value: year }));
+const YEARS = Array.from({ length: 3 }, (_, index) => currentYear - 2 + index).map((year) => ({
+  label: year.toString(),
+  value: year,
+}));
+
+// Di iOS, Picker ini memakai UIPickerView yang mewarnai semua baris dengan
+// `textColor` dan tidak mengenal `selectTextColor` (prop itu Android-only),
+// jadi #D1D1D1 membuat seluruh isi picker nyaris tidak terbaca di atas putih.
+const PICKER_TEXT_COLOR = Platform.OS === 'ios' ? '#1A1A1A' : '#D1D1D1';
 
 export const DateBottomSheet = ({
   isVisible,
@@ -57,18 +64,22 @@ export const DateBottomSheet = ({
         <Text style={styles.title}>Bulan</Text>
 
         <View style={styles.pickerContainer}>
-          <WheelPicker
+          <Picker
             style={styles.pickerColumn}
-            data={MONTHS}
             selectedValue={tempDate.month}
-            onValueChange={(month) => setTempDate((current) => ({ ...current, month }))}
+            pickerData={MONTHS}
+            onValueChange={(month: any) => setTempDate((current) => ({ ...current, month }))}
+            textColor={PICKER_TEXT_COLOR}
+            selectTextColor="#1A1A1A"
           />
 
-          <WheelPicker
+          <Picker
             style={styles.pickerColumn}
-            data={YEARS}
             selectedValue={tempDate.year}
-            onValueChange={(year) => setTempDate((current) => ({ ...current, year }))}
+            pickerData={YEARS}
+            onValueChange={(year: any) => setTempDate((current) => ({ ...current, year }))}
+            textColor={PICKER_TEXT_COLOR}
+            selectTextColor="#1A1A1A"
           />
         </View>
 
@@ -96,10 +107,15 @@ const styles = StyleSheet.create({
   pickerContainer: {
     flexDirection: 'row',
     width: '100%',
+    // Tinggi dikunci dan disamakan dengan tiap kolom. Versi lama memberi
+    // container 200 tapi picker-nya 220, jadi ukurannya saling bertabrakan.
+    height: PICKER_HEIGHT,
     justifyContent: 'center',
   },
   pickerColumn: {
     flex: 1,
+    height: PICKER_HEIGHT,
+    backgroundColor: 'transparent',
   },
   button: {
     backgroundColor: '#4A81FB',
