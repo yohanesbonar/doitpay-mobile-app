@@ -19,5 +19,8 @@ export const handleNotificationNavigation = (payload: any) => {
         type: trxType === 'RECEIVE' ? TransactionType.RECEIVE_IN : TransactionType.TRANSFER_OUT,
       });
       break;
+    case 'KYC_RESULT':
+      navigate('KycResult');
+      break;
   }
 };

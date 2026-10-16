@@ -67,7 +67,16 @@ export const ConfirmDataView = ({
       initialValues={{ fullName: '', nik: '', birthDate: null, gender: '', addressLine: '' }}
       validationSchema={validationSchema}
       onSubmit={onSubmitData}>
-      {({ values, errors, touched, handleChange, handleBlur, setFieldValue, setFieldTouched, handleSubmit }) => {
+      {({
+        values,
+        errors,
+        touched,
+        handleChange,
+        handleBlur,
+        setFieldValue,
+        setFieldTouched,
+        handleSubmit,
+      }) => {
         const showError = (field: keyof ConfirmDataFormValues) =>
           touched[field] && errors[field] ? (errors[field] as string) : undefined;
 
@@ -148,11 +157,17 @@ export const ConfirmDataView = ({
                 <View style={styles.field}>
                   <Text style={styles.label}>Tanggal Lahir</Text>
                   <TouchableOpacity
-                    style={[styles.input, styles.inputRow, showError('birthDate') && styles.inputError]}
+                    style={[
+                      styles.input,
+                      styles.inputRow,
+                      showError('birthDate') && styles.inputError,
+                    ]}
                     onPress={openDatePicker}
                     activeOpacity={0.8}>
                     <Text style={values.birthDate ? styles.inputText : styles.placeholderText}>
-                      {values.birthDate ? formatDisplayDate(values.birthDate) : 'Pilih tanggal lahir'}
+                      {values.birthDate
+                        ? formatDisplayDate(values.birthDate)
+                        : 'Pilih tanggal lahir'}
                     </Text>
                     <Calendar size={20} color="#6B7280" />
                   </TouchableOpacity>
@@ -187,7 +202,11 @@ export const ConfirmDataView = ({
                 <View style={styles.field}>
                   <Text style={styles.label}>Alamat</Text>
                   <TextInput
-                    style={[styles.input, styles.inputMultiline, showError('addressLine') && styles.inputError]}
+                    style={[
+                      styles.input,
+                      styles.inputMultiline,
+                      showError('addressLine') && styles.inputError,
+                    ]}
                     placeholder="Alamat sesuai KTP"
                     placeholderTextColor="#9CA3AF"
                     multiline
@@ -236,9 +255,7 @@ export const ConfirmDataView = ({
                     themeVariant="light"
                     textColor="#111827"
                     maximumDate={today}
-                    // Tinggi & lebar wajib eksplisit: tanpa ini ukuran spinner
-                    // bergantung pada pengukuran native yang dikirim balik lewat
-                    // shadow-node state, dan layout pertamanya bisa tersangkut di 0.
+                    themeVariant="light"
                     style={styles.dateSpinner}
                     onChange={(_, date) => date && setIosTempDate(date)}
                   />
