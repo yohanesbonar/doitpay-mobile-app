@@ -7,4 +7,7 @@ export const useKycStatusQuery = (options?: { enabled?: boolean }) =>
     queryFn: kycStatusApi.getStatus,
     enabled: options?.enabled ?? true,
     retry: false,
+    // Review can change at any time (back-office decision, cooldown ending): never serve a cached
+    // status. Overrides the global 5 min staleTime for this query only.
+    staleTime: 0,
   });
