@@ -233,6 +233,8 @@ export const ConfirmDataView = ({
                     mode="date"
                     display="spinner"
                     locale="id-ID"
+                    themeVariant="light"
+                    textColor="#111827"
                     maximumDate={today}
                     // Tinggi & lebar wajib eksplisit: tanpa ini ukuran spinner
                     // bergantung pada pengukuran native yang dikirim balik lewat
