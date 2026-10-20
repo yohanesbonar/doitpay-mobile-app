@@ -53,9 +53,19 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
   const [manualBanks, setManualBanks] = useState<ManualTransferMethod[]>([]);
   const [isLoadingManualBanks, setIsLoadingManualBanks] = useState(false);
   const [manualBanksError, setManualBanksError] = useState(false);
+  const [containerWidth, setContainerWidth] = useState(0);
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isCompactMethodLayout = !isManualBankEnabled;
   const hasTwoEnabledMethods = isVAEnabled && isQRISEnabled;
+  const enabledMethodCount = [isVAEnabled, isQRISEnabled, isManualBankEnabled].filter(
+    Boolean,
+  ).length;
+  const methodCardWidth =
+    enabledMethodCount > 0
+      ? Math.max(0, containerWidth - 40 - 8 * (enabledMethodCount - 1)) / enabledMethodCount
+      : 0;
+  // Scale labels with the card width, bounded to keep them readable and prevent overflow.
+  const methodLabelFontSize = Math.max(9, Math.min(14, (methodCardWidth - 12) / 7.5));
 
   const { mutate: VAMethods, isPending: isLoadingVAMethods } = useVAMethods();
 
@@ -185,7 +195,10 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
         },
         styleProps,
       ]}
-      onLayout={onLayout}>
+      onLayout={(event) => {
+        setContainerWidth(event.nativeEvent.layout.width);
+        onLayout?.(event);
+      }}>
       <Text
         style={[styles.label, { fontSize: 20, marginBottom: 16, fontFamily: 'Switzer-Medium' }]}>
         Metode Pembayaran
@@ -260,11 +273,16 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
                 strokeWidth={2.5}
               />
               <Text
+                numberOfLines={2}
+                adjustsFontSizeToFit
+                minimumFontScale={0.75}
                 style={{
                   marginTop: isCompactMethodLayout ? 0 : 6,
                   color: selectedMethod === 'VA' ? '#FFF' : '#0A0A0A',
                   fontFamily: selectedMethod === 'VA' ? 'Switzer-Bold' : 'Switzer-Regular',
-                  fontSize: 14,
+                  fontSize: methodLabelFontSize || 12,
+                  textAlign: 'center',
+                  flexShrink: 1,
                 }}>
                 Virtual Account
               </Text>
@@ -294,11 +312,16 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
                 strokeWidth={2.5}
               />
               <Text
+                numberOfLines={2}
+                adjustsFontSizeToFit
+                minimumFontScale={0.75}
                 style={{
                   marginTop: isCompactMethodLayout ? 0 : 6,
                   color: selectedMethod === 'QRIS' ? '#FFF' : '#0A0A0A',
                   fontFamily: selectedMethod === 'QRIS' ? 'Switzer-Bold' : 'Switzer-Regular',
-                  fontSize: 14,
+                  fontSize: methodLabelFontSize || 12,
+                  textAlign: 'center',
+                  flexShrink: 1,
                 }}>
                 QRIS
               </Text>
@@ -320,11 +343,16 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({
               }}>
               <Landmark size={22} color={selectedMethod === 'MANUAL_BANK' ? '#FFF' : '#525252'} />
               <Text
+                numberOfLines={2}
+                adjustsFontSizeToFit
+                minimumFontScale={0.75}
                 style={{
                   marginTop: 6,
                   color: selectedMethod === 'MANUAL_BANK' ? '#FFF' : '#0A0A0A',
                   fontFamily: selectedMethod === 'MANUAL_BANK' ? 'Switzer-Bold' : 'Switzer-Regular',
-                  fontSize: 14,
+                  fontSize: methodLabelFontSize || 12,
+                  textAlign: 'center',
+                  flexShrink: 1,
                 }}>
                 Transfer Bank
               </Text>
