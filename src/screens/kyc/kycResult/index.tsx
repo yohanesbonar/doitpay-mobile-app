@@ -1,6 +1,13 @@
-import React, { useEffect } from 'react';
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import React, { useCallback, useEffect, useRef } from 'react';
+import {
+  ActivityIndicator,
+  AppState,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { useFocusEffect, useIsFocused, useNavigation } from '@react-navigation/native';
 import KycResultView, { KycResultVariant } from '@/features/kyc/kycResult';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import { useGetProfileMeQuery } from '@/features/user/hooks/useGetProfileMeQuery';
@@ -8,12 +15,27 @@ import { useKycStatusQuery } from '@/hooks/useKycStatusQuery';
 
 const RESULT_VARIANTS: KycResultVariant[] = ['VERIFIED', 'REJECTED', 'PENDING'];
 
-// Single source of truth for what this screen shows: GET /v1/kyc/status, fetched here, so every
-// entry point (notification, Profile, app-open redirect) lands on the same, current result.
 const KycResultScreen = () => {
   const navigation = useNavigation<any>();
   const { data: profileData } = useGetProfileMeQuery();
   const { data: kycStatusData, isError, refetch } = useKycStatusQuery();
+  const isFocused = useIsFocused();
+
+  const hasFocusedOnce = useRef(false);
+  useFocusEffect(
+    useCallback(() => {
+      if (hasFocusedOnce.current) refetch();
+      hasFocusedOnce.current = true;
+    }, [refetch]),
+  );
+
+  useEffect(() => {
+    if (!isFocused) return;
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') refetch();
+    });
+    return () => subscription.remove();
+  }, [isFocused, refetch]);
 
   const kycStatus = kycStatusData?.kycStatus;
   const variant = RESULT_VARIANTS.find((v) => v === kycStatus);
@@ -21,7 +43,6 @@ const KycResultScreen = () => {
   const goHome = () => navigation.reset({ index: 0, routes: [{ name: 'MainTabs' }] });
   const close = () => (navigation.canGoBack() ? navigation.goBack() : goHome());
 
-  // Never submitted (e.g. UNVERIFIED): there is no result to show, start KYC instead.
   useEffect(() => {
     if (kycStatus && !variant) navigation.replace('KycIntro');
   }, [kycStatus, variant, navigation]);
@@ -58,11 +79,8 @@ const KycResultScreen = () => {
       variant={variant}
       fullName={profileData?.data?.fullName}
       rejection={kycStatusData?.rejection}
-      // From Profile this returns to Profile; from a notification to the list. Falls back to home
-      // if there is nothing underneath.
       onClose={close}
       onContinueHome={goHome}
-      // Rejected KYC restarts the whole flow (KTP -> selfie -> data); home stays underneath.
       onRetry={() =>
         navigation.reset({ index: 1, routes: [{ name: 'MainTabs' }, { name: 'CaptureKtp' }] })
       }
