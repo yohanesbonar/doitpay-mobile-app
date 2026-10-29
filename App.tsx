@@ -45,6 +45,7 @@ import { navigationRef } from '@/navigation/navigationRef.ts';
 import { SecurityBlocker } from '@/components/organisms/SecurityBlocker/index.tsx';
 import { AppLockScreen } from '@/components/organisms/AppLockScreen/index.tsx';
 import { startAppLockWatcher } from '@/utils/AppLock/appLockManager.ts';
+import { endExpiredPaymentLiveActivities } from '@/utils/LiveActivity/paymentLiveActivity.ts';
 import { useAuthStore } from '@/storage/useAuthStore.ts';
 import { UpdateAppBottomSheet, UpdateAppData } from '@/components/molecules/UpdateAppBottomSheet';
 import {
@@ -188,6 +189,14 @@ const App = () => {
   useEffect(() => {
     if (!accessToken) setIsPinLocked(false);
   }, [accessToken]);
+
+  useEffect(() => {
+    endExpiredPaymentLiveActivities();
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') endExpiredPaymentLiveActivities();
+    });
+    return () => subscription.remove();
+  }, []);
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener((state) => {

@@ -10,14 +10,18 @@
 		031D52A2D602418794789865 /* Switzer-Extrabold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 8F7141A226A144889980A9A2 /* Switzer-Extrabold.otf */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		169D6DD8BFC744BC83286C99 /* Manrope-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BEBA0B5FDBA24410A5F736B0 /* Manrope-ExtraBold.ttf */; };
+		23DD1ADC6219DB356A1F939E /* PaymentActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA6BBC560AACEFF50445DA42 /* PaymentActivityAttributes.swift */; };
 		2467BE83E2F04EADB232C6A8 /* Switzer-Extralight.otf in Resources */ = {isa = PBXBuildFile; fileRef = 89D2CD391182412B9B27C5D8 /* Switzer-Extralight.otf */; };
 		260FDB6125704B4393B5E88C /* Switzer-ThinItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 0A6F8C6F15CD4908B499603C /* Switzer-ThinItalic.otf */; };
 		357C6D7C804BB38A02DC17ED /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 		364795681800428594F8ED1E /* Switzer-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = 59E6AC80EA2E4D4DBDC78C30 /* Switzer-Medium.otf */; };
 		3C306429F79B4199812FCEAA /* Switzer-Italic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 845C1A132A9D440D9DBDDEBE /* Switzer-Italic.otf */; };
 		42B39F429395426686721B9B /* Switzer-BlackItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 474854100EEC4B82BAD9E93C /* Switzer-BlackItalic.otf */; };
+		5065918429AE29E72FA01153 /* PaymentActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA6BBC560AACEFF50445DA42 /* PaymentActivityAttributes.swift */; };
 		5BBA258643DD4D379F4B092C /* Manrope-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2F91F1C78E844E25A1864844 /* Manrope-Medium.ttf */; };
+		647448D81009D219B0EC35FE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CAF6D215771FB3DADF415A0D /* Assets.xcassets */; };
 		666C28406981AE1C0C996D04 /* libPods-DoitpayMobileApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EB988AFAC5F0E9195D545A18 /* libPods-DoitpayMobileApp.a */; };
+		69BC44897DA20C8C8773283C /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CCBC74C1B0C45CC2F2B71A9 /* Foundation.framework */; };
 		6E3419C4DB134DC4BFE867B3 /* Switzer-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = ABF442A1632B4D968CD685AD /* Switzer-Bold.otf */; };
 		71B080FD58A940B3B906A033 /* Switzer-ExtraboldItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 29EF75B9312A4B488EE3315B /* Switzer-ExtraboldItalic.otf */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
@@ -26,7 +30,9 @@
 		80023C6C5FBA4D2E9F905945 /* icon.png in Resources */ = {isa = PBXBuildFile; fileRef = A801CEFED2274E40A1E5AA1D /* icon.png */; };
 		813C00CCC83A439CB4DFA3C2 /* Switzer-ExtralightItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = C003D891FFF8402E9CC90182 /* Switzer-ExtralightItalic.otf */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		84471EB0942F1DAB81400A88 /* PaymentLiveActivityWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 666C8F0D567CFFB8EC914D75 /* PaymentLiveActivityWidget.swift */; };
 		8B421B7C80944A9E9ADA1549 /* Manrope-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6770B2290AED41EDB3719194 /* Manrope-Regular.ttf */; };
+		9D2CD704DABB55C835295B56 /* LiveActivityModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 7826C773B85104C335D41D98 /* LiveActivityModule.m */; };
 		9DDFC629AB194518959BD29E /* Manrope-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2E241531F66E49758ABCB4C9 /* Manrope-Bold.ttf */; };
 		A72D846266A945718007307E /* Manrope-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9EAF7788D3074E61B5B79A63 /* Manrope-SemiBold.ttf */; };
 		AB32CB8253714351A015A753 /* Switzer-SemiboldItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 8315B983C85E4C2FA5B5E410 /* Switzer-SemiboldItalic.otf */; };
@@ -40,10 +46,37 @@
 		BB9753713E414D059CE928B6 /* Switzer-Thin.otf in Resources */ = {isa = PBXBuildFile; fileRef = CFE665627AAA4371B14A4D96 /* Switzer-Thin.otf */; };
 		BD08C361AF70482BB36CE876 /* Switzer-BoldItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 86C563C7240343F7BB334120 /* Switzer-BoldItalic.otf */; };
 		C2D8D689334547CBB49009E0 /* Switzer-Light.otf in Resources */ = {isa = PBXBuildFile; fileRef = 1B3481711A234E17BF97C3C7 /* Switzer-Light.otf */; };
+		C3D04AF3BDA9C4FF1E3843D1 /* PaymentLiveActivity.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = DF65E9E0EA6D832F86BF56F6 /* PaymentLiveActivity.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		CCCC3F90FECE4B13883E301C /* Switzer-Black.otf in Resources */ = {isa = PBXBuildFile; fileRef = 377764EA372B428596A3B307 /* Switzer-Black.otf */; };
+		D99FAD3C970C3F8D9117ECC2 /* LiveActivityModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAD7AF5346B69C1191639B51 /* LiveActivityModule.swift */; };
 		F2DD262C22464B2E941575D3 /* Switzer-Semibold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 81C3BBCE1DF74B5EBD9419B6 /* Switzer-Semibold.otf */; };
+		F6E150C11B6685720CD78229 /* ActivityKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B2A4063CF1F05422B811CC6A /* ActivityKit.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		FAF91BBC1FA34ABF9BA162A2 /* Switzer-MediumItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 618DD59567204DFCBEF0574F /* Switzer-MediumItalic.otf */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		2A25A2D9CAB54AD5BE199E2B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C6BA33D15DD88E76E1A29762;
+			remoteInfo = PaymentLiveActivity;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		C9FB2A81C8CB57C77B2ED0A8 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				C3D04AF3BDA9C4FF1E3843D1 /* PaymentLiveActivity.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		033DE8D94F6A4AD5A497533C /* Manrope-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Light.ttf"; path = "../src/assets/fonts/Manrope-Light.ttf"; sourceTree = "<group>"; };
@@ -56,17 +89,21 @@
 		1B3481711A234E17BF97C3C7 /* Switzer-Light.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Switzer-Light.otf"; path = "../src/assets/fonts/Switzer-Light.otf"; sourceTree = "<group>"; };
 		1DDD042D2E518E1414647614 /* Pods-DoitpayMobileApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DoitpayMobileApp.debug.xcconfig"; path = "Target Support Files/Pods-DoitpayMobileApp/Pods-DoitpayMobileApp.debug.xcconfig"; sourceTree = "<group>"; };
 		29EF75B9312A4B488EE3315B /* Switzer-ExtraboldItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Switzer-ExtraboldItalic.otf"; path = "../src/assets/fonts/Switzer-ExtraboldItalic.otf"; sourceTree = "<group>"; };
+		2CCBC74C1B0C45CC2F2B71A9 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS14.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		2D9CCB9FD27141A8ADC0616F /* Switzer-LightItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Switzer-LightItalic.otf"; path = "../src/assets/fonts/Switzer-LightItalic.otf"; sourceTree = "<group>"; };
 		2E241531F66E49758ABCB4C9 /* Manrope-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Bold.ttf"; path = "../src/assets/fonts/Manrope-Bold.ttf"; sourceTree = "<group>"; };
 		2F91F1C78E844E25A1864844 /* Manrope-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Medium.ttf"; path = "../src/assets/fonts/Manrope-Medium.ttf"; sourceTree = "<group>"; };
 		377764EA372B428596A3B307 /* Switzer-Black.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Switzer-Black.otf"; path = "../src/assets/fonts/Switzer-Black.otf"; sourceTree = "<group>"; };
+		41E6F162632A94EDCC9B01FA /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		474854100EEC4B82BAD9E93C /* Switzer-BlackItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Switzer-BlackItalic.otf"; path = "../src/assets/fonts/Switzer-BlackItalic.otf"; sourceTree = "<group>"; };
 		49EA8A44587D77639AA98613 /* Pods-DoitpayMobileApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DoitpayMobileApp.release.xcconfig"; path = "Target Support Files/Pods-DoitpayMobileApp/Pods-DoitpayMobileApp.release.xcconfig"; sourceTree = "<group>"; };
 		59E6AC80EA2E4D4DBDC78C30 /* Switzer-Medium.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Switzer-Medium.otf"; path = "../src/assets/fonts/Switzer-Medium.otf"; sourceTree = "<group>"; };
 		618DD59567204DFCBEF0574F /* Switzer-MediumItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Switzer-MediumItalic.otf"; path = "../src/assets/fonts/Switzer-MediumItalic.otf"; sourceTree = "<group>"; };
+		666C8F0D567CFFB8EC914D75 /* PaymentLiveActivityWidget.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PaymentLiveActivityWidget.swift; sourceTree = "<group>"; };
 		6770B2290AED41EDB3719194 /* Manrope-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Regular.ttf"; path = "../src/assets/fonts/Manrope-Regular.ttf"; sourceTree = "<group>"; };
 		6A8BCD2A94E83D88216A27A1 /* Pods-DoitpayMobileApp.stagingrelease.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DoitpayMobileApp.stagingrelease.xcconfig"; path = "Target Support Files/Pods-DoitpayMobileApp/Pods-DoitpayMobileApp.stagingrelease.xcconfig"; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = DoitpayMobileApp/AppDelegate.swift; sourceTree = "<group>"; };
+		7826C773B85104C335D41D98 /* LiveActivityModule.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = LiveActivityModule.m; path = DoitpayMobileApp/LiveActivityModule.m; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = DoitpayMobileApp/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		81C3BBCE1DF74B5EBD9419B6 /* Switzer-Semibold.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Switzer-Semibold.otf"; path = "../src/assets/fonts/Switzer-Semibold.otf"; sourceTree = "<group>"; };
 		8315B983C85E4C2FA5B5E410 /* Switzer-SemiboldItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Switzer-SemiboldItalic.otf"; path = "../src/assets/fonts/Switzer-SemiboldItalic.otf"; sourceTree = "<group>"; };
@@ -76,7 +113,9 @@
 		8F7141A226A144889980A9A2 /* Switzer-Extrabold.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Switzer-Extrabold.otf"; path = "../src/assets/fonts/Switzer-Extrabold.otf"; sourceTree = "<group>"; };
 		9EAF7788D3074E61B5B79A63 /* Manrope-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-SemiBold.ttf"; path = "../src/assets/fonts/Manrope-SemiBold.ttf"; sourceTree = "<group>"; };
 		A801CEFED2274E40A1E5AA1D /* icon.png */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = icon.png; path = ../src/assets/images/icon.png; sourceTree = "<group>"; };
+		AAD7AF5346B69C1191639B51 /* LiveActivityModule.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LiveActivityModule.swift; path = DoitpayMobileApp/LiveActivityModule.swift; sourceTree = "<group>"; };
 		ABF442A1632B4D968CD685AD /* Switzer-Bold.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Switzer-Bold.otf"; path = "../src/assets/fonts/Switzer-Bold.otf"; sourceTree = "<group>"; };
+		B2A4063CF1F05422B811CC6A /* ActivityKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ActivityKit.framework; path = System/Library/Frameworks/ActivityKit.framework; sourceTree = SDKROOT; };
 		B653DFD42F90C2BB0002E2E2 /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 		B69229CD2F8F484500E1FF31 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		B69229CF2F8F4BA200E1FF31 /* DoitpayMobileApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = DoitpayMobileApp.entitlements; path = DoitpayMobileApp/DoitpayMobileApp.entitlements; sourceTree = "<group>"; };
@@ -87,8 +126,11 @@
 		B6CAA1A62FD68DE9006D0005 /* ExitModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ExitModule.m; sourceTree = "<group>"; };
 		BEBA0B5FDBA24410A5F736B0 /* Manrope-ExtraBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-ExtraBold.ttf"; path = "../src/assets/fonts/Manrope-ExtraBold.ttf"; sourceTree = "<group>"; };
 		C003D891FFF8402E9CC90182 /* Switzer-ExtralightItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Switzer-ExtralightItalic.otf"; path = "../src/assets/fonts/Switzer-ExtralightItalic.otf"; sourceTree = "<group>"; };
+		CA6BBC560AACEFF50445DA42 /* PaymentActivityAttributes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PaymentActivityAttributes.swift; sourceTree = "<group>"; };
 		CA6F243868EF4CF6BF9DC1A7 /* Manrope-ExtraLight.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-ExtraLight.ttf"; path = "../src/assets/fonts/Manrope-ExtraLight.ttf"; sourceTree = "<group>"; };
+		CAF6D215771FB3DADF415A0D /* Assets.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CFE665627AAA4371B14A4D96 /* Switzer-Thin.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Switzer-Thin.otf"; path = "../src/assets/fonts/Switzer-Thin.otf"; sourceTree = "<group>"; };
+		DF65E9E0EA6D832F86BF56F6 /* PaymentLiveActivity.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PaymentLiveActivity.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		EB988AFAC5F0E9195D545A18 /* libPods-DoitpayMobileApp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DoitpayMobileApp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
@@ -100,6 +142,15 @@
 			files = (
 				B69229D32F8F503D00E1FF31 /* libFirebaseMessaging.a in Frameworks */,
 				666C28406981AE1C0C996D04 /* libPods-DoitpayMobileApp.a in Frameworks */,
+				F6E150C11B6685720CD78229 /* ActivityKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		79A591E1B9ECE1F25EF21835 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				69BC44897DA20C8C8773283C /* Foundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -149,6 +200,8 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
+				AAD7AF5346B69C1191639B51 /* LiveActivityModule.swift */,
+				7826C773B85104C335D41D98 /* LiveActivityModule.m */,
 			);
 			name = DoitpayMobileApp;
 			sourceTree = "<group>";
@@ -160,8 +213,30 @@
 				B69229D12F8F503D00E1FF31 /* libFirebaseMessaging.a */,
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
 				EB988AFAC5F0E9195D545A18 /* libPods-DoitpayMobileApp.a */,
+				4DE2111BF5F255069341F994 /* iOS */,
+				B2A4063CF1F05422B811CC6A /* ActivityKit.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		4DE2111BF5F255069341F994 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				2CCBC74C1B0C45CC2F2B71A9 /* Foundation.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
+		7F3C0110CA0E4A450D82AD34 /* PaymentLiveActivity */ = {
+			isa = PBXGroup;
+			children = (
+				CA6BBC560AACEFF50445DA42 /* PaymentActivityAttributes.swift */,
+				666C8F0D567CFFB8EC914D75 /* PaymentLiveActivityWidget.swift */,
+				41E6F162632A94EDCC9B01FA /* Info.plist */,
+				CAF6D215771FB3DADF415A0D /* Assets.xcassets */,
+			);
+			name = PaymentLiveActivity;
+			path = PaymentLiveActivity;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -184,6 +259,7 @@
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
 				009416E8581D44EAA06DCDDB /* Resources */,
+				7F3C0110CA0E4A450D82AD34 /* PaymentLiveActivity */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -194,6 +270,7 @@
 			isa = PBXGroup;
 			children = (
 				13B07F961A680F5B00A75B9A /* DoitpayMobileApp.app */,
+				DF65E9E0EA6D832F86BF56F6 /* PaymentLiveActivity.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -219,6 +296,7 @@
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
+				C9FB2A81C8CB57C77B2ED0A8 /* Embed Foundation Extensions */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				B6908CFE2FBFF67200F07B1F /* ShellScript */,
 				70890AFFDBDE296C192A313F /* [CP] Embed Pods Frameworks */,
@@ -229,11 +307,29 @@
 			buildRules = (
 			);
 			dependencies = (
+				3FE2532B0A2F2C60F40B6224 /* PBXTargetDependency */,
 			);
 			name = DoitpayMobileApp;
 			productName = DoitpayMobileApp;
 			productReference = 13B07F961A680F5B00A75B9A /* DoitpayMobileApp.app */;
 			productType = "com.apple.product-type.application";
+		};
+		C6BA33D15DD88E76E1A29762 /* PaymentLiveActivity */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 96B93AB71D201DBB05863CFE /* Build configuration list for PBXNativeTarget "PaymentLiveActivity" */;
+			buildPhases = (
+				D8F85F94C8E84EC89A7A50E8 /* Sources */,
+				79A591E1B9ECE1F25EF21835 /* Frameworks */,
+				FFEDEB4B36FAC06B63C0D5C6 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PaymentLiveActivity;
+			productName = PaymentLiveActivity;
+			productReference = DF65E9E0EA6D832F86BF56F6 /* PaymentLiveActivity.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -262,6 +358,7 @@
 			projectRoot = "";
 			targets = (
 				13B07F861A680F5B00A75B9A /* DoitpayMobileApp */,
+				C6BA33D15DD88E76E1A29762 /* PaymentLiveActivity */,
 			);
 		};
 /* End PBXProject section */
@@ -302,6 +399,14 @@
 				364795681800428594F8ED1E /* Switzer-Medium.otf in Resources */,
 				42B39F429395426686721B9B /* Switzer-BlackItalic.otf in Resources */,
 				80023C6C5FBA4D2E9F905945 /* icon.png in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FFEDEB4B36FAC06B63C0D5C6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				647448D81009D219B0EC35FE /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -434,10 +539,31 @@
 				B6A79D6D3063AE060014F928 /* SceneDelegate.swift in Sources */,
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
 				B6CAA1A72FD68DEA006D0005 /* ExitModule.m in Sources */,
+				23DD1ADC6219DB356A1F939E /* PaymentActivityAttributes.swift in Sources */,
+				D99FAD3C970C3F8D9117ECC2 /* LiveActivityModule.swift in Sources */,
+				9D2CD704DABB55C835295B56 /* LiveActivityModule.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D8F85F94C8E84EC89A7A50E8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5065918429AE29E72FA01153 /* PaymentActivityAttributes.swift in Sources */,
+				84471EB0942F1DAB81400A88 /* PaymentLiveActivityWidget.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		3FE2532B0A2F2C60F40B6224 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = PaymentLiveActivity;
+			target = C6BA33D15DD88E76E1A29762 /* PaymentLiveActivity */;
+			targetProxy = 2A25A2D9CAB54AD5BE199E2B /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
@@ -507,6 +633,34 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
+		1AB1DD048405AC7E098839FA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 29;
+				DEVELOPMENT_TEAM = 8643BUJ833;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = PaymentLiveActivity/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = co.doitpay.app.PaymentLiveActivity;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
 		};
@@ -749,6 +903,61 @@
 			};
 			name = StagingRelease;
 		};
+		BA306317BA436884D9620F34 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 29;
+				DEVELOPMENT_TEAM = 8643BUJ833;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = PaymentLiveActivity/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = co.doitpay.app.PaymentLiveActivity;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		D8337CDCABBD20848C99C70E /* StagingRelease */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 29;
+				DEVELOPMENT_TEAM = 8643BUJ833;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = PaymentLiveActivity/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = co.doitpay.app.PaymentLiveActivity;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = StagingRelease;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -768,6 +977,16 @@
 				83CBBA201A601CBA00E9B192 /* Debug */,
 				83CBBA211A601CBA00E9B192 /* Release */,
 				B69229D62F8F4BA200E1FF31 /* StagingRelease */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		96B93AB71D201DBB05863CFE /* Build configuration list for PBXNativeTarget "PaymentLiveActivity" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1AB1DD048405AC7E098839FA /* Release */,
+				BA306317BA436884D9620F34 /* Debug */,
+				D8337CDCABBD20848C99C70E /* StagingRelease */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
