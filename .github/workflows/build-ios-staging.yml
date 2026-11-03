@@ -10,6 +10,14 @@ on:
         type: choice
         options:
           - firebase
+      api_url:
+        description: "API URL"
+        required: true
+        type: choice
+        default: https://mobi.doitpay.dev
+        options:
+          - https://mobi.doitpay.dev
+          - https://mobi-staging-2.doitpay.dev
 
 jobs:
   build:
@@ -19,7 +27,7 @@ jobs:
       xcode_scheme: Doitpay-Staging
       env_file_name: .env.staging
       env_file_content: |
-        API_URL=https://mobi.doitpay.dev
+        API_URL=${{ inputs.api_url }}
         APP_NAME=DoitPay-Staging
         ENABLE_NETWORK_LOGGER=true
         POSTHOG_HOST=https://us.i.posthog.com
