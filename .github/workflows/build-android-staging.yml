@@ -1,5 +1,5 @@
 name: Build Android (Staging)
-run-name: Build Android (Staging / Firebase)
+run-name: Build Android (Staging / Firebase / ${{ inputs.api_url }})
 
 on:
   workflow_dispatch:
