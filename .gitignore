@@ -25,6 +25,7 @@ DerivedData
 # Environments
 .env.production
 .env.staging
+.env.staging-2
 .env
 
 # Android/IntelliJ
