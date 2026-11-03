@@ -1,5 +1,5 @@
 name: Build Android (Staging)
-run-name: Build Android (Staging / Firebase)
+run-name: Build Android (Staging / Firebase / ${{ inputs.api_url }})
 
 on:
   workflow_dispatch:
@@ -27,6 +27,7 @@ jobs:
     with:
       artifact_type: ${{ inputs.artifact_type }}
       environment: staging
+      api_url: ${{ inputs.api_url }}
       runs_on: arc-runner-mobile-app-staging
       build_command: ${{ inputs.artifact_type == 'aab' && 'yarn build-bundle:android-staging' || 'yarn build:android-staging' }}
       artifact_path: ${{ inputs.artifact_type == 'aab' && 'android/app/build/outputs/bundle/stagingRelease/app-staging-release.aab' || 'android/app/build/outputs/apk/staging/release/app-staging-release.apk' }}

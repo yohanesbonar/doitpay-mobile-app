@@ -11,6 +11,10 @@ on:
         description: "GitHub Environment name (e.g. staging, production)"
         required: true
         type: string
+      api_url:
+        description: "API base URL"
+        required: false
+        type: string
       build_command:
         description: "Command to build the selected artifact"
         required: true
@@ -184,6 +188,7 @@ jobs:
           embed-url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           embed-description: |
             **Environment:** ${{ inputs.environment }}
+            **API base URL:** ${{ inputs.api_url || 'Not specified' }}
             **Branch:** `${{ github.ref_name }}`
             **Actor:** ${{ github.actor }}
             **Commit:** `${{ steps.commit.outputs.sha }}`
@@ -206,6 +211,7 @@ jobs:
           embed-url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           embed-description: |
             **Environment:** ${{ inputs.environment }}
+            **API base URL:** ${{ inputs.api_url || 'Not specified' }}
             **Branch:** `${{ github.ref_name }}`
             **Actor:** ${{ github.actor }}
             **Commit:** `${{ steps.commit.outputs.sha }}`

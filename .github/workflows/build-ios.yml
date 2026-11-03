@@ -8,6 +8,11 @@ on:
         required: true
         type: string
 
+      api_url:
+        description: "API base URL"
+        required: false
+        type: string
+
       xcode_scheme:
         description: "Xcode Scheme (e.g. Staging, Production)"
         required: true
@@ -301,6 +306,7 @@ jobs:
           embed-url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           embed-description: |
             **Environment:** ${{ inputs.environment }}
+            **API base URL:** ${{ inputs.api_url || 'Not specified' }}
             **Build number:** #${{ github.run_number }}
             **Branch:** `${{ github.ref_name }}`
             **Actor:** ${{ github.actor }}
@@ -324,6 +330,7 @@ jobs:
           embed-url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           embed-description: |
             **Environment:** ${{ inputs.environment }}
+            **API base URL:** ${{ inputs.api_url || 'Not specified' }}
             **Branch:** `${{ github.ref_name }}`
             **Actor:** ${{ github.actor }}
             **Commit:** `${{ steps.commit.outputs.sha }}`

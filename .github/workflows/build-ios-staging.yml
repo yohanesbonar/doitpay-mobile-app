@@ -1,5 +1,5 @@
 name: Build iOS (Staging)
-run-name: Build iOS (Staging / Firebase)
+run-name: Build iOS (Staging / Firebase / ${{ inputs.api_url }})
 
 on:
   workflow_dispatch:
@@ -24,6 +24,7 @@ jobs:
     uses: ./.github/workflows/build-ios.yml
     with:
       environment: staging
+      api_url: ${{ inputs.api_url }}
       xcode_scheme: Doitpay-Staging
       env_file_name: .env.staging
       env_file_content: |
