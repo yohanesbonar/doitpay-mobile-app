@@ -93,15 +93,39 @@ export const createStyles = () =>
       paddingHorizontal: 16,
       paddingBottom: 16,
     },
-    dateSpinner: {
+    datePickerContainer: {
+      flexDirection: 'row',
       width: '100%',
-      height: 216,
+      height: 220,
+      justifyContent: 'center',
+      marginTop: 12,
+      marginBottom: 16,
+    },
+    datePickerDayColumn: {
+      flex: 0.8,
+      height: 220,
+      backgroundColor: 'transparent',
+    },
+    datePickerMonthColumn: {
+      flex: 2,
+      height: 220,
+      backgroundColor: 'transparent',
+    },
+    datePickerYearColumn: {
+      flex: 1.2,
+      height: 220,
+      backgroundColor: 'transparent',
+    },
+    datePickerItem: {
+      color: '#1A1A1A',
+      fontSize: 20,
     },
     dateSheetTitle: {
       fontFamily: 'Switzer-Semibold',
       fontSize: 18,
       color: '#111827',
       marginBottom: 8,
+      marginTop: 12,
     },
     label: {
       fontFamily: 'Switzer-Medium',

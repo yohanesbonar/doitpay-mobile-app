@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
-import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
+import { Picker } from 'react-native-wheel-pick';
 import { Calendar } from 'lucide-react-native';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import { AppBottomSheet } from '@/components/molecules/AppBottomSheet';
@@ -33,6 +33,34 @@ interface ConfirmDataViewProps {
 }
 
 const NIK_LENGTH = 16;
+const MIN_BIRTH_YEAR = 1900;
+
+const MONTHS = [
+  'Januari',
+  'Februari',
+  'Maret',
+  'April',
+  'Mei',
+  'Juni',
+  'Juli',
+  'Agustus',
+  'September',
+  'Oktober',
+  'November',
+  'Desember',
+];
+
+const getDaysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
+
+const clampBirthDate = (year: number, month: number, day: number, today: Date) => {
+  const safeMonth = year === today.getFullYear() ? Math.min(month, today.getMonth()) : month;
+  const maxDay =
+    year === today.getFullYear() && safeMonth === today.getMonth()
+      ? today.getDate()
+      : getDaysInMonth(year, safeMonth);
+
+  return new Date(year, safeMonth, Math.min(day, maxDay));
+};
 
 const GENDER_OPTIONS: { label: string; value: KycGender }[] = [
   { label: 'Laki-laki', value: 'M' },
@@ -58,9 +86,13 @@ export const ConfirmDataView = ({
   isSubmitting = false,
 }: ConfirmDataViewProps) => {
   const styles = createStyles();
-  const [isIosDatePickerVisible, setIsIosDatePickerVisible] = useState(false);
-  const [iosTempDate, setIosTempDate] = useState<Date>(new Date(1990, 0, 1));
+  const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
+  const [tempBirthDate, setTempBirthDate] = useState<Date>(new Date(1990, 0, 1));
   const today = new Date();
+  const years = Array.from(
+    { length: today.getFullYear() - MIN_BIRTH_YEAR + 1 },
+    (_, index) => MIN_BIRTH_YEAR + index,
+  );
 
   return (
     <Formik<ConfirmDataFormValues>
@@ -83,22 +115,25 @@ export const ConfirmDataView = ({
         const openDatePicker = () => {
           const initial = values.birthDate ?? new Date(1990, 0, 1);
 
-          if (Platform.OS === 'android') {
-            DateTimePickerAndroid.open({
-              value: initial,
-              mode: 'date',
-              maximumDate: today,
-              onChange: (event, date) => {
-                setFieldTouched('birthDate', true, false);
-                if (event.type === 'set' && date) setFieldValue('birthDate', date);
-              },
-            });
-            return;
-          }
-
-          setIosTempDate(initial);
-          setIsIosDatePickerVisible(true);
+          setTempBirthDate(initial);
+          setIsDatePickerVisible(true);
         };
+
+        const birthYear = tempBirthDate.getFullYear();
+        const birthMonth = tempBirthDate.getMonth();
+        const birthDay = tempBirthDate.getDate();
+        const availableMonths = MONTHS.map((label, value) => ({ label, value })).filter(
+          ({ value }) => birthYear < today.getFullYear() || value <= today.getMonth(),
+        );
+        const availableDays = Array.from(
+          {
+            length:
+              birthYear === today.getFullYear() && birthMonth === today.getMonth()
+                ? today.getDate()
+                : getDaysInMonth(birthYear, birthMonth),
+          },
+          (_, index) => index + 1,
+        ).map((value) => ({ label: String(value), value }));
 
         const renderError = (field: keyof ConfirmDataFormValues) => {
           const message = showError(field);
@@ -238,39 +273,71 @@ export const ConfirmDataView = ({
               </TouchableOpacity>
             </View>
 
-            {Platform.OS === 'ios' && (
-              <AppBottomSheet
-                isVisible={isIosDatePickerVisible}
-                onClose={() => {
-                  setIsIosDatePickerVisible(false);
-                  setFieldTouched('birthDate', true);
-                }}>
-                <View style={styles.dateSheet}>
-                  <Text style={styles.dateSheetTitle}>Tanggal Lahir</Text>
-                  <DateTimePicker
-                    value={iosTempDate}
-                    mode="date"
-                    display="spinner"
-                    locale="id-ID"
-                    themeVariant="light"
-                    textColor="#111827"
-                    maximumDate={today}
-                    themeVariant="light"
-                    style={styles.dateSpinner}
-                    onChange={(_, date) => date && setIosTempDate(date)}
+            <AppBottomSheet
+              isVisible={isDatePickerVisible}
+              onClose={() => {
+                setIsDatePickerVisible(false);
+                setFieldTouched('birthDate', true);
+              }}>
+              <View style={styles.dateSheet}>
+                <Text style={styles.dateSheetTitle}>Tanggal Lahir</Text>
+                <View style={styles.datePickerContainer}>
+                  <Picker
+                    style={styles.datePickerDayColumn}
+                    selectedValue={birthDay}
+                    pickerData={availableDays}
+                    onValueChange={(day: number | string) =>
+                      setTempBirthDate(
+                        clampBirthDate(birthYear, birthMonth, Number(day), today),
+                      )
+                    }
+                    itemStyle={styles.datePickerItem}
+                    selectionColor="#FFFFFF"
+                    textColor="#1A1A1A"
+                    selectTextColor="#1A1A1A"
                   />
-                  <TouchableOpacity
-                    style={styles.buttonPrimary}
-                    onPress={() => {
-                      setFieldValue('birthDate', iosTempDate);
-                      setIsIosDatePickerVisible(false);
-                    }}
-                    activeOpacity={0.85}>
-                    <Text style={styles.buttonText}>Pilih Tanggal</Text>
-                  </TouchableOpacity>
+                  <Picker
+                    style={styles.datePickerMonthColumn}
+                    selectedValue={birthMonth}
+                    pickerData={availableMonths}
+                    onValueChange={(month: number | string) =>
+                      setTempBirthDate(
+                        clampBirthDate(birthYear, Number(month), birthDay, today),
+                      )
+                    }
+                    itemStyle={styles.datePickerItem}
+                    selectionColor="#FFFFFF"
+                    textColor="#1A1A1A"
+                    selectTextColor="#1A1A1A"
+                    numberOfLines={1}
+                  />
+                  <Picker
+                    style={styles.datePickerYearColumn}
+                    selectedValue={birthYear}
+                    pickerData={years.map((value) => ({ label: String(value), value }))}
+                    onValueChange={(year: number | string) =>
+                      setTempBirthDate(
+                        clampBirthDate(Number(year), birthMonth, birthDay, today),
+                      )
+                    }
+                    itemStyle={styles.datePickerItem}
+                    selectionColor="#FFFFFF"
+                    textColor="#1A1A1A"
+                    selectTextColor="#1A1A1A"
+                  />
                 </View>
-              </AppBottomSheet>
-            )}
+                <TouchableOpacity
+                  style={styles.buttonPrimary}
+                  onPress={() => {
+                    setFieldValue('birthDate', tempBirthDate);
+                    setFieldTouched('birthDate', true, false);
+                    setIsDatePickerVisible(false);
+                  }}
+                  activeOpacity={0.85}>
+                  <Text style={styles.buttonText}>Pilih Tanggal</Text>
+                </TouchableOpacity>
+              </View>
+            </AppBottomSheet>
           </View>
         );
       }}
