@@ -99,7 +99,4 @@ class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {
     #endif
   }
 
-  override func fabricEnabled() -> Bool {
-    return true
-  }
 }
