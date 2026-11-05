@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigation } from '@react-navigation/native';
 import CaptureKtpView from '@/features/kyc/captureKtp';
+import { trackPostHogEvent } from '@/analytics/posthog';
 
 const CaptureKtpScreen = () => {
   const navigation = useNavigation<any>();
@@ -8,7 +9,10 @@ const CaptureKtpScreen = () => {
   return (
     <CaptureKtpView
       onPressBack={() => navigation.goBack()}
-      onSubmitCapturedKtp={(ktpUri) => navigation.navigate('CaptureSelfie', { ktpUri })}
+      onSubmitCapturedKtp={(ktpUri) => {
+        trackPostHogEvent('kyc_ktp_data_submitted');
+        navigation.navigate('CaptureSelfie', { ktpUri });
+      }}
     />
   );
 };

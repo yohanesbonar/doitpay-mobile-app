@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigation } from '@react-navigation/native';
 import KycIntroView from '@/features/kyc/kycIntro';
+import { trackPostHogEvent } from '@/analytics/posthog';
 
 const KycIntroScreen = () => {
   const navigation = useNavigation<any>();
@@ -13,7 +14,12 @@ const KycIntroScreen = () => {
   return (
     <KycIntroView
       onPressBack={leave}
-      onPressContinueKyc={() => navigation.navigate('CaptureKtp')}
+      onPressContinueKyc={() => {
+        trackPostHogEvent('kyc_verification_started', {
+          entry_point: 'kyc_intro',
+        });
+        navigation.navigate('CaptureKtp');
+      }}
       onPressSkip={leave}
     />
   );

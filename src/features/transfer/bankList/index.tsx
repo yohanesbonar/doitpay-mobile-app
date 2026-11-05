@@ -68,7 +68,7 @@ export const BankListView = ({
   const [isAccountSheetMounted, setIsAccountSheetMounted] = useState(false);
   // null until /v1/me answers; the account popup is only shown on a definite `false`.
   const [hasBankAccount, setHasBankAccount] = useState<boolean | null>(null);
-  const runWithKycGate = useKycGate();
+  const runWithKycGate = useKycGate('kirim');
 
   const { mutate: getProfile, isPending: isLoadingProfile } = useGetProfile();
 

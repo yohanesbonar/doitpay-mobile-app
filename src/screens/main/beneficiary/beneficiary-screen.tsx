@@ -8,7 +8,7 @@ import { useKycGate } from '@/hooks/useKycGate';
 export const BeneficiaryScreen = () => {
   const navigation = useNavigation<any>();
   const { transferEnabled, isLoading: isFeatureLoading } = useTransferFeatureAvailability();
-  const runWithKycGate = useKycGate();
+  const runWithKycGate = useKycGate('home');
 
   const goToTransferDetail = (params: {
     bankData: any;

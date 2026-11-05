@@ -2,6 +2,7 @@ import { RefObject, useEffect } from 'react';
 import { AppState } from 'react-native';
 import { NavigationContainerRef } from '@react-navigation/native';
 import { getStorageItem, setStorageItem, StorageKey } from '@/storage';
+import { trackPostHogEvent } from '@/analytics/posthog';
 
 interface Params {
   navigationRef: RefObject<NavigationContainerRef<any> | null>;
@@ -42,6 +43,12 @@ export const useKycResultRedirect = ({
     const shouldShowRejected = kycStatus === 'REJECTED' && lastSeen !== 'REJECTED';
     const shouldShowPending = kycStatus === 'PENDING' && lastSeen !== 'PENDING';
     const shouldShowVerified = kycStatus === 'VERIFIED' && lastSeen === 'PENDING';
+
+    if (shouldShowRejected) {
+      trackPostHogEvent('kyc_request_rejected');
+    } else if (shouldShowVerified) {
+      trackPostHogEvent('kyc_request_approved');
+    }
 
     setStorageItem(StorageKey.KYC_LAST_SEEN_STATUS, kycStatus);
 

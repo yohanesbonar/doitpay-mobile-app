@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Image, ImageSourcePropType, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { AppBottomSheet } from '@/components/molecules/AppBottomSheet';
 import { KycStatus } from '@/features/onboarding/kyc/types';
+import { trackPostHogEvent } from '@/analytics/posthog';
 
 type GateContent = {
   image: ImageSourcePropType;
@@ -43,12 +44,25 @@ const UNVERIFIED_CONTENT: GateContent = {
 
 interface KycRequiredSheetProps {
   status: KycStatus | null;
+  entryPoint: string | null;
   onClose: () => void;
   onNavigate: (route: GateContent['ctaRoute']) => void;
 }
 
-export const KycRequiredSheet = ({ status, onClose, onNavigate }: KycRequiredSheetProps) => {
+export const KycRequiredSheet = ({ status, entryPoint, onClose, onNavigate }: KycRequiredSheetProps) => {
   const content = (status && CONTENT[status]) || UNVERIFIED_CONTENT;
+  const wasVisible = useRef(false);
+
+  useEffect(() => {
+    const isVisible = Boolean(status);
+    if (isVisible && !wasVisible.current) {
+      trackPostHogEvent('kyc_gate_viewed', {
+        entry_point: entryPoint ?? 'unknown',
+        kyc_state: status?.toLowerCase() ?? 'unknown',
+      });
+    }
+    wasVisible.current = isVisible;
+  }, [status, entryPoint]);
 
   return (
     <AppBottomSheet isVisible={!!status} onClose={onClose}>

@@ -7,7 +7,7 @@ import { useKycGateStore } from '@/storage/useKycGateStore';
  * Wraps money-moving entry points (transfer, receive): runs `action` only for KYC-verified users,
  * otherwise opens the KYC required sheet. FE gate for UX only; BE must still enforce it.
  */
-export const useKycGate = () => {
+export const useKycGate = (entryPoint: string) => {
   const { data, refetch } = useGetProfileMeQuery();
   const openGate = useKycGateStore((state) => state.openGate);
 
@@ -26,12 +26,12 @@ export const useKycGate = () => {
       if (status === KycStatus.VERIFIED) {
         action();
       } else if (status) {
-        openGate(status);
+        openGate(status, entryPoint);
       } else {
         // Profile could not be loaded at all: don't lock the user out on our side.
         action();
       }
     },
-    [data, refetch, openGate],
+    [data, refetch, openGate, entryPoint],
   );
 };

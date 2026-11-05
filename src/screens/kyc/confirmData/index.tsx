@@ -5,6 +5,7 @@ import Toast from 'react-native-toast-message';
 import ConfirmDataView, { ConfirmDataFormValues } from '@/features/kyc/confirmData';
 import { KycGender } from '@/features/kyc/api/kyc';
 import { useSubmitKyc } from '@/hooks/useKycMutation';
+import { trackPostHogEvent } from '@/analytics/posthog';
 
 type ConfirmDataRouteParams = {
   ktpUri: string;
@@ -31,6 +32,7 @@ const ConfirmDataScreen = () => {
     }
 
     Keyboard.dismiss();
+    trackPostHogEvent('kyc_request_submitted');
     submitKyc(
       {
         fullName: values.fullName.trim(),
@@ -44,11 +46,12 @@ const ConfirmDataScreen = () => {
       },
       {
         // Reset so back (incl. Android hardware back) cannot return to the submitted form.
-        onSuccess: () =>
+        onSuccess: () => {
           navigation.reset({
             index: 1,
             routes: [{ name: 'MainTabs' }, { name: 'KycDataSubmitted' }],
-          }),
+          });
+        },
         onError: (err: any) => {
           Toast.show({
             type: 'error',

@@ -10,7 +10,7 @@ const HomeScreen = () => {
   const { transferEnabled, isLoading: isFeatureLoading } = useTransferFeatureAvailability();
 
   const canTransfer = isFeatureLoading || transferEnabled;
-  const runWithKycGate = useKycGate();
+  const runWithKycGate = useKycGate('home');
 
   const goToSearchAccount = () => {
     runWithKycGate(() => {

@@ -5,12 +5,14 @@ import { KycStatus } from '@/features/onboarding/kyc/types';
 // through useKycGate without rendering its own copy.
 interface KycGateState {
   gateStatus: KycStatus | null;
-  openGate: (status: KycStatus) => void;
+  gateEntryPoint: string | null;
+  openGate: (status: KycStatus, entryPoint: string) => void;
   closeGate: () => void;
 }
 
 export const useKycGateStore = create<KycGateState>((set) => ({
   gateStatus: null,
-  openGate: (status) => set({ gateStatus: status }),
-  closeGate: () => set({ gateStatus: null }),
+  gateEntryPoint: null,
+  openGate: (status, gateEntryPoint) => set({ gateStatus: status, gateEntryPoint }),
+  closeGate: () => set({ gateStatus: null, gateEntryPoint: null }),
 }));

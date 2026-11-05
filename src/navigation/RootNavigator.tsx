@@ -84,6 +84,7 @@ export default function RootNavigator({
   const accessToken = useAuthStore((state) => state.accessToken);
   const isAuthenticated = !!accessToken;
   const kycGateStatus = useKycGateStore((state) => state.gateStatus);
+  const kycGateEntryPoint = useKycGateStore((state) => state.gateEntryPoint);
   const closeKycGate = useKycGateStore((state) => state.closeGate);
   const pendingForgotPinRedirect = useAuthStore((state) => state.pendingForgotPinRedirect);
   const clearPendingForgotPinRedirect = useAuthStore(
@@ -285,6 +286,7 @@ export default function RootNavigator({
       {isAuthenticated && (
         <KycRequiredSheet
           status={kycGateStatus}
+          entryPoint={kycGateEntryPoint}
           onClose={closeKycGate}
           onNavigate={(route) => {
             closeKycGate();
