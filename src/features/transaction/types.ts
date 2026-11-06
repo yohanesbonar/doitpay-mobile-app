@@ -28,6 +28,7 @@ export enum TransactionStatus {
   PENDING = 'PENDING',
   CANCELED = 'CANCELED',
   FAILED = 'FAILED',
+  REJECTED = 'REJECTED',
 }
 
 export interface GetTransactionsQueries {
