@@ -58,6 +58,11 @@ const STATUS_CONFIG: Record<
     color: '#EF4444',
     Icon: XCircle,
   },
+  [TransactionStatus.REJECTED]: {
+    label: 'Transaksi Ditolak',
+    color: '#EF4444',
+    Icon: XCircle,
+  },
 };
 
 const deriveStatus = (type: string, status?: string): string => {

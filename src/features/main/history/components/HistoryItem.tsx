@@ -35,6 +35,11 @@ const IconMap = [
     icon: FailedIcon,
     bg: '#FFE2E2',
   },
+  {
+    status: TransactionStatus.REJECTED,
+    icon: FailedIcon,
+    bg: '#FFE2E2',
+  },
 ];
 
 interface HistoryItemProps {
