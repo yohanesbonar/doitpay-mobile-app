@@ -98,8 +98,6 @@
 		<string>Switzer-Thin.otf</string>
 		<string>Switzer-ThinItalic.otf</string>
 	</array>
-	<key>NSSupportsLiveActivities</key>
-	<true/>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
