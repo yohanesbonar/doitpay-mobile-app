@@ -24,6 +24,7 @@ jobs:
         APP_NAME=DoitPay-Production
         ENABLE_NETWORK_LOGGER=false
         ENV=production
+        POSTHOG_API_KEY=phc_ykySbnwwLioDBHnq4LLwHkBPtACwoPWXQJUBKjGiPvhf
         POSTHOG_HOST=https://us.i.posthog.com
         POSTHOG_RELEASE_STAGE=public_release
       upload_firebase: ${{ inputs.upload == 'firebase' }}
