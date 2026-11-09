@@ -12,7 +12,7 @@ export const releaseStage = Config.POSTHOG_RELEASE_STAGE?.trim() || 'internal_re
 // ENVIRONMENT CHECK: PostHog will ONLY be initialized in production builds.
 // Adjust `Config.ENV` or `releaseStage` to match your project's .env variable.
 // -----------------------------------------------------------------------------
-const isProduction = Config.ENV === 'production';
+const isProduction = Config.ENV === 'production' || releaseStage === 'public_release';
 
 /**
  * Singleton PostHog client instance.
