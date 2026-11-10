@@ -21,6 +21,7 @@
     "android-production:clean": "export ENVFILE=.env.production && cd android && ./gradlew clean && cd .. && npx react-native run-android --mode productiondebug",
     "android-production-release": "export ENVFILE=.env.production && npx react-native run-android --mode productionrelease",
     "ios-staging": "export ENVFILE=.env.staging  && npx react-native run-ios --scheme Doitpay-Staging --mode Debug --simulator=\"iPhone 18 Pro\"",
+    "ios-staging-iPhoneDuo": "export ENVFILE=.env.staging  && npx react-native run-ios --scheme Doitpay-Staging --mode Debug --simulator=\"iPhone Duo\"",
     "ios-staging-2": "export ENVFILE=.env.staging-2 && npx react-native run-ios --scheme Doitpay-Staging-2 --mode Debug --simulator=\"iPhone 18 Pro\"",
     "ipad-staging-2": "export ENVFILE=.env.staging-2 && npx react-native run-ios --scheme Doitpay-Staging-2 --mode Debug --simulator=\"iPad mini (A17 Pro)\"",
     "ios-staging-2-device": "export ENVFILE=.env.staging-2 && npx react-native run-ios --scheme Doitpay-Staging-2 --mode Debug --device",
