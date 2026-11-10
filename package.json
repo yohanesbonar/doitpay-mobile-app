@@ -46,7 +46,7 @@
     "build-bundle:android-staging-2": "export ENVFILE=.env.staging-2 && cd android && ./gradlew bundleStagingRelease && cd ..",
     "build-bundle:android-staging-2:clean": "export ENVFILE=.env.staging-2 && rm -rf android/app/build && cd android && ./gradlew bundleStagingRelease --rerun-tasks && cd ..",
     "build-bundle:android-production:clean": "export ENVFILE=.env.production && rm -rf android/app/build && cd android && ./gradlew bundleProductionRelease --rerun-tasks && cd ..",
-    "clean:android": "cd android && ./gradlew clean && cd ..",
+    "android:clean": "cd android && ./gradlew clean && cd ..",
     "ios:pod": "cd ios && pod install && cd ..",
     "ios:clean": "rm -rf ios/build && cd ios && xcodebuild clean && cd ..",
     "// --- COMPILE CHECK (Output: ios/build/Build/Products/Release-iphoneos/) ---": "",
