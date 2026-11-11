@@ -57,6 +57,7 @@ import CaptureSelfieScreen from '@/screens/kyc/captureSelfie';
 import ConfirmDataScreen from '@/screens/kyc/confirmData';
 import DataSubmittedScreen from '@/screens/kyc/dataSubmitted';
 import KycIntroScreen from '@/screens/kyc/kycIntro';
+import KycFullTermsScreen from '@/screens/kyc/fullTerms';
 import KycResultScreen from '@/screens/kyc/kycResult';
 import { useKycResultRedirect } from '@/hooks/useKycResultRedirect';
 import { KycRequiredSheet } from '@/features/kyc/kycGate/KycRequiredSheet';
@@ -152,7 +153,7 @@ export default function RootNavigator({
     if (navigationRef.current?.isReady()) {
       navigationRef.current.reset({
         index: 1,
-        routes: [{ name: 'MainTabs' }, { name: 'KycIntro' }],
+        routes: [{ name: 'MainTabs' }, { name: 'KycIntro', params: { flow: 'onboarding' } }],
       });
       setPendingKycRedirect(false);
     }
@@ -274,6 +275,7 @@ export default function RootNavigator({
             <Stack.Screen name="DisputeAddResponse" component={DisputeAddResponseScreen} />
             <Stack.Screen name="ActivateQris" component={ActivateQrisScreen} />
             <Stack.Screen name="KycIntro" component={KycIntroScreen} />
+            <Stack.Screen name="KycFullTerms" component={KycFullTermsScreen} />
             <Stack.Screen name="KycResult" component={KycResultScreen} />
             <Stack.Screen name="CaptureKtp" component={CaptureKtpScreen} />
             <Stack.Screen name="CaptureSelfie" component={CaptureSelfieScreen} />
