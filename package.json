@@ -30,6 +30,7 @@
     "ios-staging-device": "export ENVFILE=.env.staging && npx react-native run-ios --scheme Doitpay-Staging --mode Debug --device",
     "ios-staging-device-release": "export ENVFILE=.env.staging && npx react-native run-ios --scheme Doitpay-Staging --mode Release --device",
     "ios-production": "export ENVFILE=.env.production  && npx react-native run-ios --scheme Doitpay-Production --mode Debug --simulator=\"iPhone 18 Pro\"",
+    "ios-production-iPhoneAir": "export ENVFILE=.env.production  && npx react-native run-ios --scheme Doitpay-Production --mode Debug --simulator=\"iPhone Air\"",
     "ios-production-release": "export ENVFILE=.env.production  && npx react-native run-ios --scheme Doitpay-Production --mode Release --simulator=\"iPhone 18 Pro\"",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
