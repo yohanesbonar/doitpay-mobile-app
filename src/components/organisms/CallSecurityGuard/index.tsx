@@ -22,7 +22,7 @@ type CallStateModuleType = {
 const callStateModule = NativeModules.CallStateModule as CallStateModuleType | undefined;
 const callStateEvents = callStateModule ? new NativeEventEmitter(callStateModule) : undefined;
 // Set to true to preview the call blocker in development without starting a real call.
-const FORCE_CALL_BLOCKER_FOR_TEST = __DEV__ && true;
+const FORCE_CALL_BLOCKER_FOR_TEST = __DEV__ && false;
 
 export const CallSecurityGuard = ({ enabled = true }: { enabled?: boolean }) => {
   const [isCallActive, setIsCallActive] = useState(false);
