@@ -3498,7 +3498,7 @@ SPEC CHECKSUMS:
   React-callinvoker: 0b8ce4057e02a0bd15cf0532596e8eb8c0392e92
   React-Codegen: 4b8b4817cea7a54b83851d4c1f91f79aa73de30a
   React-Core: 52b990bb36640833e636d5efc817ad4700dd7f93
-  React-Core-prebuilt: 39eb00d8ba4922167a3a70e2039b102fe42b6fe1
+  React-Core-prebuilt: 405cf395d66cf694faf9aed3483a21b5515cec85
   React-CoreModules: 43516d84b3851a850a835d32ec740db319e7bf9e
   React-cxxreact: 9254233b543b9f49bdbcad329603e70be5582a0e
   React-debug: 6bc17013f4dc724c23c91e1c83220251d1eacee6
@@ -3598,8 +3598,8 @@ SPEC CHECKSUMS:
   SDWebImagePhotosPlugin: aaf5bc35fd49b66876de58c33eeb6e38b50920e5
   SDWebImageWebPCoder: 0e06e365080397465cc73a7a9b472d8a3bd0f377
   VisionCamera: c53f898f20f802479777fa3a327a6f05c2741366
-  Yoga: 8cf9dd9fc7761e176a3361b4821d26d11cfbeab1
+  Yoga: 9891cfb1c680f64de9c41b09e7453dea33454d2b
 
 PODFILE CHECKSUM: 2c3325eb052f5eb519bfbea695fa598a840f3e23
 
-COCOAPODS: 1.13.0
+COCOAPODS: 1.15.2

@@ -37,4 +37,38 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     window.makeKeyAndVisible()
   }
+
+  // MARK: - Privacy blur (app switcher)
+
+  private var privacyBlurView: UIVisualEffectView?
+
+  func sceneWillResignActive(_ scene: UIScene) {
+    showPrivacyBlur()
+  }
+
+  func sceneDidBecomeActive(_ scene: UIScene) {
+    hidePrivacyBlur()
+  }
+
+  private func showPrivacyBlur() {
+    guard let window = window, privacyBlurView == nil else { return }
+
+    let blurView = UIVisualEffectView(effect: UIBlurEffect(style: .systemMaterial))
+    blurView.frame = window.bounds
+    blurView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+
+    window.addSubview(blurView)
+    privacyBlurView = blurView
+  }
+
+  private func hidePrivacyBlur() {
+    guard let blurView = privacyBlurView else { return }
+    privacyBlurView = nil
+
+    UIView.animate(
+      withDuration: 0.2,
+      animations: { blurView.alpha = 0 },
+      completion: { _ in blurView.removeFromSuperview() }
+    )
+  }
 }

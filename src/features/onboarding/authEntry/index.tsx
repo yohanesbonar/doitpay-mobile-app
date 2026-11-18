@@ -670,6 +670,9 @@ export const AuthEntry = () => {
           onSuccess: (res) => {
             crashlytics().log('User register setup pin');
             crashlytics().setUserId(formattedPhone);
+            identifyPostHogUser(formattedPhone, {
+              name: fullName.trim(),
+            });
             Keyboard.dismiss();
             // With an access token the auth stack is swapped out and RootNavigator redirects to KYC
             // (see pendingKycRedirect). Without one, the user waits for admin approval.
