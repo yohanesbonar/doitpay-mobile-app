@@ -19,6 +19,7 @@ class MainApplication : Application(), ReactApplication {
           // packages.add(MyReactNativePackage())
           // Add our gallery helper package so we can launch gallery intents reliably across devices
           packages.add(GalleryPackage())
+          packages.add(CallStatePackage())
           packages
         },
       )

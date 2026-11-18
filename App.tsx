@@ -44,6 +44,7 @@ import { queryClient } from './src/api/queryClient';
 import { navigationRef } from '@/navigation/navigationRef.ts';
 import { SecurityBlocker } from '@/components/organisms/SecurityBlocker/index.tsx';
 import { AppLockScreen } from '@/components/organisms/AppLockScreen/index.tsx';
+import { CallSecurityGuard } from '@/components/organisms/CallSecurityGuard';
 import { startAppLockWatcher } from '@/utils/AppLock/appLockManager.ts';
 import { useAuthStore } from '@/storage/useAuthStore.ts';
 import { UpdateAppBottomSheet, UpdateAppData } from '@/components/molecules/UpdateAppBottomSheet';
@@ -355,6 +356,7 @@ const App = () => {
                 <AppLockScreen 
                 activationId
                 onUnlocked={() => setIsPinLocked(false)} />}
+                <CallSecurityGuard enabled={Boolean(accessToken) && !isPinLocked} />
               </ThemeProvider>
               {!isInternetConnected && (
                 <View style={styles.noInternetBanner}>

@@ -28,6 +28,7 @@
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		8B421B7C80944A9E9ADA1549 /* Manrope-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6770B2290AED41EDB3719194 /* Manrope-Regular.ttf */; };
 		9DDFC629AB194518959BD29E /* Manrope-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2E241531F66E49758ABCB4C9 /* Manrope-Bold.ttf */; };
+		A1B2C3D42FA4567400660001 /* CallStateModule.m in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D32FA4567400660001 /* CallStateModule.m */; };
 		A72D846266A945718007307E /* Manrope-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9EAF7788D3074E61B5B79A63 /* Manrope-SemiBold.ttf */; };
 		AB32CB8253714351A015A753 /* Switzer-SemiboldItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 8315B983C85E4C2FA5B5E410 /* Switzer-SemiboldItalic.otf */; };
 		B03829CF6CEF4109BD241C53 /* Switzer-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 09839CC67FDD48969A1E57FB /* Switzer-Regular.otf */; };
@@ -39,6 +40,7 @@
 		B6CAA1A72FD68DEA006D0005 /* ExitModule.m in Sources */ = {isa = PBXBuildFile; fileRef = B6CAA1A62FD68DE9006D0005 /* ExitModule.m */; };
 		BB9753713E414D059CE928B6 /* Switzer-Thin.otf in Resources */ = {isa = PBXBuildFile; fileRef = CFE665627AAA4371B14A4D96 /* Switzer-Thin.otf */; };
 		BD08C361AF70482BB36CE876 /* Switzer-BoldItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 86C563C7240343F7BB334120 /* Switzer-BoldItalic.otf */; };
+		C0A115F62FA4567400660001 /* CallKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C0A115F52FA4567400660001 /* CallKit.framework */; };
 		C2D8D689334547CBB49009E0 /* Switzer-Light.otf in Resources */ = {isa = PBXBuildFile; fileRef = 1B3481711A234E17BF97C3C7 /* Switzer-Light.otf */; };
 		CCCC3F90FECE4B13883E301C /* Switzer-Black.otf in Resources */ = {isa = PBXBuildFile; fileRef = 377764EA372B428596A3B307 /* Switzer-Black.otf */; };
 		F2DD262C22464B2E941575D3 /* Switzer-Semibold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 81C3BBCE1DF74B5EBD9419B6 /* Switzer-Semibold.otf */; };
@@ -75,6 +77,7 @@
 		89D2CD391182412B9B27C5D8 /* Switzer-Extralight.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Switzer-Extralight.otf"; path = "../src/assets/fonts/Switzer-Extralight.otf"; sourceTree = "<group>"; };
 		8F7141A226A144889980A9A2 /* Switzer-Extrabold.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Switzer-Extrabold.otf"; path = "../src/assets/fonts/Switzer-Extrabold.otf"; sourceTree = "<group>"; };
 		9EAF7788D3074E61B5B79A63 /* Manrope-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-SemiBold.ttf"; path = "../src/assets/fonts/Manrope-SemiBold.ttf"; sourceTree = "<group>"; };
+		A1B2C3D32FA4567400660001 /* CallStateModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DoitpayMobileApp/CallStateModule.m; sourceTree = "<group>"; };
 		A801CEFED2274E40A1E5AA1D /* icon.png */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = icon.png; path = ../src/assets/images/icon.png; sourceTree = "<group>"; };
 		ABF442A1632B4D968CD685AD /* Switzer-Bold.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Switzer-Bold.otf"; path = "../src/assets/fonts/Switzer-Bold.otf"; sourceTree = "<group>"; };
 		B653DFD42F90C2BB0002E2E2 /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
@@ -87,6 +90,7 @@
 		B6CAA1A62FD68DE9006D0005 /* ExitModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ExitModule.m; sourceTree = "<group>"; };
 		BEBA0B5FDBA24410A5F736B0 /* Manrope-ExtraBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-ExtraBold.ttf"; path = "../src/assets/fonts/Manrope-ExtraBold.ttf"; sourceTree = "<group>"; };
 		C003D891FFF8402E9CC90182 /* Switzer-ExtralightItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Switzer-ExtralightItalic.otf"; path = "../src/assets/fonts/Switzer-ExtralightItalic.otf"; sourceTree = "<group>"; };
+		C0A115F52FA4567400660001 /* CallKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CallKit.framework; path = System/Library/Frameworks/CallKit.framework; sourceTree = SDKROOT; };
 		CA6F243868EF4CF6BF9DC1A7 /* Manrope-ExtraLight.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-ExtraLight.ttf"; path = "../src/assets/fonts/Manrope-ExtraLight.ttf"; sourceTree = "<group>"; };
 		CFE665627AAA4371B14A4D96 /* Switzer-Thin.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Switzer-Thin.otf"; path = "../src/assets/fonts/Switzer-Thin.otf"; sourceTree = "<group>"; };
 		EB988AFAC5F0E9195D545A18 /* libPods-DoitpayMobileApp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DoitpayMobileApp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -100,6 +104,7 @@
 			files = (
 				B69229D32F8F503D00E1FF31 /* libFirebaseMessaging.a in Frameworks */,
 				666C28406981AE1C0C996D04 /* libPods-DoitpayMobileApp.a in Frameworks */,
+				C0A115F62FA4567400660001 /* CallKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -159,6 +164,7 @@
 				B69229D02F8F503D00E1FF31 /* FirebaseMessaging_Privacy.bundle */,
 				B69229D12F8F503D00E1FF31 /* libFirebaseMessaging.a */,
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
+				C0A115F52FA4567400660001 /* CallKit.framework */,
 				EB988AFAC5F0E9195D545A18 /* libPods-DoitpayMobileApp.a */,
 			);
 			name = Frameworks;
@@ -178,6 +184,7 @@
 				B653DFD42F90C2BB0002E2E2 /* Config.xcconfig */,
 				B69229CD2F8F484500E1FF31 /* GoogleService-Info.plist */,
 				B6CAA1A62FD68DE9006D0005 /* ExitModule.m */,
+				A1B2C3D32FA4567400660001 /* CallStateModule.m */,
 				13B07FAE1A68108700A75B9A /* DoitpayMobileApp */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
@@ -434,6 +441,7 @@
 				B6A79D6D3063AE060014F928 /* SceneDelegate.swift in Sources */,
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
 				B6CAA1A72FD68DEA006D0005 /* ExitModule.m in Sources */,
+				A1B2C3D42FA4567400660001 /* CallStateModule.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
