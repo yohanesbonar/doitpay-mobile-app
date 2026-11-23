@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
-import { Picker } from 'react-native-wheel-pick';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import WheelPicker from '@quidone/react-native-wheel-picker';
 import { AppBottomSheet } from '@/components/molecules/AppBottomSheet';
 
 interface DateBottomSheetProps {
@@ -33,11 +33,6 @@ const YEARS = Array.from({ length: 3 }, (_, index) => currentYear - 2 + index).m
   value: year,
 }));
 
-// Di iOS, Picker ini memakai UIPickerView yang mewarnai semua baris dengan
-// `textColor` dan tidak mengenal `selectTextColor` (prop itu Android-only),
-// jadi #D1D1D1 membuat seluruh isi picker nyaris tidak terbaca di atas putih.
-const PICKER_TEXT_COLOR = Platform.OS === 'ios' ? '#1A1A1A' : '#D1D1D1';
-
 export const DateBottomSheet = ({
   isVisible,
   onClose,
@@ -64,22 +59,30 @@ export const DateBottomSheet = ({
         <Text style={styles.title}>Bulan</Text>
 
         <View style={styles.pickerContainer}>
-          <Picker
+          <WheelPicker
             style={styles.pickerColumn}
-            selectedValue={tempDate.month}
-            pickerData={MONTHS}
-            onValueChange={(month: any) => setTempDate((current) => ({ ...current, month }))}
-            textColor={PICKER_TEXT_COLOR}
-            selectTextColor="#1A1A1A"
+            data={MONTHS}
+            value={tempDate.month}
+            itemHeight={44}
+            visibleItemCount={5}
+            itemTextStyle={styles.pickerItemText}
+            enableScrollByTapOnItem
+            onValueChanged={({ item: { value } }) =>
+              setTempDate((current) => ({ ...current, month: value }))
+            }
           />
 
-          <Picker
+          <WheelPicker
             style={styles.pickerColumn}
-            selectedValue={tempDate.year}
-            pickerData={YEARS}
-            onValueChange={(year: any) => setTempDate((current) => ({ ...current, year }))}
-            textColor={PICKER_TEXT_COLOR}
-            selectTextColor="#1A1A1A"
+            data={YEARS}
+            value={tempDate.year}
+            itemHeight={44}
+            visibleItemCount={5}
+            itemTextStyle={styles.pickerItemText}
+            enableScrollByTapOnItem
+            onValueChanged={({ item: { value } }) =>
+              setTempDate((current) => ({ ...current, year: value }))
+            }
           />
         </View>
 
@@ -107,8 +110,8 @@ const styles = StyleSheet.create({
   pickerContainer: {
     flexDirection: 'row',
     width: '100%',
-    // Tinggi dikunci dan disamakan dengan tiap kolom. Versi lama memberi
-    // container 200 tapi picker-nya 220, jadi ukurannya saling bertabrakan.
+    // Keep the container and picker columns at the same fixed height.
+    // The previous 200px container conflicted with the 220px picker columns.
     height: PICKER_HEIGHT,
     justifyContent: 'center',
   },
@@ -116,6 +119,11 @@ const styles = StyleSheet.create({
     flex: 1,
     height: PICKER_HEIGHT,
     backgroundColor: 'transparent',
+  },
+  pickerItemText: {
+    color: '#1A1A1A',
+    fontFamily: 'Switzer-Regular',
+    fontSize: 18,
   },
   button: {
     backgroundColor: '#4A81FB',

@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
-import { Picker } from 'react-native-wheel-pick';
+import WheelPicker from '@quidone/react-native-wheel-picker';
 import { Calendar } from 'lucide-react-native';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import { AppBottomSheet } from '@/components/molecules/AppBottomSheet';
@@ -282,48 +282,47 @@ export const ConfirmDataView = ({
               <View style={styles.dateSheet}>
                 <Text style={styles.dateSheetTitle}>Tanggal Lahir</Text>
                 <View style={styles.datePickerContainer}>
-                  <Picker
+                  <WheelPicker
                     style={styles.datePickerDayColumn}
-                    selectedValue={birthDay}
-                    pickerData={availableDays}
-                    onValueChange={(day: number | string) =>
+                    data={availableDays}
+                    value={birthDay}
+                    itemHeight={44}
+                    visibleItemCount={5}
+                    itemTextStyle={styles.datePickerItem}
+                    enableScrollByTapOnItem
+                    onValueChanged={({ item: { value } }) =>
                       setTempBirthDate(
-                        clampBirthDate(birthYear, birthMonth, Number(day), today),
+                        clampBirthDate(birthYear, birthMonth, Number(value), today),
                       )
                     }
-                    itemStyle={styles.datePickerItem}
-                    selectionColor="#FFFFFF"
-                    textColor="#1A1A1A"
-                    selectTextColor="#1A1A1A"
                   />
-                  <Picker
+                  <WheelPicker
                     style={styles.datePickerMonthColumn}
-                    selectedValue={birthMonth}
-                    pickerData={availableMonths}
-                    onValueChange={(month: number | string) =>
+                    data={availableMonths}
+                    value={birthMonth}
+                    itemHeight={44}
+                    visibleItemCount={5}
+                    itemTextStyle={styles.datePickerItem}
+                    enableScrollByTapOnItem
+                    onValueChanged={({ item: { value } }) =>
                       setTempBirthDate(
-                        clampBirthDate(birthYear, Number(month), birthDay, today),
+                        clampBirthDate(birthYear, Number(value), birthDay, today),
                       )
                     }
-                    itemStyle={styles.datePickerItem}
-                    selectionColor="#FFFFFF"
-                    textColor="#1A1A1A"
-                    selectTextColor="#1A1A1A"
-                    numberOfLines={1}
                   />
-                  <Picker
+                  <WheelPicker
                     style={styles.datePickerYearColumn}
-                    selectedValue={birthYear}
-                    pickerData={years.map((value) => ({ label: String(value), value }))}
-                    onValueChange={(year: number | string) =>
+                    data={years.map((value) => ({ label: String(value), value }))}
+                    value={birthYear}
+                    itemHeight={44}
+                    visibleItemCount={5}
+                    itemTextStyle={styles.datePickerItem}
+                    enableScrollByTapOnItem
+                    onValueChanged={({ item: { value } }) =>
                       setTempBirthDate(
-                        clampBirthDate(Number(year), birthMonth, birthDay, today),
+                        clampBirthDate(Number(value), birthMonth, birthDay, today),
                       )
                     }
-                    itemStyle={styles.datePickerItem}
-                    selectionColor="#FFFFFF"
-                    textColor="#1A1A1A"
-                    selectTextColor="#1A1A1A"
                   />
                 </View>
                 <TouchableOpacity

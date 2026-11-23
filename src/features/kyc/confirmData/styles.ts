@@ -118,6 +118,7 @@ export const createStyles = () =>
     },
     datePickerItem: {
       color: '#1A1A1A',
+      fontFamily: 'Switzer-Regular',
       fontSize: 20,
     },
     dateSheetTitle: {
