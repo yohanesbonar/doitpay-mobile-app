@@ -180,7 +180,7 @@ const styles = {
   },
   title: {
     color: '#000000',
-    fontFamily: 'Switzer-SemiBold',
+    fontFamily: 'Switzer-Semibold',
     fontSize: 24,
     lineHeight: 27,
     textAlign: 'center' as const,
