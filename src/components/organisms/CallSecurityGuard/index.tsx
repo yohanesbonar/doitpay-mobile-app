@@ -32,15 +32,42 @@ export const CallSecurityGuard = ({ enabled = true }: { enabled?: boolean }) => 
       setIsCallActive(false);
       return;
     }
-    if (!callStateModule || !callStateEvents) return;
+    if (!callStateModule || !callStateEvents) {
+      if (__DEV__) console.warn('CallStateModule is unavailable on this platform');
+      return;
+    }
     let mounted = true;
     let subscription: ReturnType<typeof callStateEvents.addListener> | undefined;
+    let pollInterval: ReturnType<typeof setInterval> | undefined;
+    let isRefreshing = false;
 
     const subscribeToCallState = () => {
       if (subscription) return;
       subscription = callStateEvents.addListener('callStateChanged', (event) => {
         if (mounted) setIsCallActive(Boolean(event?.active));
       });
+    };
+
+    const startAndroidPolling = () => {
+      if (Platform.OS !== 'android' || pollInterval) return;
+      pollInterval = setInterval(() => {
+        if (AppState.currentState === 'active') void refreshCallState();
+      }, 1000);
+    };
+
+    const refreshCallState = async () => {
+      if (!mounted || isRefreshing) return;
+      isRefreshing = true;
+      try {
+        startAndroidPolling();
+        subscribeToCallState();
+        const active = await callStateModule.getCallState();
+        if (mounted) setIsCallActive(active);
+      } catch (error) {
+        if (__DEV__) console.warn('Unable to refresh device call state', error);
+      } finally {
+        isRefreshing = false;
+      }
     };
 
     const activateCallMonitor = async () => {
@@ -56,12 +83,17 @@ export const CallSecurityGuard = ({ enabled = true }: { enabled?: boolean }) => 
               buttonNegative: 'Nanti',
             },
           );
-          if (permission !== PermissionsAndroid.RESULTS.GRANTED || !mounted) return;
+          if (permission !== PermissionsAndroid.RESULTS.GRANTED) {
+            if (__DEV__) {
+              console.warn(
+                'READ_PHONE_STATE was not granted; cellular call detection is unavailable',
+              );
+            }
+          }
+          if (!mounted) return;
         }
 
-        subscribeToCallState();
-        const active = await callStateModule.getCallState();
-        if (mounted) setIsCallActive(active);
+        await refreshCallState();
       } catch (error) {
         if (__DEV__) console.warn('Unable to check device call state', error);
       }
@@ -71,28 +103,14 @@ export const CallSecurityGuard = ({ enabled = true }: { enabled?: boolean }) => 
 
     const appStateSubscription = AppState.addEventListener('change', (state) => {
       if (state !== 'active') return;
-      const refreshCallState = async () => {
-        if (
-          Platform.OS === 'android' &&
-          !(await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.READ_PHONE_STATE))
-        ) {
-          return;
-        }
-        subscribeToCallState();
-        return callStateModule.getCallState();
-      };
-
-      refreshCallState()
-        .then((active) => {
-          if (mounted && active !== undefined) setIsCallActive(active);
-        })
-        .catch(() => undefined);
+      void refreshCallState();
     });
 
     return () => {
       mounted = false;
       subscription?.remove();
       appStateSubscription.remove();
+      if (pollInterval) clearInterval(pollInterval);
     };
   }, [enabled]);
 
