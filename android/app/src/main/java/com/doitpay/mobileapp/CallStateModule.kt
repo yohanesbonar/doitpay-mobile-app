@@ -3,6 +3,9 @@ package co.doitpay.app
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.media.AudioManager
+import android.os.Handler
+import android.os.Looper
 import android.telecom.TelecomManager
 import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
@@ -15,15 +18,10 @@ import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.modules.core.DeviceEventManagerModule
 
 class CallStateModule(private val context: ReactApplicationContext) : ReactContextBaseJavaModule(context) {
+  private val mainHandler = Handler(Looper.getMainLooper())
   private var isObserving = false
   private var lastCallState: Boolean? = null
-
-  @Suppress("DEPRECATION")
-  private val phoneStateListener = object : PhoneStateListener() {
-    override fun onCallStateChanged(state: Int, phoneNumber: String?) {
-      publishCallState(isCallActive() || state != TelephonyManager.CALL_STATE_IDLE)
-    }
-  }
+  private var phoneStateListener: PhoneStateListener? = null
 
   override fun getName() = "CallStateModule"
 
@@ -48,21 +46,34 @@ class CallStateModule(private val context: ReactApplicationContext) : ReactConte
   }
 
   private fun startObserving() {
-    if (isObserving || !hasPhoneStatePermission()) return
-    isObserving = true
-    lastCallState = isCallActive()
-    val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-    @Suppress("DEPRECATION")
-    telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE)
-    publishCallState(isCallActive(), force = true)
+    mainHandler.post {
+      if (isObserving || !hasPhoneStatePermission()) return@post
+      isObserving = true
+      lastCallState = isCallActive()
+      val listener = object : PhoneStateListener() {
+        override fun onCallStateChanged(state: Int, phoneNumber: String?) {
+          publishCallState(isCallActive() || state != TelephonyManager.CALL_STATE_IDLE)
+        }
+      }
+      phoneStateListener = listener
+      val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+      @Suppress("DEPRECATION")
+      telephonyManager.listen(listener, PhoneStateListener.LISTEN_CALL_STATE)
+      publishCallState(isCallActive(), force = true)
+    }
   }
 
   @Suppress("DEPRECATION")
   private fun stopObserving() {
-    if (!isObserving) return
-    isObserving = false
-    val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-    telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE)
+    mainHandler.post {
+      if (!isObserving) return@post
+      isObserving = false
+      phoneStateListener?.let { listener ->
+        val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+        telephonyManager.listen(listener, PhoneStateListener.LISTEN_NONE)
+      }
+      phoneStateListener = null
+    }
   }
 
   private fun hasPhoneStatePermission() = ContextCompat.checkSelfPermission(
@@ -71,13 +82,23 @@ class CallStateModule(private val context: ReactApplicationContext) : ReactConte
   ) == PackageManager.PERMISSION_GRANTED
 
   private fun isCallActive(): Boolean {
-    if (!hasPhoneStatePermission()) return false
+    val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
+    val isCommunicationAudioActive =
+      audioManager?.mode == AudioManager.MODE_IN_CALL ||
+        audioManager?.mode == AudioManager.MODE_IN_COMMUNICATION
+    if (isCommunicationAudioActive) return true
+
     val telecomManager = context.getSystemService(Context.TELECOM_SERVICE) as? TelecomManager
+    val isTelecomCallActive = try {
+      telecomManager?.isInCall == true
+    } catch (_: SecurityException) {
+      false
+    }
+    if (isTelecomCallActive || !hasPhoneStatePermission()) return isTelecomCallActive
+
     return try {
-      (telecomManager?.isInCall == true) || run {
-        val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-        telephonyManager.callState != TelephonyManager.CALL_STATE_IDLE
-      }
+      val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+      telephonyManager.callState != TelephonyManager.CALL_STATE_IDLE
     } catch (_: SecurityException) {
       false
     }
