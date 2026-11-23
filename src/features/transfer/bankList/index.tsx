@@ -198,7 +198,7 @@ export const BankListView = ({
   return (
     <View style={styles.container}>
       <HeaderToolbar
-        title={t('bankList.sendTo')}
+        title={fromProfile ? t('bankList.addAccount') : t('bankList.sendTo')}
         onPressBack={onPressBack}
         titlePosition={fromTabBar || fromProfile ? 'left' : 'center'}
         titleStyle="medium"
