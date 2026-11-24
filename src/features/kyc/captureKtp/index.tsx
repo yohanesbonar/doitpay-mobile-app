@@ -4,7 +4,11 @@ import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import { Contact } from 'lucide-react-native';
 import ImageEditor from '@react-native-community/image-editor';
 import { createStyles } from './styles';
-import { KycImageError, prepareKycImage } from '@/features/kyc/utils/prepareKycImage';
+import {
+  KYC_CAMERA_OPTIONS,
+  KycImageError,
+  prepareKycImage,
+} from '@/features/kyc/utils/prepareKycImage';
 import {
   Camera,
   useCameraDevice,
@@ -29,8 +33,7 @@ export const CaptureKtpView = ({ onPressBack, onSubmitCapturedKtp }: CaptureKtpV
   const [frameLayout, setFrameLayout] = useState<LayoutRectangle | null>(null);
   const [guidanceFrameLayout, setGuidanceFrameLayout] = useState<LayoutRectangle | null>(null);
   const device = useCameraDevice('back');
-  // JPEG explicitly: 'native' (the default) is HEIC on most iPhones, and KYC submit sends image/jpeg.
-  const photoOutput = usePhotoOutput({ containerFormat: 'jpeg' });
+  const photoOutput = usePhotoOutput(KYC_CAMERA_OPTIONS);
   const { hasPermission, requestPermission } = useCameraPermission();
 
   const hasPreview = useMemo(() => !!capturedUri, [capturedUri]);

@@ -6,15 +6,16 @@ import { User } from '@/features/user/types';
 import { KycStatus } from '@/features/onboarding/kyc/types';
 
 interface ProfileCardProps extends Pick<User, 'fullName' | 'phoneNumber' | 'kycStatus'> {
-  // Opens the rejection details; only used when kycStatus is REJECTED.
-  onPressRejectedKyc?: () => void;
+  // Badge is tappable for every state except verified: rejected (see reason), pending (under
+  // review screen) and unverified (start KYC).
+  onPressKycBadge?: () => void;
 }
 
 export const ProfileCard: FC<ProfileCardProps> = ({
   fullName,
   phoneNumber,
   kycStatus,
-  onPressRejectedKyc,
+  onPressKycBadge,
 }) => {
   const styles = createStyles(colors);
 
@@ -67,8 +68,8 @@ export const ProfileCard: FC<ProfileCardProps> = ({
       </View>
       <TouchableOpacity
         style={badgeStyle}
-        onPress={onPressRejectedKyc}
-        disabled={!isKycRejected || !onPressRejectedKyc}
+        onPress={onPressKycBadge}
+        disabled={isKycVerified || !onPressKycBadge}
         activeOpacity={0.7}>
         <Text style={badgeTextStyle} numberOfLines={1} ellipsizeMode="tail">
           {badgeLabel}

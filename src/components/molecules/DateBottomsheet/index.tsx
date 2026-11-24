@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import WheelPicker from '@quidone/react-native-wheel-picker';
 import { AppBottomSheet } from '@/components/molecules/AppBottomSheet';
-import { WheelPicker, type WheelPickerItem } from '@/components/molecules/WheelPicker';
 
 interface DateBottomSheetProps {
   isVisible: boolean;
@@ -10,7 +10,9 @@ interface DateBottomSheetProps {
   onSelect: (date: { month: number; year: number }) => void;
 }
 
-const MONTHS: WheelPickerItem[] = [
+const PICKER_HEIGHT = 220;
+
+const MONTHS = [
   { label: 'Januari', value: 0 },
   { label: 'Februari', value: 1 },
   { label: 'Maret', value: 2 },
@@ -26,10 +28,10 @@ const MONTHS: WheelPickerItem[] = [
 ];
 
 const currentYear = new Date().getFullYear();
-const YEARS: WheelPickerItem[] = Array.from(
-  { length: 3 },
-  (_, index) => currentYear - 2 + index,
-).map((year) => ({ label: year.toString(), value: year }));
+const YEARS = Array.from({ length: 3 }, (_, index) => currentYear - 2 + index).map((year) => ({
+  label: year.toString(),
+  value: year,
+}));
 
 export const DateBottomSheet = ({
   isVisible,
@@ -60,15 +62,27 @@ export const DateBottomSheet = ({
           <WheelPicker
             style={styles.pickerColumn}
             data={MONTHS}
-            selectedValue={tempDate.month}
-            onValueChange={(month) => setTempDate((current) => ({ ...current, month }))}
+            value={tempDate.month}
+            itemHeight={44}
+            visibleItemCount={5}
+            itemTextStyle={styles.pickerItemText}
+            enableScrollByTapOnItem
+            onValueChanged={({ item: { value } }) =>
+              setTempDate((current) => ({ ...current, month: value }))
+            }
           />
 
           <WheelPicker
             style={styles.pickerColumn}
             data={YEARS}
-            selectedValue={tempDate.year}
-            onValueChange={(year) => setTempDate((current) => ({ ...current, year }))}
+            value={tempDate.year}
+            itemHeight={44}
+            visibleItemCount={5}
+            itemTextStyle={styles.pickerItemText}
+            enableScrollByTapOnItem
+            onValueChanged={({ item: { value } }) =>
+              setTempDate((current) => ({ ...current, year: value }))
+            }
           />
         </View>
 
@@ -96,10 +110,20 @@ const styles = StyleSheet.create({
   pickerContainer: {
     flexDirection: 'row',
     width: '100%',
+    // Keep the container and picker columns at the same fixed height.
+    // The previous 200px container conflicted with the 220px picker columns.
+    height: PICKER_HEIGHT,
     justifyContent: 'center',
   },
   pickerColumn: {
     flex: 1,
+    height: PICKER_HEIGHT,
+    backgroundColor: 'transparent',
+  },
+  pickerItemText: {
+    color: '#1A1A1A',
+    fontFamily: 'Switzer-Regular',
+    fontSize: 18,
   },
   button: {
     backgroundColor: '#4A81FB',

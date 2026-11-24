@@ -48,6 +48,7 @@
     "deleteLastDigit": "Delete last digit"
   },
   "bankList": {
+    "addAccount": "Add bank account",
     "noBanksAvailable": "Bank unavailable. Please choose another bank."
   },
   "welcomeTransfer": {

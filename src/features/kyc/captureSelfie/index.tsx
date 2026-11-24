@@ -10,7 +10,11 @@ import {
   usePhotoOutput,
 } from 'react-native-vision-camera';
 import { createStyles } from './styles';
-import { KycImageError, prepareKycImage } from '@/features/kyc/utils/prepareKycImage';
+import {
+  KYC_CAMERA_OPTIONS,
+  KycImageError,
+  prepareKycImage,
+} from '@/features/kyc/utils/prepareKycImage';
 
 interface CaptureSelfieViewProps {
   onPressBack: () => void;
@@ -28,8 +32,7 @@ export const CaptureSelfieView = ({
   const [isCapturing, setIsCapturing] = useState(false);
   const [isPermissionLoading, setIsPermissionLoading] = useState(false);
   const device = useCameraDevice('front');
-  // JPEG explicitly: 'native' (the default) is HEIC on most iPhones, and KYC submit sends image/jpeg.
-  const photoOutput = usePhotoOutput({ containerFormat: 'jpeg' });
+  const photoOutput = usePhotoOutput(KYC_CAMERA_OPTIONS);
   const { hasPermission, requestPermission } = useCameraPermission();
   const hasPreview = useMemo(() => !!capturedUri, [capturedUri]);
 

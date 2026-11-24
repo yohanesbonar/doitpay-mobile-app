@@ -65,8 +65,6 @@ const groupByDate = (items: Notification[]): NotificationGroup[] => {
   return Array.from(map.entries()).map(([title, data]) => ({ title, data }));
 };
 
-const KYC_VERIFIED_TITLE = 'KYC Verified';
-
 const NotificationItemRow = ({ item }: { item: Notification }) => {
   const { mutate: readNotification } = useReadNotificationMutation();
   const navigation = useNavigation<any>();
@@ -77,17 +75,10 @@ const NotificationItemRow = ({ item }: { item: Notification }) => {
       onPress={() => {
         if (!item.readAt) readNotification(item.id);
 
-        // KYC rejection carries no `data.type`; it is identified by its reason payload. The result
-        // screen loads the reason itself from /v1/kyc/status.
-        if (typeof item.data?.rejection_reason === 'string') {
-          navigation.navigate('KycResult', { variant: 'REJECTED' });
-          return;
-        }
-
-        // KYC approval has an empty `data`, so the title is the only marker.
-        // TODO: ask BE for a `data.type` (e.g. KYC_VERIFIED) - titles can change or be localized.
-        if (item.title === KYC_VERIFIED_TITLE) {
-          navigation.navigate('KycResult', { variant: 'VERIFIED' });
+        // KycResult loads the current status from /v1/kyc/status, so an old notification still
+        // lands on the up-to-date result.
+        if (item.data?.type === 'KYC_RESULT') {
+          navigation.navigate('KycResult');
           return;
         }
 

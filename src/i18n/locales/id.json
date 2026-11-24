@@ -113,6 +113,7 @@
   },
   "bankList": {
     "sendTo": "Kirim ke",
+    "addAccount": "Tambah Rekening",
     "rekening": "Rekening",
     "next": "Lewati",
     "populerBank": "Bank Populer",
