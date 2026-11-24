@@ -1,24 +1,66 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { Home, History, Users, User, HelpCircle, Send } from 'lucide-react-native';
+import { MaterialTopTabBarProps } from '@react-navigation/material-top-tabs';
+import { Home, History, Users, User, Send } from 'lucide-react-native';
 import { useTheme } from '../../../theme/ThemeProvider';
 import { createStyles } from './styles';
 import { useTranslation } from 'react-i18next';
 
-export default function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+export default function CustomTabBar({ state, navigation }: MaterialTopTabBarProps) {
   const { colors } = useTheme();
   const styles = createStyles({});
   const { t } = useTranslation();
+  const tabs: { key: string; label: string; isAction?: boolean }[] = [
+    { key: 'homepage', label: t('mainTabNav.homepage') },
+    { key: 'history', label: t('mainTabNav.history') },
+    { key: 'transfer', label: t('mainTabNav.transfer'), isAction: true },
+    { key: 'beneficiary', label: t('mainTabNav.beneficiary') },
+    { key: 'profile', label: t('mainTabNav.profile') },
+  ];
+
+  const openTransfer = () =>
+    navigation.navigate({
+      name: 'BankList',
+      merge: true,
+      params: { fromTabBar: true },
+    });
+
+  const renderIcon = (key: string, color: string, focused: boolean) => {
+    const iconProps = {
+      color,
+      size: 24,
+      strokeWidth: focused ? 2.5 : 2,
+    };
+
+    switch (key) {
+      case 'homepage':
+        return <Home {...iconProps} />;
+      case 'history':
+        return <History {...iconProps} />;
+      case 'beneficiary':
+        return <Users {...iconProps} />;
+      case 'profile':
+        return <User {...iconProps} />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <View style={styles.outerContainer}>
       <View style={[styles.tabBarContainer, { backgroundColor: colors.background }]}>
-        {state.routes.map((route, index) => {
-          const { options } = descriptors[route.key];
-          const isFocused = state.index === index;
+        {tabs.map((tab) => {
+          const route = state.routes.find((item) => item.name === tab.label);
+          const isAction = Boolean(tab.isAction);
+          const isFocused = route?.key === state.routes[state.index]?.key;
 
           const onPress = () => {
+            if (isAction) {
+              openTransfer();
+              return;
+            }
+            if (!route) return;
+
             const event = navigation.emit({
               type: 'tabPress',
               target: route.key,
@@ -34,64 +76,34 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
             }
           };
 
-          const renderIcon = (name: string, color: string, focused: boolean) => {
-            const iconProps = {
-              color: color,
-              size: 24,
-              strokeWidth: focused ? 2.5 : 2, 
-            };
-
-            switch (name) {
-              case 'Beranda':
-                return <Home {...iconProps} />;
-              case 'Riwayat':
-                return <History {...iconProps} />;
-              case 'Penerima':
-                return <Users {...iconProps} />;
-              case 'Profil':
-                return <User {...iconProps} />;
-              default:
-                return <HelpCircle {...iconProps} />;
-            }
-          };
-
           const iconColor = isFocused ? '#2F6BFF' : '#000';
 
           return (
             <TouchableOpacity
-              key={index}
+              key={tab.key}
               onPress={onPress}
               style={styles.tabItem}
               activeOpacity={0.7}>
-              {route.name !== 'Transfer' && renderIcon(route.name, iconColor, isFocused)}
+              {!isAction && renderIcon(tab.key, iconColor, isFocused)}
               <Text
                 style={[
                   styles.label,
                   {
                     color: isFocused ? '#2F6BFF' : colors.text,
-                    fontFamily: route.name === 'Transfer' ? 'Switzer-Medium' : 'Switzer-Regular',
-                    marginTop: route.name === 'Transfer' ? 28 : 4,
+                    fontFamily: isAction ? 'Switzer-Medium' : 'Switzer-Regular',
+                    marginTop: isAction ? 28 : 4,
                   },
                 ]}>
-                {route.name}
+                {tab.label}
               </Text>
             </TouchableOpacity>
           );
         })}
       </View>
 
-      <TouchableOpacity
-        style={styles.fabButton}
-        onPress={() =>
-          navigation.navigate({
-            name: 'BankList',
-            merge: true,
-            params: { fromTabBar: true },
-          })
-        }
-        activeOpacity={0.9}>
+      <TouchableOpacity style={styles.fabButton} onPress={openTransfer} activeOpacity={0.9}>
         <View style={styles.fabInner}>
-          <Send name="paper-plane" size={28} color={colors.textWhite} strokeWidth={2} />
+          <Send size={28} color={colors.textWhite} strokeWidth={2} />
         </View>
       </TouchableOpacity>
     </View>

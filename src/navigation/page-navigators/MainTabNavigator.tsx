@@ -1,7 +1,6 @@
 import React from 'react';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import HomeScreen from '../../screens/main/home';
-import BankList from '../../screens/transfer/bankList';
 import { History } from '../../features/main/history';
 import { BeneficiaryScreen } from '@/screens/main/beneficiary/beneficiary-screen';
 import { Profile } from '../../features/main/profile';
@@ -11,7 +10,7 @@ import { useGetProfileMeQuery } from '@/features/user/hooks/useGetProfileMeQuery
 import { useGetLimitMeQuery } from '@/features/user/hooks/useGetLimitMeQuery';
 import { TransactionHistoryScreen } from '@/screens/main/transaction-history/transaction-history';
 
-const Tab = createBottomTabNavigator();
+const Tab = createMaterialTopTabNavigator();
 
 export default function MainTabNavigator() {
   const { t } = useTranslation();
@@ -20,11 +19,15 @@ export default function MainTabNavigator() {
 
   return (
     <Tab.Navigator
+      tabBarPosition="bottom"
       tabBar={(props) => <CustomTabBar {...props} />}
-      screenOptions={{ headerShown: false }}>
+      screenOptions={{
+        swipeEnabled: true,
+        lazy: true,
+        lazyPreloadDistance: 1,
+      }}>
       <Tab.Screen name={t(`mainTabNav.homepage`)} component={HomeScreen} />
       <Tab.Screen name={t(`mainTabNav.history`)} component={TransactionHistoryScreen} />
-      <Tab.Screen name={t(`mainTabNav.transfer`)} component={BankList} />
       <Tab.Screen name={t(`mainTabNav.beneficiary`)} component={BeneficiaryScreen} />
       <Tab.Screen name={t(`mainTabNav.profile`)} component={Profile} />
     </Tab.Navigator>
