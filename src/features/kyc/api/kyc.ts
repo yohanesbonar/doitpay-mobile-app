@@ -57,8 +57,47 @@ export interface KycRejection {
   cooldown?: string;
 }
 
+export interface KycConsentContent {
+  content: string;
+  effectiveDate: string;
+  privacyPolicyPublicUrl: string;
+  publicUrl: string;
+  title: string;
+  tncPublicUrl: string;
+  version: string;
+}
+
+export interface KycConsentStatus {
+  currentVersion: string;
+  acceptedVersion?: string;
+  acceptedAt?: string;
+  hasAcceptedCurrentVersion: boolean;
+}
+
+export interface KycConsentAcceptance {
+  acceptedAt: string;
+  version: string;
+}
+
+export const kycConsentApi = {
+  getActiveConsent: async (): Promise<KycConsentContent> => {
+    const { data } = await apiClient.get<ResponseApi<KycConsentContent>>('/v1/kyc/consent', {
+      noNeedAuth: true,
+    });
+    return data.data;
+  },
+  accept: async (version: string): Promise<KycConsentAcceptance> => {
+    const { data } = await apiClient.post<ResponseApi<KycConsentAcceptance>>(
+      '/v1/kyc/consent/accept',
+      { version },
+    );
+    return data.data;
+  },
+};
+
 export interface KycStatusResult {
   kycStatus: KycReviewStatus;
+  consent?: KycConsentStatus | null;
   // Only present when kycStatus is REJECTED.
   rejection?: KycRejection;
 }
