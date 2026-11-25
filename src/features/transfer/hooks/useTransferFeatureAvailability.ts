@@ -1,5 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import remoteConfig from '@react-native-firebase/remote-config';
+import {
+  activate,
+  fetchAndActivate,
+  getRemoteConfig,
+  getValue,
+} from '@react-native-firebase/remote-config';
 import { useIsFocused } from '@react-navigation/native';
 
 interface TransferFeatureAvailability {
@@ -30,26 +35,26 @@ export const useTransferFeatureAvailability = (): TransferFeatureAvailability =>
 
     const loadConfig = async () => {
       try {
-        const rc = remoteConfig();
+        const rc = getRemoteConfig();
 
-        await rc.setConfigSettings({
-          fetchTimeMillis: 10_000,
+        rc.settings = {
+          fetchTimeoutMillis: 10_000,
           minimumFetchIntervalMillis: 0,
-        });
+        };
 
-        await rc.setDefaults(REMOTE_CONFIG_DEFAULTS);
-        await rc.activate();
+        rc.defaultConfig = REMOTE_CONFIG_DEFAULTS;
+        await activate(rc);
 
         if (isMounted) {
-          setTransferEnabled(rc.getValue('transfer_feature_enabled').asBoolean());
-          setReceiveEnabled(rc.getValue('receive_feature_enabled').asBoolean());
+          setTransferEnabled(getValue(rc, 'transfer_feature_enabled').asBoolean());
+          setReceiveEnabled(getValue(rc, 'receive_feature_enabled').asBoolean());
           setIsLoading(false);
         }
 
-        await rc.fetchAndActivate();
+        await fetchAndActivate(rc);
         if (isMounted) {
-          setTransferEnabled(rc.getValue('transfer_feature_enabled').asBoolean());
-          setReceiveEnabled(rc.getValue('receive_feature_enabled').asBoolean());
+          setTransferEnabled(getValue(rc, 'transfer_feature_enabled').asBoolean());
+          setReceiveEnabled(getValue(rc, 'receive_feature_enabled').asBoolean());
         }
       } catch (error) {
         if (!isMounted) {

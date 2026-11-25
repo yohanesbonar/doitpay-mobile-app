@@ -35,7 +35,11 @@ import InputOTPNumber from './components/InputOTPNumber.tsx';
 import Toast from 'react-native-toast-message';
 import CreateAndConfirmPIN from './components/CreateAndConfirmPIN.tsx';
 import InputFullName from './components/InputFullName.tsx';
-import crashlytics from '@react-native-firebase/crashlytics';
+import {
+  getCrashlytics,
+  log as logCrashlytics,
+  setUserId,
+} from '@react-native-firebase/crashlytics';
 import { BIOMETRY_TYPE } from 'react-native-keychain';
 import { Eye, Fingerprint, ScanFace } from 'lucide-react-native';
 import { identifyPostHogUser, trackPostHogEvent } from '@/analytics/posthog';
@@ -423,8 +427,8 @@ export const AuthEntry = () => {
   };
 
   const finishLogin = (formattedPhone: string, res: unknown) => {
-    crashlytics().log('User login success');
-    crashlytics().setUserId(formattedPhone);
+    logCrashlytics(getCrashlytics(), 'User login success');
+    setUserId(getCrashlytics(), formattedPhone);
     console.log('Login success:', res);
     identifyPostHogUser(formattedPhone, {
       account_status: 'ACTIVE',
@@ -668,8 +672,8 @@ export const AuthEntry = () => {
         },
         {
           onSuccess: (res) => {
-            crashlytics().log('User register setup pin');
-            crashlytics().setUserId(formattedPhone);
+            logCrashlytics(getCrashlytics(), 'User register setup pin');
+            setUserId(getCrashlytics(), formattedPhone);
             identifyPostHogUser(formattedPhone, {
               name: fullName.trim(),
             });

@@ -5,16 +5,17 @@ buildscript {
         compileSdkVersion = 37
         targetSdkVersion = 36
         ndkVersion = "27.1.12297006"
+        // Keep aligned with React Native 0.88's Kotlin Gradle plugin version.
         kotlinVersion = "2.2.0"
-        kspVersion = "2.2.10-2.0.2"
     }
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
-        classpath 'com.google.gms:google-services:4.4.4'
-        classpath 'com.google.firebase:firebase-crashlytics-gradle:3.0.3'
+        classpath 'com.google.gms:google-services:4.5.0'
+        classpath 'com.google.firebase:firebase-crashlytics-gradle:3.0.8'
+        classpath 'com.google.firebase:perf-plugin:2.0.2'
         classpath("com.android.tools.build:gradle")
         classpath("com.facebook.react:react-native-gradle-plugin")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")

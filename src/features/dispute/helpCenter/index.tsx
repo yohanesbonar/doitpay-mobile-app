@@ -11,7 +11,12 @@ import {
   TextInput,
   ScrollView,
 } from 'react-native';
-import remoteConfig from '@react-native-firebase/remote-config';
+import {
+  activate,
+  fetchAndActivate,
+  getRemoteConfig,
+  getValue,
+} from '@react-native-firebase/remote-config';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import { ChevronDown, ChevronUp, Mail, MessageSquare, Search, FileText } from 'lucide-react-native';
 
@@ -78,22 +83,22 @@ export const DisputeHelpCenterView = ({
 
     const loadSupportConfig = async () => {
       try {
-        const rc = remoteConfig();
+        const rc = getRemoteConfig();
 
-        await rc.setConfigSettings({
-          fetchTimeMillis: 10_000,
+        rc.settings = {
+          fetchTimeoutMillis: 10_000,
           minimumFetchIntervalMillis: 0,
-        });
-        await rc.setDefaults(REMOTE_CONFIG_DEFAULTS);
-        await rc.activate();
+        };
+        rc.defaultConfig = REMOTE_CONFIG_DEFAULTS;
+        await activate(rc);
 
         const applyConfig = () => {
           if (!isMounted) {
             return;
           }
 
-          const whatsappNumber = rc.getValue('support_whatsapp_number').asString().trim();
-          const email = rc.getValue('support_email').asString().trim();
+          const whatsappNumber = getValue(rc, 'support_whatsapp_number').asString().trim();
+          const email = getValue(rc, 'support_email').asString().trim();
 
           setSupportWhatsappNumber(
             whatsappNumber || REMOTE_CONFIG_DEFAULTS.support_whatsapp_number,
@@ -102,7 +107,7 @@ export const DisputeHelpCenterView = ({
         };
 
         applyConfig();
-        await rc.fetchAndActivate();
+        await fetchAndActivate(rc);
         applyConfig();
       } catch {}
     };

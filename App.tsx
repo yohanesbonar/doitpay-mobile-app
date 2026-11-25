@@ -16,10 +16,15 @@ import { I18nextProvider } from 'react-i18next';
 import i18next from 'i18next';
 import Toast from 'react-native-toast-message';
 import { getMessaging, setBackgroundMessageHandler } from '@react-native-firebase/messaging';
-import analytics from '@react-native-firebase/analytics';
+import { getAnalytics, setUserProperty } from '@react-native-firebase/analytics';
 import notifee, { EventType } from '@notifee/react-native';
-import perf from '@react-native-firebase/perf';
-import crashlytics from '@react-native-firebase/crashlytics';
+import { getPerformance, trace } from '@react-native-firebase/perf';
+import {
+  getCrashlytics,
+  log as logCrashlytics,
+  recordError,
+  setAttribute as setCrashlyticsAttribute,
+} from '@react-native-firebase/crashlytics';
 import JailMonkey from 'jail-monkey'; // Import JailMonkey
 import NetInfo from '@react-native-community/netinfo';
 
@@ -61,14 +66,16 @@ if (__DEV__) {
 }
 
 const messagingInstance = getMessaging();
+const analyticsInstance = getAnalytics();
+const performanceInstance = getPerformance();
+const crashlyticsInstance = getCrashlytics();
 
 const appEnvironment = Config.ENV?.trim().toLowerCase() === 'production' ? 'production' : 'staging';
 if (__DEV__) {
   console.log('ENV :', appEnvironment);
 }
 
-analytics()
-  .setUserProperty('app_environment', appEnvironment)
+setUserProperty(analyticsInstance, 'app_environment', appEnvironment)
   .then(() => {
     if (__DEV__) {
       console.log('✅ [Analytics] App environment set successfully:', appEnvironment);
@@ -179,11 +186,15 @@ const App = () => {
         setIsDeviceCompromised(true);
 
         if (!__DEV__) {
-          crashlytics().setAttribute('device_security_status', 'COMPROMISED');
-          crashlytics().log(
+          setCrashlyticsAttribute(crashlyticsInstance, 'device_security_status', 'COMPROMISED');
+          logCrashlytics(
+            crashlyticsInstance,
             `Security Breach -> Root/Jailbreak: ${isJailBrokenOrRooted}, FakeGPS: ${isHookedWithFakeGPS}`,
           );
-          crashlytics().recordError(new Error('Security Block: Compromised platform integrity.'));
+          recordError(
+            crashlyticsInstance,
+            new Error('Security Block: Compromised platform integrity.'),
+          );
         }
       } else {
         setIsDeviceCompromised(false);
@@ -238,7 +249,7 @@ const App = () => {
 
       if (traceRef.current) {
         try {
-          await traceRef.current.stop();
+          traceRef.current.stop();
         } catch (e) {
           console.error('Failed to stop performance trace:', e);
         }
@@ -247,8 +258,8 @@ const App = () => {
       if (!__DEV__ && currentRouteName) {
         try {
           routeNameRef.current = currentRouteName;
-          traceRef.current = await perf().newTrace(`screen_${currentRouteName}`);
-          await traceRef.current.start();
+          traceRef.current = trace(performanceInstance, `screen_${currentRouteName}`);
+          traceRef.current.start();
         } catch (e) {
           console.error('Failed to start performance trace:', e);
         }

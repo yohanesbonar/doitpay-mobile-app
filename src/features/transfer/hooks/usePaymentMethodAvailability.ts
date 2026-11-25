@@ -1,5 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import remoteConfig from '@react-native-firebase/remote-config';
+import {
+  activate,
+  fetchAndActivate,
+  getRemoteConfig,
+  getValue,
+} from '@react-native-firebase/remote-config';
 import { useIsFocused } from '@react-navigation/native';
 
 export type PaymentMethodType = 'VA' | 'QRIS' | 'MANUAL_BANK';
@@ -74,38 +79,38 @@ export const usePaymentMethodAvailability = (
 
     const loadConfig = async () => {
       try {
-        const rc = remoteConfig();
+        const rc = getRemoteConfig();
 
         // Always fetch fresh data without minimum cache interval
-        await rc.setConfigSettings({
-          fetchTimeMillis: 10_000,
+        rc.settings = {
+          fetchTimeoutMillis: 10_000,
           minimumFetchIntervalMillis: 0,
-        });
+        };
 
-        await rc.setDefaults(REMOTE_CONFIG_DEFAULTS);
+        rc.defaultConfig = REMOTE_CONFIG_DEFAULTS;
 
         const keys = REMOTE_CONFIG_KEYS[productType];
 
         // 1. Instantly activate and read cached config to avoid UI blocking
-        await rc.activate();
+        await activate(rc);
         if (isMounted) {
-          setVaEnabled(rc.getValue(keys.VA).asBoolean());
-          setQrisEnabled(rc.getValue(keys.QRIS).asBoolean());
+          setVaEnabled(getValue(rc, keys.VA).asBoolean());
+          setQrisEnabled(getValue(rc, keys.QRIS).asBoolean());
           setManualBankEnabled(
             productType === 'TRANSFER' &&
-              rc.getValue(REMOTE_CONFIG_KEYS.TRANSFER.MANUAL_BANK).asBoolean(),
+              getValue(rc, REMOTE_CONFIG_KEYS.TRANSFER.MANUAL_BANK).asBoolean(),
           );
           setIsLoading(false);
         }
 
         // 2. Fetch fresh config from server and update state if changed
-        await rc.fetchAndActivate();
+        await fetchAndActivate(rc);
         if (isMounted) {
-          setVaEnabled(rc.getValue(keys.VA).asBoolean());
-          setQrisEnabled(rc.getValue(keys.QRIS).asBoolean());
+          setVaEnabled(getValue(rc, keys.VA).asBoolean());
+          setQrisEnabled(getValue(rc, keys.QRIS).asBoolean());
           setManualBankEnabled(
             productType === 'TRANSFER' &&
-              rc.getValue(REMOTE_CONFIG_KEYS.TRANSFER.MANUAL_BANK).asBoolean(),
+              getValue(rc, REMOTE_CONFIG_KEYS.TRANSFER.MANUAL_BANK).asBoolean(),
           );
         }
       } catch (error) {
