@@ -4,7 +4,6 @@ import WebView from 'react-native-webview';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import { useTheme } from '@/theme/ThemeProvider';
 import { createStyles } from '../activateQris/styles';
-import { useKycPrivacyPolicyUrl } from '@/features/kyc/hooks/useKycPrivacyPolicyUrl';
 import { useKycConsentQuery } from '@/hooks/useKycConsentQuery';
 
 interface KycPrivacyPolicyViewProps {
@@ -14,16 +13,14 @@ interface KycPrivacyPolicyViewProps {
 export const KycPrivacyPolicyView = ({ onPressBack }: KycPrivacyPolicyViewProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
-  const privacyPolicyUrlQuery = useKycPrivacyPolicyUrl();
   const consentQuery = useKycConsentQuery();
   const [isLoading, setIsLoading] = useState(true);
   const [hasLoadError, setHasLoadError] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
-  const privacyPolicyUrl =
-    privacyPolicyUrlQuery.data || consentQuery.data?.privacyPolicyPublicUrl || '';
+  const privacyPolicyUrl = consentQuery.data?.privacyPolicyPublicUrl || '';
   const retryLoad = () => {
     if (!privacyPolicyUrl) {
-      void Promise.all([privacyPolicyUrlQuery.refetch(), consentQuery.refetch()]);
+      void consentQuery.refetch();
     } else {
       setReloadKey((key) => key + 1);
     }

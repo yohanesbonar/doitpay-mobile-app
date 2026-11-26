@@ -10,7 +10,6 @@ import { KycTermsWebView } from './KycTermsWebView';
 import { useKycConsentQuery } from '@/hooks/useKycConsentQuery';
 import { useKycStatusQuery } from '@/hooks/useKycStatusQuery';
 import { useAcceptKycConsent } from '@/hooks/useAcceptKycConsent';
-import { useKycPrivacyPolicyUrl } from '@/features/kyc/hooks/useKycPrivacyPolicyUrl';
 
 interface KycIntroViewProps {
   onPressBack: () => void;
@@ -45,14 +44,12 @@ export const KycIntroView = ({
   const consentQuery = useKycConsentQuery({ enabled: false });
   const statusQuery = useKycStatusQuery({ enabled: false });
   const acceptConsent = useAcceptKycConsent();
-  const privacyPolicyUrlQuery = useKycPrivacyPolicyUrl();
   const isTermsUpdated = Boolean(
     statusQuery.data?.consent &&
     !statusQuery.data.consent.hasAcceptedCurrentVersion &&
     statusQuery.data.consent.acceptedVersion,
   );
-  const privacyPolicyUrl =
-    privacyPolicyUrlQuery.data || consentQuery.data?.privacyPolicyPublicUrl || '';
+  const privacyPolicyUrl = consentQuery.data?.privacyPolicyPublicUrl || '';
 
   useEffect(() => {
     if (termsSheetRestoreKey > 0) setIsTermsVisible(true);
@@ -71,16 +68,16 @@ export const KycIntroView = ({
       ]);
 
       // An already accepted active version skips the consent sheet entirely.
-      if (
-        !consentResult.isError &&
-        !statusResult.isError &&
-        statusResult.data?.consent?.hasAcceptedCurrentVersion &&
-        statusResult.data.consent.currentVersion === consentResult.data?.version
-      ) {
-        setIsTermsVisible(false);
-        onPressContinueKyc();
-        return;
-      }
+      // if (
+      //   !consentResult.isError &&
+      //   !statusResult.isError &&
+      //   statusResult.data?.consent?.hasAcceptedCurrentVersion &&
+      //   statusResult.data.consent.currentVersion === consentResult.data?.version
+      // ) {
+      //   setIsTermsVisible(false);
+      //   onPressContinueKyc();
+      //   return;
+      // }
 
       setIsTermsLoadError(consentResult.isError || statusResult.isError || !consentResult.data);
       setIsTermsVisible(true);
