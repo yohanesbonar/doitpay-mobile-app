@@ -58,6 +58,7 @@ import ConfirmDataScreen from '@/screens/kyc/confirmData';
 import DataSubmittedScreen from '@/screens/kyc/dataSubmitted';
 import KycIntroScreen from '@/screens/kyc/kycIntro';
 import KycFullTermsScreen from '@/screens/kyc/fullTerms';
+import KycPrivacyPolicyScreen from '@/screens/kyc/privacyPolicy';
 import KycResultScreen from '@/screens/kyc/kycResult';
 import { useKycResultRedirect } from '@/hooks/useKycResultRedirect';
 import { KycRequiredSheet } from '@/features/kyc/kycGate/KycRequiredSheet';
@@ -276,6 +277,7 @@ export default function RootNavigator({
             <Stack.Screen name="ActivateQris" component={ActivateQrisScreen} />
             <Stack.Screen name="KycIntro" component={KycIntroScreen} />
             <Stack.Screen name="KycFullTerms" component={KycFullTermsScreen} />
+            <Stack.Screen name="KycPrivacyPolicy" component={KycPrivacyPolicyScreen} />
             <Stack.Screen name="KycResult" component={KycResultScreen} />
             <Stack.Screen name="CaptureKtp" component={CaptureKtpScreen} />
             <Stack.Screen name="CaptureSelfie" component={CaptureSelfieScreen} />

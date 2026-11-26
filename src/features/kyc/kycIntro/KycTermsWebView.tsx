@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { ActivityIndicator, Linking, StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import WebView from 'react-native-webview';
-import { KYC_PRIVACY_POLICY_URL } from './termsData';
 
 interface KycTermsWebViewProps {
   html: string;
@@ -15,7 +14,7 @@ export const KycTermsWebView = ({
   html,
   style,
   showsVerticalScrollIndicator = true,
-  privacyPolicyUrl = KYC_PRIVACY_POLICY_URL,
+  privacyPolicyUrl = '',
   baseUrl,
 }: KycTermsWebViewProps) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -34,7 +33,7 @@ export const KycTermsWebView = ({
         onError={() => setIsLoading(false)}
         onShouldStartLoadWithRequest={(request) => {
           if (request.url === 'about:blank') return true;
-          if (request.url.startsWith(privacyPolicyUrl)) {
+          if (privacyPolicyUrl && request.url.startsWith(privacyPolicyUrl)) {
             void Linking.openURL(privacyPolicyUrl);
             return false;
           }

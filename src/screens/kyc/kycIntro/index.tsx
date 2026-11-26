@@ -33,6 +33,10 @@ const KycIntroScreen = () => {
         shouldRestoreTermsSheet.current = true;
         navigation.navigate('KycFullTerms');
       }}
+      onPressReadPrivacyPolicy={() => {
+        shouldRestoreTermsSheet.current = true;
+        navigation.navigate('KycPrivacyPolicy');
+      }}
     />
   );
 };

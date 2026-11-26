@@ -5,7 +5,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { createStyles } from '../activateQris/styles';
 import { KycTermsWebView } from './KycTermsWebView';
 import { useKycConsentQuery } from '@/hooks/useKycConsentQuery';
-import { KYC_PRIVACY_POLICY_URL } from './termsData';
+import { useKycPrivacyPolicyUrl } from '@/features/kyc/hooks/useKycPrivacyPolicyUrl';
 
 interface FullTermsViewProps {
   onPressBack: () => void;
@@ -15,6 +15,9 @@ export const FullTermsView = ({ onPressBack }: FullTermsViewProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const consentQuery = useKycConsentQuery();
+  const privacyPolicyUrlQuery = useKycPrivacyPolicyUrl();
+  const privacyPolicyUrl =
+    privacyPolicyUrlQuery.data || consentQuery.data?.privacyPolicyPublicUrl || '';
 
   return (
     <View style={styles.termsPage}>
@@ -29,7 +32,7 @@ export const FullTermsView = ({ onPressBack }: FullTermsViewProps) => {
         <KycTermsWebView
           style={styles.termsWebView}
           html={consentQuery.data.content}
-          privacyPolicyUrl={consentQuery.data.privacyPolicyPublicUrl || KYC_PRIVACY_POLICY_URL}
+          privacyPolicyUrl={privacyPolicyUrl}
           baseUrl={consentQuery.data.tncPublicUrl || consentQuery.data.publicUrl}
         />
       ) : consentQuery.isError ? (

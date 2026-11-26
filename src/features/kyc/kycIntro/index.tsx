@@ -1,29 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  Linking,
-  Modal,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Modal, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '@/theme/ThemeProvider';
 import HeaderToolbar from '@/components/molecules/HeaderToolbar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { createStyles } from '../activateQris/styles';
 import { Check, ExternalLink, File, Image, X } from 'lucide-react-native';
-import { KYC_CONSENT_ACKNOWLEDGEMENT, KYC_PRIVACY_POLICY_URL } from './termsData';
+import { KYC_CONSENT_ACKNOWLEDGEMENT } from './termsData';
 import { KycTermsWebView } from './KycTermsWebView';
 import { useKycConsentQuery } from '@/hooks/useKycConsentQuery';
 import { useKycStatusQuery } from '@/hooks/useKycStatusQuery';
 import { useAcceptKycConsent } from '@/hooks/useAcceptKycConsent';
+import { useKycPrivacyPolicyUrl } from '@/features/kyc/hooks/useKycPrivacyPolicyUrl';
 
 interface KycIntroViewProps {
   onPressBack: () => void;
   onPressContinueKyc: () => void;
   onPressSkip: () => void;
   onPressReadFullTerms?: () => void;
+  onPressReadPrivacyPolicy?: () => void;
   termsSheetRestoreKey?: number;
   isOnboardingFlow?: boolean;
 }
@@ -35,6 +29,7 @@ export const KycIntroView = ({
   onPressContinueKyc,
   onPressSkip,
   onPressReadFullTerms,
+  onPressReadPrivacyPolicy,
   termsSheetRestoreKey = 0,
   isOnboardingFlow = false,
 }: KycIntroViewProps) => {
@@ -50,18 +45,18 @@ export const KycIntroView = ({
   const consentQuery = useKycConsentQuery({ enabled: false });
   const statusQuery = useKycStatusQuery({ enabled: false });
   const acceptConsent = useAcceptKycConsent();
+  const privacyPolicyUrlQuery = useKycPrivacyPolicyUrl();
   const isTermsUpdated = Boolean(
     statusQuery.data?.consent &&
     !statusQuery.data.consent.hasAcceptedCurrentVersion &&
     statusQuery.data.consent.acceptedVersion,
   );
-  const privacyPolicyUrl = consentQuery.data?.privacyPolicyPublicUrl || KYC_PRIVACY_POLICY_URL;
+  const privacyPolicyUrl =
+    privacyPolicyUrlQuery.data || consentQuery.data?.privacyPolicyPublicUrl || '';
 
   useEffect(() => {
     if (termsSheetRestoreKey > 0) setIsTermsVisible(true);
   }, [termsSheetRestoreKey]);
-
-  const openPrivacyPolicy = async () => Linking.openURL(privacyPolicyUrl);
 
   const refreshConsentState = async () => {
     setIsCheckingConsent(true);
@@ -294,7 +289,10 @@ export const KycIntroView = ({
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.termsLinkButton}
-                  onPress={openPrivacyPolicy}
+                  onPress={() => {
+                    setIsTermsVisible(false);
+                    onPressReadPrivacyPolicy?.();
+                  }}
                   disabled={isCheckingConsent}>
                   <Text style={styles.termsLinkText}>Kebijakan Privasi</Text>
                   <ExternalLink size={16} color="#3526C7" />
