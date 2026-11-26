@@ -68,16 +68,16 @@ export const KycIntroView = ({
       ]);
 
       // An already accepted active version skips the consent sheet entirely.
-      // if (
-      //   !consentResult.isError &&
-      //   !statusResult.isError &&
-      //   statusResult.data?.consent?.hasAcceptedCurrentVersion &&
-      //   statusResult.data.consent.currentVersion === consentResult.data?.version
-      // ) {
-      //   setIsTermsVisible(false);
-      //   onPressContinueKyc();
-      //   return;
-      // }
+      if (
+        !consentResult.isError &&
+        !statusResult.isError &&
+        statusResult.data?.consent?.hasAcceptedCurrentVersion &&
+        statusResult.data.consent.currentVersion === consentResult.data?.version
+      ) {
+        setIsTermsVisible(false);
+        onPressContinueKyc();
+        return;
+      }
 
       setIsTermsLoadError(consentResult.isError || statusResult.isError || !consentResult.data);
       setIsTermsVisible(true);
