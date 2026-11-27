@@ -1,5 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import remoteConfig from '@react-native-firebase/remote-config';
+import {
+  activate,
+  fetchAndActivate,
+  getRemoteConfig,
+  getValue,
+} from '@react-native-firebase/remote-config';
 import Config from 'react-native-config';
 import { useIsFocused } from '@react-navigation/native';
 
@@ -69,25 +74,25 @@ export const useQuickAmounts = (productType: QuickAmountProductType): string[] =
 
     const loadConfig = async () => {
       try {
-        const rc = remoteConfig();
+        const rc = getRemoteConfig();
 
-        await rc.setConfigSettings({
-          fetchTimeMillis: 10_000,
+        rc.settings = {
+          fetchTimeoutMillis: 10_000,
           minimumFetchIntervalMillis: 0,
-        });
+        };
 
-        await rc.setDefaults(REMOTE_CONFIG_DEFAULTS);
+        rc.defaultConfig = REMOTE_CONFIG_DEFAULTS;
 
         const key = REMOTE_CONFIG_KEYS[productType];
         const applyConfig = () => {
           if (isMounted) {
-            setAmounts(parseAmounts(rc.getValue(key).asString()));
+            setAmounts(parseAmounts(getValue(rc, key).asString()));
           }
         };
 
-        await rc.activate();
+        await activate(rc);
         applyConfig();
-        await rc.fetchAndActivate();
+        await fetchAndActivate(rc);
         applyConfig();
       } catch {
         // Keep the cached amounts if the fresh fetch fails.

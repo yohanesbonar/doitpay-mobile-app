@@ -7,13 +7,20 @@ import { useAuthStore } from '../storage/useAuthStore.ts';
 import { queryClient } from './queryClient';
 import Toast from 'react-native-toast-message';
 import { Platform } from 'react-native';
-import perf, { FirebasePerformanceTypes } from '@react-native-firebase/perf';
-import crashlytics from '@react-native-firebase/crashlytics';
+import { getPerformance, httpMetric } from '@react-native-firebase/perf';
+import type { HttpMethod, HttpMetric } from '@react-native-firebase/perf';
+import {
+  getCrashlytics,
+  recordError,
+  setAttribute as setCrashlyticsAttribute,
+} from '@react-native-firebase/crashlytics';
 import NetInfo from '@react-native-community/netinfo';
 import DeviceInfo from 'react-native-device-info';
 
 let isRefreshing = false;
 let failedQueue: any[] = [];
+const performanceInstance = getPerformance();
+const crashlyticsInstance = getCrashlytics();
 
 const getAppVersionHeader = () => {
   const configVersion = Config.VERSION_NAME || Config.APP_VERSION;
@@ -68,12 +75,12 @@ declare module 'axios' {
   export interface AxiosRequestConfig {
     noNeedAuth?: boolean;
     skipAuthRetry?: boolean;
-    _perfMetric?: FirebasePerformanceTypes.HttpMetric;
+    _perfMetric?: HttpMetric;
   }
   export interface InternalAxiosRequestConfig {
     noNeedAuth?: boolean;
     skipAuthRetry?: boolean;
-    _perfMetric?: FirebasePerformanceTypes.HttpMetric;
+    _perfMetric?: HttpMetric;
   }
 }
 
@@ -108,10 +115,9 @@ apiClient.interceptors.request.use(
     if (!__DEV__) {
       try {
         const url = `${config.baseURL ?? ''}${config.url ?? ''}`;
-        const method = (config.method?.toUpperCase() ??
-          'GET') as FirebasePerformanceTypes.HttpMethod;
-        const metric = await perf().newHttpMetric(url, method);
-        await metric.start();
+        const method = (config.method?.toUpperCase() ?? 'GET') as HttpMethod;
+        const metric = httpMetric(performanceInstance, url, method);
+        metric.start();
         config._perfMetric = metric;
       } catch (e) {
         console.error('Firebase Perf Start Error:', e);
@@ -204,8 +210,8 @@ apiClient.interceptors.response.use(
     // --- Firebase Performance Stop (Success) ---
     if (!__DEV__ && response.config._perfMetric) {
       try {
-        await response.config._perfMetric.setHttpResponseCode(response.status);
-        await response.config._perfMetric.stop();
+        response.config._perfMetric.setHttpResponseCode(response.status);
+        response.config._perfMetric.stop();
       } catch (e) {}
     }
 
@@ -225,13 +231,13 @@ apiClient.interceptors.response.use(
     // --- Firebase Performance Stop (Error) ---
     if (!__DEV__ && originalRequest?._perfMetric) {
       try {
-        await originalRequest._perfMetric.setHttpResponseCode(status ?? 0);
+        originalRequest._perfMetric.setHttpResponseCode(status ?? 0);
         if (error.response?.headers['content-length']) {
-          await originalRequest._perfMetric.setResponseContentType(
-            error.response.headers['content-type'],
+          originalRequest._perfMetric.setResponseContentType(
+            error.response.headers['content-type'] ?? null,
           );
         }
-        await originalRequest._perfMetric.stop();
+        originalRequest._perfMetric.stop();
       } catch (e) {}
     }
 
@@ -335,11 +341,24 @@ apiClient.interceptors.response.use(
     if (!__DEV__) {
       // Only log server errors (5xx) and network errors (no status) to Crashlytics to avoid noise from client errors (4xx)
       if (!status || status >= 500) {
-        crashlytics().setAttribute('api_url', originalRequest?.url ?? 'unknown');
-        crashlytics().setAttribute('api_method', originalRequest?.method ?? 'unknown');
-        crashlytics().setAttribute('api_status', String(status ?? 'NETWORK_ERROR'));
+        setCrashlyticsAttribute(
+          crashlyticsInstance,
+          'api_url',
+          originalRequest?.url ?? 'unknown',
+        );
+        setCrashlyticsAttribute(
+          crashlyticsInstance,
+          'api_method',
+          originalRequest?.method ?? 'unknown',
+        );
+        setCrashlyticsAttribute(
+          crashlyticsInstance,
+          'api_status',
+          String(status ?? 'NETWORK_ERROR'),
+        );
 
-        crashlytics().recordError(
+        recordError(
+          crashlyticsInstance,
           new Error(`API Failure [${status ?? 'NET_ERR'}]: ${originalRequest?.url}`),
         );
       }

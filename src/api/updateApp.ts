@@ -1,6 +1,6 @@
 import apiClient from './client';
 import { Platform } from 'react-native';
-import remoteConfig from '@react-native-firebase/remote-config';
+import { fetchAndActivate, getRemoteConfig, getValue } from '@react-native-firebase/remote-config';
 import type { ResponseApi } from './types';
 import type { UpdateAction, UpdateAppData } from '@/components/molecules/UpdateAppBottomSheet';
 
@@ -46,22 +46,22 @@ const normalizeAction = (action?: string): UpdateAction => {
 
 const getRemoteConfigUpdateUrl = async (): Promise<string | undefined> => {
   try {
-    const rc = remoteConfig();
+    const rc = getRemoteConfig();
 
-    await rc.setConfigSettings({
-      fetchTimeMillis: 10_000,
+    rc.settings = {
+      fetchTimeoutMillis: 10_000,
       minimumFetchIntervalMillis: __DEV__ ? 0 : 3_600_000,
-    });
+    };
 
-    await rc.setDefaults({
+    rc.defaultConfig = {
       [APP_UPDATE_URL_IOS_KEY]: '',
       [APP_UPDATE_URL_ANDROID_KEY]: '',
-    });
+    };
 
-    await rc.fetchAndActivate();
+    await fetchAndActivate(rc);
 
     const platformKey = Platform.OS === 'ios' ? APP_UPDATE_URL_IOS_KEY : APP_UPDATE_URL_ANDROID_KEY;
-    const platformUrl = rc.getValue(platformKey).asString().trim();
+    const platformUrl = getValue(rc, platformKey).asString().trim();
 
     logUpdateDebug('Remote config URL fetched', {
       platform: Platform.OS,
